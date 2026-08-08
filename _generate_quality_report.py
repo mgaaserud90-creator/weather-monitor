@@ -608,8 +608,8 @@ async function fetchLiveData() {{
     return results;
 }}
 
-// Auto-fetch 3 seconds after page load
-setTimeout(fetchLiveData, 3000);"""
+// Manual fetch only — button click required, no auto-fetch on page load
+"""
 
 
 def _generate_html_report() -> str:
