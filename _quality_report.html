@@ -116,14 +116,155 @@
     color: var(--green);
     margin-left: 8px;
   }
+  .live-bar {
+    text-align: center;
+    padding: 14px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 0 auto 20px;
+    max-width: 700px;
+  }
+  .live-btn {
+    background: rgba(88, 166, 255, 0.15);
+    border: 1px solid var(--blue);
+    color: var(--blue);
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .live-btn:hover { background: rgba(88, 166, 255, 0.25); }
+  .live-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .live-status { color: var(--text-dim); font-size: 0.85rem; margin-left: 12px; }
+  .live-updated { color: var(--text-dim); font-size: 0.8rem; margin-left: 8px; }
 </style>
 <script>
+const CITIES = [
+  {name: "Taipei, TW", lat: 25.0694, lon: 121.5517, tz: "Asia/Taipei"},
+  {name: "Hong Kong, HK", lat: 22.302, lon: 114.1742, tz: "Asia/Hong_Kong"},
+  {name: "Shanghai, CN", lat: 31.1434, lon: 121.8053, tz: "Asia/Shanghai"},
+  {name: "Seoul (Incheon), KR", lat: 37.4602, lon: 126.4407, tz: "Asia/Seoul"},
+  {name: "Kuala Lumpur, MY", lat: 2.7456, lon: 101.7099, tz: "Asia/Kuala_Lumpur"},
+  {name: "Madrid, ES", lat: 40.4719, lon: -3.5626, tz: "Europe/Madrid"},
+  {name: "Paris, FR", lat: 48.9694, lon: 2.4414, tz: "Europe/Paris"},
+  {name: "Munich, DE", lat: 48.3538, lon: 11.7861, tz: "Europe/Berlin"},
+  {name: "Wellington, NZ", lat: -41.3272, lon: 174.8053, tz: "Pacific/Auckland"},
+  {name: "Shenzhen, CN", lat: 22.6394, lon: 113.811, tz: "Asia/Shanghai"},
+  {name: "Singapore, SG", lat: 1.3592, lon: 103.9894, tz: "Asia/Singapore"},
+  {name: "Guangzhou, CN", lat: 23.3924, lon: 113.2988, tz: "Asia/Shanghai"},
+  {name: "New York, US", lat: 40.7772, lon: -73.8726, tz: "America/New_York"},
+  {name: "London, UK", lat: 51.505, lon: 0.0542, tz: "Europe/London"},
+  {name: "Milan, IT", lat: 45.6306, lon: 8.7281, tz: "Europe/Rome"},
+  {name: "Los Angeles, US", lat: 33.9416, lon: -118.4085, tz: "America/Los_Angeles"},
+  {name: "Tokyo, JP", lat: 35.5494, lon: 139.7798, tz: "Asia/Tokyo"},
+  {name: "Helsinki, FI", lat: 60.3172, lon: 24.9633, tz: "Europe/Helsinki"},
+  {name: "Chongqing, CN", lat: 29.7192, lon: 106.6417, tz: "Asia/Shanghai"},
+  {name: "Chengdu, CN", lat: 30.5785, lon: 103.9469, tz: "Asia/Shanghai"},
+  {name: "Wuhan, CN", lat: 30.7838, lon: 114.2081, tz: "Asia/Shanghai"},
+  {name: "Qingdao, CN", lat: 36.2661, lon: 120.3744, tz: "Asia/Shanghai"},
+  {name: "Jeddah, SA", lat: 21.6796, lon: 39.1565, tz: "Asia/Riyadh"},
+  {name: "Istanbul, TR", lat: 41.2613, lon: 28.742, tz: "Europe/Istanbul"},
+  {name: "Ankara, TR", lat: 40.1281, lon: 32.995, tz: "Europe/Istanbul"},
+  {name: "Busan, KR", lat: 35.1796, lon: 128.9382, tz: "Asia/Seoul"},
+  {name: "Dallas, US", lat: 32.8472, lon: -96.8518, tz: "America/Chicago"},
+  {name: "Houston, US", lat: 29.6454, lon: -95.2789, tz: "America/Chicago"},
+  {name: "Atlanta, US", lat: 33.6407, lon: -84.4277, tz: "America/New_York"},
+  {name: "Lucknow, IN", lat: 26.7606, lon: 80.8893, tz: "Asia/Kolkata"},
+  {name: "Manila, PH", lat: 14.5086, lon: 121.0196, tz: "Asia/Manila"},
+  {name: "Karachi, PK", lat: 24.9065, lon: 67.1608, tz: "Asia/Karachi"},
+  {name: "Beijing, CN", lat: 40.0799, lon: 116.6031, tz: "Asia/Shanghai"},
+  {name: "Chicago, US", lat: 41.9742, lon: -87.9073, tz: "America/Chicago"},
+  {name: "Toronto, CA", lat: 43.6777, lon: -79.6248, tz: "America/Toronto"},
+  {name: "Austin, US", lat: 30.1945, lon: -97.6699, tz: "America/Chicago"},
+  {name: "Amsterdam, NL", lat: 52.3086, lon: 4.7639, tz: "Europe/Amsterdam"},
+  {name: "Warsaw, PL", lat: 52.1657, lon: 20.9671, tz: "Europe/Warsaw"},
+  {name: "Miami, US", lat: 25.7959, lon: -80.287, tz: "America/New_York"},
+  {name: "Cape Town, ZA", lat: -33.9715, lon: 18.6021, tz: "Africa/Johannesburg"},
+  {name: "Tel Aviv, IL", lat: 32.0114, lon: 34.8867, tz: "Asia/Jerusalem"},
+  {name: "Buenos Aires, AR", lat: -34.8222, lon: -58.5358, tz: "America/Argentina/Buenos_Aires"},
+  {name: "Denver, US", lat: 39.7017, lon: -104.7516, tz: "America/Denver"},
+  {name: "San Francisco, US", lat: 37.6213, lon: -122.379, tz: "America/Los_Angeles"},
+  {name: "Mexico City, MX", lat: 19.4363, lon: -99.0721, tz: "America/Mexico_City"},
+  {name: "Seattle, US", lat: 47.4502, lon: -122.3088, tz: "America/Los_Angeles"},
+  {name: "Sao Paulo, BR", lat: -23.4356, lon: -46.4731, tz: "America/Sao_Paulo"},
+  {name: "Zhengzhou, CN", lat: 34.5197, lon: 113.8409, tz: "Asia/Shanghai"},
+  {name: "Moscow, RU", lat: 55.5917, lon: 37.2614, tz: "Europe/Moscow"},
+  {name: "Panama City, PA", lat: 8.9733, lon: -79.5556, tz: "America/Panama"},
+  {name: "Jinan, CN", lat: 36.8572, lon: 117.2158, tz: "Asia/Shanghai"}
+];
+
+// ---- Live Temperature Fetch (Open-Meteo, no API key) ----
+async function fetchOneCity(city) {
+    try {
+        const safeId = city.name.replace(/[^a-zA-Z0-9]/g, '_');
+        
+        // Current temperature
+        const currResp = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m&timezone=${encodeURIComponent(city.tz)}`
+        );
+        const currData = await currResp.json();
+        const currentTemp = currData.current?.temperature_2m;
+        const currentTime = currData.current?.time;
+        
+        // Daily max (use forecast with past_days for today's observed)
+        const today = new Date().toISOString().split('T')[0];
+        const dailyResp = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&daily=temperature_2m_max&past_days=1&timezone=${encodeURIComponent(city.tz)}&start_date=${today}&end_date=${today}`
+        );
+        const dailyData = await dailyResp.json();
+        const dailyMax = dailyData.daily?.temperature_2m_max?.[0];
+        
+        const el = document.getElementById('live-' + safeId);
+        if (el) {
+            el.textContent = (currentTemp != null && dailyMax != null)
+                ? `🌡️${currentTemp.toFixed(1)}°C | 📡${dailyMax.toFixed(1)}°C`
+                : (currentTemp != null ? `🌡️${currentTemp.toFixed(1)}°C` : '⚠️ Feil');
+        }
+        return { name: city.name, currentTemp, currentTime, dailyMax };
+    } catch (e) {
+        console.error('Fetch failed for', city.name, e);
+        const el = document.getElementById('live-' + city.name.replace(/[^a-zA-Z0-9]/g, '_'));
+        if (el) el.textContent = '⚠️ Feil';
+        return { name: city.name, currentTemp: null, currentTime: null, dailyMax: null };
+    }
+}
+
+async function fetchLiveData() {
+    const statusEl = document.getElementById('fetch-status');
+    const updatedEl = document.getElementById('live-updated');
+    if (statusEl) statusEl.textContent = '⏳ Henter...';
+    
+    const results = [];
+    
+    if (statusEl) statusEl.textContent = '✅ Oppdatert';
+    if (updatedEl) updatedEl.textContent = new Date().toLocaleTimeString('no-NO');
+    
+    // Auto-disable button for 60s to prevent spam
+    const btn = document.getElementById('fetch-btn');
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ Vent 60s...';
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.textContent = '🔄 Hent Nåværende Temperatur & Døgnmaks';
+        }, 60000);
+    }
+    
+    return results;
+}
+
+// Auto-fetch 3 seconds after page load (staggered to avoid rate limiting)
+setTimeout(fetchLiveData, 3000);
+
 // Auto-refresh every 5 minutes
 setTimeout(function() { location.reload(); }, 300000);
 
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-08-08T19:34:03Z');
+    var deployTime = new Date('2026-08-08T19:44:02Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {
@@ -185,6 +326,11 @@ function sortTable(colIdx) {
   <h1>🌡️ Model Quality Dashboard <span class="rapid-badge">3 STRATEGIES</span></h1>
   <div class="subtitle" id="last-updated">🔄 Sist oppdatert: … | Auto-refresh hvert 5. min | Neste pipeline: …</div>
 </header>
+<div class="live-bar">
+  <button class="live-btn" onclick="fetchLiveData()" id="fetch-btn">🔄 Hent Nåværende Temperatur & Døgnmaks</button>
+  <span class="live-status" id="fetch-status"></span>
+  <span class="live-updated" id="live-updated"></span>
+</div>
 <div class="container">
 
   <div class="card-grid">
@@ -1093,7 +1239,7 @@ function sortTable(colIdx) {
     <table>
       <thead><tr><th>Date</th><th>Phase</th><th>Sigma W/L</th><th>P5 W/L</th><th>Mean W/L</th><th>Rate (Sigma)</th></tr></thead>
       <tbody>
-                <tr><td>2026-08-08</td><td>🔮 BMA</td><td>0/0</td><td>0/0</td><td>0/0</td><td>—</td></tr>
+                <tr><td>2026-08-08</td><td>🔒 closed</td><td>0/0</td><td>0/0</td><td>0/0</td><td>—</td></tr>
       </tbody>
     </table>
     </div>

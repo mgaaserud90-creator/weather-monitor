@@ -508,6 +508,111 @@ def _build_city_divergence_section(predictions: dict) -> str:
    </div>"""
 
 
+# =============================================================================
+# Live Temperature Fetch — Shared JavaScript helpers
+# =============================================================================
+
+def _build_cities_js_array() -> str:
+    """Build a JavaScript array of city coordinates from the defaults JSON."""
+    defaults_path = Path(_SCRIPT_DIR) / "weather_monitor_defaults.json"
+    entries: list[str] = []
+    if defaults_path.exists():
+        try:
+            defaults = json.loads(defaults_path.read_text(encoding="utf-8"))
+            for loc in defaults.get("default_locations", []):
+                name = loc.get("name", "")
+                lat = loc.get("lat", 0)
+                lon = loc.get("lon", 0)
+                tz = loc.get("tz", "UTC")
+                if name:
+                    entries.append(
+                        f'  {{name: "{name}", lat: {lat}, lon: {lon}, tz: "{tz}"}}'
+                    )
+        except Exception:
+            pass
+    return "const CITIES = [\n" + ",\n".join(entries) + "\n];"
+
+
+def _build_live_fetch_js(*, with_rate_limiting: bool = False) -> str:
+    """Build the JavaScript for live temperature fetching via Open-Meteo API."""
+    rate_limit_code = ""
+    if with_rate_limiting:
+        rate_limit_code = """
+    const total = CITIES.length;
+    let done = 0;
+    for (const city of CITIES) {
+        await fetchOneCity(city);
+        done++;
+        if (done < total) {
+            document.getElementById('fetch-status').textContent = `⏳ Henter ${done}/${total}...`;
+            await new Promise(r => setTimeout(r, 200));
+        }
+    }"""
+
+    return f"""// ---- Live Temperature Fetch (Open-Meteo, no API key) ----
+async function fetchOneCity(city) {{
+    try {{
+        const safeId = city.name.replace(/[^a-zA-Z0-9]/g, '_');
+        
+        // Current temperature
+        const currResp = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${{city.lat}}&longitude=${{city.lon}}&current=temperature_2m&timezone=${{encodeURIComponent(city.tz)}}`
+        );
+        const currData = await currResp.json();
+        const currentTemp = currData.current?.temperature_2m;
+        const currentTime = currData.current?.time;
+        
+        // Daily max (use forecast with past_days for today's observed)
+        const today = new Date().toISOString().split('T')[0];
+        const dailyResp = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${{city.lat}}&longitude=${{city.lon}}&daily=temperature_2m_max&past_days=1&timezone=${{encodeURIComponent(city.tz)}}&start_date=${{today}}&end_date=${{today}}`
+        );
+        const dailyData = await dailyResp.json();
+        const dailyMax = dailyData.daily?.temperature_2m_max?.[0];
+        
+        const el = document.getElementById('live-' + safeId);
+        if (el) {{
+            el.textContent = (currentTemp != null && dailyMax != null)
+                ? `🌡️${{currentTemp.toFixed(1)}}°C | 📡${{dailyMax.toFixed(1)}}°C`
+                : (currentTemp != null ? `🌡️${{currentTemp.toFixed(1)}}°C` : '⚠️ Feil');
+        }}
+        return {{ name: city.name, currentTemp, currentTime, dailyMax }};
+    }} catch (e) {{
+        console.error('Fetch failed for', city.name, e);
+        const el = document.getElementById('live-' + city.name.replace(/[^a-zA-Z0-9]/g, '_'));
+        if (el) el.textContent = '⚠️ Feil';
+        return {{ name: city.name, currentTemp: null, currentTime: null, dailyMax: null }};
+    }}
+}}
+
+async function fetchLiveData() {{
+    const statusEl = document.getElementById('fetch-status');
+    const updatedEl = document.getElementById('live-updated');
+    if (statusEl) statusEl.textContent = '⏳ Henter...';
+    
+    const results = [];{rate_limit_code}
+    
+    if (statusEl) statusEl.textContent = '✅ Oppdatert';
+    if (updatedEl) updatedEl.textContent = new Date().toLocaleTimeString('no-NO');
+    
+    // Auto-disable button for 60s to prevent spam
+    const btn = document.getElementById('fetch-btn');
+    if (btn) {{
+        btn.disabled = true;
+        btn.textContent = '⏳ Vent 60s...';
+        setTimeout(() => {{
+            btn.disabled = false;
+            btn.textContent = '🔄 Hent Nåværende Temperatur & Døgnmaks';
+        }}, 60000);
+    }}
+    
+    return results;
+}}
+
+// Auto-fetch 3 seconds after page load (staggered to avoid rate limiting)
+setTimeout(fetchLiveData, 3000);"""
+
+
 def _generate_html_report() -> str:
     """Generate a self-contained HTML dashboard with dark theme and 3-strategy comparison."""
     log_data = _load_log()
@@ -687,6 +792,9 @@ def _generate_html_report() -> str:
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     has_data = len(runs) > 0
 
+    cities_js = _build_cities_js_array()
+    live_fetch_js = _build_live_fetch_js(with_rate_limiting=False)
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -805,8 +913,36 @@ def _generate_html_report() -> str:
     color: var(--green);
     margin-left: 8px;
   }}
+  .live-bar {{
+    text-align: center;
+    padding: 14px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 0 auto 20px;
+    max-width: 700px;
+  }}
+  .live-btn {{
+    background: rgba(88, 166, 255, 0.15);
+    border: 1px solid var(--blue);
+    color: var(--blue);
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s;
+  }}
+  .live-btn:hover {{ background: rgba(88, 166, 255, 0.25); }}
+  .live-btn:disabled {{ opacity: 0.5; cursor: not-allowed; }}
+  .live-status {{ color: var(--text-dim); font-size: 0.85rem; margin-left: 12px; }}
+  .live-updated {{ color: var(--text-dim); font-size: 0.8rem; margin-left: 8px; }}
 </style>
 <script>
+{cities_js}
+
+{live_fetch_js}
+
 // Auto-refresh every 5 minutes
 setTimeout(function() {{ location.reload(); }}, 300000);
 
@@ -874,6 +1010,11 @@ function sortTable(colIdx) {{
   <h1>🌡️ Model Quality Dashboard <span class="rapid-badge">3 STRATEGIES</span></h1>
   <div class="subtitle" id="last-updated">{'⏳ Ingen data enda — første pipeline-kjøring kl 06:00 UTC' if not has_data else '🔄 Sist oppdatert: … | Auto-refresh hvert 5. min | Neste pipeline: …'}</div>
 </header>
+<div class="live-bar">
+  <button class="live-btn" onclick="fetchLiveData()" id="fetch-btn">🔄 Hent Nåværende Temperatur & Døgnmaks</button>
+  <span class="live-status" id="fetch-status"></span>
+  <span class="live-updated" id="live-updated"></span>
+</div>
 <div class="container">
 
   <div class="card-grid">
@@ -1140,6 +1281,7 @@ def _generate_all_cities_html() -> str:
             elif rec and "AVVENT" in str(rec):
                 rec_class = "rec-wait"
 
+            safe_city_id = re.sub(r'[^a-zA-Z0-9]', '_', city)
             table_rows += f"""<tr class="city-row" data-lead="{ld}" data-city="{city}" data-conf="{conf:.3f}">
                 <td class="col-rank"></td>
                 <td class="col-city">{city}</td>
@@ -1151,10 +1293,14 @@ def _generate_all_cities_html() -> str:
                 <td class="col-conf {conf_class}">{conf_icon} {(conf*100):.0f}%</td>
                 <td class="col-models">{d['model_ct']}/8</td>
                 <td class="col-peak">{actual_str}</td>
+                <td class="col-live" id="live-{safe_city_id}">—</td>
                 <td class="col-rec {rec_class}">{rec}</td>
                 <td class="col-local">{local_time_str}</td>
             </tr>
 """
+
+    cities_js = _build_cities_js_array()
+    live_fetch_js = _build_live_fetch_js(with_rate_limiting=True)
 
     # ---- Build full HTML (no auto-refresh) ----
     html = f"""<!DOCTYPE html>
@@ -1176,6 +1322,31 @@ def _generate_all_cities_html() -> str:
   header {{ text-align: center; padding: 24px 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }}
   header h1 {{ font-size: 1.6rem; color: var(--blue); font-weight: 700; }}
   header .subtitle {{ color: var(--text-dim); font-size: 0.85rem; margin-top: 4px; }}
+  .live-bar {{
+    text-align: center;
+    padding: 12px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 0 auto 20px;
+    max-width: 800px;
+  }}
+  .live-btn {{
+    background: rgba(88, 166, 255, 0.15);
+    border: 1px solid var(--blue);
+    color: var(--blue);
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s;
+  }}
+  .live-btn:hover {{ background: rgba(88, 166, 255, 0.25); }}
+  .live-btn:disabled {{ opacity: 0.5; cursor: not-allowed; }}
+  .live-status {{ color: var(--text-dim); font-size: 0.85rem; margin-left: 12px; }}
+  .live-updated {{ color: var(--text-dim); font-size: 0.8rem; margin-left: 8px; }}
+  .col-live {{ color: var(--green); font-weight: 600; font-size: 0.78rem; }}
   .date-bar {{ display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }}
   .date-btn {{ background: var(--bg-card); border: 1px solid var(--border); color: var(--text); padding: 10px 24px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s; }}
   .date-btn:hover {{ background: var(--bg-card-hover); border-color: var(--blue); }}
@@ -1212,6 +1383,11 @@ def _generate_all_cities_html() -> str:
   <h1>🌍 ALLE 51 BYER — BMA Ensemble</h1>
   <div class="subtitle">Generert: {now_str} | Multi-Strategy: 🎯 Sigma · 🛡️ P5 · 📊 Mean</div>
 </header>
+<div class="live-bar">
+  <button class="live-btn" onclick="fetchLiveData()" id="fetch-btn">🔄 Hent Nåværende Temperatur & Døgnmaks</button>
+  <span class="live-status" id="fetch-status"></span>
+  <span class="live-updated" id="live-updated"></span>
+</div>
 <div class="container">
 
   <div class="date-bar" id="dateBar">
@@ -1239,8 +1415,9 @@ def _generate_all_cities_html() -> str:
           <th onclick="sortTable(7)">Konf</th>
           <th onclick="sortTable(8)">Modeller</th>
           <th onclick="sortTable(9)">Peak</th>
-          <th onclick="sortTable(10)">Anbefaling</th>
-          <th onclick="sortTable(11)">🕐 Lokal</th>
+          <th onclick="sortTable(10)">🔴 Live</th>
+          <th onclick="sortTable(11)">Anbefaling</th>
+          <th onclick="sortTable(12)">🕐 Lokal</th>
         </tr>
       </thead>
       <tbody>
@@ -1256,6 +1433,10 @@ def _generate_all_cities_html() -> str:
 </footer>
 
 <script>
+{cities_js}
+
+{live_fetch_js}
+
 var currentLead = {sorted_leads[0] if sorted_leads else 1};
 
 function switchDate(lead) {{
@@ -1307,7 +1488,7 @@ function sortTable(colIdx) {{
     rows.sort(function(a, b) {{
         var aVal = (a.cells[colIdx] ? a.cells[colIdx].textContent.trim() : '');
         var bVal = (b.cells[colIdx] ? b.cells[colIdx].textContent.trim() : '');
-        if (colIdx === 0 || colIdx === 2 || colIdx === 3 || colIdx === 7 || colIdx === 8) {{
+        if (colIdx === 0 || colIdx === 2 || colIdx === 3 || colIdx === 7 || colIdx === 8 || colIdx === 9) {{
             var aNum = parseFloat(aVal) || 0;
             var bNum = parseFloat(bVal) || 0;
             return sortAsc ? aNum - bNum : bNum - aNum;
