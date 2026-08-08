@@ -1,0 +1,94 @@
+name: Model Quality Pipeline
+
+# Three cron triggers (consolidated):
+#   0 6 * * *  → daily_bma     — Run BMA ensemble for all cities at 06:00 UTC
+#   0 * * * *  → hourly_check  — Check top 5 temps; enters 3-min rapid peak
+#                                 monitoring if any city is in its peak window
+#   0 23 * * * → daily_close   — Finalize daily results at 23:00 UTC
+#
+# Push to main → trigger deploy_dashboard.yml for GitHub Pages
+
+on:
+  schedule:
+    - cron: '0 6 * * *'      # Daily BMA at 06:00 UTC
+    - cron: '0 * * * *'      # Hourly checks (may run 2-4h rapid polling if peak windows active)
+    - cron: '0 23 * * *'     # Daily close at 23:00 UTC
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Run mode'
+        required: true
+        type: choice
+        options: [daily_bma, hourly_check, daily_close, full_report]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: model-quality-pipeline
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    # Dynamic timeout:
+    #   hourly_check → 300 min (5h, fits GH 6h limit for rapid 3-min polling)
+    #   other modes  → 5 min (simple one-shot operations)
+    timeout-minutes: ${{ github.event.schedule == '0 * * * *' && 300 || 5 }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install httpx structlog tenacity pydantic pydantic-settings python-dotenv orjson redis
+
+      - name: Create minimal .env
+        run: |
+          cat > .env << 'EOF'
+          ENV=production
+          WEATHER_BMA_ENABLED=true
+          WEATHER_SATELLITE_ENABLED=false
+          WEATHER_ENSEMBLE_CONFIDENCE_FLOOR=0.5
+          EOF
+
+      - name: Smoke test
+        run: |
+          python -u -c "import sys; sys.path.insert(0, '.'); from weather_monitor_cli import WeatherAnalyzer, LocationManager; print('Imports OK'); lm = LocationManager(); lm.reset_to_defaults(); print(f'Locations loaded: {lm.count}'); print('Smoke test PASSED')"
+
+      - name: Determine mode
+        id: mode
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            HOUR=$(date +%H)
+            if [ "$HOUR" = "06" ]; then MODE="daily_bma"
+            elif [ "$HOUR" = "23" ]; then MODE="daily_close"
+            else MODE="hourly_check"
+            fi
+          else
+            MODE="${{ inputs.mode }}"
+          fi
+          echo "mode=$MODE" >> $GITHUB_OUTPUT
+          echo "Running mode: $MODE"
+
+      - name: Run tracker
+        run: |
+          set -x
+          python -u _model_quality_tracker.py --mode ${{ steps.mode.outputs.mode }}
+
+      - name: Generate Dashboard HTML
+        run: python _generate_quality_report.py --html
+
+      - name: Commit & Push
+        continue-on-error: true
+        run: |
+          set -x
+          git config user.name "Weather Bot"
+          git config user.email "bot@weather.local"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git add _model_quality_log.json _quality_report.md _quality_report.html
+          git diff --staged --quiet || (git commit -m "Auto: ${{ steps.mode.outputs.mode }} $(date -Iminutes)" && git push)

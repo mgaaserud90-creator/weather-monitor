@@ -1,0 +1,17 @@
+# REPLACED by model_quality_pipeline.yml
+# This file is intentionally disabled.
+# See: .github/workflows/model_quality_pipeline.yml
+
+name: Daily Model Quality Analysis (DEPRECATED)
+
+on:
+  workflow_dispatch:  # manual only — schedule moved to model_quality_pipeline.yml
+
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "⚠️  This workflow is deprecated."
+          echo "   Use Model Quality Pipeline instead:"
+          echo "   https://github.com/${{ github.repository }}/actions/workflows/model_quality_pipeline.yml"

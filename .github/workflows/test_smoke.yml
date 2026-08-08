@@ -1,0 +1,41 @@
+name: Smoke Test
+on: workflow_dispatch
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install ALL deps from pyproject.toml
+        run: |
+          pip install httpx structlog tenacity pydantic pydantic-settings python-dotenv colorama orjson redis
+      
+      - name: Create .env
+        run: |
+          echo "ENV=production" > .env
+          echo "WEATHER_BMA_ENABLED=true" >> .env
+          echo "WEATHER_SATELLITE_ENABLED=false" >> .env
+          echo "WEATHER_ENSEMBLE_CONFIDENCE_FLOOR=0.5" >> .env
+      
+      - name: Test import 1 — openmeteo_client
+        run: |
+          python -u -c "from src.clients.openmeteo_client import OpenMeteoClient; print('OK: openmeteo_client')"
+      
+      - name: Test import 2 — ensemble
+        run: |
+          python -u -c "from src.strategies.weather.ensemble import BMAEnsembleEngine; print('OK: ensemble')"
+      
+      - name: Test import 3 — weather_monitor_cli
+        run: |
+          python -u -c "from weather_monitor_cli import WeatherAnalyzer, LocationManager; print('OK: weather_monitor_cli')"
+      
+      - name: Test import 4 — _model_quality_tracker
+        run: |
+          python -u -c "import _model_quality_tracker; print('OK: tracker')"
+      
+      - name: Test full run
+        run: |
+          python -u _model_quality_tracker.py --mode daily_bma
