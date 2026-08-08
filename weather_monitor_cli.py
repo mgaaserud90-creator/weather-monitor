@@ -393,12 +393,20 @@ def compute_live_confidence(
     (confidence_pct, minutes_since_last_max, minutes_of_decline, alert_level, alert_message)
     """
     confidence = 0.0
+    
+    # Normalize: make local_now naive if it's timezone-aware
+    if local_now.tzinfo is not None:
+        local_now = local_now.replace(tzinfo=None)
+    
     current_hour = local_now.hour + local_now.minute / 60.0
 
     # --- Compute minutes since last max ---
     minutes_since_last_max = 0
     if today_max is not None:
-        delta = local_now - today_max[1]
+        max_time = today_max[1]
+        if max_time.tzinfo is not None:
+            max_time = max_time.replace(tzinfo=None)
+        delta = local_now - max_time
         minutes_since_last_max = int(delta.total_seconds() / 60)
 
     # --- Compute consecutive minutes of decline ---
