@@ -3,11 +3,13 @@
 Model Quality Tracker — automated BMA ensemble quality monitoring.
 
 Designed for GitHub Actions multi-run pipeline:
-    --mode daily_bma     06:00 UTC — Run BMA for all 51 cities, pick top 5
+    --mode daily_bma     06:00 UTC — Run BMA for top 5 cities (from yesterday),
+                                     fallback to all 51 on first run. lead_days=1 only.
     --mode hourly_check  07:00-22:00 UTC — Check top 5 temps, detect peaks
-    --mode daily_close   23:00 UTC — Finalize ALL 51 cities, compare 3 strategies
+    --mode daily_close   23:00 UTC — Finalize top 5 cities, compare 3 strategies
     --mode full_report   Generate comprehensive markdown report from all history
 
+Multi-day (lead_days=2) and all-51-cities HTML are MANUAL ONLY.
 Each run is <2 minutes. State is persisted in _model_quality_log.json.
 
 DO NOT MODIFY weather_monitor_cli.py — this is a standalone consumer.
@@ -266,7 +268,6 @@ def _find_or_create_today_entry(log_data: dict) -> dict:
         "phase": "daily_bma",
         "run_started": _now_utc(),
         "last_updated": _now_utc(),
-        "run_type": "multi",
         "top_5_confidence": [],
         "predictions": {},
         "observations": {},
@@ -531,8 +532,24 @@ def _preds_to_dict(predictions: list[CityPrediction], locations: list[SavedLocat
     return preds_dict
 
 
+def _get_yesterday_top5() -> list[str]:
+    """Return yesterday's top 5 city names from the log, or empty list if unavailable."""
+    log_data = _load_log()
+    runs = log_data.get("runs", [])
+    yesterday = (date.today() - timedelta(days=1)).isoformat()
+    for run in runs:
+        if run.get("run_date") == yesterday:
+            top5 = run.get("top_5_confidence", [])
+            if top5:
+                return top5
+    return []
+
+
 async def daily_bma_mode() -> None:
-    """Run BMA for all 51 cities, log predictions with 3 strategies, pick top 5 for monitoring."""
+    """Run BMA for top 5 cities from yesterday (fallback: all 51 on first run), lead_days=1 only.
+
+    Multi-day (lead_days=2) and all-51-cities reports are MANUAL ONLY.
+    """
     print("╔══════════════════════════════════════════════════╗")
     print("║   MODELLKVALITET — DAGLIG BMA (06:00 UTC)       ║")
     print("╚══════════════════════════════════════════════════╝")
@@ -540,61 +557,58 @@ async def daily_bma_mode() -> None:
 
     # Load locations
     lm = LocationManager()
-    locations = lm.locations
-    print(f"   Loaded {len(locations)} locations.\n")
+    all_locations = lm.locations
+    print(f"   All locations available: {len(all_locations)}.\n")
+
+    # Determine which cities to run BMA for:
+    #   - If we have yesterday's top 5, run only those (light mode)
+    #   - Otherwise (first run / cold start), run all 51
+    yesterday_top5 = _get_yesterday_top5()
+    if yesterday_top5:
+        loc_map = {l.name: l for l in all_locations}
+        locations = [loc_map[c] for c in yesterday_top5 if c in loc_map]
+        print(f"   🔄 Resuming yesterday's top 5: {', '.join(yesterday_top5)}")
+        print(f"   📊 Running BMA for {len(locations)} cities (light mode).\n")
+    else:
+        locations = all_locations
+        print(f"   🆕 No yesterday top 5 — running BMA for ALL {len(locations)} cities (cold start).\n")
+
+    # Only lead_days=1 — multi-day is MANUAL ONLY
+    lead_days = 1
+    target_date = (date.today() + timedelta(days=lead_days)).isoformat()
+    print(f"   🎯 LEAD_DAYS={lead_days} (target: {target_date})\n")
 
     # Initialize analyzer
     analyzer = WeatherAnalyzer()
     await analyzer.initialize()
 
     try:
-        multi_day_data: dict[str, dict] = {}
-        all_predictions: list[CityPrediction] = []  # day 1 for backward compat
+        predictions = await run_bma_for_all(analyzer, locations, lead_days=lead_days)
+        top5 = select_top_n(predictions, 5)
 
-        for lead_days in [1, 2]:
-            day_label = f"day{lead_days}"
-            target_date = (date.today() + timedelta(days=lead_days)).isoformat()
-            print(f"\n  ═══ LEAD_DAYS={lead_days} (target: {target_date}) ═══\n")
+        print(f"\n  {'─'*60}")
+        print(f"  🏆 TOP 5 — +{lead_days} DAG ({target_date}):")
+        for i, p in enumerate(top5):
+            utc_peak = _local_peak_to_utc(p.tz, p.peak_hour_start, p.peak_hour_end)
+            print(f"     {i+1}. {p.city:<30s} spill={p.suggested_spill}°C  "
+                  f"μ={p.bma_mean:.1f}°C  conf={p.confidence:.3f}  "
+                  f"({p.model_count}/8 modeller)  peak={utc_peak}")
 
-            predictions = await run_bma_for_all(analyzer, locations, lead_days=lead_days)
-            top5 = select_top_n(predictions, 5)
-
-            multi_day_data[day_label] = {
-                "lead_days": lead_days,
-                "target_date": target_date,
-                "top_5_confidence": [p.city for p in top5],
-                "predictions": _preds_to_dict(predictions, locations),
-            }
-
-            if lead_days == 1:
-                all_predictions = predictions
-
-            print(f"\n  {'─'*60}")
-            print(f"  🏆 TOP 5 — +{lead_days} DAG(ER) ({target_date}):")
-            for i, p in enumerate(top5):
-                utc_peak = _local_peak_to_utc(p.tz, p.peak_hour_start, p.peak_hour_end)
-                print(f"     {i+1}. {p.city:<30s} spill={p.suggested_spill}°C  "
-                      f"μ={p.bma_mean:.1f}°C  conf={p.confidence:.3f}  "
-                      f"({p.model_count}/8 modeller)  peak={utc_peak}")
-
-        # Log — day 1 fields for hourly_check / daily_close
-        day1 = multi_day_data["day1"]
+        # Log — store top 5 predictions for hourly_check / daily_close
         log_data = _load_log()
         entry = _find_or_create_today_entry(log_data)
         entry["phase"] = "daily_bma"
         entry["last_updated"] = _now_utc()
-        entry["target_date"] = day1["target_date"]
-        entry["top_5_confidence"] = day1["top_5_confidence"]
-        entry["predictions"] = day1["predictions"]
-        entry["observations"] = {city: [] for city in day1["top_5_confidence"]}
-        # Multi-day data for dashboard display
-        entry["multi_day"] = multi_day_data
+        entry["target_date"] = target_date
+        top5_city_names = [p.city for p in top5]
+        entry["top_5_confidence"] = top5_city_names
+        entry["predictions"] = _preds_to_dict(predictions, locations)
+        entry["observations"] = {city: [] for city in top5_city_names}
 
         _save_log(log_data)
 
-        print(f"\n  ✅ daily_bma fullført — {len(day1['predictions'])} prediksjoner (dag 1), "
-              f"{len(multi_day_data['day2']['predictions'])} prediksjoner (dag 2)")
-        print(f"  🎯 Top 5 valgt for timeovervåking (dag 1).\n")
+        print(f"\n  ✅ daily_bma fullført — {len(predictions)} prediksjoner (lead_days=1)")
+        print(f"  🎯 Top 5 valgt for timeovervåking: {', '.join(top5_city_names)}\n")
 
     finally:
         await analyzer.close()
@@ -1212,7 +1226,7 @@ def _update_recommendation(pdata: dict) -> None:
 # =============================================================================
 
 async def daily_close_mode() -> None:
-    """Finalize daily results for ALL 51 cities, compare all 3 strategies, generate report."""
+    """Finalize daily results for top 5 cities, compare all 3 strategies, generate report."""
     print("╔══════════════════════════════════════════════════╗")
     print("║   MODELLKVALITET — DAGLIG AVSLUTNING (23:00)     ║")
     print("╚══════════════════════════════════════════════════╝")
@@ -1234,7 +1248,7 @@ async def daily_close_mode() -> None:
     predictions = entry.get("predictions", {})
     target_date = entry.get("target_date", today)
 
-    print(f"  Finaliserer ALLE {len(predictions)} byer for {target_date}\n")
+    print(f"  Finaliserer {len(predictions)} byer for {target_date}\n")
 
     sigma_wins = sigma_losses = 0
     p5_wins = p5_losses = 0
@@ -1341,7 +1355,7 @@ async def daily_close_mode() -> None:
     total_mean = mean_wins + mean_losses
 
     print(f"\n{'─'*60}")
-    print(f"  📊 DAGENS RESULTATER (ALLE {len(predictions)} BYER, 3 STRATEGIER):")
+    print(f"  📊 DAGENS RESULTATER ({len(predictions)} BYER, 3 STRATEGIER):")
     print(f"     Sigma (μ−kσ):  V:{sigma_wins} T:{sigma_losses}  "
           f"({round(sigma_wins/max(1,total_sigma)*100,1)}%)")
     print(f"     P5-basert:      V:{p5_wins} T:{p5_losses}  "
