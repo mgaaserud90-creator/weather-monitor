@@ -562,10 +562,10 @@ async function fetchOneCity(city) {{
         const currentTemp = currData.current?.temperature_2m;
         const currentTime = currData.current?.time;
         
-        // Daily max (use forecast with past_days for today's observed)
+        // Daily max (use archive API – forecast does not support start_date/end_date)
         const today = new Date().toISOString().split('T')[0];
         const dailyResp = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${{city.lat}}&longitude=${{city.lon}}&daily=temperature_2m_max&past_days=1&timezone=${{encodeURIComponent(city.tz)}}&start_date=${{today}}&end_date=${{today}}`
+            `https://archive-api.open-meteo.com/v1/archive?latitude=${{city.lat}}&longitude=${{city.lon}}&start_date=${{today}}&end_date=${{today}}&daily=temperature_2m_max&timezone=${{encodeURIComponent(city.tz)}}`
         );
         const dailyData = await dailyResp.json();
         const dailyMax = dailyData.daily?.temperature_2m_max?.[0];
@@ -574,12 +574,13 @@ async function fetchOneCity(city) {{
         if (el) {{
             let peakEmoji = '';
             if (currentTemp != null && dailyMax != null) {{
-                if (currentTemp >= dailyMax - 0.3) {{
-                    peakEmoji = '🟡NÆR';
-                }} else if (currentTemp <= dailyMax - 0.5) {{
-                    peakEmoji = '🔴PEAK';
+                const diff = dailyMax - currentTemp;
+                if (diff <= 0.2) {{
+                    peakEmoji = '🔴PEAK';  // at or very near peak
+                }} else if (diff <= 0.5) {{
+                    peakEmoji = '🟡NÆR';   // close to peak
                 }} else {{
-                    peakEmoji = '🟢STIGER';
+                    peakEmoji = '🟢STIGER'; // still rising
                 }}
             }}
             el.textContent = (currentTemp != null && dailyMax != null)
@@ -590,7 +591,7 @@ async function fetchOneCity(city) {{
     }} catch (e) {{
         console.error('Fetch failed for', city.name, e);
         const el = document.getElementById('live-' + city.name.replace(/[^a-zA-Z0-9]/g, '_'));
-        if (el) el.textContent = '⚠️ Feil';
+        if (el) el.textContent = '⚠️ API-feil';
         return {{ name: city.name, currentTemp: null, currentTime: null, dailyMax: null }};
     }}
 }}
