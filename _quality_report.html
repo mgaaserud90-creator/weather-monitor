@@ -142,12 +142,10 @@
   .live-updated { color: var(--text-dim); font-size: 0.8rem; margin-left: 8px; }
 </style>
 <script>
-// Auto-refresh every 5 minutes
-setTimeout(function() { location.reload(); }, 300000);
-
+// No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-08-08T19:58:42Z');
+    var deployTime = new Date('2026-08-08T20:38:08Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {

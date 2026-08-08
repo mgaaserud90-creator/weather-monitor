@@ -935,9 +935,7 @@ def _generate_html_report() -> str:
   .live-updated {{ color: var(--text-dim); font-size: 0.8rem; margin-left: 8px; }}
 </style>
 <script>
-// Auto-refresh every 5 minutes
-setTimeout(function() {{ location.reload(); }}, 300000);
-
+// No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {{
     var deployTime = new Date('{deploy_time_iso}');
