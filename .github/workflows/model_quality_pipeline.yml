@@ -83,6 +83,9 @@ jobs:
       - name: Generate Dashboard HTML
         run: python _generate_quality_report.py --html
 
+      - name: Generate All-Cities HTML
+        run: python _generate_quality_report.py --all-cities
+
       - name: Commit & Push
         continue-on-error: true
         run: |
@@ -90,5 +93,5 @@ jobs:
           git config user.name "Weather Bot"
           git config user.email "bot@weather.local"
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-          git add _model_quality_log.json _quality_report.md _quality_report.html
+          git add _model_quality_log.json _quality_report.md _quality_report.html _all_cities.html
           git diff --staged --quiet || (git commit -m "Auto: ${{ steps.mode.outputs.mode }} $(date -Iminutes)" && git push)
