@@ -846,6 +846,8 @@ class LocationManager:
             uhi_map: dict[str, float] = {}
             elev_map: dict[str, float] = {}
             station_map: dict[str, str] = {}
+            lat_map: dict[str, float] = {}
+            lon_map: dict[str, float] = {}
             for d in defaults:
                 name = d["name"]
                 if d.get("tz"):
@@ -859,6 +861,9 @@ class LocationManager:
                     elev_map[name] = d["station_elevation_m"]
                 if d.get("station"):
                     station_map[name] = d["station"]
+                if "lat" in d and "lon" in d:
+                    lat_map[name] = d["lat"]
+                    lon_map[name] = d["lon"]
 
             changed = False
             for loc in self._locations:
@@ -881,10 +886,19 @@ class LocationManager:
                 if loc.station_elevation_m == 0.0 and loc.name in elev_map:
                     loc.station_elevation_m = elev_map[loc.name]
                     changed = True
-                # Enrich station code
+                # Enrich station code — and sync coordinates when station changes
                 if not loc.station and loc.name in station_map:
                     loc.station = station_map[loc.name]
                     changed = True
+                # Sync lat/lon from defaults when station code already matches
+                # but coordinates differ (e.g., city-center vs airport coords)
+                if loc.name in lat_map and loc.name in lon_map:
+                    dflt_lat = lat_map[loc.name]
+                    dflt_lon = lon_map[loc.name]
+                    if abs(loc.lat - dflt_lat) > 0.001 or abs(loc.lon - dflt_lon) > 0.001:
+                        loc.lat = dflt_lat
+                        loc.lon = dflt_lon
+                        changed = True
 
             if changed:
                 self._save()
