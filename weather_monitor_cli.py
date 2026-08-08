@@ -1353,73 +1353,87 @@ class WeatherAnalyzer:
         self, locations: list[SavedLocation], lead_days: int = 1,
         progress_callback: Any = None,
     ) -> list[dict[str, Any]]:
-        """Run confidence analysis on all locations in parallel, rank by confidence.
+        """Run confidence analysis on all locations, rank by confidence.
 
         Returns a list sorted by overall_confidence descending.
+
+        Rate-limited: uses a semaphore to cap concurrent city analyses at 2,
+        preventing N_cities × 8_models simultaneous API calls from exceeding
+        Open-Meteo's 600 req/min rate limit.  Each city already gates its
+        per-model fetches through ``_API_SEMAPHORE`` in ensemble.py.
         """
+        # Limit concurrent city analyses to avoid bursting the API
+        _BULK_SEMAPHORE = asyncio.Semaphore(2)
+        # Inter-city gap to spread requests across the minute
+        _INTER_CITY_DELAY = 0.5  # seconds
+
         t0 = time.perf_counter()
 
         async def _analyze_one(i: int, loc: SavedLocation) -> dict[str, Any] | None:
-            try:
-                cr = await self.analyze_confidence_async(loc, lead_days=lead_days)
-                ens = cr.ensemble
-                mean_c = self.f_to_c(ens.mean_temp_f)
-                p5_c = self.f_to_c(ens.p05_temp_f)
-                p95_c = self.f_to_c(ens.p95_temp_f)
-                range_c = p95_c - p5_c
+            async with _BULK_SEMAPHORE:
+                # Stagger city starts so they don't all request models at once
+                if i > 0:
+                    await asyncio.sleep(_INTER_CITY_DELAY)
+                try:
+                    cr = await self.analyze_confidence_async(loc, lead_days=lead_days)
+                    ens = cr.ensemble
+                    mean_c = self.f_to_c(ens.mean_temp_f)
+                    p5_c = self.f_to_c(ens.p05_temp_f)
+                    p95_c = self.f_to_c(ens.p95_temp_f)
+                    range_c = p95_c - p5_c
 
-                entry: dict[str, Any] = {
-                    "city": loc.name,
-                    "lat": loc.lat,
-                    "lon": loc.lon,
-                    "tz": loc.tz,
-                    "lead_days": lead_days,
-                    "target_date": loc.local_date_for_lead(lead_days).isoformat(),
-                    "mean_c": round(mean_c, 1),
-                    "p5_c": round(p5_c, 1),
-                    "p95_c": round(p95_c, 1),
-                    "range_c": round(range_c, 2),
-                    "overall_confidence": round(cr.overall_confidence, 3),
-                    "model_count": ens.model_count,
-                    "elapsed": round(cr.elapsed_seconds, 2),
-                    "best_bucket": None,
-                    "buckets": [],
-                }
-
-                if cr.best_bucket:
-                    entry["best_bucket"] = {
-                        "label": cr.best_bucket.label,
-                        "probability": round(cr.best_bucket.probability, 3),
-                        "confidence": round(cr.best_bucket.confidence, 3),
-                        "models_agree": cr.best_bucket.models_agree,
-                        "total_models": cr.best_bucket.total_models,
+                    entry: dict[str, Any] = {
+                        "city": loc.name,
+                        "lat": loc.lat,
+                        "lon": loc.lon,
+                        "tz": loc.tz,
+                        "lead_days": lead_days,
+                        "target_date": loc.local_date_for_lead(lead_days).isoformat(),
+                        "mean_c": round(mean_c, 1),
+                        "p5_c": round(p5_c, 1),
+                        "p95_c": round(p95_c, 1),
+                        "range_c": round(range_c, 2),
+                        "overall_confidence": round(cr.overall_confidence, 3),
+                        "model_count": ens.model_count,
+                        "elapsed": round(cr.elapsed_seconds, 2),
+                        "best_bucket": None,
+                        "buckets": [],
                     }
 
-                for b in cr.buckets:
-                    if b.probability > 0.01:
-                        entry["buckets"].append({
-                            "label": b.label,
-                            "probability": round(b.probability, 3),
-                            "confidence": round(b.confidence, 3),
-                            "models_agree": b.models_agree,
-                            "total_models": b.total_models,
-                        })
+                    if cr.best_bucket:
+                        entry["best_bucket"] = {
+                            "label": cr.best_bucket.label,
+                            "probability": round(cr.best_bucket.probability, 3),
+                            "confidence": round(cr.best_bucket.confidence, 3),
+                            "models_agree": cr.best_bucket.models_agree,
+                            "total_models": cr.best_bucket.total_models,
+                        }
 
-                if progress_callback:
-                    progress_callback(i + 1, len(locations), loc.name)
+                    for b in cr.buckets:
+                        if b.probability > 0.01:
+                            entry["buckets"].append({
+                                "label": b.label,
+                                "probability": round(b.probability, 3),
+                                "confidence": round(b.confidence, 3),
+                                "models_agree": b.models_agree,
+                                "total_models": b.total_models,
+                            })
 
-                return entry
+                    if progress_callback:
+                        progress_callback(i + 1, len(locations), loc.name)
 
-            except Exception as exc:
-                if progress_callback:
-                    progress_callback(i + 1, len(locations), loc.name)
-                return {
-                    "city": loc.name,
-                    "error": str(exc),
-                    "overall_confidence": 0.0,
-                }
+                    return entry
 
-        # Run all analyses concurrently
+                except Exception as exc:
+                    if progress_callback:
+                        progress_callback(i + 1, len(locations), loc.name)
+                    return {
+                        "city": loc.name,
+                        "error": str(exc),
+                        "overall_confidence": 0.0,
+                    }
+
+        # Run all analyses concurrently — the semaphore gates actual execution
         tasks = [_analyze_one(i, loc) for i, loc in enumerate(locations)]
         raw_results = await asyncio.gather(*tasks)
         results = [r for r in raw_results if r is not None]

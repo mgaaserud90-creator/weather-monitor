@@ -33,6 +33,22 @@ from src.clients.openmeteo_client import (
 
 logger = structlog.get_logger(__name__)
 
+# =============================================================================
+# Rate Limiting: Global semaphore to prevent overwhelming the Open-Meteo API
+#
+# The Open-Meteo free-tier rate limit is ~600 requests/minute. Without a
+# semaphore, the BMA ensemble's fetch_all_models() fires all 8 models
+# simultaneously via asyncio.gather, and bulk_confidence_analysis() fires
+# all cities simultaneously.  With N cities this means N × 8 concurrent
+# HTTP calls in one burst — easily exceeding the rate limit.
+#
+# _API_SEMAPHORE caps concurrency at 5 simultaneous API calls across the
+# entire application.  _REQUEST_DELAY adds a 0.3 s inter-request gap.
+# =============================================================================
+
+_API_SEMAPHORE = asyncio.Semaphore(5)
+_API_REQUEST_DELAY = 0.3  # seconds between API calls within the semaphore
+
 
 # =============================================================================
 # Data Models
@@ -305,43 +321,49 @@ class BMAEnsembleEngine:
         Each model returns a deterministic daily forecast; we derive the
         per-model uncertainty from a lead-time heuristic (the BMA combiner
         adds its own lead-time expansion separately).
+
+        Rate-limited via ``_API_SEMAPHORE`` (max 5 concurrent calls across the
+        entire application) with a 0.3 s inter-request gap to stay safely under
+        Open-Meteo's 600 req/min free-tier limit.
         """
-        try:
-            model_name = defn["openmeteo_model"]
-            forecast = await self.openmeteo.get_forecast(
-                lat, lon,
-                days=max(1, lead_days + 1),
-                model=model_name,
-            )
+        async with _API_SEMAPHORE:
+            await asyncio.sleep(_API_REQUEST_DELAY)
+            try:
+                model_name = defn["openmeteo_model"]
+                forecast = await self.openmeteo.get_forecast(
+                    lat, lon,
+                    days=max(1, lead_days + 1),
+                    model=model_name,
+                )
 
-            if not forecast or not forecast.daily:
+                if not forecast or not forecast.daily:
+                    return None
+
+                idx = min(lead_days, len(forecast.daily) - 1)
+                day = forecast.daily[idx]
+
+                # Per-model intrinsic uncertainty (°C → °F, scale only). We use a
+                # flat base rather than a lead-time-growing value because the BMA
+                # combiner (_combine_bma) already adds its own lead-time expansion
+                # (LEAD_TIME_STD_GROWTH_C). Growing here too would double-count and
+                # depress confidence below the trading floor.
+                estimated_std_c = 0.5
+                std_max_f = estimated_std_c * 9.0 / 5.0
+
+                return ModelForecast(
+                    model_name=key,
+                    mean_max_f=day.temp_max_f,
+                    std_max_f=std_max_f,
+                    member_count=int(defn.get("members", 1)),
+                    resolution_km=float(defn.get("resolution_km", 25.0)),
+                )
+            except Exception as exc:
+                logger.debug(
+                    "single_model_fetch_error",
+                    model=key,
+                    error=str(exc),
+                )
                 return None
-
-            idx = min(lead_days, len(forecast.daily) - 1)
-            day = forecast.daily[idx]
-
-            # Per-model intrinsic uncertainty (°C → °F, scale only). We use a
-            # flat base rather than a lead-time-growing value because the BMA
-            # combiner (_combine_bma) already adds its own lead-time expansion
-            # (LEAD_TIME_STD_GROWTH_C). Growing here too would double-count and
-            # depress confidence below the trading floor.
-            estimated_std_c = 0.5
-            std_max_f = estimated_std_c * 9.0 / 5.0
-
-            return ModelForecast(
-                model_name=key,
-                mean_max_f=day.temp_max_f,
-                std_max_f=std_max_f,
-                member_count=int(defn.get("members", 1)),
-                resolution_km=float(defn.get("resolution_km", 25.0)),
-            )
-        except Exception as exc:
-            logger.debug(
-                "single_model_fetch_error",
-                model=key,
-                error=str(exc),
-            )
-            return None
 
     # =========================================================================
     # BMA Combination

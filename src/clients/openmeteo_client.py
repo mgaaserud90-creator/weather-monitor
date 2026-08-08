@@ -7,6 +7,7 @@ Rate limit: 10,000 calls/day by default.
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from decimal import Decimal
@@ -290,11 +291,16 @@ class OpenMeteoClient:
         Fetch forecasts from multiple models for pseudo-ensemble.
 
         Returns a list of (model_name, forecast) tuples.
+
+        Models are fetched sequentially with a 0.3 s inter-request gap to
+        stay within Open-Meteo's rate limits.
         """
         models = models or self.PSEUDO_ENSEMBLE_MODELS[:3]
         results: list[tuple[str, WeatherForecast]] = []
 
-        for model in models:
+        for i, model in enumerate(models):
+            if i > 0:
+                await asyncio.sleep(0.3)
             try:
                 forecast = await self.get_forecast(
                     lat=lat, lon=lon, days=days, timezone=timezone, model=model,
