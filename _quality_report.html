@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Model Quality Dashboard — 3-Strategy BMA Ensemble</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg-card: #161b22;
+    --bg-card-hover: #1c2333;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-dim: #8b949e;
+    --green: #3fb950;
+    --red: #f85149;
+    --orange: #d2991d;
+    --blue: #58a6ff;
+    --purple: #bc8cff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+  .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+  header {
+    text-align: center;
+    padding: 30px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  header h1 { font-size: 1.8rem; color: var(--blue); font-weight: 700; }
+  header .subtitle { color: var(--text-dim); font-size: 0.9rem; margin-top: 4px; }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    transition: background 0.2s;
+  }
+  .card:hover { background: var(--bg-card-hover); }
+  .card .value { font-size: 2rem; font-weight: 700; }
+  .card .label { color: var(--text-dim); font-size: 0.85rem; margin-top: 4px; }
+  .section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .section h2 {
+    font-size: 1.2rem;
+    color: var(--purple);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  th { color: var(--text-dim); font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px; cursor: pointer; }
+  th:hover { color: var(--blue); }
+  tr:hover { background: var(--bg-card-hover); }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+  footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--border);
+    margin-top: 24px;
+  }
+  .badge-win { color: var(--green); font-weight: 600; }
+  .badge-loss { color: var(--red); font-weight: 600; }
+  .rapid-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(88, 166, 255, 0.15);
+    color: var(--blue);
+    margin-left: 8px;
+  }
+  .best-strategy {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(63, 185, 80, 0.15);
+    color: var(--green);
+    margin-left: 8px;
+  }
+</style>
+<script>
+// Auto-refresh every 5 minutes
+setTimeout(function() { location.reload(); }, 300000);
+
+// Dynamic "last updated" countdown + next pipeline indicator
+(function() {
+    var deployTime = new Date('2026-08-08T19:34:03Z');
+    var HAS_DATA = true;
+
+    function getNextPipelineUTC() {
+        var now = new Date();
+        var next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours() + 1, 0, 0));
+        var hh = String(next.getUTCHours()).padStart(2, '0');
+        var mm = String(next.getUTCMinutes()).padStart(2, '0');
+        return hh + ':' + mm + ' UTC';
+    }
+
+    function updateTimer() {
+        var el = document.getElementById('last-updated');
+        if (!el) return;
+        if (!HAS_DATA) {
+            el.innerHTML = '⏳ Ingen data enda &mdash; f&oslash;rste pipeline-kj&oslash;ring kl 06:00 UTC';
+            return;
+        }
+        var now = new Date();
+        var diff = Math.floor((now - deployTime) / 1000);
+        var mins = Math.floor(diff / 60);
+        var secs = diff % 60;
+        var nextPipe = getNextPipelineUTC();
+        var timeStr;
+        if (mins >= 120) {
+            timeStr = Math.floor(mins / 60) + 't ' + (mins % 60) + 'm siden';
+        } else if (mins >= 60) {
+            timeStr = Math.floor(mins / 60) + 't ' + (mins % 60) + 'm siden';
+        } else if (mins > 0) {
+            timeStr = mins + 'm ' + secs + 's siden';
+        } else {
+            timeStr = secs + 's siden';
+        }
+        el.innerHTML = '&#x1F504; Sist oppdatert: ' + timeStr + ' | Auto-refresh hvert 5. min | Neste pipeline: ' + nextPipe;
+    }
+
+    updateTimer();
+    setInterval(updateTimer, 10000); // Update every 10 seconds
+})();
+
+function sortTable(colIdx) {
+  const table = document.getElementById("strategyTable");
+  if (!table) return;
+  const tbody = table.querySelector("tbody");
+  const rows = Array.from(tbody.querySelectorAll("tr"));
+  const isAsc = table.dataset.sortCol == colIdx ? table.dataset.sortDir != "asc" : true;
+  rows.sort((a, b) => {
+    const aVal = a.cells[colIdx].textContent.trim();
+    const bVal = b.cells[colIdx].textContent.trim();
+    return isAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+  });
+  rows.forEach(r => tbody.appendChild(r));
+  table.dataset.sortCol = colIdx;
+  table.dataset.sortDir = isAsc ? "asc" : "desc";
+}
+</script>
+</head>
+<body>
+<header>
+  <h1>🌡️ Model Quality Dashboard <span class="rapid-badge">3 STRATEGIES</span></h1>
+  <div class="subtitle" id="last-updated">🔄 Sist oppdatert: … | Auto-refresh hvert 5. min | Neste pipeline: …</div>
+</header>
+<div class="container">
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="value" style="color: var(--blue);">1</div>
+      <div class="label">Days Tracked</div>
+    </div>
+    <div class="card">
+      <div class="value" style="color: var(--purple);">0</div>
+      <div class="label">Total Resolved (Sigma)</div>
+    </div>
+    <div class="card">
+      <div class="value" style="color: #8b949e;">0.0%</div>
+      <div class="label">Overall Win Rate (Sigma)</div>
+    </div>
+    <div class="card">
+      <div class="value" style="color: var(--text);">0.000 / 0.000</div>
+      <div class="label">Avg Conf (Winners / Losers)</div>
+    </div>
+  </div>
+
+  <!-- PER-STRATEGY PERFORMANCE CARDS -->
+  
+   <div class="card-grid">
+     <div class="card" style="border: 2px solid #3fb950;">
+       <div class="value" style="color: #f85149;">0.0%</div>
+       <div class="label">🎯 Sigma (μ−kσ)<br/>0W / 0L</div>
+     </div>
+     <div class="card" style="">
+       <div class="value" style="color: #f85149;">0.0%</div>
+       <div class="label">🛡️ P5-Basert<br/>0W / 0L</div>
+     </div>
+     <div class="card" style="">
+       <div class="value" style="color: #f85149;">0.0%</div>
+       <div class="label">📊 Mean-Basert<br/>0W / 0L</div>
+     </div>
+     <div class="card">
+       <div class="value" style="color: var(--purple);">🏆 Sigma (μ−kσ)</div>
+       <div class="label">Best Strategy</div>
+     </div>
+   </div>
+
+  <!-- MULTI-DAY TOP 5 -->
+  
+   <div class="section">
+     <h2>📅 TOP 5 — I MORGEN (2026-08-09)</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       All 3 strategies shown: 🎯 Sigma (μ−kσ, dynamic k), 🛡️ P5-Basert (ultra-conservative), 📊 Mean-Basert (50/50)
+     </p>
+     <div style="overflow-x: auto;">
+     <table>
+       <thead><tr><th>#</th><th>City</th><th>BMA μ</th><th>Sigma Pos</th><th>P5 Pos</th><th>Mean Pos</th><th>Conf</th><th>Models</th><th>Peak</th><th>Sigma</th><th>P5</th><th>Mean</th><th>Rec</th></tr></thead>
+       <tbody>
+            <tr>
+                <td>1</td>
+                <td><strong>Buenos Aires, AR</strong></td>
+                <td>12.9°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.8</span></td>
+                <td>BUY <strong>12°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.5, 88%)</span></td>
+                <td>BUY 11°C</td>
+                <td>BUY 12°C</td>
+                <td>🟠 79%</td>
+                <td>7/8</td>
+                <td>—</td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td >—</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td><strong>Qingdao, CN</strong></td>
+                <td>31.0°C <span style="color:#8b949e;font-size:0.75rem;">σ=1.0</span></td>
+                <td>BUY <strong>30°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.5, 85%)</span></td>
+                <td>BUY 29°C</td>
+                <td>BUY 31°C</td>
+                <td>🟠 74%</td>
+                <td>7/8</td>
+                <td>—</td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td >—</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td><strong>Denver, US</strong></td>
+                <td>35.4°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.8</span></td>
+                <td>BUY <strong>35°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.5, 70%)</span></td>
+                <td>BUY 34°C</td>
+                <td>BUY 35°C</td>
+                <td>🟠 72%</td>
+                <td>8/8</td>
+                <td>—</td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td >—</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td><strong>Cape Town, ZA</strong></td>
+                <td>13.0°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.9</span></td>
+                <td>BUY <strong>12°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.7, 86%)</span></td>
+                <td>BUY 11°C</td>
+                <td>BUY 13°C</td>
+                <td>🔴 68%</td>
+                <td>7/8</td>
+                <td>—</td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td >—</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td><strong>Ankara, TR</strong></td>
+                <td>31.5°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.9</span></td>
+                <td>BUY <strong>30°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.7, 94%)</span></td>
+                <td>BUY 29°C</td>
+                <td>BUY 31°C</td>
+                <td>🔴 68%</td>
+                <td>7/8</td>
+                <td>—</td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td >—</td>
+            </tr>
+       </tbody>
+     </table>
+     </div>
+   </div>
+   
+   
+   
+   <div class="section">
+     <h2>📊 Per-City Strategy Comparison</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       Green = best performing strategy for each city. Click headers to sort.
+     </p>
+     <div style="max-height: 600px; overflow-y: auto;">
+     <table id="strategyTable" class="sortable">
+       <thead><tr>
+         <th onclick="sortTable(0)">City ↕</th>
+         <th onclick="sortTable(1)">🎯 Sigma (μ−kσ) ↕</th>
+         <th onclick="sortTable(2)">🛡️ P5-Basert ↕</th>
+         <th onclick="sortTable(3)">📊 Mean-Basert ↕</th>
+       </tr></thead>
+       <tbody>
+            <tr>
+                <td>Amsterdam, NL</td>
+                <td >BUY 27°C ⏳</td>
+                <td >BUY 26°C ⏳</td>
+                <td >BUY 28°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Ankara, TR</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 29°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Atlanta, US</td>
+                <td >BUY 31°C ⏳</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 32°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Austin, US</td>
+                <td >BUY 35°C ⏳</td>
+                <td >BUY 34°C ⏳</td>
+                <td >BUY 36°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Beijing, CN</td>
+                <td >BUY 32°C ⏳</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 33°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Buenos Aires, AR</td>
+                <td >BUY 12°C ⏳</td>
+                <td >BUY 11°C ⏳</td>
+                <td >BUY 12°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Busan, KR</td>
+                <td >BUY 28°C ⏳</td>
+                <td >BUY 27°C ⏳</td>
+                <td >BUY 29°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Cape Town, ZA</td>
+                <td >BUY 12°C ⏳</td>
+                <td >BUY 11°C ⏳</td>
+                <td >BUY 13°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Chengdu, CN</td>
+                <td >BUY 33°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+                <td >BUY 34°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Chicago, US</td>
+                <td >BUY 27°C ⏳</td>
+                <td >BUY 25°C ⏳</td>
+                <td >BUY 29°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Chongqing, CN</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 29°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Dallas, US</td>
+                <td >BUY 37°C ⏳</td>
+                <td >BUY 36°C ⏳</td>
+                <td >BUY 37°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Denver, US</td>
+                <td >BUY 35°C ⏳</td>
+                <td >BUY 34°C ⏳</td>
+                <td >BUY 35°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Guangzhou, CN</td>
+                <td >BUY 34°C ⏳</td>
+                <td >BUY 33°C ⏳</td>
+                <td >BUY 35°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Helsinki, FI</td>
+                <td >BUY 20°C ⏳</td>
+                <td >BUY 19°C ⏳</td>
+                <td >BUY 20°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Hong Kong, HK</td>
+                <td >BUY 33°C ⏳</td>
+                <td >BUY 32°C ⏳</td>
+                <td >BUY 34°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Houston, US</td>
+                <td >BUY 32°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+                <td >BUY 33°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Istanbul, TR</td>
+                <td >BUY 25°C ⏳</td>
+                <td >BUY 24°C ⏳</td>
+                <td >BUY 26°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Jeddah, SA</td>
+                <td >BUY 37°C ⏳</td>
+                <td >BUY 35°C ⏳</td>
+                <td >BUY 38°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Jinan, CN</td>
+                <td >BUY 32°C ⏳</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 33°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Karachi, PK</td>
+                <td >BUY 32°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+                <td >BUY 33°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Kuala Lumpur, MY</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 29°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+            </tr>
+            <tr>
+                <td>London, UK</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 29°C ⏳</td>
+                <td >BUY 30°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Los Angeles, US</td>
+                <td >BUY 27°C ⏳</td>
+                <td >BUY 23°C ⏳</td>
+                <td >BUY 29°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Lucknow, IN</td>
+                <td >BUY 31°C ⏳</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 33°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Madrid, ES</td>
+                <td >BUY 35°C ⏳</td>
+                <td >BUY 35°C ⏳</td>
+                <td >BUY 36°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Manila, PH</td>
+                <td >BUY 27°C ⏳</td>
+                <td >BUY 26°C ⏳</td>
+                <td >BUY 28°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Mexico City, MX</td>
+                <td >BUY 22°C ⏳</td>
+                <td >BUY 21°C ⏳</td>
+                <td >BUY 23°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Miami, US</td>
+                <td >BUY 31°C ⏳</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Milan, IT</td>
+                <td >BUY 32°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+                <td >BUY 34°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Moscow, RU</td>
+                <td >BUY 21°C ⏳</td>
+                <td >BUY 20°C ⏳</td>
+                <td >BUY 22°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Munich, DE</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 28°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+            </tr>
+            <tr>
+                <td>New York, US</td>
+                <td >BUY 32°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+                <td >BUY 33°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Panama City, PA</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 29°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Paris, FR</td>
+                <td >BUY 31°C ⏳</td>
+                <td >BUY 29°C ⏳</td>
+                <td >BUY 32°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Qingdao, CN</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 29°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+            </tr>
+            <tr>
+                <td>San Francisco, US</td>
+                <td >BUY 22°C ⏳</td>
+                <td >BUY 19°C ⏳</td>
+                <td >BUY 25°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Sao Paulo, BR</td>
+                <td >BUY 24°C ⏳</td>
+                <td >BUY 22°C ⏳</td>
+                <td >BUY 26°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Seattle, US</td>
+                <td >BUY 24°C ⏳</td>
+                <td >BUY 22°C ⏳</td>
+                <td >BUY 24°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Seoul (Incheon), KR</td>
+                <td >BUY 29°C ⏳</td>
+                <td >BUY 27°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Shanghai, CN</td>
+                <td >BUY 27°C ⏳</td>
+                <td >BUY 26°C ⏳</td>
+                <td >BUY 28°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Shenzhen, CN</td>
+                <td >BUY 34°C ⏳</td>
+                <td >BUY 33°C ⏳</td>
+                <td >BUY 35°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Singapore, SG</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 29°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Taipei, TW</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 28°C ⏳</td>
+                <td >BUY 32°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Tel Aviv, IL</td>
+                <td >BUY 32°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+                <td >BUY 33°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Tokyo, JP</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 29°C ⏳</td>
+                <td >BUY 30°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Toronto, CA</td>
+                <td >BUY 26°C ⏳</td>
+                <td >BUY 25°C ⏳</td>
+                <td >BUY 27°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Warsaw, PL</td>
+                <td >BUY 23°C ⏳</td>
+                <td >BUY 22°C ⏳</td>
+                <td >BUY 24°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Wellington, NZ</td>
+                <td >BUY 12°C ⏳</td>
+                <td >BUY 11°C ⏳</td>
+                <td >BUY 13°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Wuhan, CN</td>
+                <td >BUY 27°C ⏳</td>
+                <td >BUY 26°C ⏳</td>
+                <td >BUY 28°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Zhengzhou, CN</td>
+                <td >BUY 28°C ⏳</td>
+                <td >BUY 27°C ⏳</td>
+                <td >BUY 29°C ⏳</td>
+            </tr>
+       </tbody>
+     </table>
+     </div>
+   </div>
+   <div class="section">
+     <h2>📅 TOP 5 — +2 DAGER (2026-08-10)</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       All 3 strategies shown: 🎯 Sigma (μ−kσ, dynamic k), 🛡️ P5-Basert (ultra-conservative), 📊 Mean-Basert (50/50)
+     </p>
+     <div style="overflow-x: auto;">
+     <table>
+       <thead><tr><th>#</th><th>City</th><th>BMA μ</th><th>Sigma Pos</th><th>P5 Pos</th><th>Mean Pos</th><th>Conf</th><th>Models</th><th>Peak</th><th>Sigma</th><th>P5</th><th>Mean</th><th>Rec</th></tr></thead>
+       <tbody>
+            <tr>
+                <td>1</td>
+                <td><strong>San Francisco, US</strong></td>
+                <td>22.9°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.8</span></td>
+                <td>BUY <strong>22°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.3, 87%)</span></td>
+                <td>BUY 21°C</td>
+                <td>BUY 22°C</td>
+                <td>🟢 99%</td>
+                <td>1/8</td>
+                <td>—</td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td >—</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td><strong>Zhengzhou, CN</strong></td>
+                <td>23.5°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.8</span></td>
+                <td>BUY <strong>23°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.3, 74%)</span></td>
+                <td>BUY 22°C</td>
+                <td>BUY 23°C</td>
+                <td>🟢 99%</td>
+                <td>1/8</td>
+                <td>—</td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td >—</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td><strong>Helsinki, FI</strong></td>
+                <td>21.7°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.8</span></td>
+                <td>BUY <strong>21°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.5, 81%)</span></td>
+                <td>BUY 20°C</td>
+                <td>BUY 21°C</td>
+                <td>🟠 78%</td>
+                <td>3/8</td>
+                <td>—</td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td >—</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td><strong>Buenos Aires, AR</strong></td>
+                <td>11.4°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.9</span></td>
+                <td>BUY <strong>10°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.5, 94%)</span></td>
+                <td>BUY 9°C</td>
+                <td>BUY 11°C</td>
+                <td>🟠 76%</td>
+                <td>4/8</td>
+                <td>—</td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td >—</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td><strong>Denver, US</strong></td>
+                <td>35.4°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.9</span></td>
+                <td>BUY <strong>34°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.5, 93%)</span></td>
+                <td>BUY 33°C</td>
+                <td>BUY 35°C</td>
+                <td>🟠 75%</td>
+                <td>3/8</td>
+                <td>—</td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td >—</td>
+            </tr>
+       </tbody>
+     </table>
+     </div>
+   </div>
+   
+   
+   
+   <div class="section">
+     <h2>📊 Per-City Strategy Comparison</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       Green = best performing strategy for each city. Click headers to sort.
+     </p>
+     <div style="max-height: 600px; overflow-y: auto;">
+     <table id="strategyTable" class="sortable">
+       <thead><tr>
+         <th onclick="sortTable(0)">City ↕</th>
+         <th onclick="sortTable(1)">🎯 Sigma (μ−kσ) ↕</th>
+         <th onclick="sortTable(2)">🛡️ P5-Basert ↕</th>
+         <th onclick="sortTable(3)">📊 Mean-Basert ↕</th>
+       </tr></thead>
+       <tbody>
+            <tr>
+                <td>Amsterdam, NL</td>
+                <td >BUY 21°C ⏳</td>
+                <td >BUY 20°C ⏳</td>
+                <td >BUY 22°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Ankara, TR</td>
+                <td >BUY 29°C ⏳</td>
+                <td >BUY 28°C ⏳</td>
+                <td >BUY 30°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Atlanta, US</td>
+                <td >BUY 31°C ⏳</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 32°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Austin, US</td>
+                <td >BUY 36°C ⏳</td>
+                <td >BUY 34°C ⏳</td>
+                <td >BUY 37°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Beijing, CN</td>
+                <td >BUY 28°C ⏳</td>
+                <td >BUY 25°C ⏳</td>
+                <td >BUY 30°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Buenos Aires, AR</td>
+                <td >BUY 10°C ⏳</td>
+                <td >BUY 9°C ⏳</td>
+                <td >BUY 11°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Busan, KR</td>
+                <td >BUY 27°C ⏳</td>
+                <td >BUY 27°C ⏳</td>
+                <td >BUY 28°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Cape Town, ZA</td>
+                <td >BUY 13°C ⏳</td>
+                <td >BUY 12°C ⏳</td>
+                <td >BUY 14°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Chengdu, CN</td>
+                <td >BUY 34°C ⏳</td>
+                <td >BUY 33°C ⏳</td>
+                <td >BUY 35°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Chicago, US</td>
+                <td >BUY 26°C ⏳</td>
+                <td >BUY 24°C ⏳</td>
+                <td >BUY 28°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Chongqing, CN</td>
+                <td >BUY 33°C ⏳</td>
+                <td >BUY 32°C ⏳</td>
+                <td >BUY 34°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Dallas, US</td>
+                <td >BUY 37°C ⏳</td>
+                <td >BUY 36°C ⏳</td>
+                <td >BUY 38°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Denver, US</td>
+                <td >BUY 34°C ⏳</td>
+                <td >BUY 33°C ⏳</td>
+                <td >BUY 35°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Guangzhou, CN</td>
+                <td >BUY 35°C ⏳</td>
+                <td >BUY 34°C ⏳</td>
+                <td >BUY 35°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Helsinki, FI</td>
+                <td >BUY 21°C ⏳</td>
+                <td >BUY 20°C ⏳</td>
+                <td >BUY 21°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Hong Kong, HK</td>
+                <td >BUY 32°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+                <td >BUY 33°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Houston, US</td>
+                <td >BUY 31°C ⏳</td>
+                <td >BUY 29°C ⏳</td>
+                <td >BUY 32°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Istanbul, TR</td>
+                <td >BUY 25°C ⏳</td>
+                <td >BUY 23°C ⏳</td>
+                <td >BUY 27°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Jeddah, SA</td>
+                <td >BUY 35°C ⏳</td>
+                <td >BUY 32°C ⏳</td>
+                <td >BUY 37°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Jinan, CN</td>
+                <td >BUY 17°C ⏳</td>
+                <td >BUY 11°C ⏳</td>
+                <td >BUY 21°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Karachi, PK</td>
+                <td >BUY 31°C ⏳</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 32°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Kuala Lumpur, MY</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 29°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+            </tr>
+            <tr>
+                <td>London, UK</td>
+                <td >BUY 25°C ⏳</td>
+                <td >BUY 24°C ⏳</td>
+                <td >BUY 26°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Los Angeles, US</td>
+                <td >BUY 27°C ⏳</td>
+                <td >BUY 25°C ⏳</td>
+                <td >BUY 27°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Lucknow, IN</td>
+                <td >BUY 32°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+                <td >BUY 33°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Madrid, ES</td>
+                <td >BUY 35°C ⏳</td>
+                <td >BUY 34°C ⏳</td>
+                <td >BUY 36°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Manila, PH</td>
+                <td >BUY 27°C ⏳</td>
+                <td >BUY 26°C ⏳</td>
+                <td >BUY 28°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Mexico City, MX</td>
+                <td >BUY 23°C ⏳</td>
+                <td >BUY 22°C ⏳</td>
+                <td >BUY 24°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Miami, US</td>
+                <td >BUY 32°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+                <td >BUY 33°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Milan, IT</td>
+                <td >BUY 34°C ⏳</td>
+                <td >BUY 32°C ⏳</td>
+                <td >BUY 36°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Moscow, RU</td>
+                <td >BUY 23°C ⏳</td>
+                <td >BUY 22°C ⏳</td>
+                <td >BUY 23°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Munich, DE</td>
+                <td >BUY 32°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+                <td >BUY 33°C ⏳</td>
+            </tr>
+            <tr>
+                <td>New York, US</td>
+                <td >BUY 31°C ⏳</td>
+                <td >BUY 29°C ⏳</td>
+                <td >BUY 32°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Panama City, PA</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 29°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Paris, FR</td>
+                <td >BUY 31°C ⏳</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 32°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Qingdao, CN</td>
+                <td >BUY 28°C ⏳</td>
+                <td >BUY 27°C ⏳</td>
+                <td >BUY 28°C ⏳</td>
+            </tr>
+            <tr>
+                <td>San Francisco, US</td>
+                <td >BUY 22°C ⏳</td>
+                <td >BUY 21°C ⏳</td>
+                <td >BUY 22°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Sao Paulo, BR</td>
+                <td >BUY 17°C ⏳</td>
+                <td >BUY 16°C ⏳</td>
+                <td >BUY 18°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Seattle, US</td>
+                <td >BUY 23°C ⏳</td>
+                <td >BUY 22°C ⏳</td>
+                <td >BUY 24°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Seoul (Incheon), KR</td>
+                <td >BUY 27°C ⏳</td>
+                <td >BUY 25°C ⏳</td>
+                <td >BUY 29°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Shanghai, CN</td>
+                <td >BUY 27°C ⏳</td>
+                <td >BUY 26°C ⏳</td>
+                <td >BUY 28°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Shenzhen, CN</td>
+                <td >BUY 33°C ⏳</td>
+                <td >BUY 32°C ⏳</td>
+                <td >BUY 34°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Singapore, SG</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 29°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Taipei, TW</td>
+                <td >BUY 32°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+                <td >BUY 34°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Tel Aviv, IL</td>
+                <td >BUY 34°C ⏳</td>
+                <td >BUY 33°C ⏳</td>
+                <td >BUY 35°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Tokyo, JP</td>
+                <td >BUY 27°C ⏳</td>
+                <td >BUY 26°C ⏳</td>
+                <td >BUY 28°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Toronto, CA</td>
+                <td >BUY 27°C ⏳</td>
+                <td >BUY 26°C ⏳</td>
+                <td >BUY 28°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Warsaw, PL</td>
+                <td >BUY 30°C ⏳</td>
+                <td >BUY 29°C ⏳</td>
+                <td >BUY 31°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Wellington, NZ</td>
+                <td >BUY 12°C ⏳</td>
+                <td >BUY 11°C ⏳</td>
+                <td >BUY 12°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Wuhan, CN</td>
+                <td >BUY 26°C ⏳</td>
+                <td >BUY 24°C ⏳</td>
+                <td >BUY 27°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Zhengzhou, CN</td>
+                <td >BUY 23°C ⏳</td>
+                <td >BUY 22°C ⏳</td>
+                <td >BUY 23°C ⏳</td>
+            </tr>
+       </tbody>
+     </table>
+     </div>
+   </div>
+
+  <div class="section">
+    <h2>📈 Sigma Strategy by Confidence Tier</h2>
+    <table>
+      <thead><tr><th>Tier</th><th>Positions</th><th>Wins</th><th>Win Rate</th></tr></thead>
+      <tbody>
+            <tr>
+                <td>🟢 >80%</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0%</td>
+            </tr>
+            <tr>
+                <td>🟠 70-80%</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0%</td>
+            </tr>
+            <tr>
+                <td>🔴 <70%</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0%</td>
+            </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>📋 Recent Daily Results (Last 14 Runs)</h2>
+    <div style="overflow-x: auto;">
+    <table>
+      <thead><tr><th>Date</th><th>Phase</th><th>Sigma W/L</th><th>P5 W/L</th><th>Mean W/L</th><th>Rate (Sigma)</th></tr></thead>
+      <tbody>
+                <tr><td>2026-08-08</td><td>🔮 BMA</td><td>0/0</td><td>0/0</td><td>0/0</td><td>—</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>⚡ Rapid Peak Monitoring Filters</h2>
+    <table>
+      <thead><tr><th>Filter</th><th>Condition</th><th>Adjustment</th></tr></thead>
+      <tbody>
+        <tr><td>💧 Humidity</td><td>>80% relative humidity</td><td>-8% confidence</td></tr>
+        <tr><td>💧 Humidity</td><td><40% relative humidity</td><td>+3% confidence</td></tr>
+        <tr><td>☁️ Cloud Cover</td><td>>70% cloud cover</td><td>-5% confidence</td></tr>
+        <tr><td>☁️ Cloud Cover</td><td><20% cloud cover</td><td>+3% confidence</td></tr>
+        <tr><td>🏙️ UHI</td><td>Urban Heat Island adjustment</td><td>+0.5–3.0°C to BMA prediction</td></tr>
+        <tr><td>💰 Kelly</td><td>Position sizing criterion</td><td>Optimal bet % of bankroll</td></tr>
+        <tr><td>🔗 Correlation</td><td>Cross-city correlation warnings</td><td>Reduce exposure if r≥0.55</td></tr>
+        <tr><td>📊 Ensemble Spread</td><td>P5–P95 range tracking</td><td>Narrow spread = higher confidence</td></tr>
+        <tr><td>🚨 Alert Levels</td><td>INFO → MOMENTANT_OVER → ADVARSEL → KRITISK → BEKREFTET</td><td>Progressive alerting</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+<footer>
+  Model Quality Dashboard · 3-Strategy Comparison · Sigma (μ−kσ) vs P5 vs Mean · GitHub Pages Deploy
+</footer>
+</body>
+</html>
