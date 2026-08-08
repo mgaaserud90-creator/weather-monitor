@@ -2445,7 +2445,7 @@ class WeatherMonitorGUI:
         self._async.submit(_do(), self._on_bulk_done)
 
     def _on_bulk_done(self, result: Any) -> None:
-        """Render bulk analysis Top 5 results (confidence-based)."""
+        """Render bulk analysis Top 5 results (confidence-based). Compact 3-line cards."""
         self._bulk_btn.configure(state="normal")
         self._bulk_progress["value"] = 0
         self._bulk_status.configure(text="")
@@ -2545,7 +2545,16 @@ class WeatherMonitorGUI:
                 tk.Label(corr_frame, text=w, font=("Segoe UI", 8, "bold"),
                          bg="#fff3e0", fg="#E65100", justify=LEFT).pack(anchor=W)
 
-        # Cards
+        # -- Compute canvas wrap width --
+        try:
+            _wrap_w = max(350, self._analysis_canvas.winfo_width() - 50)
+        except Exception:
+            _wrap_w = 700
+
+        # Track daily max labels for async update
+        daily_max_labels: dict[str, tk.Label] = {}
+
+        # ---- Compact 3-line cards ----
         for rank, c in enumerate(top5):
             medal = medals[rank]
             conf_pct = c["conf_pct"]
@@ -2562,8 +2571,9 @@ class WeatherMonitorGUI:
             station = getattr(loc, "station", "") if loc else ""
             elev = getattr(loc, "station_elevation_m", 0.0) if loc else 0.0
             adj_mean = mean_c + uhi
+            suggested_temp = int(round(adj_mean if uhi > 0 else mean_c))
 
-            # Border color based on confidence (unchanged logic)
+            # Border color based on confidence
             if conf_pct >= 85:
                 border_color = "#2e7d32"
                 signal_icon = "✅"
@@ -2578,17 +2588,17 @@ class WeatherMonitorGUI:
                 signal_label = "USIKKER"
 
             acc = self._get_accent_text_color(border_color)
-            card_bg = "#ffffff"  # HIGH CONTRAST: white bg
+            card_bg = "#ffffff"
 
             card = tk.Frame(
                 self._analysis_text,
                 bg=card_bg,
                 highlightbackground=border_color,
                 highlightthickness=1,
-                padx=12,
-                pady=8,
+                padx=10,
+                pady=5,
             )
-            card.pack(fill=X, pady=(0, 6))
+            card.pack(fill=X, pady=(0, 4))
 
             # LEFT COLORED BORDER (4px indicator)
             left_bar = tk.Frame(card, bg=border_color, width=4)
@@ -2599,14 +2609,14 @@ class WeatherMonitorGUI:
             content = tk.Frame(card, bg=card_bg)
             content.pack(side=LEFT, fill=BOTH, expand=YES)
 
-            # Rank + City + Confidence
+            # ── ROW 1: Rank + City + Confidence ──
             row1 = tk.Frame(content, bg=card_bg)
             row1.pack(fill=X)
 
             tk.Label(
                 row1,
                 text=f"#{rank+1} {medal} {city_name}",
-                font=("Segoe UI", 11, "bold"),
+                font=("Segoe UI", 10, "bold"),
                 bg=card_bg,
                 fg="#1a1a1a",
             ).pack(side=LEFT)
@@ -2614,12 +2624,69 @@ class WeatherMonitorGUI:
             tk.Label(
                 row1,
                 text=f"Konfidens: {conf_pct:.0f}%",
-                font=("Segoe UI", 11, "bold"),
+                font=("Segoe UI", 10, "bold"),
                 bg=card_bg,
                 fg=acc,
             ).pack(side=RIGHT)
 
-            # Local time row
+            # ── ROW 2: BMA stats + suggested temp (compact 1 line) ──
+            row2 = tk.Frame(content, bg=card_bg)
+            row2.pack(fill=X, pady=(2, 0))
+
+            bma_line = f"🌡️ BMA: {mean_c:.1f}°C  |  P5-P95: {p5_c:.1f}-{p95_c:.1f}°C  |  Range: {range_c:.1f}°C"
+            if uhi > 0:
+                bma_line += f"  |  +{uhi:.1f}°C UHI = {adj_mean:.1f}°C justert"
+
+            tk.Label(
+                row2,
+                text=bma_line,
+                font=("Consolas", 8),
+                bg=card_bg,
+                fg="#1a1a1a",
+                anchor=W,
+                wraplength=_wrap_w,
+                justify=LEFT,
+            ).pack(fill=X)
+
+            # 🎯 Spill suggestion (compact, same row2 area)
+            spill_sub = tk.Frame(content, bg=card_bg)
+            spill_sub.pack(fill=X)
+            spill_line = f"🎯 Spill: {suggested_temp}°C"
+            if uhi > 0:
+                spill_line += f" (UHI-justert fra {mean_c:.1f}°C)"
+            else:
+                spill_line += f" (BMA snitt → nærmest {suggested_temp}°C)"
+            tk.Label(
+                spill_sub,
+                text=spill_line,
+                font=("Consolas", 8),
+                bg=card_bg,
+                fg="#e65100",
+                anchor=W,
+                wraplength=_wrap_w,
+                justify=LEFT,
+            ).pack(fill=X)
+
+            # ── ROW 3: Signal + Kelly + station + local time (compact 1 line) ──
+            row3 = tk.Frame(content, bg=card_bg)
+            row3.pack(fill=X, pady=(1, 0))
+
+            signal_line = f"{signal_icon} {signal_label} — {models_str} modeller"
+
+            # Kelly
+            win_prob = conf_pct / 100.0
+            kelly_pct, kelly_txt = self._compute_kelly(win_prob)
+            if kelly_pct > 0:
+                kelly_short = kelly_txt.replace("\n", " | ")
+            else:
+                if conf_pct >= 85:
+                    kelly_short = "Kelly: 2-5% bankroll"
+                elif conf_pct >= 70:
+                    kelly_short = "Kelly: 1-3% bankroll"
+                else:
+                    kelly_short = "Kelly: ingen handel"
+
+            # Local time
             tz_str = "UTC"
             for sl in self._loc_mgr.locations:
                 if sl.name == city_name:
@@ -2627,105 +2694,47 @@ class WeatherMonitorGUI:
                     break
             try:
                 local_now = datetime.now(ZoneInfo(tz_str))
-                local_time_str = f"🕐 Lokal tid: {local_now.strftime('%H:%M %Z (%Y-%m-%d)')}"
-                lt_row = tk.Frame(content, bg=card_bg)
-                lt_row.pack(fill=X, pady=(1, 0))
-                tk.Label(
-                    lt_row,
-                    text=local_time_str,
-                    font=("Consolas", 8),
-                    bg=card_bg,
-                    fg="#555",
-                ).pack(anchor=W)
+                local_str = f"🕐 {local_now.strftime('%H:%M %Z')}"
             except Exception:
-                pass
+                local_str = "🕐 UTC"
 
-            # Station info
+            # Station
+            station_str = ""
             if station:
-                st_row = tk.Frame(content, bg=card_bg)
-                st_row.pack(fill=X)
-                st_txt = f"📡 Stasjon: {station}"
+                station_str = f"📡 {station}"
                 if elev:
-                    st_txt += f" ({elev:.0f}m moh.)"
-                tk.Label(st_row, text=st_txt, font=("Consolas", 8),
-                         bg=card_bg, fg="#555").pack(anchor=W)
+                    station_str += f" ({elev:.0f}m)"
 
-            # UHI-adjusted BMA
-            uhi_text = f"🌡️ BMA: {mean_c:.1f}°C"
-            if uhi > 0:
-                uhi_text += f" (+{uhi:.1f}°C UHI = {adj_mean:.1f}°C justert)"
+            meta_parts = [signal_line, kelly_short]
+            if station_str:
+                meta_parts.append(station_str)
+            meta_parts.append(local_str)
+            meta_line = "  |  ".join(meta_parts)
 
-            row2 = tk.Frame(content, bg=card_bg)
-            row2.pack(fill=X, pady=(2, 0))
-            # Use Text widget for copyable temp info
-            temp_txt = tk.Text(row2, height=1, width=55, font=("Consolas", 9),
-                               bg=card_bg, fg="#1a1a1a", relief="flat",
-                               borderwidth=0, wrap=tk.WORD)
-            temp_txt.insert("1.0", f"{uhi_text} (P5: {p5_c}°C, P95: {p95_c}°C) — Range: {range_c}°C")
-            temp_txt.configure(state=tk.DISABLED)
-            temp_txt.pack(anchor=W)
-
-            # Ensemble spread signal
-            spd_row = tk.Frame(content, bg=card_bg)
-            spd_row.pack(fill=X)
-            spread_text = f"📊 Modell-spredning: {range_c:.1f}°C"
-            if range_c <= 2.0:
-                spread_text += " (smal = høy konfidens)"
-            elif range_c > 5.0:
-                spread_text += " ⚠️ Høy spredning — mulig edge hvis du treffer"
-            tk.Label(spd_row, text=spread_text, font=("Consolas", 8),
-                     bg=card_bg, fg="#555").pack(anchor=W)
-
-            # 🎯 Spill suggestion with UHI
-            suggested_temp = int(round(adj_mean if uhi > 0 else mean_c))
-            spill_row = tk.Frame(content, bg=card_bg)
-            spill_row.pack(fill=X, pady=(2, 0))
-            spill_text = f"🎯 Spill: {suggested_temp}°C"
-            if uhi > 0:
-                spill_text += f" (UHI-justert fra {mean_c:.1f}°C)"
-            else:
-                spill_text += f" (BMA snitt {mean_c:.1f}°C → nærmest {suggested_temp}°C)"
-            tk.Label(
-                spill_row,
-                text=spill_text,
-                font=("Consolas", 9),
-                bg=card_bg,
-                fg="#e65100",
-            ).pack(anchor=W)
-
-            # Signal
-            row3 = tk.Frame(content, bg=card_bg)
-            row3.pack(fill=X, pady=(1, 0))
             tk.Label(
                 row3,
-                text=f"{signal_icon} {signal_label} — {models_str} modeller enige",
-                font=("Segoe UI", 9, "bold"),
+                text=meta_line,
+                font=("Consolas", 7),
                 bg=card_bg,
-                fg=acc,
-            ).pack(side=LEFT)
+                fg="#555",
+                anchor=W,
+                wraplength=_wrap_w,
+                justify=LEFT,
+            ).pack(fill=X)
 
-            # Kelly criterion recommendation
-            kelly_row = tk.Frame(content, bg=card_bg)
-            kelly_row.pack(fill=X, pady=(1, 0))
-            win_prob = conf_pct / 100.0
-            kelly_pct, kelly_txt = self._compute_kelly(win_prob)
-            if kelly_pct > 0:
-                tk.Label(
-                    kelly_row,
-                    text=kelly_txt.replace("\n", " | "),
-                    font=("Consolas", 8),
-                    bg=card_bg,
-                    fg="#6a1b9a",
-                ).pack(anchor=W)
-            else:
-                if conf_pct >= 85:
-                    rec = "Anbefalt posisjon: 2-5% bankroll"
-                elif conf_pct >= 70:
-                    rec = "Anbefalt posisjon: 1-3% bankroll"
-                else:
-                    rec = "Ingen handel anbefalt"
-                tk.Label(kelly_row, text=rec, font=("Consolas", 8),
-                         bg=card_bg, fg="#777").pack(anchor=W)
+            # ── ROW 4: Daily max placeholder (filled async) ──
+            row4 = tk.Frame(content, bg=card_bg)
+            row4.pack(fill=X, pady=(1, 0))
+            daily_lbl = tk.Label(
+                row4,
+                text="📡 Dagsmaks: Laster...",
+                font=("Consolas", 8, "bold"),
+                bg=card_bg,
+                fg="#1565c0",
+                anchor=W,
+            )
+            daily_lbl.pack(fill=X)
+            daily_max_labels[city_name] = daily_lbl
 
         # Footer disclaimer
         tk.Label(
@@ -2737,6 +2746,59 @@ class WeatherMonitorGUI:
 
         self._status_label.configure(text=f"✅ Bulk analyse fullført — {len(city_results)} byer, topp konfidens: {top5[0]['conf_pct']:.0f}%")
         self._update_status_bar()
+
+        # -- Async fetch daily max for top 5 --
+        self._fetch_daily_maxes(top5, daily_max_labels, loc_lookup)
+
+    def _fetch_daily_maxes(
+        self,
+        top5: list[dict[str, Any]],
+        daily_max_labels: dict[str, tk.Label],
+        loc_lookup: dict[str, Any],
+    ) -> None:
+        """Async fetch today's observed max temp for top 5 cities, update labels."""
+
+        async def _do() -> dict[str, Any]:
+            results: dict[str, Any] = {}
+            for c in top5:
+                city_name = c["city"]
+                loc = loc_lookup.get(city_name)
+                if loc is None:
+                    results[city_name] = None
+                    continue
+                tz = getattr(loc, "tz", "UTC")
+                try:
+                    daily = await self._analyzer.get_today_max(loc.lat, loc.lon, tz)
+                except Exception:
+                    daily = None
+                results[city_name] = daily
+            return results
+
+        def _on_done(result: Any) -> None:
+            if isinstance(result, Exception):
+                return
+            for city_name, daily in result.items():
+                lbl = daily_max_labels.get(city_name)
+                if lbl is None or not lbl.winfo_exists():
+                    continue
+                if daily and daily.get("max_c") is not None:
+                    max_c = daily["max_c"]
+                    peak_time = daily.get("peak_time", "")
+                    time_str = ""
+                    if peak_time:
+                        try:
+                            dt = datetime.fromisoformat(str(peak_time))
+                            time_str = f" kl {dt.strftime('%H:%M')}"
+                        except Exception:
+                            pass
+                    lbl.configure(
+                        text=f"📡 Dagsmaks: {max_c:.1f}°C{time_str}",
+                        fg="#0d47a1",
+                    )
+                else:
+                    lbl.configure(text="📡 Dagsmaks: —")
+
+        self._async.submit(_do(), _on_done)
 
     # ===================================================================
     # Helpers
