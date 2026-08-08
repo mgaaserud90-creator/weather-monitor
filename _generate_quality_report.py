@@ -536,8 +536,9 @@ def _build_cities_js_array() -> str:
 def _build_live_fetch_js(*, with_rate_limiting: bool = False) -> str:
     """Build the JavaScript for live temperature fetching via Open-Meteo API.
     
-    Uses the forecast endpoint with past_days=1 to get yesterday's + today's
-    observed max in a single API call (no archive API needed).
+    Fetches current temperature only (no daily parameter, which uses a separate
+    quota bucket). Includes headers, retry logic, and 1s delay between cities
+    to avoid browser-side rate limiting.
     """
     rate_limit_code = ""
     if with_rate_limiting:
@@ -549,48 +550,37 @@ def _build_live_fetch_js(*, with_rate_limiting: bool = False) -> str:
         done++;
         if (done < total) {
             document.getElementById('fetch-status').textContent = `⏳ Henter ${done}/${total}...`;
+            await new Promise(r => setTimeout(r, 1000));
         }
     }"""
 
     return f"""// ---- Live Temperature Fetch (Open-Meteo, no API key) ----
 async function fetchOneCity(city) {{
-    try {{
-        const safeId = city.name.replace(/[^a-zA-Z0-9]/g, '_');
-        
-        // Single API call: current + daily with past_days=1
-        const resp = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${{city.lat}}&longitude=${{city.lon}}&current=temperature_2m&daily=temperature_2m_max&past_days=1&forecast_days=1&timezone=${{encodeURIComponent(city.tz)}}`
-        );
-        const data = await resp.json();
-        
-        const currentTemp = data.current?.temperature_2m;
-        // daily.temperature_2m_max: [yesterday, today, tomorrow]
-        // Index 1 = today (when past_days=1)
-        const dailyMax = data.daily?.temperature_2m_max?.[1];
-        
-        const el = document.getElementById('live-' + safeId);
-        if (el) {{
-            let peakEmoji = '';
-            if (currentTemp != null && dailyMax != null) {{
-                const diff = dailyMax - currentTemp;
-                if (diff <= 0.3) {{
-                    peakEmoji = '🔴PEAK';
-                }} else if (diff <= 1.0) {{
-                    peakEmoji = '🟡NÆR';
-                }} else {{
-                    peakEmoji = '🟢STIGER';
-                }}
+    const safeId = city.name.replace(/[^a-zA-Z0-9]/g, '_');
+    for (let attempt = 0; attempt < 2; attempt++) {{
+        try {{
+            const resp = await fetch(
+                `https://api.open-meteo.com/v1/forecast?latitude=${{city.lat}}&longitude=${{city.lon}}&current=temperature_2m&timezone=${{encodeURIComponent(city.tz)}}`,
+                {{ headers: {{ 'User-Agent': 'WeatherMonitor/1.0' }} }}
+            );
+            const data = await resp.json();
+            if (data.error) throw new Error(data.reason);
+            
+            const currentTemp = data.current?.temperature_2m;
+            const el = document.getElementById('live-' + safeId);
+            if (el) {{
+                el.textContent = currentTemp != null
+                    ? `🌡️${{currentTemp.toFixed(1)}}°C`
+                    : '—';
             }}
-            el.textContent = (currentTemp != null && dailyMax != null)
-                ? `🌡️${{currentTemp.toFixed(1)}}°C | 📡${{dailyMax.toFixed(1)}}°C | ${{peakEmoji}}`
-                : (currentTemp != null ? `🌡️${{currentTemp.toFixed(1)}}°C` : '⚠️ Feil');
+            return {{ name: city.name, currentTemp }};
+        }} catch (e) {{
+            if (attempt === 0) await new Promise(r => setTimeout(r, 3000));
+            else {{
+                const el = document.getElementById('live-' + safeId);
+                if (el) el.textContent = '⚠️';
+            }}
         }}
-        return {{ name: city.name, currentTemp, dailyMax }};
-    }} catch (e) {{
-        console.error('Fetch failed for', city.name, e);
-        const el = document.getElementById('live-' + city.name.replace(/[^a-zA-Z0-9]/g, '_'));
-        if (el) el.textContent = '⚠️ Feil';
-        return {{ name: city.name, currentTemp: null, dailyMax: null }};
     }}
 }}
 
@@ -611,7 +601,7 @@ async function fetchLiveData() {{
         btn.textContent = '⏳ Vent 60s...';
         setTimeout(() => {{
             btn.disabled = false;
-            btn.textContent = '🔄 Hent Nåværende Temperatur & Døgnmaks';
+            btn.textContent = '🔄 Hent Nåværende Temperatur';
         }}, 60000);
     }}
     
