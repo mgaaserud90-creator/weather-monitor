@@ -534,7 +534,11 @@ def _build_cities_js_array() -> str:
 
 
 def _build_live_fetch_js(*, with_rate_limiting: bool = False) -> str:
-    """Build the JavaScript for live temperature fetching via Open-Meteo API."""
+    """Build the JavaScript for live temperature fetching via Open-Meteo API.
+    
+    Uses the forecast endpoint with past_days=1 to get yesterday's + today's
+    observed max in a single API call (no archive API needed).
+    """
     rate_limit_code = ""
     if with_rate_limiting:
         rate_limit_code = """
@@ -545,7 +549,6 @@ def _build_live_fetch_js(*, with_rate_limiting: bool = False) -> str:
         done++;
         if (done < total) {
             document.getElementById('fetch-status').textContent = `⏳ Henter ${done}/${total}...`;
-            await new Promise(r => setTimeout(r, 200));
         }
     }"""
 
@@ -554,45 +557,40 @@ async function fetchOneCity(city) {{
     try {{
         const safeId = city.name.replace(/[^a-zA-Z0-9]/g, '_');
         
-        // Current temperature
-        const currResp = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${{city.lat}}&longitude=${{city.lon}}&current=temperature_2m&timezone=${{encodeURIComponent(city.tz)}}`
+        // Single API call: current + daily with past_days=1
+        const resp = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${{city.lat}}&longitude=${{city.lon}}&current=temperature_2m&daily=temperature_2m_max&past_days=1&forecast_days=1&timezone=${{encodeURIComponent(city.tz)}}`
         );
-        const currData = await currResp.json();
-        const currentTemp = currData.current?.temperature_2m;
-        const currentTime = currData.current?.time;
+        const data = await resp.json();
         
-        // Daily max (use archive API – forecast does not support start_date/end_date)
-        const today = new Date().toISOString().split('T')[0];
-        const dailyResp = await fetch(
-            `https://archive-api.open-meteo.com/v1/archive?latitude=${{city.lat}}&longitude=${{city.lon}}&start_date=${{today}}&end_date=${{today}}&daily=temperature_2m_max&timezone=${{encodeURIComponent(city.tz)}}`
-        );
-        const dailyData = await dailyResp.json();
-        const dailyMax = dailyData.daily?.temperature_2m_max?.[0];
+        const currentTemp = data.current?.temperature_2m;
+        // daily.temperature_2m_max: [yesterday, today, tomorrow]
+        // Index 1 = today (when past_days=1)
+        const dailyMax = data.daily?.temperature_2m_max?.[1];
         
         const el = document.getElementById('live-' + safeId);
         if (el) {{
             let peakEmoji = '';
             if (currentTemp != null && dailyMax != null) {{
                 const diff = dailyMax - currentTemp;
-                if (diff <= 0.2) {{
-                    peakEmoji = '🔴PEAK';  // at or very near peak
-                }} else if (diff <= 0.5) {{
-                    peakEmoji = '🟡NÆR';   // close to peak
+                if (diff <= 0.3) {{
+                    peakEmoji = '🔴PEAK';
+                }} else if (diff <= 1.0) {{
+                    peakEmoji = '🟡NÆR';
                 }} else {{
-                    peakEmoji = '🟢STIGER'; // still rising
+                    peakEmoji = '🟢STIGER';
                 }}
             }}
             el.textContent = (currentTemp != null && dailyMax != null)
                 ? `🌡️${{currentTemp.toFixed(1)}}°C | 📡${{dailyMax.toFixed(1)}}°C | ${{peakEmoji}}`
                 : (currentTemp != null ? `🌡️${{currentTemp.toFixed(1)}}°C` : '⚠️ Feil');
         }}
-        return {{ name: city.name, currentTemp, currentTime, dailyMax }};
+        return {{ name: city.name, currentTemp, dailyMax }};
     }} catch (e) {{
         console.error('Fetch failed for', city.name, e);
         const el = document.getElementById('live-' + city.name.replace(/[^a-zA-Z0-9]/g, '_'));
-        if (el) el.textContent = '⚠️ API-feil';
-        return {{ name: city.name, currentTemp: null, currentTime: null, dailyMax: null }};
+        if (el) el.textContent = '⚠️ Feil';
+        return {{ name: city.name, currentTemp: null, dailyMax: null }};
     }}
 }}
 
@@ -620,7 +618,7 @@ async function fetchLiveData() {{
     return results;
 }}
 
-// Auto-fetch 3 seconds after page load (staggered to avoid rate limiting)
+// Auto-fetch 3 seconds after page load
 setTimeout(fetchLiveData, 3000);"""
 
 
