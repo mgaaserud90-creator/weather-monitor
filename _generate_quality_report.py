@@ -17,6 +17,10 @@ import os
 import re
 import sys
 from datetime import date, datetime, timezone
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports.zoneinfo import ZoneInfo  # type: ignore[no-redef]
 from pathlib import Path
 from typing import Any
 
@@ -944,6 +948,393 @@ function sortTable(colIdx) {{
     return html
 
 
+ALL_CITIES_HTML_FILE = Path(_SCRIPT_DIR) / "_all_cities.html"
+
+
+def _generate_all_cities_html() -> str:
+    """Generate a self-contained HTML dashboard showing ALL cities across
+    lead_days 0 (I DAG), 1 (I MORGEN), and 2 (+2 DAGER).
+
+    Data is read from the latest run's multi_day section in the quality log.
+    City metadata (timezone, station) is pulled from weather_monitor_defaults.json.
+    """
+    log_data = _load_log()
+    runs = log_data.get("runs", [])
+
+    # Load city defaults for timezone / station metadata
+    defaults_path = Path(_SCRIPT_DIR) / "weather_monitor_defaults.json"
+    city_meta: dict[str, dict] = {}
+    if defaults_path.exists():
+        try:
+            defaults = json.loads(defaults_path.read_text(encoding="utf-8"))
+            for loc in defaults.get("default_locations", []):
+                name = loc.get("name", "")
+                if name:
+                    city_meta[name] = {
+                        "tz": loc.get("tz", "UTC"),
+                        "station": loc.get("station", ""),
+                        "lat": loc.get("lat", 0),
+                        "lon": loc.get("lon", 0),
+                        "peak_hour_start": loc.get("peak_hour_start", 14),
+                        "peak_hour_end": loc.get("peak_hour_end", 16),
+                    }
+        except Exception:
+            pass
+
+    # Determine available lead days from the latest run's multi_day section
+    latest_run = runs[-1] if runs else {}
+    multi_day = latest_run.get("multi_day", {})
+
+    # Build per-lead_day city rows
+    day_data_by_lead: dict[int, dict] = {}
+    day_labels: dict[int, str] = {}
+    day_target_dates: dict[int, str] = {}
+
+    if multi_day:
+        for day_key in ("day1", "day2"):
+            day_data = multi_day.get(day_key, {})
+            if not day_data:
+                continue
+            lead_days = day_data.get("lead_days", 1)
+            target_date = day_data.get("target_date", "")
+            preds = day_data.get("predictions", {})
+            day_data_by_lead[lead_days] = preds
+            day_target_dates[lead_days] = target_date
+            if lead_days == 0:
+                day_labels[lead_days] = "I DAG"
+            elif lead_days == 1:
+                day_labels[lead_days] = "I MORGEN"
+            else:
+                day_labels[lead_days] = f"+{lead_days} DAGER"
+        # Also include today (lead_days=0) from flat predictions as fallback
+        if 0 not in day_data_by_lead and latest_run:
+            preds = latest_run.get("predictions", {})
+            if preds:
+                day_data_by_lead[0] = preds
+                day_labels[0] = "I DAG"
+                day_target_dates[0] = latest_run.get("run_date", "")
+    else:
+        # Fallback: use flat predictions
+        if latest_run:
+            preds = latest_run.get("predictions", {})
+            if preds:
+                day_data_by_lead[1] = preds
+                day_labels[1] = "I MORGEN"
+                day_target_dates[1] = latest_run.get("run_date", "")
+
+    if not day_data_by_lead:
+        return "<!DOCTYPE html><html lang=\"no\"><head><meta charset=\"UTF-8\"><title>Alle 51 Byer</title></head><body style=\"background:#0d1117;color:#c9d1d9;font-family:sans-serif;padding:40px;text-align:center;\"><h1>Ingen data enda</h1><p>Kjor pipeline forst.</p></body></html>"
+
+    # Collect ALL unique city names across all lead days
+    all_cities_set: set[str] = set()
+    for preds in day_data_by_lead.values():
+        all_cities_set.update(preds.keys())
+    # Also pull cities from defaults for completeness
+    all_cities_set.update(city_meta.keys())
+    all_cities = sorted(all_cities_set)
+
+    sorted_leads = sorted(day_data_by_lead.keys())
+
+    # Build the per-city data structure
+    city_table: dict[str, dict[int, dict]] = {}
+
+    for city in all_cities:
+        city_table[city] = {}
+        for ld in sorted_leads:
+            pdata = day_data_by_lead.get(ld, {}).get(city, {})
+            if not pdata:
+                city_table[city][ld] = None  # type: ignore[assignment]
+                continue
+
+            bma_mean = pdata.get("bma_mean", None)
+            bma_std = pdata.get("bma_std", None)
+            conf = pdata.get("confidence", 0)
+            model_ct = pdata.get("models", 0)
+            strategies = pdata.get("strategies", {})
+            sigma = strategies.get("sigma", {})
+            p5s = strategies.get("p5", {})
+            means = strategies.get("mean", {})
+            rec = pdata.get("recommendation", "—") or "—"
+            actual_peak = sigma.get("actual_peak")
+
+            city_table[city][ld] = {
+                "bma_mean": bma_mean,
+                "bma_std": bma_std,
+                "conf": conf,
+                "model_ct": model_ct,
+                "sigma_spill": sigma.get("spill", "?"),
+                "sigma_result": sigma.get("result", ""),
+                "p5_spill": p5s.get("spill", "?"),
+                "p5_result": p5s.get("result", ""),
+                "mean_spill": means.get("spill", "?"),
+                "mean_result": means.get("result", ""),
+                "rec": rec,
+                "actual_peak": actual_peak,
+            }
+
+    now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+    # ---- Build date button bar ----
+    date_buttons_html = ""
+    for ld in sorted_leads:
+        label = day_labels.get(ld, f"+{ld}")
+        target = day_target_dates.get(ld, "")
+        active_class = "active" if ld == 1 else ""
+        date_buttons_html += (
+            f'<button class="date-btn {active_class}" '
+            f'onclick="switchDate({ld})" id="btn-{ld}">'
+            f'{label}<br/><small>{target}</small></button>\n        '
+        )
+
+    # ---- Build table rows ----
+    table_rows = ""
+    for city in all_cities:
+        meta = city_meta.get(city, {})
+        tz_str = meta.get("tz", "UTC")
+        local_time_str = ""
+        try:
+            local_now = datetime.now(ZoneInfo(tz_str))
+            local_time_str = local_now.strftime("%H:%M")
+        except Exception:
+            local_time_str = "—"
+
+        for ld in sorted_leads:
+            d = city_table[city].get(ld)
+            if d is None:
+                continue
+            conf = d["conf"]
+            if conf >= 0.8:
+                conf_icon = "🟢"
+                conf_class = "conf-high"
+            elif conf >= 0.7:
+                conf_icon = "🟠"
+                conf_class = "conf-mid"
+            else:
+                conf_icon = "🔴"
+                conf_class = "conf-low"
+
+            bma_str = f"{d['bma_mean']:.1f}" if isinstance(d['bma_mean'], (int, float)) else "—"
+            std_str = f"{d['bma_std']:.1f}" if isinstance(d['bma_std'], (int, float)) else "—"
+
+            p5_p95 = f"{d['p5_spill']}-{d['sigma_spill']}" if d['p5_spill'] != "?" and d['sigma_spill'] != "?" else "—"
+
+            def _ri(r: str) -> str:
+                if r == "WIN":
+                    return "✅"
+                elif r == "LOSS":
+                    return "❌"
+                return "⏳"
+
+            sigma_cell = f'BUY {d["sigma_spill"]}°C {_ri(d["sigma_result"])}'
+            p5_cell = f'BUY {d["p5_spill"]}°C {_ri(d["p5_result"])}'
+            mean_cell = f'BUY {d["mean_spill"]}°C {_ri(d["mean_result"])}'
+
+            actual_str = f"{d['actual_peak']:.1f}°C" if isinstance(d['actual_peak'], (int, float)) else "—"
+
+            rec = d.get("rec", "—")
+            rec_class = ""
+            if rec and "HOLD" in str(rec):
+                rec_class = "rec-hold"
+            elif rec and "SELG" in str(rec):
+                rec_class = "rec-sell"
+            elif rec and "AVVENT" in str(rec):
+                rec_class = "rec-wait"
+
+            table_rows += f"""<tr class="city-row" data-lead="{ld}" data-city="{city}" data-conf="{conf:.3f}">
+                <td class="col-rank"></td>
+                <td class="col-city">{city}</td>
+                <td class="col-bma">{bma_str} <span class="dim">σ={std_str}</span></td>
+                <td class="col-range">{p5_p95}°C</td>
+                <td class="col-sigma">{sigma_cell}</td>
+                <td class="col-p5">{p5_cell}</td>
+                <td class="col-mean">{mean_cell}</td>
+                <td class="col-conf {conf_class}">{conf_icon} {(conf*100):.0f}%</td>
+                <td class="col-models">{d['model_ct']}/8</td>
+                <td class="col-peak">{actual_str}</td>
+                <td class="col-rec {rec_class}">{rec}</td>
+                <td class="col-local">{local_time_str}</td>
+            </tr>
+"""
+
+    # ---- Build full HTML (no auto-refresh) ----
+    html = f"""<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alle 51 Byer — BMA Ensemble Dashboard</title>
+<style>
+  :root {{
+    --bg: #0d1117; --bg-card: #161b22; --bg-card-hover: #1c2333;
+    --border: #30363d; --text: #c9d1d9; --text-dim: #8b949e;
+    --green: #3fb950; --red: #f85149; --orange: #d2991d;
+    --blue: #58a6ff; --purple: #bc8cff;
+  }}
+  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }}
+  .container {{ max-width: 1600px; margin: 0 auto; padding: 20px; }}
+  header {{ text-align: center; padding: 24px 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }}
+  header h1 {{ font-size: 1.6rem; color: var(--blue); font-weight: 700; }}
+  header .subtitle {{ color: var(--text-dim); font-size: 0.85rem; margin-top: 4px; }}
+  .date-bar {{ display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }}
+  .date-btn {{ background: var(--bg-card); border: 1px solid var(--border); color: var(--text); padding: 10px 24px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s; }}
+  .date-btn:hover {{ background: var(--bg-card-hover); border-color: var(--blue); }}
+  .date-btn.active {{ background: rgba(88, 166, 255, 0.15); border-color: var(--blue); color: var(--blue); }}
+  .date-btn small {{ display: block; font-weight: 400; color: var(--text-dim); font-size: 0.7rem; }}
+  .filter-bar {{ display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }}
+  .filter-bar input {{ background: var(--bg-card); border: 1px solid var(--border); color: var(--text); padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; width: 220px; }}
+  .filter-bar input::placeholder {{ color: var(--text-dim); }}
+  .filter-bar .info-text {{ color: var(--text-dim); font-size: 0.8rem; }}
+  .table-wrap {{ background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }}
+  .table-scroll {{ max-height: 75vh; overflow-y: auto; overflow-x: auto; }}
+  table {{ width: 100%; border-collapse: collapse; font-size: 0.82rem; }}
+  thead {{ position: sticky; top: 0; z-index: 10; }}
+  th {{ background: #21262d; color: var(--text-dim); font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px; padding: 10px 8px; border-bottom: 1px solid var(--border); cursor: pointer; white-space: nowrap; user-select: none; }}
+  th:hover {{ color: var(--blue); }}
+  th.sorted-asc::after {{ content: " ▲"; }}
+  th.sorted-desc::after {{ content: " ▼"; }}
+  td {{ padding: 7px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }}
+  tr:hover {{ background: var(--bg-card-hover); }}
+  tr.city-row.hidden {{ display: none; }}
+  .dim {{ color: var(--text-dim); font-size: 0.7rem; }}
+  .conf-high {{ color: var(--green); font-weight: 600; }}
+  .conf-mid {{ color: var(--orange); font-weight: 600; }}
+  .conf-low {{ color: var(--red); font-weight: 600; }}
+  .rec-hold {{ color: var(--green); }}
+  .rec-sell {{ color: var(--red); }}
+  .rec-wait {{ color: var(--orange); }}
+  footer {{ text-align: center; padding: 16px; color: var(--text-dim); font-size: 0.75rem; border-top: 1px solid var(--border); margin-top: 20px; }}
+  @media (max-width: 768px) {{ .date-bar {{ gap: 6px; }} .date-btn {{ padding: 8px 14px; font-size: 0.8rem; }} table {{ font-size: 0.7rem; }} }}
+</style>
+</head>
+<body>
+<header>
+  <h1>🌍 ALLE 51 BYER — BMA Ensemble</h1>
+  <div class="subtitle">Generert: {now_str} | Multi-Strategy: 🎯 Sigma · 🛡️ P5 · 📊 Mean</div>
+</header>
+<div class="container">
+
+  <div class="date-bar" id="dateBar">
+    {date_buttons_html}
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" id="cityFilter" placeholder="🔍 Søk by..." oninput="applyFilters()">
+    <span class="info-text" id="visibleCount"></span>
+    <span class="info-text" style="margin-left: auto;">Klikk kolonneoverskrift for å sortere</span>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-scroll">
+    <table id="cityTable">
+      <thead>
+        <tr>
+          <th onclick="sortTable(0)">#</th>
+          <th onclick="sortTable(1)">By</th>
+          <th onclick="sortTable(2)">BMA μ</th>
+          <th onclick="sortTable(3)">P5–P95</th>
+          <th onclick="sortTable(4)">🎯 Sigma</th>
+          <th onclick="sortTable(5)">🛡️ P5</th>
+          <th onclick="sortTable(6)">📊 Mean</th>
+          <th onclick="sortTable(7)">Konf</th>
+          <th onclick="sortTable(8)">Modeller</th>
+          <th onclick="sortTable(9)">Peak</th>
+          <th onclick="sortTable(10)">Anbefaling</th>
+          <th onclick="sortTable(11)">🕐 Lokal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {table_rows}
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+</div>
+<footer>
+  Alle 51 Byer Dashboard · BMA Multi-Model Ensemble · 3-Strategy Comparison · GitHub Pages Deploy
+</footer>
+
+<script>
+var currentLead = {sorted_leads[0] if sorted_leads else 1};
+
+function switchDate(lead) {{
+    currentLead = lead;
+    document.querySelectorAll('.date-btn').forEach(function(b) {{ b.classList.remove('active'); }});
+    var btn = document.getElementById('btn-' + lead);
+    if (btn) btn.classList.add('active');
+    applyFilters();
+}}
+
+function applyFilters() {{
+    var filterText = (document.getElementById('cityFilter').value || '').toLowerCase();
+    var rows = document.querySelectorAll('#cityTable tbody tr.city-row');
+    var visibleCount = 0;
+    rows.forEach(function(row) {{
+        var rowLead = parseInt(row.getAttribute('data-lead'));
+        var cityName = (row.getAttribute('data-city') || '').toLowerCase();
+        var leadMatch = (rowLead === currentLead);
+        var filterMatch = !filterText || cityName.indexOf(filterText) !== -1;
+        if (leadMatch && filterMatch) {{
+            row.classList.remove('hidden');
+            visibleCount++;
+        }} else {{
+            row.classList.add('hidden');
+        }}
+    }});
+    var rank = 1;
+    rows.forEach(function(row) {{
+        if (!row.classList.contains('hidden')) {{
+            row.querySelector('.col-rank').textContent = rank++;
+        }}
+    }});
+    document.getElementById('visibleCount').textContent = visibleCount + ' byer vist';
+}}
+
+var sortCol = -1;
+var sortAsc = true;
+
+function sortTable(colIdx) {{
+    var table = document.getElementById('cityTable');
+    var tbody = table.querySelector('tbody');
+    var rows = Array.from(tbody.querySelectorAll('tr.city-row'));
+    if (sortCol === colIdx) {{ sortAsc = !sortAsc; }}
+    else {{ sortCol = colIdx; sortAsc = true; }}
+    document.querySelectorAll('th').forEach(function(th, i) {{
+        th.classList.remove('sorted-asc', 'sorted-desc');
+        if (i === colIdx) th.classList.add(sortAsc ? 'sorted-asc' : 'sorted-desc');
+    }});
+    rows.sort(function(a, b) {{
+        var aVal = (a.cells[colIdx] ? a.cells[colIdx].textContent.trim() : '');
+        var bVal = (b.cells[colIdx] ? b.cells[colIdx].textContent.trim() : '');
+        if (colIdx === 0 || colIdx === 2 || colIdx === 3 || colIdx === 7 || colIdx === 8) {{
+            var aNum = parseFloat(aVal) || 0;
+            var bNum = parseFloat(bVal) || 0;
+            return sortAsc ? aNum - bNum : bNum - aNum;
+        }}
+        return sortAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    }});
+    rows.forEach(function(r) {{ tbody.appendChild(r); }});
+    applyFilters();
+}}
+
+(function() {{
+    var firstBtn = document.querySelector('.date-btn.active');
+    if (!firstBtn) {{
+        var btns = document.querySelectorAll('.date-btn');
+        if (btns.length > 0) {{
+            var m = btns[0].getAttribute('onclick').match(/\\d+/);
+            if (m) switchDate(parseInt(m[0]));
+        }}
+    }} else {{ switchDate(currentLead); }}
+    applyFilters();
+}})();
+</script>
+</body>
+</html>"""
+    return html
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Generate human-readable quality report from _model_quality_log.json",
@@ -953,9 +1344,18 @@ def main() -> None:
         action="store_true",
         help="Generate self-contained HTML dashboard (_quality_report.html)",
     )
+    parser.add_argument(
+        "--all-cities",
+        action="store_true",
+        help="Generate all-51-cities standalone HTML page (_all_cities.html)",
+    )
     args = parser.parse_args()
 
-    if args.html:
+    if args.all_cities:
+        html = _generate_all_cities_html()
+        ALL_CITIES_HTML_FILE.write_text(html, encoding="utf-8")
+        print(f"All-cities HTML dashboard written to: {ALL_CITIES_HTML_FILE}")
+    elif args.html:
         html = _generate_html_report()
         HTML_REPORT_FILE.write_text(html, encoding="utf-8")
         print(f"HTML dashboard written to: {HTML_REPORT_FILE}")

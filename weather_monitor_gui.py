@@ -468,6 +468,20 @@ class WeatherMonitorGUI:
         )
         self._bulk_btn.pack(side=LEFT, padx=(0, 10))
 
+        ttk.Label(bulk_ctrl, text="viser").pack(side=LEFT, padx=(0, 5))
+
+        self._bulk_count_var = StringVar(value="5")
+        self._bulk_count_spinbox = ttk.Spinbox(
+            bulk_ctrl,
+            from_=1,
+            to=51,
+            width=4,
+            textvariable=self._bulk_count_var,
+        )
+        self._bulk_count_spinbox.pack(side=LEFT, padx=(0, 5))
+
+        ttk.Label(bulk_ctrl, text="byer (1-51)").pack(side=LEFT, padx=(0, 10))
+
         self._bulk_progress = ttk.Progressbar(bulk_ctrl, mode="determinate", length=350)
         self._bulk_progress.pack(side=LEFT, padx=(0, 10))
 
@@ -2350,7 +2364,7 @@ class WeatherMonitorGUI:
     # ===================================================================
 
     def _run_bulk_analysis(self) -> None:
-        """Run BMA analysis on ALL locations, rank by confidence, show Top 5."""
+        """Run BMA analysis on ALL locations, rank by confidence, show Top N."""
         locations = self._loc_mgr.locations
         if not locations:
             messagebox.showwarning(
@@ -2359,6 +2373,13 @@ class WeatherMonitorGUI:
             )
             return
 
+        # Read city count from spinbox (default 5, range 1-51)
+        try:
+            count = int(self._bulk_count_var.get())
+            count = max(1, min(51, count))
+        except (ValueError, TypeError):
+            count = 5
+
         # Read selected date
         date_sel = self._analysis_date_var.get().strip()
         lead_days = self._date_lead_map.get(date_sel)
@@ -2366,10 +2387,11 @@ class WeatherMonitorGUI:
             lead_days = 1
 
         self._bulk_btn.configure(state="disabled")
+        self._bulk_count_spinbox.configure(state="disabled")
         self._bulk_progress["maximum"] = len(locations)
         self._bulk_progress["value"] = 0
         self._bulk_status.configure(text="Analyserer byer...")
-        self._status_label.configure(text="⏳ Bulk analyse kjører...")
+        self._status_label.configure(text=f"⏳ Bulk analyse ({count} byer) kjører...")
 
         async def _do() -> Any:
             t_start = time.perf_counter()
@@ -2440,13 +2462,14 @@ class WeatherMonitorGUI:
             # Rank by confidence descending
             city_results.sort(key=lambda x: x["confidence"], reverse=True)
             elapsed = time.perf_counter() - t_start
-            return {"city_results": city_results, "total": total, "elapsed": elapsed}
+            return {"city_results": city_results, "total": total, "elapsed": elapsed, "count": count}
 
         self._async.submit(_do(), self._on_bulk_done)
 
     def _on_bulk_done(self, result: Any) -> None:
-        """Render bulk analysis Top 5 results (confidence-based). Compact 3-line cards."""
+        """Render bulk analysis Top N results (confidence-based). Compact 3-line cards."""
         self._bulk_btn.configure(state="normal")
+        self._bulk_count_spinbox.configure(state="normal")
         self._bulk_progress["value"] = 0
         self._bulk_status.configure(text="")
 
@@ -2463,6 +2486,7 @@ class WeatherMonitorGUI:
         city_results = result.get("city_results", []) if isinstance(result, dict) else []
         total = result.get("total", 0) if isinstance(result, dict) else 0
         elapsed = result.get("elapsed", 0) if isinstance(result, dict) else 0
+        count = result.get("count", 5) if isinstance(result, dict) else 5
 
         # Clear previous results in analysis canvas
         for widget in self._analysis_text.winfo_children():
@@ -2478,18 +2502,18 @@ class WeatherMonitorGUI:
             self._update_status_bar()
             return
 
-        top5 = city_results[:5]
-        medals = ["🥇", "🥈", "🥉", "⭐", "⭐"]
+        topn = city_results[:count]
+        medals = ["🥇", "🥈", "🥉"] + ["⭐"] * max(0, count - 3)
 
-        # Store top5 for monitoring + suggested temps
-        self._monitored_cities = top5
+        # Store top N for monitoring + suggested temps
+        self._monitored_cities = topn
 
         # Build location lookup for UHI/station info
         loc_lookup: dict[str, Any] = {}
         for sl in self._loc_mgr.locations:
             loc_lookup[sl.name] = sl
 
-        for c in top5:
+        for c in topn:
             loc = loc_lookup.get(c["city"])
             uhi = getattr(loc, "uhi_adjustment", 0.0) if loc else 0.0
             adj_mean = c["mean_c"] + uhi
@@ -2505,9 +2529,10 @@ class WeatherMonitorGUI:
         )
         header_frame.pack(fill=X, pady=(0, 8))
 
+        header_text = f"🏆 TOP {count} — HØYEST KONFIDENS"
         tk.Label(
             header_frame,
-            text="🏆 TOP 5 — HØYEST KONFIDENS",
+            text=header_text,
             font=("Segoe UI", 14, "bold"),
             bg="#1a237e",
             fg="#ffffff",
@@ -2515,18 +2540,19 @@ class WeatherMonitorGUI:
 
         tk.Label(
             header_frame,
-            text=f"Analyserte {total} byer på {elapsed:.1f}s — viser de 5 med høyest konfidens",
+            text=f"Analyserte {total} byer på {elapsed:.1f}s — viser de {count} med høyest konfidens",
             font=("Segoe UI", 9),
             bg="#1a237e",
             fg="#bbdefb",
         ).pack(anchor=W)
 
-        # -- "Overvåk alle 5" button --
+        # -- "Overvåk alle N" button --
         mon_btn_frame = tk.Frame(header_frame, bg="#1a237e")
         mon_btn_frame.pack(anchor=E, pady=(5, 0))
+        mon_btn_text = f"🔔 Overvåk alle {min(count, len(topn))}"
         tk.Button(
             mon_btn_frame,
-            text="🔔 Overvåk alle 5",
+            text=mon_btn_text,
             font=("Segoe UI", 9, "bold"),
             bg="#ff9800",
             fg="#fff",
@@ -2534,7 +2560,7 @@ class WeatherMonitorGUI:
         ).pack(side=RIGHT)
 
         # ---- Correlation warnings ----
-        top5_names = [c["city"] for c in top5]
+        top5_names = [c["city"] for c in topn]
         corr_warnings = self._check_correlation_warnings(top5_names)
         if corr_warnings:
             corr_frame = tk.Frame(self._analysis_text, bg="#fff3e0",
@@ -2555,7 +2581,7 @@ class WeatherMonitorGUI:
         daily_max_labels: dict[str, tk.Label] = {}
 
         # ---- Compact 3-line cards ----
-        for rank, c in enumerate(top5):
+        for rank, c in enumerate(topn):
             medal = medals[rank]
             conf_pct = c["conf_pct"]
             mean_c = c["mean_c"]
@@ -2744,11 +2770,11 @@ class WeatherMonitorGUI:
             fg="#555",
         ).pack(anchor=W, pady=(8, 0))
 
-        self._status_label.configure(text=f"✅ Bulk analyse fullført — {len(city_results)} byer, topp konfidens: {top5[0]['conf_pct']:.0f}%")
+        self._status_label.configure(text=f"✅ Bulk analyse fullført — {len(city_results)} byer, topp konfidens: {topn[0]['conf_pct']:.0f}%")
         self._update_status_bar()
 
-        # -- Async fetch daily max for top 5 --
-        self._fetch_daily_maxes(top5, daily_max_labels, loc_lookup)
+        # -- Async fetch daily max for top N --
+        self._fetch_daily_maxes(topn, daily_max_labels, loc_lookup)
 
     def _fetch_daily_maxes(
         self,
