@@ -572,8 +572,18 @@ async function fetchOneCity(city) {{
         
         const el = document.getElementById('live-' + safeId);
         if (el) {{
+            let peakEmoji = '';
+            if (currentTemp != null && dailyMax != null) {{
+                if (currentTemp >= dailyMax - 0.3) {{
+                    peakEmoji = '🟡NÆR';
+                }} else if (currentTemp <= dailyMax - 0.5) {{
+                    peakEmoji = '🔴PEAK';
+                }} else {{
+                    peakEmoji = '🟢STIGER';
+                }}
+            }}
             el.textContent = (currentTemp != null && dailyMax != null)
-                ? `🌡️${{currentTemp.toFixed(1)}}°C | 📡${{dailyMax.toFixed(1)}}°C`
+                ? `🌡️${{currentTemp.toFixed(1)}}°C | 📡${{dailyMax.toFixed(1)}}°C | ${{peakEmoji}}`
                 : (currentTemp != null ? `🌡️${{currentTemp.toFixed(1)}}°C` : '⚠️ Feil');
         }}
         return {{ name: city.name, currentTemp, currentTime, dailyMax }};
@@ -792,9 +802,6 @@ def _generate_html_report() -> str:
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     has_data = len(runs) > 0
 
-    cities_js = _build_cities_js_array()
-    live_fetch_js = _build_live_fetch_js(with_rate_limiting=False)
-
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -939,10 +946,6 @@ def _generate_html_report() -> str:
   .live-updated {{ color: var(--text-dim); font-size: 0.8rem; margin-left: 8px; }}
 </style>
 <script>
-{cities_js}
-
-{live_fetch_js}
-
 // Auto-refresh every 5 minutes
 setTimeout(function() {{ location.reload(); }}, 300000);
 
@@ -1010,11 +1013,6 @@ function sortTable(colIdx) {{
   <h1>🌡️ Model Quality Dashboard <span class="rapid-badge">3 STRATEGIES</span></h1>
   <div class="subtitle" id="last-updated">{'⏳ Ingen data enda — første pipeline-kjøring kl 06:00 UTC' if not has_data else '🔄 Sist oppdatert: … | Auto-refresh hvert 5. min | Neste pipeline: …'}</div>
 </header>
-<div class="live-bar">
-  <button class="live-btn" onclick="fetchLiveData()" id="fetch-btn">🔄 Hent Nåværende Temperatur & Døgnmaks</button>
-  <span class="live-status" id="fetch-status"></span>
-  <span class="live-updated" id="live-updated"></span>
-</div>
 <div class="container">
 
   <div class="card-grid">
@@ -1281,8 +1279,20 @@ def _generate_all_cities_html() -> str:
             elif rec and "AVVENT" in str(rec):
                 rec_class = "rec-wait"
 
+            # Check if today's observed max guarantees the bet is won
+            actual_peak = d.get("actual_peak")
+            sigma_spill = d["sigma_spill"]
+            row_win = False
+            peak_won = False
+            if isinstance(actual_peak, (int, float)) and isinstance(sigma_spill, (int, float)):
+                if actual_peak >= sigma_spill:
+                    row_win = True
+                if actual_peak > sigma_spill:
+                    peak_won = True
+            row_class = "city-row row-win" if row_win else "city-row"
+
             safe_city_id = re.sub(r'[^a-zA-Z0-9]', '_', city)
-            table_rows += f"""<tr class="city-row" data-lead="{ld}" data-city="{city}" data-conf="{conf:.3f}">
+            table_rows += f"""<tr class="{row_class}" data-lead="{ld}" data-city="{city}" data-conf="{conf:.3f}">
                 <td class="col-rank"></td>
                 <td class="col-city">{city}</td>
                 <td class="col-bma">{bma_str} <span class="dim">σ={std_str}</span></td>
@@ -1292,7 +1302,7 @@ def _generate_all_cities_html() -> str:
                 <td class="col-mean">{mean_cell}</td>
                 <td class="col-conf {conf_class}">{conf_icon} {(conf*100):.0f}%</td>
                 <td class="col-models">{d['model_ct']}/8</td>
-                <td class="col-peak">{actual_str}</td>
+                <td class="col-peak">{actual_str}{" ✅ VUNNET" if peak_won else ""}</td>
                 <td class="col-live" id="live-{safe_city_id}">—</td>
                 <td class="col-rec {rec_class}">{rec}</td>
                 <td class="col-local">{local_time_str}</td>
@@ -1374,6 +1384,8 @@ def _generate_all_cities_html() -> str:
   .rec-hold {{ color: var(--green); }}
   .rec-sell {{ color: var(--red); }}
   .rec-wait {{ color: var(--orange); }}
+  .row-win {{ background: #c8e6c9; }}
+  .row-win:hover {{ background: #b9d9ba; }}
   footer {{ text-align: center; padding: 16px; color: var(--text-dim); font-size: 0.75rem; border-top: 1px solid var(--border); margin-top: 20px; }}
   @media (max-width: 768px) {{ .date-bar {{ gap: 6px; }} .date-btn {{ padding: 8px 14px; font-size: 0.8rem; }} table {{ font-size: 0.7rem; }} }}
 </style>

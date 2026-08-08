@@ -69,6 +69,8 @@
   .rec-hold { color: var(--green); }
   .rec-sell { color: var(--red); }
   .rec-wait { color: var(--orange); }
+  .row-win { background: #c8e6c9; }
+  .row-win:hover { background: #b9d9ba; }
   footer { text-align: center; padding: 16px; color: var(--text-dim); font-size: 0.75rem; border-top: 1px solid var(--border); margin-top: 20px; }
   @media (max-width: 768px) { .date-bar { gap: 6px; } .date-btn { padding: 8px 14px; font-size: 0.8rem; } table { font-size: 0.7rem; } }
 </style>
@@ -76,7 +78,7 @@
 <body>
 <header>
   <h1>🌍 ALLE 51 BYER — BMA Ensemble</h1>
-  <div class="subtitle">Generert: 2026-08-08 19:44:02 UTC | Multi-Strategy: 🎯 Sigma · 🛡️ P5 · 📊 Mean</div>
+  <div class="subtitle">Generert: 2026-08-08 19:54:55 UTC | Multi-Strategy: 🎯 Sigma · 🛡️ P5 · 📊 Mean</div>
 </header>
 <div class="live-bar">
   <button class="live-btn" onclick="fetchLiveData()" id="fetch-btn">🔄 Hent Nåværende Temperatur & Døgnmaks</button>
@@ -132,7 +134,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Amsterdam__NL">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Amsterdam, NL" data-conf="0.436">
                 <td class="col-rank"></td>
@@ -147,7 +149,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Amsterdam__NL">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Amsterdam, NL" data-conf="0.471">
                 <td class="col-rank"></td>
@@ -162,7 +164,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Amsterdam__NL">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Ankara, TR" data-conf="0.682">
                 <td class="col-rank"></td>
@@ -177,7 +179,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Ankara__TR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">22:44</td>
+                <td class="col-local">22:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Ankara, TR" data-conf="0.682">
                 <td class="col-rank"></td>
@@ -192,7 +194,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Ankara__TR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">22:44</td>
+                <td class="col-local">22:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Ankara, TR" data-conf="0.605">
                 <td class="col-rank"></td>
@@ -207,7 +209,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Ankara__TR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">22:44</td>
+                <td class="col-local">22:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Atlanta, US" data-conf="0.576">
                 <td class="col-rank"></td>
@@ -222,7 +224,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Atlanta__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">15:44</td>
+                <td class="col-local">15:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Atlanta, US" data-conf="0.576">
                 <td class="col-rank"></td>
@@ -237,7 +239,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Atlanta__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">15:44</td>
+                <td class="col-local">15:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Atlanta, US" data-conf="0.398">
                 <td class="col-rank"></td>
@@ -252,7 +254,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Atlanta__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">15:44</td>
+                <td class="col-local">15:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Austin, US" data-conf="0.577">
                 <td class="col-rank"></td>
@@ -267,7 +269,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Austin__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">14:44</td>
+                <td class="col-local">14:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Austin, US" data-conf="0.577">
                 <td class="col-rank"></td>
@@ -282,7 +284,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Austin__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">14:44</td>
+                <td class="col-local">14:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Austin, US" data-conf="0.338">
                 <td class="col-rank"></td>
@@ -297,7 +299,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Austin__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">14:44</td>
+                <td class="col-local">14:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Beijing, CN" data-conf="0.487">
                 <td class="col-rank"></td>
@@ -312,7 +314,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Beijing__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Beijing, CN" data-conf="0.487">
                 <td class="col-rank"></td>
@@ -327,7 +329,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Beijing__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Beijing, CN" data-conf="0.335">
                 <td class="col-rank"></td>
@@ -342,7 +344,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Beijing__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Buenos Aires, AR" data-conf="0.787">
                 <td class="col-rank"></td>
@@ -357,7 +359,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Buenos_Aires__AR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">16:44</td>
+                <td class="col-local">16:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Buenos Aires, AR" data-conf="0.787">
                 <td class="col-rank"></td>
@@ -372,7 +374,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Buenos_Aires__AR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">16:44</td>
+                <td class="col-local">16:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Buenos Aires, AR" data-conf="0.764">
                 <td class="col-rank"></td>
@@ -387,7 +389,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Buenos_Aires__AR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">16:44</td>
+                <td class="col-local">16:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Busan, KR" data-conf="0.592">
                 <td class="col-rank"></td>
@@ -402,7 +404,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Busan__KR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">04:44</td>
+                <td class="col-local">04:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Busan, KR" data-conf="0.592">
                 <td class="col-rank"></td>
@@ -417,7 +419,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Busan__KR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">04:44</td>
+                <td class="col-local">04:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Busan, KR" data-conf="0.635">
                 <td class="col-rank"></td>
@@ -432,7 +434,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Busan__KR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">04:44</td>
+                <td class="col-local">04:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Cape Town, ZA" data-conf="0.684">
                 <td class="col-rank"></td>
@@ -447,7 +449,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Cape_Town__ZA">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Cape Town, ZA" data-conf="0.684">
                 <td class="col-rank"></td>
@@ -462,7 +464,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Cape_Town__ZA">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Cape Town, ZA" data-conf="0.620">
                 <td class="col-rank"></td>
@@ -477,7 +479,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Cape_Town__ZA">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Chengdu, CN" data-conf="0.424">
                 <td class="col-rank"></td>
@@ -492,7 +494,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Chengdu__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Chengdu, CN" data-conf="0.424">
                 <td class="col-rank"></td>
@@ -507,7 +509,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Chengdu__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Chengdu, CN" data-conf="0.549">
                 <td class="col-rank"></td>
@@ -522,7 +524,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Chengdu__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Chicago, US" data-conf="0.296">
                 <td class="col-rank"></td>
@@ -537,7 +539,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Chicago__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">14:44</td>
+                <td class="col-local">14:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Chicago, US" data-conf="0.296">
                 <td class="col-rank"></td>
@@ -552,7 +554,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Chicago__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">14:44</td>
+                <td class="col-local">14:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Chicago, US" data-conf="0.490">
                 <td class="col-rank"></td>
@@ -567,7 +569,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Chicago__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">14:44</td>
+                <td class="col-local">14:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Chongqing, CN" data-conf="0.537">
                 <td class="col-rank"></td>
@@ -582,7 +584,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Chongqing__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Chongqing, CN" data-conf="0.537">
                 <td class="col-rank"></td>
@@ -597,7 +599,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Chongqing__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Chongqing, CN" data-conf="0.668">
                 <td class="col-rank"></td>
@@ -612,7 +614,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Chongqing__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Dallas, US" data-conf="0.561">
                 <td class="col-rank"></td>
@@ -627,7 +629,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Dallas__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">14:44</td>
+                <td class="col-local">14:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Dallas, US" data-conf="0.561">
                 <td class="col-rank"></td>
@@ -642,7 +644,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Dallas__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">14:44</td>
+                <td class="col-local">14:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Dallas, US" data-conf="0.549">
                 <td class="col-rank"></td>
@@ -657,7 +659,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Dallas__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">14:44</td>
+                <td class="col-local">14:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Denver, US" data-conf="0.725">
                 <td class="col-rank"></td>
@@ -672,7 +674,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Denver__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">13:44</td>
+                <td class="col-local">13:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Denver, US" data-conf="0.725">
                 <td class="col-rank"></td>
@@ -687,7 +689,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Denver__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">13:44</td>
+                <td class="col-local">13:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Denver, US" data-conf="0.748">
                 <td class="col-rank"></td>
@@ -702,7 +704,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Denver__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">13:44</td>
+                <td class="col-local">13:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Guangzhou, CN" data-conf="0.637">
                 <td class="col-rank"></td>
@@ -717,7 +719,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Guangzhou__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Guangzhou, CN" data-conf="0.637">
                 <td class="col-rank"></td>
@@ -732,7 +734,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Guangzhou__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Guangzhou, CN" data-conf="0.650">
                 <td class="col-rank"></td>
@@ -747,7 +749,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Guangzhou__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Helsinki, FI" data-conf="0.606">
                 <td class="col-rank"></td>
@@ -762,7 +764,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Helsinki__FI">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">22:44</td>
+                <td class="col-local">22:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Helsinki, FI" data-conf="0.606">
                 <td class="col-rank"></td>
@@ -777,7 +779,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Helsinki__FI">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">22:44</td>
+                <td class="col-local">22:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Helsinki, FI" data-conf="0.778">
                 <td class="col-rank"></td>
@@ -792,7 +794,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Helsinki__FI">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">22:44</td>
+                <td class="col-local">22:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Hong Kong, HK" data-conf="0.442">
                 <td class="col-rank"></td>
@@ -807,7 +809,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Hong_Kong__HK">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Hong Kong, HK" data-conf="0.442">
                 <td class="col-rank"></td>
@@ -822,7 +824,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Hong_Kong__HK">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Hong Kong, HK" data-conf="0.457">
                 <td class="col-rank"></td>
@@ -837,7 +839,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Hong_Kong__HK">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Houston, US" data-conf="0.546">
                 <td class="col-rank"></td>
@@ -852,7 +854,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Houston__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">14:44</td>
+                <td class="col-local">14:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Houston, US" data-conf="0.546">
                 <td class="col-rank"></td>
@@ -867,7 +869,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Houston__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">14:44</td>
+                <td class="col-local">14:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Houston, US" data-conf="0.383">
                 <td class="col-rank"></td>
@@ -882,7 +884,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Houston__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">14:44</td>
+                <td class="col-local">14:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Istanbul, TR" data-conf="0.556">
                 <td class="col-rank"></td>
@@ -897,7 +899,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Istanbul__TR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">22:44</td>
+                <td class="col-local">22:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Istanbul, TR" data-conf="0.556">
                 <td class="col-rank"></td>
@@ -912,7 +914,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Istanbul__TR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">22:44</td>
+                <td class="col-local">22:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Istanbul, TR" data-conf="0.391">
                 <td class="col-rank"></td>
@@ -927,7 +929,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Istanbul__TR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">22:44</td>
+                <td class="col-local">22:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Jeddah, SA" data-conf="0.423">
                 <td class="col-rank"></td>
@@ -942,7 +944,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Jeddah__SA">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">22:44</td>
+                <td class="col-local">22:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Jeddah, SA" data-conf="0.423">
                 <td class="col-rank"></td>
@@ -957,7 +959,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Jeddah__SA">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">22:44</td>
+                <td class="col-local">22:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Jeddah, SA" data-conf="0.352">
                 <td class="col-rank"></td>
@@ -972,7 +974,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Jeddah__SA">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">22:44</td>
+                <td class="col-local">22:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Jinan, CN" data-conf="0.455">
                 <td class="col-rank"></td>
@@ -987,7 +989,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Jinan__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Jinan, CN" data-conf="0.455">
                 <td class="col-rank"></td>
@@ -1002,7 +1004,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Jinan__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Jinan, CN" data-conf="0.100">
                 <td class="col-rank"></td>
@@ -1017,7 +1019,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Jinan__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Karachi, PK" data-conf="0.523">
                 <td class="col-rank"></td>
@@ -1032,7 +1034,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Karachi__PK">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">00:44</td>
+                <td class="col-local">00:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Karachi, PK" data-conf="0.523">
                 <td class="col-rank"></td>
@@ -1047,7 +1049,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Karachi__PK">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">00:44</td>
+                <td class="col-local">00:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Karachi, PK" data-conf="0.517">
                 <td class="col-rank"></td>
@@ -1062,7 +1064,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Karachi__PK">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">00:44</td>
+                <td class="col-local">00:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Kuala Lumpur, MY" data-conf="0.522">
                 <td class="col-rank"></td>
@@ -1077,7 +1079,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Kuala_Lumpur__MY">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Kuala Lumpur, MY" data-conf="0.522">
                 <td class="col-rank"></td>
@@ -1092,7 +1094,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Kuala_Lumpur__MY">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Kuala Lumpur, MY" data-conf="0.503">
                 <td class="col-rank"></td>
@@ -1107,7 +1109,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Kuala_Lumpur__MY">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="London, UK" data-conf="0.677">
                 <td class="col-rank"></td>
@@ -1122,7 +1124,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-London__UK">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">20:44</td>
+                <td class="col-local">20:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="London, UK" data-conf="0.677">
                 <td class="col-rank"></td>
@@ -1137,7 +1139,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-London__UK">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">20:44</td>
+                <td class="col-local">20:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="London, UK" data-conf="0.475">
                 <td class="col-rank"></td>
@@ -1152,7 +1154,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-London__UK">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">20:44</td>
+                <td class="col-local">20:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Los Angeles, US" data-conf="0.281">
                 <td class="col-rank"></td>
@@ -1167,7 +1169,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Los_Angeles__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">12:44</td>
+                <td class="col-local">12:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Los Angeles, US" data-conf="0.281">
                 <td class="col-rank"></td>
@@ -1182,7 +1184,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Los_Angeles__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">12:44</td>
+                <td class="col-local">12:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Los Angeles, US" data-conf="0.488">
                 <td class="col-rank"></td>
@@ -1197,7 +1199,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Los_Angeles__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">12:44</td>
+                <td class="col-local">12:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Lucknow, IN" data-conf="0.457">
                 <td class="col-rank"></td>
@@ -1212,7 +1214,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Lucknow__IN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">01:14</td>
+                <td class="col-local">01:24</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Lucknow, IN" data-conf="0.457">
                 <td class="col-rank"></td>
@@ -1227,7 +1229,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Lucknow__IN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">01:14</td>
+                <td class="col-local">01:24</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Lucknow, IN" data-conf="0.629">
                 <td class="col-rank"></td>
@@ -1242,7 +1244,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Lucknow__IN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">01:14</td>
+                <td class="col-local">01:24</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Madrid, ES" data-conf="0.597">
                 <td class="col-rank"></td>
@@ -1257,7 +1259,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Madrid__ES">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Madrid, ES" data-conf="0.597">
                 <td class="col-rank"></td>
@@ -1272,7 +1274,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Madrid__ES">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Madrid, ES" data-conf="0.538">
                 <td class="col-rank"></td>
@@ -1287,7 +1289,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Madrid__ES">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Manila, PH" data-conf="0.662">
                 <td class="col-rank"></td>
@@ -1302,7 +1304,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Manila__PH">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Manila, PH" data-conf="0.662">
                 <td class="col-rank"></td>
@@ -1317,7 +1319,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Manila__PH">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Manila, PH" data-conf="0.496">
                 <td class="col-rank"></td>
@@ -1332,7 +1334,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Manila__PH">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Mexico City, MX" data-conf="0.584">
                 <td class="col-rank"></td>
@@ -1347,7 +1349,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Mexico_City__MX">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">13:44</td>
+                <td class="col-local">13:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Mexico City, MX" data-conf="0.584">
                 <td class="col-rank"></td>
@@ -1362,7 +1364,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Mexico_City__MX">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">13:44</td>
+                <td class="col-local">13:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Mexico City, MX" data-conf="0.493">
                 <td class="col-rank"></td>
@@ -1377,7 +1379,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Mexico_City__MX">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">13:44</td>
+                <td class="col-local">13:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Miami, US" data-conf="0.577">
                 <td class="col-rank"></td>
@@ -1392,7 +1394,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Miami__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">15:44</td>
+                <td class="col-local">15:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Miami, US" data-conf="0.577">
                 <td class="col-rank"></td>
@@ -1407,7 +1409,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Miami__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">15:44</td>
+                <td class="col-local">15:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Miami, US" data-conf="0.505">
                 <td class="col-rank"></td>
@@ -1422,7 +1424,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Miami__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">15:44</td>
+                <td class="col-local">15:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Milan, IT" data-conf="0.404">
                 <td class="col-rank"></td>
@@ -1437,7 +1439,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Milan__IT">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Milan, IT" data-conf="0.404">
                 <td class="col-rank"></td>
@@ -1452,7 +1454,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Milan__IT">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Milan, IT" data-conf="0.309">
                 <td class="col-rank"></td>
@@ -1467,7 +1469,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Milan__IT">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Moscow, RU" data-conf="0.653">
                 <td class="col-rank"></td>
@@ -1482,7 +1484,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Moscow__RU">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">22:44</td>
+                <td class="col-local">22:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Moscow, RU" data-conf="0.653">
                 <td class="col-rank"></td>
@@ -1497,7 +1499,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Moscow__RU">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">22:44</td>
+                <td class="col-local">22:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Moscow, RU" data-conf="0.590">
                 <td class="col-rank"></td>
@@ -1512,7 +1514,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Moscow__RU">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">22:44</td>
+                <td class="col-local">22:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Munich, DE" data-conf="0.469">
                 <td class="col-rank"></td>
@@ -1527,7 +1529,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Munich__DE">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Munich, DE" data-conf="0.469">
                 <td class="col-rank"></td>
@@ -1542,7 +1544,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Munich__DE">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Munich, DE" data-conf="0.505">
                 <td class="col-rank"></td>
@@ -1557,7 +1559,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Munich__DE">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="New York, US" data-conf="0.427">
                 <td class="col-rank"></td>
@@ -1572,7 +1574,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-New_York__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">15:44</td>
+                <td class="col-local">15:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="New York, US" data-conf="0.427">
                 <td class="col-rank"></td>
@@ -1587,7 +1589,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-New_York__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">15:44</td>
+                <td class="col-local">15:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="New York, US" data-conf="0.383">
                 <td class="col-rank"></td>
@@ -1602,7 +1604,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-New_York__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">15:44</td>
+                <td class="col-local">15:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Panama City, PA" data-conf="0.602">
                 <td class="col-rank"></td>
@@ -1617,7 +1619,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Panama_City__PA">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">14:44</td>
+                <td class="col-local">14:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Panama City, PA" data-conf="0.602">
                 <td class="col-rank"></td>
@@ -1632,7 +1634,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Panama_City__PA">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">14:44</td>
+                <td class="col-local">14:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Panama City, PA" data-conf="0.447">
                 <td class="col-rank"></td>
@@ -1647,7 +1649,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Panama_City__PA">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">14:44</td>
+                <td class="col-local">14:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Paris, FR" data-conf="0.444">
                 <td class="col-rank"></td>
@@ -1662,7 +1664,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Paris__FR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Paris, FR" data-conf="0.444">
                 <td class="col-rank"></td>
@@ -1677,7 +1679,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Paris__FR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Paris, FR" data-conf="0.494">
                 <td class="col-rank"></td>
@@ -1692,7 +1694,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Paris__FR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Qingdao, CN" data-conf="0.738">
                 <td class="col-rank"></td>
@@ -1707,7 +1709,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Qingdao__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Qingdao, CN" data-conf="0.738">
                 <td class="col-rank"></td>
@@ -1722,7 +1724,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Qingdao__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Qingdao, CN" data-conf="0.737">
                 <td class="col-rank"></td>
@@ -1737,7 +1739,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Qingdao__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="San Francisco, US" data-conf="0.288">
                 <td class="col-rank"></td>
@@ -1752,7 +1754,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-San_Francisco__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">12:44</td>
+                <td class="col-local">12:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="San Francisco, US" data-conf="0.288">
                 <td class="col-rank"></td>
@@ -1767,7 +1769,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-San_Francisco__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">12:44</td>
+                <td class="col-local">12:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="San Francisco, US" data-conf="0.990">
                 <td class="col-rank"></td>
@@ -1782,7 +1784,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-San_Francisco__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">12:44</td>
+                <td class="col-local">12:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Sao Paulo, BR" data-conf="0.376">
                 <td class="col-rank"></td>
@@ -1797,7 +1799,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Sao_Paulo__BR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">16:44</td>
+                <td class="col-local">16:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Sao Paulo, BR" data-conf="0.376">
                 <td class="col-rank"></td>
@@ -1812,7 +1814,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Sao_Paulo__BR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">16:44</td>
+                <td class="col-local">16:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Sao Paulo, BR" data-conf="0.550">
                 <td class="col-rank"></td>
@@ -1827,7 +1829,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Sao_Paulo__BR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">16:44</td>
+                <td class="col-local">16:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Seattle, US" data-conf="0.531">
                 <td class="col-rank"></td>
@@ -1842,7 +1844,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Seattle__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">12:44</td>
+                <td class="col-local">12:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Seattle, US" data-conf="0.531">
                 <td class="col-rank"></td>
@@ -1857,7 +1859,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Seattle__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">12:44</td>
+                <td class="col-local">12:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Seattle, US" data-conf="0.546">
                 <td class="col-rank"></td>
@@ -1872,7 +1874,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Seattle__US">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">12:44</td>
+                <td class="col-local">12:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Seoul (Incheon), KR" data-conf="0.363">
                 <td class="col-rank"></td>
@@ -1887,7 +1889,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Seoul__Incheon___KR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">04:44</td>
+                <td class="col-local">04:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Seoul (Incheon), KR" data-conf="0.363">
                 <td class="col-rank"></td>
@@ -1902,7 +1904,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Seoul__Incheon___KR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">04:44</td>
+                <td class="col-local">04:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Seoul (Incheon), KR" data-conf="0.333">
                 <td class="col-rank"></td>
@@ -1917,7 +1919,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Seoul__Incheon___KR">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">04:44</td>
+                <td class="col-local">04:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Shanghai, CN" data-conf="0.480">
                 <td class="col-rank"></td>
@@ -1932,7 +1934,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Shanghai__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Shanghai, CN" data-conf="0.480">
                 <td class="col-rank"></td>
@@ -1947,7 +1949,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Shanghai__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Shanghai, CN" data-conf="0.394">
                 <td class="col-rank"></td>
@@ -1962,7 +1964,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Shanghai__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Shenzhen, CN" data-conf="0.512">
                 <td class="col-rank"></td>
@@ -1977,7 +1979,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Shenzhen__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Shenzhen, CN" data-conf="0.512">
                 <td class="col-rank"></td>
@@ -1992,7 +1994,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Shenzhen__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Shenzhen, CN" data-conf="0.462">
                 <td class="col-rank"></td>
@@ -2007,7 +2009,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Shenzhen__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Singapore, SG" data-conf="0.633">
                 <td class="col-rank"></td>
@@ -2022,7 +2024,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Singapore__SG">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Singapore, SG" data-conf="0.633">
                 <td class="col-rank"></td>
@@ -2037,7 +2039,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Singapore__SG">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Singapore, SG" data-conf="0.646">
                 <td class="col-rank"></td>
@@ -2052,7 +2054,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Singapore__SG">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Taipei, TW" data-conf="0.303">
                 <td class="col-rank"></td>
@@ -2067,7 +2069,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Taipei__TW">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Taipei, TW" data-conf="0.303">
                 <td class="col-rank"></td>
@@ -2082,7 +2084,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Taipei__TW">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Taipei, TW" data-conf="0.444">
                 <td class="col-rank"></td>
@@ -2097,7 +2099,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Taipei__TW">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Tel Aviv, IL" data-conf="0.577">
                 <td class="col-rank"></td>
@@ -2112,7 +2114,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Tel_Aviv__IL">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">22:44</td>
+                <td class="col-local">22:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Tel Aviv, IL" data-conf="0.577">
                 <td class="col-rank"></td>
@@ -2127,7 +2129,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Tel_Aviv__IL">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">22:44</td>
+                <td class="col-local">22:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Tel Aviv, IL" data-conf="0.584">
                 <td class="col-rank"></td>
@@ -2142,7 +2144,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Tel_Aviv__IL">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">22:44</td>
+                <td class="col-local">22:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Tokyo, JP" data-conf="0.538">
                 <td class="col-rank"></td>
@@ -2157,7 +2159,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Tokyo__JP">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">04:44</td>
+                <td class="col-local">04:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Tokyo, JP" data-conf="0.538">
                 <td class="col-rank"></td>
@@ -2172,7 +2174,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Tokyo__JP">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">04:44</td>
+                <td class="col-local">04:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Tokyo, JP" data-conf="0.470">
                 <td class="col-rank"></td>
@@ -2187,7 +2189,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Tokyo__JP">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">04:44</td>
+                <td class="col-local">04:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Toronto, CA" data-conf="0.462">
                 <td class="col-rank"></td>
@@ -2202,7 +2204,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Toronto__CA">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">15:44</td>
+                <td class="col-local">15:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Toronto, CA" data-conf="0.462">
                 <td class="col-rank"></td>
@@ -2217,7 +2219,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Toronto__CA">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">15:44</td>
+                <td class="col-local">15:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Toronto, CA" data-conf="0.567">
                 <td class="col-rank"></td>
@@ -2232,7 +2234,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Toronto__CA">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">15:44</td>
+                <td class="col-local">15:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Warsaw, PL" data-conf="0.421">
                 <td class="col-rank"></td>
@@ -2247,7 +2249,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Warsaw__PL">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Warsaw, PL" data-conf="0.421">
                 <td class="col-rank"></td>
@@ -2262,7 +2264,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Warsaw__PL">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Warsaw, PL" data-conf="0.530">
                 <td class="col-rank"></td>
@@ -2277,7 +2279,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Warsaw__PL">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">21:44</td>
+                <td class="col-local">21:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Wellington, NZ" data-conf="0.615">
                 <td class="col-rank"></td>
@@ -2292,7 +2294,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Wellington__NZ">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">07:44</td>
+                <td class="col-local">07:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Wellington, NZ" data-conf="0.615">
                 <td class="col-rank"></td>
@@ -2307,7 +2309,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Wellington__NZ">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">07:44</td>
+                <td class="col-local">07:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Wellington, NZ" data-conf="0.628">
                 <td class="col-rank"></td>
@@ -2322,7 +2324,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Wellington__NZ">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">07:44</td>
+                <td class="col-local">07:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Wuhan, CN" data-conf="0.507">
                 <td class="col-rank"></td>
@@ -2337,7 +2339,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Wuhan__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Wuhan, CN" data-conf="0.507">
                 <td class="col-rank"></td>
@@ -2352,7 +2354,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Wuhan__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Wuhan, CN" data-conf="0.375">
                 <td class="col-rank"></td>
@@ -2367,7 +2369,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Wuhan__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="0" data-city="Zhengzhou, CN" data-conf="0.425">
                 <td class="col-rank"></td>
@@ -2382,7 +2384,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Zhengzhou__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="1" data-city="Zhengzhou, CN" data-conf="0.425">
                 <td class="col-rank"></td>
@@ -2397,7 +2399,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Zhengzhou__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 <tr class="city-row" data-lead="2" data-city="Zhengzhou, CN" data-conf="0.990">
                 <td class="col-rank"></td>
@@ -2412,7 +2414,7 @@
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Zhengzhou__CN">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-local">03:44</td>
+                <td class="col-local">03:54</td>
             </tr>
 
       </tbody>
@@ -2503,8 +2505,18 @@ async function fetchOneCity(city) {
         
         const el = document.getElementById('live-' + safeId);
         if (el) {
+            let peakEmoji = '';
+            if (currentTemp != null && dailyMax != null) {
+                if (currentTemp >= dailyMax - 0.3) {
+                    peakEmoji = '🟡NÆR';
+                } else if (currentTemp <= dailyMax - 0.5) {
+                    peakEmoji = '🔴PEAK';
+                } else {
+                    peakEmoji = '🟢STIGER';
+                }
+            }
             el.textContent = (currentTemp != null && dailyMax != null)
-                ? `🌡️${currentTemp.toFixed(1)}°C | 📡${dailyMax.toFixed(1)}°C`
+                ? `🌡️${currentTemp.toFixed(1)}°C | 📡${dailyMax.toFixed(1)}°C | ${peakEmoji}`
                 : (currentTemp != null ? `🌡️${currentTemp.toFixed(1)}°C` : '⚠️ Feil');
         }
         return { name: city.name, currentTemp, currentTime, dailyMax };
