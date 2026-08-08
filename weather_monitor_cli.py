@@ -1116,6 +1116,67 @@ class WeatherAnalyzer:
         """Fetch current conditions only (no temperature). Convenience wrapper."""
         return await self.get_current_temp(lat, lon, tz)
 
+    async def get_today_max(
+        self, lat: float, lon: float, tz: str = "UTC"
+    ) -> dict[str, Any] | None:
+        """Fetch the actual observed daily max temperature for today from Open-Meteo.
+
+        Uses the forecast endpoint with past_days=1 to get yesterday's AND today's
+        observed daily max. This is the authoritative source matching Polymarket's
+        data source (official weather station).
+
+        Returns dict with:
+          - api_max_c: float | None — today's observed daily max
+          - date: str — the date queried
+          - source: str — "open-meteo forecast (past_days=1)"
+        Or None on failure.
+        """
+        if httpx is None:
+            return None
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                resp = await client.get(
+                    CURRENT_WEATHER_URL,
+                    params={
+                        "latitude": lat,
+                        "longitude": lon,
+                        "daily": "temperature_2m_max",
+                        "past_days": 1,
+                        "timezone": tz,
+                    },
+                )
+                resp.raise_for_status()
+                data = resp.json()
+                daily = data.get("daily", {})
+                dates = daily.get("time", [])
+                temps = daily.get("temperature_2m_max", [])
+
+                if not dates or not temps:
+                    return None
+
+                # The last entry is today's observed daily max
+                today_str = date.today().isoformat()
+                api_max_c = None
+                for d, t in zip(dates, temps):
+                    if d == today_str and t is not None:
+                        api_max_c = float(t)
+                        break
+
+                if api_max_c is None and temps:
+                    # Fallback: use the last entry (should be today with past_days=1)
+                    last_temp = temps[-1]
+                    if last_temp is not None:
+                        api_max_c = float(last_temp)
+
+                return {
+                    "api_max_c": api_max_c,
+                    "date": today_str,
+                    "source": "open-meteo forecast (past_days=1)",
+                }
+        except Exception as exc:
+            log.warning("get_today_max failed", lat=lat, lon=lon, error=str(exc))
+            return None
+
     async def analyze(self, loc: SavedLocation, lead_days: int = 0) -> AnalysisResult:
         """Run full BMA ensemble analysis for a location.
 

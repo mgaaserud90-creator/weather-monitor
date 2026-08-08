@@ -194,6 +194,7 @@ class WeatherMonitorGUI:
         self._suggested_temps: dict[str, float] = {}  # city -> suggested bet temp from BMA analysis
         self._momentant_over_alerted: dict[str, bool] = {}  # city -> already alerted "momentant over"
         self._current_conditions: dict[str, dict[str, Any]] = {}  # city -> current humidity, wind, cloud
+        self._api_daily_max: dict[str, float | None] = {}  # city -> API daily max from Open-Meteo
 
         # Real-time observation tracking (new peak detection system)
         self._obs_history: dict[str, list[tuple[datetime, float]]] = {}  # city -> [(ts, temp_c), ...]
@@ -644,6 +645,7 @@ class WeatherMonitorGUI:
         self._last_temp_fetch = {}
         self._last_bma_result = {}
         self._current_conditions = {}
+        self._api_daily_max = {}
 
         # Clear monitoring canvas
         for widget in self._mon_text.winfo_children():
@@ -669,9 +671,11 @@ class WeatherMonitorGUI:
         BMA_INTERVAL = 900  # 15 minutes
         TEMP_NORMAL_INTERVAL = 300  # 5 minutes
         TEMP_PEAK_INTERVAL = 180  # 3 minutes during peak window
+        API_MAX_INTERVAL = 1800  # 30 minutes for API daily max
         CHECK_INTERVAL = 30  # check every 30 seconds
 
         last_bma_refresh = 0.0
+        last_api_max_fetch = 0.0
         last_temp_fetch: dict[str, float] = {}  # per-city last temp fetch
 
         while self._monitoring_active:
@@ -746,6 +750,37 @@ class WeatherMonitorGUI:
                     # Update UI on main thread
                     self.root.after(0, lambda r=results: self._refresh_monitoring_ui(r))
 
+                except Exception:
+                    pass
+
+            # --- API daily max fetch (every 30 min, per-city) ---
+            if now_ts - last_api_max_fetch >= API_MAX_INTERVAL:
+                try:
+                    loop = _asyncio.new_event_loop()
+                    _asyncio.set_event_loop(loop)
+
+                    for city_info in self._monitored_cities[:5]:
+                        name = city_info["city"]
+                        loc = self._find_location(name)
+                        if loc is None:
+                            continue
+                        try:
+                            api_data = loop.run_until_complete(
+                                self._analyzer.get_today_max(loc.lat, loc.lon, loc.tz)
+                            )
+                            if api_data and api_data.get("api_max_c") is not None:
+                                api_max_c = api_data["api_max_c"]
+                                self._api_daily_max[name] = api_max_c
+
+                                # Update today_max with API value if higher than observed
+                                observed_max = self._today_max.get(name)
+                                if observed_max is None or api_max_c > observed_max[0]:
+                                    self._today_max[name] = (api_max_c, datetime.now())
+                        except Exception:
+                            pass
+
+                    loop.close()
+                    last_api_max_fetch = now_ts
                 except Exception:
                     pass
 
@@ -1194,8 +1229,24 @@ class WeatherMonitorGUI:
                 temp_parts.append(f"Max i dag: {tmax_val:.1f}°C")
                 if tmax_time_str:
                     temp_parts[-1] += f" ({tmax_time_str})"
-            temp_display = " | ".join(temp_parts) if temp_parts else "🌡️ Ingen data"
-            temp_text_w = tk.Text(temp_row, height=1, width=60, font=("Consolas", 9, "bold"),
+
+            # --- API daily max vs observed ---
+            api_max_c = self._api_daily_max.get(city_name)
+            if api_max_c is not None:
+                # Compute observed max from history for comparison
+                obs_max_val = None
+                for (t, v) in obs_list:
+                    if obs_max_val is None or v > obs_max_val:
+                        obs_max_val = v
+                api_parts = [f"📡 Faktisk dagsmaks (API): {api_max_c:.1f}°C"]
+                if obs_max_val is not None and abs(obs_max_val - api_max_c) > 0.1:
+                    api_parts.append(f"📈 Vår observerte maks: {obs_max_val:.1f}°C (siden oppstart)")
+                temp_display = " | ".join(temp_parts + api_parts) if temp_parts else "🌡️ Ingen data"
+            else:
+                temp_display = " | ".join(temp_parts) if temp_parts else "🌡️ Ingen data"
+
+            temp_text_w = tk.Text(temp_row, height=2 if api_max_c else 1, width=60,
+                                  font=("Consolas", 9, "bold"),
                                   bg=card_bg, fg="#1a1a1a", relief="flat",
                                   borderwidth=0, wrap=tk.WORD, exportselection=True)
             temp_text_w.insert("1.0", temp_display)
@@ -2041,10 +2092,34 @@ class WeatherMonitorGUI:
             (t, v) for t, v in self._obs_history[city_name] if t > cutoff
         ]
 
-        # Update today_max
+        # Update today_max from observed data
         prev_max = self._today_max.get(city_name)
         if prev_max is None or cur_temp > prev_max[0]:
             self._today_max[city_name] = (cur_temp, cur_time)
+
+        # --- Fetch actual daily max from API ---
+        api_max_c = None
+        try:
+            import asyncio as _asyncio_peak
+            loop = _asyncio_peak.new_event_loop()
+            _asyncio_peak.set_event_loop(loop)
+            try:
+                api_data = loop.run_until_complete(
+                    self._analyzer.get_today_max(loc.lat, loc.lon, loc.tz)
+                )
+            finally:
+                loop.close()
+            if api_data and api_data.get("api_max_c") is not None:
+                api_max_c = api_data["api_max_c"]
+                self._api_daily_max[city_name] = api_max_c
+
+                # Update today_max with API value if it's higher than what we've observed
+                observed_max = self._today_max.get(city_name)
+                if observed_max is None or api_max_c > observed_max[0]:
+                    # Use API value as today_max — it's the authoritative source
+                    self._today_max[city_name] = (api_max_c, cur_time)
+        except Exception:
+            pass
 
         # Local time
         try:
@@ -2092,10 +2167,19 @@ class WeatherMonitorGUI:
         peak_window_str = f"{peak_start:02d}:00-{peak_end:02d}:00"
         now_str = local_now.strftime("%H:%M")
 
-        # Today's max info
+        # Today's max info — use authoritative max (higher of API or observed)
         tmax = self._today_max.get(city_name)
         tmax_val = tmax[0] if tmax else cur_temp
         tmax_time_str = tmax[1].strftime("%H:%M") if tmax and hasattr(tmax[1], "strftime") else "—"
+
+        # Observed-only max for comparison display
+        obs_max_val = None
+        obs_max_time_str = "—"
+        for (t, v) in self._obs_history.get(city_name, []):
+            if obs_max_val is None or v > obs_max_val:
+                obs_max_val = v
+                if hasattr(t, "strftime"):
+                    obs_max_time_str = t.strftime("%H:%M")
 
         # --- Build peak card in analysis canvas ---
         # Separator
@@ -2150,12 +2234,25 @@ class WeatherMonitorGUI:
             font=("Consolas", 9, "bold"), bg="#ffffff", fg="#1a1a1a",
         ).pack(anchor=W)
 
-        # Today's max
-        tk.Label(
-            inner,
-            text=f"📈 Dagens maks: {tmax_val:.1f}°C (kl {tmax_time_str})",
-            font=("Consolas", 9), bg="#ffffff", fg="#333",
-        ).pack(anchor=W)
+        # Dagens maks — show both API and observed
+        if api_max_c is not None:
+            tk.Label(
+                inner,
+                text=f"📡 Faktisk dagsmaks (API): {api_max_c:.1f}°C",
+                font=("Consolas", 9, "bold"), bg="#ffffff", fg="#0d47a1",
+            ).pack(anchor=W)
+        if obs_max_val is not None and (api_max_c is None or abs(obs_max_val - api_max_c) > 0.1):
+            tk.Label(
+                inner,
+                text=f"📈 Vår observerte maks: {obs_max_val:.1f}°C (siden oppstart, kl {obs_max_time_str})",
+                font=("Consolas", 9), bg="#ffffff", fg="#333",
+            ).pack(anchor=W)
+        else:
+            tk.Label(
+                inner,
+                text=f"📈 Dagens maks: {tmax_val:.1f}°C (kl {tmax_time_str})",
+                font=("Consolas", 9), bg="#ffffff", fg="#333",
+            ).pack(anchor=W)
 
         # Time metrics
         if mins_since_max > 0:
