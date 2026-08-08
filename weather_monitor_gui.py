@@ -194,7 +194,7 @@ class WeatherMonitorGUI:
         self._suggested_temps: dict[str, float] = {}  # city -> suggested bet temp from BMA analysis
         self._momentant_over_alerted: dict[str, bool] = {}  # city -> already alerted "momentant over"
         self._current_conditions: dict[str, dict[str, Any]] = {}  # city -> current humidity, wind, cloud
-        self._api_daily_max: dict[str, float | None] = {}  # city -> API daily max from Open-Meteo
+        self._api_daily_max: dict[str, dict[str, Any] | None] = {}  # city -> {"max_c": ..., "peak_time": ...} from Open-Meteo
 
         # Real-time observation tracking (new peak detection system)
         self._obs_history: dict[str, list[tuple[datetime, float]]] = {}  # city -> [(ts, temp_c), ...]
@@ -768,14 +768,22 @@ class WeatherMonitorGUI:
                             api_data = loop.run_until_complete(
                                 self._analyzer.get_today_max(loc.lat, loc.lon, loc.tz)
                             )
-                            if api_data and api_data.get("api_max_c") is not None:
-                                api_max_c = api_data["api_max_c"]
-                                self._api_daily_max[name] = api_max_c
+                            if api_data and api_data.get("max_c") is not None:
+                                api_max_c = api_data["max_c"]
+                                peak_time = api_data.get("peak_time", "")
+                                self._api_daily_max[name] = {"max_c": api_max_c, "peak_time": peak_time}
 
                                 # Update today_max with API value if higher than observed
                                 observed_max = self._today_max.get(name)
                                 if observed_max is None or api_max_c > observed_max[0]:
-                                    self._today_max[name] = (api_max_c, datetime.now())
+                                    # Parse peak_time into datetime if available
+                                    peak_dt = datetime.now()
+                                    if peak_time:
+                                        try:
+                                            peak_dt = datetime.fromisoformat(peak_time)
+                                        except (ValueError, TypeError):
+                                            pass
+                                    self._today_max[name] = (api_max_c, peak_dt)
                         except Exception:
                             pass
 
@@ -1231,21 +1239,30 @@ class WeatherMonitorGUI:
                     temp_parts[-1] += f" ({tmax_time_str})"
 
             # --- API daily max vs observed ---
-            api_max_c = self._api_daily_max.get(city_name)
-            if api_max_c is not None:
+            api_max_data = self._api_daily_max.get(city_name)
+            if api_max_data is not None:
+                api_max_c = api_max_data.get("max_c")
+                peak_time = api_max_data.get("peak_time", "")
                 # Compute observed max from history for comparison
                 obs_max_val = None
                 for (t, v) in obs_list:
                     if obs_max_val is None or v > obs_max_val:
                         obs_max_val = v
                 api_parts = [f"📡 Faktisk dagsmaks (API): {api_max_c:.1f}°C"]
+                if peak_time:
+                    # Extract just the hour from ISO time e.g. "2026-08-08T16:00" -> "16:00"
+                    try:
+                        peak_dt = datetime.fromisoformat(peak_time)
+                        api_parts[-1] += f" kl {peak_dt.strftime('%H:%M')}"
+                    except (ValueError, TypeError):
+                        pass
                 if obs_max_val is not None and abs(obs_max_val - api_max_c) > 0.1:
                     api_parts.append(f"📈 Vår observerte maks: {obs_max_val:.1f}°C (siden oppstart)")
                 temp_display = " | ".join(temp_parts + api_parts) if temp_parts else "🌡️ Ingen data"
             else:
                 temp_display = " | ".join(temp_parts) if temp_parts else "🌡️ Ingen data"
 
-            temp_text_w = tk.Text(temp_row, height=2 if api_max_c else 1, width=60,
+            temp_text_w = tk.Text(temp_row, height=2 if api_max_data else 1, width=60,
                                   font=("Consolas", 9, "bold"),
                                   bg=card_bg, fg="#1a1a1a", relief="flat",
                                   borderwidth=0, wrap=tk.WORD, exportselection=True)
