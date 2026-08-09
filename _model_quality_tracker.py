@@ -1231,27 +1231,38 @@ def _update_recommendation(pdata: dict) -> None:
 # =============================================================================
 
 async def daily_close_mode() -> None:
-    """Finalize daily results for ALL 51 cities, compare all 3 strategies, generate report."""
+    """Finalize daily results for ALL 51 cities, compare all 3 strategies, generate report.
+
+    Runs at 23:00 UTC. Resolves YESTERDAY's BMA predictions against TODAY's
+    actual archive data. This is because daily_bma predicts lead_days=1 ahead,
+    so the Aug 8 run predicted Aug 9 temperatures. By 23:00 UTC on Aug 9,
+    archive data for Aug 9 is available and predictions can be scored.
+    """
     print("╔══════════════════════════════════════════════════╗")
     print("║   MODELLKVALITET — DAGLIG AVSLUTNING (23:00)     ║")
     print("╚══════════════════════════════════════════════════╝")
     print(f"   Start: {_now_utc()}")
 
     log_data = _load_log()
-    today = _today_iso()
+
+    # Resolve YESTERDAY's predictions, which targeted TODAY
+    # e.g., on Aug 9 at 23:00, find the Aug 8 run that predicted Aug 9
+    yesterday = (date.today() - timedelta(days=1)).isoformat()
 
     entry = None
     for e in log_data.get("runs", []):
-        if e.get("run_date") == today:
+        if e.get("run_date") == yesterday:
             entry = e
             break
 
     if entry is None or not entry.get("predictions"):
-        print("  ⚠️ Ingen daily_bma entry for i dag — kan ikke avslutte.")
+        print(f"  ⚠️ Ingen daily_bma entry for {yesterday} — kan ikke avslutte.")
+        print("     (Dette er normalt hvis daily_bma ikke har kjort ennå)\n")
         return
 
     predictions = entry.get("predictions", {})
-    target_date = entry.get("target_date", today)
+    # Use TODAY's date for archive fetch — this is what yesterday's predictions targeted
+    target_date = date.today().isoformat()
 
     print(f"  Finaliserer {len(predictions)} byer for {target_date}\n")
 
