@@ -261,10 +261,10 @@ def _find_or_create_today_entry(log_data: dict) -> dict:
         if entry.get("run_date") == today:
             return entry
 
-    # Create new entry with updated structure: 3 strategies, 51 cities
+    # Create new entry: predict TODAY → resolve TODAY
     entry = {
         "run_date": today,
-        "target_date": (date.today() + timedelta(days=1)).isoformat(),
+        "target_date": today,
         "phase": "daily_bma",
         "run_started": _now_utc(),
         "last_updated": _now_utc(),
@@ -546,7 +546,7 @@ def _get_yesterday_top5() -> list[str]:
 
 
 async def daily_bma_mode() -> None:
-    """Run BMA for ALL 51 cities with lead_days=1 and lead_days=2. Semaphore protects against rate limits."""
+    """Run BMA for ALL 51 cities with lead_days=0 (predict TODAY). Semaphore protects against rate limits."""
     print("╔══════════════════════════════════════════════════╗")
     print("║   MODELLKVALITET — DAGLIG BMA (06:00 UTC)       ║")
     print("╚══════════════════════════════════════════════════╝")
@@ -562,57 +562,34 @@ async def daily_bma_mode() -> None:
     await analyzer.initialize()
 
     try:
-        multi_day_data: dict[int, list[CityPrediction]] = {}
+        target_date = date.today().isoformat()
+        print(f"\n   🎯 LEAD_DAYS=0 (target: {target_date} — I DAG)\n")
 
-        for lead_days in [1, 2]:
-            target_date = (date.today() + timedelta(days=lead_days)).isoformat()
-            print(f"\n   🎯 LEAD_DAYS={lead_days} (target: {target_date})\n")
+        predictions = await run_bma_for_all(analyzer, locations, lead_days=0)
+        top5 = select_top_n(predictions, 5)
 
-            predictions = await run_bma_for_all(analyzer, locations, lead_days=lead_days)
-            multi_day_data[lead_days] = predictions
+        print(f"\n  {'─'*60}")
+        print(f"  🏆 TOP 5 — I DAG ({target_date}):")
+        for i, p in enumerate(top5):
+            utc_peak = _local_peak_to_utc(p.tz, p.peak_hour_start, p.peak_hour_end)
+            print(f"     {i+1}. {p.city:<30s} spill={p.suggested_spill}°C  "
+                  f"μ={p.bma_mean:.1f}°C  conf={p.confidence:.3f}  "
+                  f"({p.model_count}/8 modeller)  peak={utc_peak}")
 
-            top5 = select_top_n(predictions, 5)
-
-            print(f"\n  {'─'*60}")
-            print(f"  🏆 TOP 5 — +{lead_days} DAG ({target_date}):")
-            for i, p in enumerate(top5):
-                utc_peak = _local_peak_to_utc(p.tz, p.peak_hour_start, p.peak_hour_end)
-                print(f"     {i+1}. {p.city:<30s} spill={p.suggested_spill}°C  "
-                      f"μ={p.bma_mean:.1f}°C  conf={p.confidence:.3f}  "
-                      f"({p.model_count}/8 modeller)  peak={utc_peak}")
-
-        # Use lead_days=1 predictions for hourly_check / daily_close tracking
-        ld1_predictions = multi_day_data[1]
-        top5 = select_top_n(ld1_predictions, 5)
-        target_date_d1 = (date.today() + timedelta(days=1)).isoformat()
-
-        # Log — store predictions for all lead days
+        # Log — store predictions for today
         log_data = _load_log()
         entry = _find_or_create_today_entry(log_data)
         entry["phase"] = "daily_bma"
         entry["last_updated"] = _now_utc()
-        entry["target_date"] = target_date_d1
+        entry["target_date"] = target_date
         top5_city_names = [p.city for p in top5]
         entry["top_5_confidence"] = top5_city_names
-        entry["predictions"] = _preds_to_dict(ld1_predictions, locations)
+        entry["predictions"] = _preds_to_dict(predictions, locations)
         entry["observations"] = {city: [] for city in top5_city_names}
-
-        # Store multi-day data for all-cities HTML dashboard
-        entry["multi_day"] = {}
-        for ld, preds in multi_day_data.items():
-            ld_top5 = select_top_n(preds, 5)
-            ld_target = (date.today() + timedelta(days=ld)).isoformat()
-            entry["multi_day"][f"day{ld}"] = {
-                "lead_days": ld,
-                "target_date": ld_target,
-                "top_5_confidence": [p.city for p in ld_top5],
-                "predictions": _preds_to_dict(preds, locations),
-            }
 
         _save_log(log_data)
 
-        print(f"\n  ✅ daily_bma fullført — {len(ld1_predictions)} cities (lead_days=1), "
-              f"{len(multi_day_data[2])} cities (lead_days=2)")
+        print(f"\n  ✅ daily_bma fullført — {len(predictions)} cities (lead_days=0)")
         print(f"  🎯 Top 5 valgt for timeovervåking: {', '.join(top5_city_names)}\n")
 
     finally:
@@ -1233,10 +1210,8 @@ def _update_recommendation(pdata: dict) -> None:
 async def daily_close_mode() -> None:
     """Finalize daily results for ALL 51 cities, compare all 3 strategies, generate report.
 
-    Runs at 23:00 UTC. Resolves YESTERDAY's BMA predictions against TODAY's
-    actual archive data. This is because daily_bma predicts lead_days=1 ahead,
-    so the Aug 8 run predicted Aug 9 temperatures. By 23:00 UTC on Aug 9,
-    archive data for Aug 9 is available and predictions can be scored.
+    Runs at 23:00 UTC. Resolves TODAY's BMA predictions against TODAY's
+    actual archive data. Simple: predict Aug 9 → resolve Aug 9.
     """
     print("╔══════════════════════════════════════════════════╗")
     print("║   MODELLKVALITET — DAGLIG AVSLUTNING (23:00)     ║")
@@ -1245,24 +1220,22 @@ async def daily_close_mode() -> None:
 
     log_data = _load_log()
 
-    # Resolve YESTERDAY's predictions, which targeted TODAY
-    # e.g., on Aug 9 at 23:00, find the Aug 8 run that predicted Aug 9
-    yesterday = (date.today() - timedelta(days=1)).isoformat()
+    # Resolve TODAY's predictions against TODAY's archive data
+    today = date.today().isoformat()
 
     entry = None
     for e in log_data.get("runs", []):
-        if e.get("run_date") == yesterday:
+        if e.get("run_date") == today:
             entry = e
             break
 
     if entry is None or not entry.get("predictions"):
-        print(f"  ⚠️ Ingen daily_bma entry for {yesterday} — kan ikke avslutte.")
+        print(f"  ⚠️ Ingen daily_bma entry for {today} — kan ikke avslutte.")
         print("     (Dette er normalt hvis daily_bma ikke har kjort ennå)\n")
         return
 
     predictions = entry.get("predictions", {})
-    # Use TODAY's date for archive fetch — this is what yesterday's predictions targeted
-    target_date = date.today().isoformat()
+    target_date = today
 
     print(f"  Finaliserer {len(predictions)} byer for {target_date}\n")
 
@@ -1275,7 +1248,8 @@ async def daily_close_mode() -> None:
         lat = pdata.get("_lat", 0)
         lon = pdata.get("_lon", 0)
         tz = pdata.get("_tz", "UTC")
-        city_target = pdata.get("_target_date", target_date)
+        # Always use today's date for resolution (same-day model)
+        city_target = target_date
         strategies = _get_strategies(pdata)
 
         # Skip if ALL strategies already resolved

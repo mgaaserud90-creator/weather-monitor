@@ -707,34 +707,24 @@ def _generate_html_report() -> str:
         daily_rows += f"""
                 <tr><td>{r['run_date']}</td><td>{phase_badge}</td><td>{sw}/{sl}</td><td>{pw}/{pl}</td><td>{mw}/{ml}</td><td>{sigma_rate_str}</td></tr>"""
 
-    # ── Multi-day top 5 section ──
-    multi_day_html = ""
+    # ── Top 5 predictions section (single day) ──
+    predictions_html = ""
     latest_run = runs[-1] if runs else {}
-    multi_day = latest_run.get("multi_day", {})
 
-    if multi_day:
-        for day_key in ("day1", "day2"):
-            day_data = multi_day.get(day_key, {})
-            if not day_data:
-                continue
-            lead_days = day_data.get("lead_days", 1)
-            target_date = day_data.get("target_date", "")
-            top5 = day_data.get("top_5_confidence", [])
-            preds = day_data.get("predictions", {})
+    if latest_run:
+        top5_cities = latest_run.get("top_5_confidence", [])
+        preds = latest_run.get("predictions", {})
+        target_date = latest_run.get("target_date", latest_run.get("run_date", ""))
 
-            if lead_days == 1:
-                day_label = "I MORGEN"
-            else:
-                day_label = f"+{lead_days} DAGER"
-
-            top5_rows = _build_top5_rows_html(preds, top5[:5])
-            flip_section = _build_flip_recommendations_section(preds, top5[:5])
+        if top5_cities:
+            top5_rows = _build_top5_rows_html(preds, top5_cities[:5])
+            flip_section = _build_flip_recommendations_section(preds, top5_cities[:5])
             strategy_comparison = _build_strategy_comparison_section(preds)
             divergence_section = _build_city_divergence_section(preds)
 
-            multi_day_html += f"""
+            predictions_html += f"""
    <div class="section">
-     <h2>📅 TOP 5 — {day_label} ({target_date})</h2>
+     <h2>📅 TOP 5 — PREDICTIONS ({target_date})</h2>
      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
        All 3 strategies shown: 🎯 Sigma (μ−kσ, dynamic k), 🛡️ P5-Basert (ultra-conservative), 📊 Mean-Basert (50/50)
      </p>
@@ -750,31 +740,54 @@ def _generate_html_report() -> str:
    {divergence_section}
    {strategy_comparison}"""
 
-    # ── Legacy: today's top 5 from flat predictions (fallback if no multi_day) ──
-    if not multi_day and latest_run:
-        top5_cities = latest_run.get("top_5_confidence", [])
-        preds = latest_run.get("predictions", {})
-        if top5_cities:
-            today_str = latest_run.get("run_date", "")
-            top5_rows = _build_top5_rows_html(preds, top5_cities[:5])
-            flip_section = _build_flip_recommendations_section(preds, top5_cities[:5])
-            strategy_comparison = _build_strategy_comparison_section(preds)
-            divergence_section = _build_city_divergence_section(preds)
+        # ── RESOLVED RESULTS section (show all 51 cities' outcomes) ──
+        resolved_rows = ""
+        resolved_cities = []
+        for city, pdata in sorted(preds.items()):
+            strategies = pdata.get("strategies", {})
+            sigma = strategies.get("sigma", {})
+            p5s = strategies.get("p5", {})
+            means = strategies.get("mean", {})
+            sigma_result = sigma.get("result", "")
+            if sigma_result in ("WIN", "LOSS"):
+                resolved_cities.append((city, sigma, p5s, means))
 
-            multi_day_html += f"""
+        if resolved_cities:
+            for city, sigma, p5s, means in resolved_cities:
+                def _ri(r):
+                    return "✅ WIN" if r == "WIN" else ("❌ LOSS" if r == "LOSS" else "⏳")
+
+                sigma_spill = sigma.get("spill", "?")
+                p5_spill = p5s.get("spill", "?")
+                mean_spill = means.get("spill", "?")
+                actual = sigma.get("actual_peak")
+                actual_str = f"{actual:.1f}°C" if isinstance(actual, (int, float)) else "—"
+
+                resolved_rows += f"""
+                <tr>
+                    <td><strong>{city}</strong></td>
+                    <td>BUY {sigma_spill}°C</td>
+                    <td>{_ri(sigma.get('result', ''))} ({actual_str})</td>
+                    <td>BUY {p5_spill}°C</td>
+                    <td>{_ri(p5s.get('result', ''))}</td>
+                    <td>BUY {mean_spill}°C</td>
+                    <td>{_ri(means.get('result', ''))}</td>
+                </tr>"""
+
+            predictions_html += f"""
    <div class="section">
-     <h2>📅 TOP 5 — TODAY'S PREDICTIONS ({today_str})</h2>
-     <div style="overflow-x: auto;">
+     <h2>📊 AVGJORTE RESULTATER ({len(resolved_cities)} byer, {target_date})</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       Resolved against archive data. ✅ WIN = actual peak ≥ spill.
+     </p>
+     <div style="max-height: 600px; overflow-y: auto;">
      <table>
-       <thead><tr><th>#</th><th>City</th><th>BMA μ</th><th>Sigma Pos</th><th>P5 Pos</th><th>Mean Pos</th><th>Conf</th><th>Models</th><th>Peak</th><th>Sigma</th><th>P5</th><th>Mean</th><th>Rec</th></tr></thead>
-       <tbody>{top5_rows}
+       <thead><tr><th>By</th><th>Sigma Spill</th><th>Sigma Utfall</th><th>P5 Spill</th><th>P5 Utfall</th><th>Mean Spill</th><th>Mean Utfall</th></tr></thead>
+       <tbody>{resolved_rows}
        </tbody>
      </table>
      </div>
-   </div>
-   {flip_section}
-   {divergence_section}
-   {strategy_comparison}"""
+   </div>"""
 
     # Strategy summary cards
     strategy_cards = _build_strategy_summary_cards(
@@ -1024,8 +1037,8 @@ function sortTable(colIdx) {{
   <!-- PER-STRATEGY PERFORMANCE CARDS -->
   {strategy_cards}
 
-  <!-- MULTI-DAY TOP 5 -->
-  {multi_day_html}
+  <!-- TOP 5 PREDICTIONS -->
+  {predictions_html}
 
   <div class="section">
     <h2>📈 Sigma Strategy by Confidence Tier</h2>
@@ -1078,10 +1091,10 @@ ALL_CITIES_HTML_FILE = Path(_SCRIPT_DIR) / "_all_cities.html"
 
 
 def _generate_all_cities_html() -> str:
-    """Generate a self-contained HTML dashboard showing ALL cities across
-    lead_days 0 (I DAG), 1 (I MORGEN), and 2 (+2 DAGER).
+    """Generate a self-contained HTML dashboard showing ALL 51 cities
+    for the single target date (same day prediction → resolution).
 
-    Data is read from the latest run's multi_day section in the quality log.
+    Data is read from the latest run's flat predictions in the quality log.
     City metadata (timezone, station) is pulled from weather_monitor_defaults.json.
     """
     log_data = _load_log()
@@ -1107,46 +1120,20 @@ def _generate_all_cities_html() -> str:
         except Exception:
             pass
 
-    # Determine available lead days from the latest run's multi_day section
+    # Use flat predictions from the latest run (single day, no multi_day)
     latest_run = runs[-1] if runs else {}
-    multi_day = latest_run.get("multi_day", {})
+    preds = latest_run.get("predictions", {})
+    target_date = latest_run.get("target_date", latest_run.get("run_date", ""))
 
-    # Build per-lead_day city rows
+    # Single lead day (0 = today)
     day_data_by_lead: dict[int, dict] = {}
     day_labels: dict[int, str] = {}
     day_target_dates: dict[int, str] = {}
 
-    if multi_day:
-        for day_key in ("day1", "day2"):
-            day_data = multi_day.get(day_key, {})
-            if not day_data:
-                continue
-            lead_days = day_data.get("lead_days", 1)
-            target_date = day_data.get("target_date", "")
-            preds = day_data.get("predictions", {})
-            day_data_by_lead[lead_days] = preds
-            day_target_dates[lead_days] = target_date
-            if lead_days == 0:
-                day_labels[lead_days] = "I DAG"
-            elif lead_days == 1:
-                day_labels[lead_days] = "I MORGEN"
-            else:
-                day_labels[lead_days] = f"+{lead_days} DAGER"
-        # Also include today (lead_days=0) from flat predictions as fallback
-        if 0 not in day_data_by_lead and latest_run:
-            preds = latest_run.get("predictions", {})
-            if preds:
-                day_data_by_lead[0] = preds
-                day_labels[0] = "I DAG"
-                day_target_dates[0] = latest_run.get("run_date", "")
-    else:
-        # Fallback: use flat predictions
-        if latest_run:
-            preds = latest_run.get("predictions", {})
-            if preds:
-                day_data_by_lead[1] = preds
-                day_labels[1] = "I MORGEN"
-                day_target_dates[1] = latest_run.get("run_date", "")
+    if preds:
+        day_data_by_lead[0] = preds
+        day_labels[0] = "I DAG"
+        day_target_dates[0] = target_date
 
     if not day_data_by_lead:
         return "<!DOCTYPE html><html lang=\"no\"><head><meta charset=\"UTF-8\"><title>Alle 51 Byer</title></head><body style=\"background:#0d1117;color:#c9d1d9;font-family:sans-serif;padding:40px;text-align:center;\"><h1>Ingen data enda</h1><p>Kjor pipeline forst.</p></body></html>"
