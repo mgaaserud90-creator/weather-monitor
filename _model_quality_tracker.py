@@ -188,8 +188,8 @@ def _compute_optimal_spill(
         k = 0.7   # Low confidence → conservative
 
     sigma_spill = int(mean_c - k * std_c)
-    p5_spill = int(p5_c)
-    mean_spill = int(mean_c)
+    p5_spill = int(round(p5_c))
+    mean_spill = int(round(mean_c))
 
     # Win probability under normal approximation: P(temp ≥ T) = 1 - Φ((T-μ)/σ)
     def win_prob(t: float, mu: float, sigma: float) -> float:
@@ -772,10 +772,11 @@ async def hourly_check_mode() -> None:
                     pdata["peak_detected_at"] = confirmed_time.isoformat()
 
                     # Resolve ALL 3 strategies against the actual peak
+                    # Polymarket resolves to the EXACT rounded temperature bucket
                     for strat_name in ("sigma", "p5", "mean"):
                         strat = strategies.get(strat_name, {})
                         spill = strat.get("spill", 0)
-                        is_win = confirmed_temp >= spill
+                        is_win = round(confirmed_temp) == spill
                         strat["result"] = "WIN" if is_win else "LOSS"
                         strat["actual_peak"] = round(confirmed_temp, 1)
 
@@ -1099,10 +1100,11 @@ async def _rapid_peak_monitor(
                     pdata["peak_detected_at"] = confirmed_time.isoformat()
 
                     # Resolve ALL 3 strategies against the actual peak
+                    # Polymarket resolves to the EXACT rounded temperature bucket
                     for strat_name in ("sigma", "p5", "mean"):
                         strat = strategies.get(strat_name, {})
                         spill = strat.get("spill", 0)
-                        is_win = confirmed_temp >= spill
+                        is_win = round(confirmed_temp) == spill
                         strat["result"] = "WIN" if is_win else "LOSS"
                         strat["actual_peak"] = round(confirmed_temp, 1)
 
@@ -1178,10 +1180,12 @@ def _update_recommendation(pdata: dict) -> None:
     actual_peak = sigma.get("actual_peak")
 
     if sigma_result == "WIN":
-        pdata["recommendation"] = f"✅ HOLD — bet vinner ({actual_peak}°C ≥ {sigma_spill}°C)"
+        rounded_actual = round(actual_peak) if actual_peak is not None else "?"
+        pdata["recommendation"] = f"✅ HOLD — bet vinner (round({actual_peak}°C) == {sigma_spill}°C)"
     elif sigma_result == "LOSS":
         # Recommend flipping to SHORT
-        pdata["recommendation"] = f"🔴 SELG med tap — gå SHORT {sigma_spill}°C (peak={actual_peak}°C)"
+        rounded_actual = round(actual_peak) if actual_peak is not None else "?"
+        pdata["recommendation"] = f"🔴 SELG med tap — gå SHORT {sigma_spill}°C (peak={actual_peak}°C → round={rounded_actual} ≠ {sigma_spill})"
 
         # Check if P5 or mean strategies would also have lost
         p5_result = p5.get("result")
@@ -1278,11 +1282,11 @@ async def daily_close_mode() -> None:
         if archive_max is not None:
             pdata["peak_detected_at"] = _now_utc()
 
-            # Resolve ALL 3 strategies
+            # Resolve ALL 3 strategies using Polymarket rounding rule
             for strat_name in ("sigma", "p5", "mean"):
                 strat = strategies.get(strat_name, {})
                 spill = strat.get("spill", 0)
-                is_win = archive_max >= spill
+                is_win = round(archive_max) == spill
                 strat["result"] = "WIN" if is_win else "LOSS"
                 strat["actual_peak"] = round(archive_max, 1)
 

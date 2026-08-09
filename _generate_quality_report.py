@@ -776,10 +776,10 @@ def _generate_html_report() -> str:
 
             predictions_html += f"""
    <div class="section">
-     <h2>📊 AVGJORTE RESULTATER ({len(resolved_cities)} byer, {target_date})</h2>
-     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
-       Resolved against archive data. ✅ WIN = actual peak ≥ spill.
-     </p>
+      <h2>📊 AVGJORTE RESULTATER ({len(resolved_cities)} byer, {target_date})</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        Resolved against archive data. ✅ WIN = round(actual peak) == spill bucket.
+      </p>
      <div style="max-height: 600px; overflow-y: auto;">
      <table>
        <thead><tr><th>By</th><th>Sigma Spill</th><th>Sigma Utfall</th><th>P5 Spill</th><th>P5 Utfall</th><th>Mean Spill</th><th>Mean Utfall</th></tr></thead>
@@ -1253,15 +1253,14 @@ def _generate_all_cities_html() -> str:
             elif rec and "AVVENT" in str(rec):
                 rec_class = "rec-wait"
 
-            # Check if today's observed max guarantees the bet is won
+            # Check if today's observed max resolves to the spill bucket (rounding rule)
             actual_peak = d.get("actual_peak")
             sigma_spill = d["sigma_spill"]
             row_win = False
             peak_won = False
             if isinstance(actual_peak, (int, float)) and isinstance(sigma_spill, (int, float)):
-                if actual_peak >= sigma_spill:
+                if round(actual_peak) == sigma_spill:
                     row_win = True
-                if actual_peak > sigma_spill:
                     peak_won = True
             row_class = "city-row row-win" if row_win else "city-row"
 
