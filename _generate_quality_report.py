@@ -256,9 +256,9 @@ def _build_top5_rows_html(predictions: dict, top5_cities: list[str]) -> str:
         # Recommendation styling
         rec_class = ""
         if rec and "HOLD" in str(rec):
-            rec_class = 'style="color:#3fb950;"'
+            rec_class = 'style="color:#1b5e20;"'
         elif rec and "SELG" in str(rec):
-            rec_class = 'style="color:#f85149;"'
+            rec_class = 'style="color:#b71c1c;"'
         elif rec and "AVVENT" in str(rec):
             rec_class = 'style="color:#d2991d;"'
 
@@ -900,8 +900,12 @@ def _generate_html_report() -> str:
     border-top: 1px solid var(--border);
     margin-top: 24px;
   }}
-  .badge-win {{ color: var(--green); font-weight: 600; }}
-  .badge-loss {{ color: var(--red); font-weight: 600; }}
+  .badge-win {{ color: #1b5e20; font-weight: 600; }}
+  .badge-loss {{ color: #b71c1c; font-weight: 600; }}
+  .row-win td {{ color: #1a1a1a !important; }}
+  .row-loss td {{ color: #1a1a1a !important; }}
+  .status-win {{ color: #1b5e20; }}
+  .status-loss {{ color: #b71c1c; }}
   .rapid-badge {{
     display: inline-block;
     padding: 2px 8px;
@@ -1071,7 +1075,7 @@ function sortTable(colIdx) {{
         <tr><td>☁️ Cloud Cover</td><td><20% cloud cover</td><td>+3% confidence</td></tr>
         <tr><td>🏙️ UHI</td><td>Urban Heat Island adjustment</td><td>+0.5–3.0°C to BMA prediction</td></tr>
         <tr><td>💰 Kelly</td><td>Position sizing criterion</td><td>Optimal bet % of bankroll</td></tr>
-        <tr><td>🔗 Correlation</td><td>Cross-city correlation warnings</td><td>Reduce exposure if r≥0.55</td></tr>
+        <tr><td>🔗 Correlation</td><td>Cross-city correlation warnings</td><td>Reduce exposure if r >= 0.55</td></tr>
         <tr><td>📊 Ensemble Spread</td><td>P5–P95 range tracking</td><td>Narrow spread = higher confidence</td></tr>
         <tr><td>🚨 Alert Levels</td><td>INFO → MOMENTANT_OVER → ADVARSEL → KRITISK → BEKREFTET</td><td>Progressive alerting</td></tr>
       </tbody>
@@ -1262,7 +1266,7 @@ def _generate_all_cities_html() -> str:
                 if round(actual_peak) == sigma_spill:
                     row_win = True
                     peak_won = True
-            row_class = "city-row row-win" if row_win else "city-row"
+            row_class = "city-row row-win" if row_win else "city-row row-loss"
 
             safe_city_id = re.sub(r'[^a-zA-Z0-9]', '_', city)
             table_rows += f"""<tr class="{row_class}" data-lead="{ld}" data-city="{city}" data-conf="{conf:.3f}">
@@ -1354,11 +1358,17 @@ def _generate_all_cities_html() -> str:
   .conf-high {{ color: var(--green); font-weight: 600; }}
   .conf-mid {{ color: var(--orange); font-weight: 600; }}
   .conf-low {{ color: var(--red); font-weight: 600; }}
-  .rec-hold {{ color: var(--green); }}
-  .rec-sell {{ color: var(--red); }}
-  .rec-wait {{ color: var(--orange); }}
+  .rec-hold {{ color: #1b5e20; }}
+  .rec-sell {{ color: #b71c1c; }}
+  .rec-wait {{ color: #d2991d; }}
   .row-win {{ background: #c8e6c9; }}
+  .row-win td {{ color: #1a1a1a !important; }}
   .row-win:hover {{ background: #b9d9ba; }}
+  .row-loss {{ background: #ffcdd2; }}
+  .row-loss td {{ color: #1a1a1a !important; }}
+  .row-loss:hover {{ background: #f0c0c5; }}
+  .status-win {{ color: #1b5e20; }}
+  .status-loss {{ color: #b71c1c; }}
   footer {{ text-align: center; padding: 16px; color: var(--text-dim); font-size: 0.75rem; border-top: 1px solid var(--border); margin-top: 20px; }}
   @media (max-width: 768px) {{ .date-bar {{ gap: 6px; }} .date-btn {{ padding: 8px 14px; font-size: 0.8rem; }} table {{ font-size: 0.7rem; }} }}
 </style>

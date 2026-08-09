@@ -94,8 +94,12 @@
     border-top: 1px solid var(--border);
     margin-top: 24px;
   }
-  .badge-win { color: var(--green); font-weight: 600; }
-  .badge-loss { color: var(--red); font-weight: 600; }
+  .badge-win { color: #1b5e20; font-weight: 600; }
+  .badge-loss { color: #b71c1c; font-weight: 600; }
+  .row-win td { color: #1a1a1a !important; }
+  .row-loss td { color: #1a1a1a !important; }
+  .status-win { color: #1b5e20; }
+  .status-loss { color: #b71c1c; }
   .rapid-badge {
     display: inline-block;
     padding: 2px 8px;
@@ -145,7 +149,7 @@
 // No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-08-09T17:56:10Z');
+    var deployTime = new Date('2026-08-09T18:02:49Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {
@@ -273,7 +277,7 @@ function sortTable(colIdx) {
                 <td><span class="badge-win">✅ WIN</span></td>
                 <td><span class="badge-win">✅ WIN</span></td>
                 <td><span class="badge-win">✅ WIN</span></td>
-                <td style="color:#3fb950;">✅ HOLD — bet vinner (12.9°C ≥ 11°C)</td>
+                <td style="color:#1b5e20;">✅ HOLD — bet vinner (12.9°C ≥ 11°C)</td>
             </tr>
             <tr>
                 <td>2</td>
@@ -288,7 +292,7 @@ function sortTable(colIdx) {
                 <td><span class="badge-loss">❌ LOSS</span></td>
                 <td><span class="badge-win">✅ WIN</span></td>
                 <td><span class="badge-loss">❌ LOSS</span></td>
-                <td style="color:#f85149;">🔴 SELG med tap — gå SHORT 23°C (peak=22.4°C) | Alt. ville vunnet: P5@22°C</td>
+                <td style="color:#b71c1c;">🔴 SELG med tap — gå SHORT 23°C (peak=22.4°C) | Alt. ville vunnet: P5@22°C</td>
             </tr>
             <tr>
                 <td>3</td>
@@ -303,7 +307,7 @@ function sortTable(colIdx) {
                 <td><span class="badge-win">✅ WIN</span></td>
                 <td><span class="badge-win">✅ WIN</span></td>
                 <td><span class="badge-win">✅ WIN</span></td>
-                <td style="color:#3fb950;">✅ HOLD — bet vinner (32.3°C ≥ 31°C)</td>
+                <td style="color:#1b5e20;">✅ HOLD — bet vinner (32.3°C ≥ 31°C)</td>
             </tr>
             <tr>
                 <td>4</td>
@@ -318,7 +322,7 @@ function sortTable(colIdx) {
                 <td><span class="badge-win">✅ WIN</span></td>
                 <td><span class="badge-win">✅ WIN</span></td>
                 <td><span class="badge-win">✅ WIN</span></td>
-                <td style="color:#3fb950;">✅ HOLD — bet vinner (35.6°C ≥ 34°C)</td>
+                <td style="color:#1b5e20;">✅ HOLD — bet vinner (35.6°C ≥ 34°C)</td>
             </tr>
             <tr>
                 <td>5</td>
@@ -333,7 +337,7 @@ function sortTable(colIdx) {
                 <td><span class="badge-win">✅ WIN</span></td>
                 <td><span class="badge-win">✅ WIN</span></td>
                 <td><span class="badge-win">✅ WIN</span></td>
-                <td style="color:#3fb950;">✅ HOLD — bet vinner (32.6°C ≥ 30°C)</td>
+                <td style="color:#1b5e20;">✅ HOLD — bet vinner (32.6°C ≥ 30°C)</td>
             </tr>
        </tbody>
      </table>
@@ -1323,7 +1327,7 @@ function sortTable(colIdx) {
         <tr><td>☁️ Cloud Cover</td><td><20% cloud cover</td><td>+3% confidence</td></tr>
         <tr><td>🏙️ UHI</td><td>Urban Heat Island adjustment</td><td>+0.5–3.0°C to BMA prediction</td></tr>
         <tr><td>💰 Kelly</td><td>Position sizing criterion</td><td>Optimal bet % of bankroll</td></tr>
-        <tr><td>🔗 Correlation</td><td>Cross-city correlation warnings</td><td>Reduce exposure if r≥0.55</td></tr>
+        <tr><td>🔗 Correlation</td><td>Cross-city correlation warnings</td><td>Reduce exposure if r >= 0.55</td></tr>
         <tr><td>📊 Ensemble Spread</td><td>P5–P95 range tracking</td><td>Narrow spread = higher confidence</td></tr>
         <tr><td>🚨 Alert Levels</td><td>INFO → MOMENTANT_OVER → ADVARSEL → KRITISK → BEKREFTET</td><td>Progressive alerting</td></tr>
       </tbody>

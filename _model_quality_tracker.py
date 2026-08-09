@@ -160,7 +160,7 @@ def _compute_optimal_spill(
 ) -> dict[str, float | int]:
     """Compute optimal bet levels using BMA statistics.
 
-    For Polymarket "Highest temp ≥ T?" markets:
+    For Polymarket "Highest temp round(T) == spill?" markets:
       P(win) = 1 - Φ((T - μ)/σ)  assuming normal distribution.
 
     Strategy: Sigma-Adjusted Bet Level
