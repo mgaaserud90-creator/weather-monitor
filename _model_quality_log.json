@@ -6184,9 +6184,9 @@
     {
       "run_date": "2026-08-09",
       "target_date": "2026-08-10",
-      "phase": "daily_bma",
+      "phase": "rapid_peak_monitor",
       "run_started": "2026-08-09T06:35:13.959810+00:00",
-      "last_updated": "2026-08-09T06:39:12.896473+00:00",
+      "last_updated": "2026-08-09T08:16:11.605897+00:00",
       "top_5_confidence": [
         "Buenos Aires, AR",
         "Moscow, RU",
@@ -6327,26 +6327,26 @@
               "spill": 34,
               "k": 0.5,
               "win_prob": 0.888,
-              "result": null,
-              "actual_peak": null
+              "result": "WIN",
+              "actual_peak": 35.6
             },
             "p5": {
               "spill": 33,
               "k": null,
               "win_prob": 0.993,
-              "result": null,
-              "actual_peak": null
+              "result": "WIN",
+              "actual_peak": 35.6
             },
             "mean": {
               "spill": 35,
               "k": 0.0,
               "win_prob": 0.5,
-              "result": null,
-              "actual_peak": null
+              "result": "WIN",
+              "actual_peak": 35.6
             }
           },
-          "peak_detected_at": null,
-          "recommendation": null,
+          "peak_detected_at": "2026-08-09T15:30:00",
+          "recommendation": "✅ HOLD — bet vinner (35.6°C ≥ 34°C)",
           "_lat": 23.3924,
           "_lon": 113.2988,
           "_tz": "Asia/Shanghai",
@@ -6367,26 +6367,26 @@
               "spill": 30,
               "k": 0.7,
               "win_prob": 0.921,
-              "result": null,
-              "actual_peak": null
+              "result": "WIN",
+              "actual_peak": 32.6
             },
             "p5": {
               "spill": 29,
               "k": null,
               "win_prob": 0.995,
-              "result": null,
-              "actual_peak": null
+              "result": "WIN",
+              "actual_peak": 32.6
             },
             "mean": {
               "spill": 31,
               "k": 0.0,
               "win_prob": 0.593,
-              "result": null,
-              "actual_peak": null
+              "result": "WIN",
+              "actual_peak": 32.6
             }
           },
-          "peak_detected_at": null,
-          "recommendation": null,
+          "peak_detected_at": "2026-08-09T15:30:00",
+          "recommendation": "✅ HOLD — bet vinner (32.6°C ≥ 30°C)",
           "_lat": 1.3592,
           "_lon": 103.9894,
           "_tz": "Asia/Singapore",
@@ -8237,11 +8237,161 @@
         }
       },
       "observations": {
-        "Buenos Aires, AR": [],
-        "Moscow, RU": [],
-        "Houston, US": [],
-        "Guangzhou, CN": [],
-        "Singapore, SG": []
+        "Buenos Aires, AR": [
+          {
+            "time": "2026-08-09T04:30:00",
+            "temp_c": 4.5,
+            "peak_state": "pre_peak"
+          }
+        ],
+        "Moscow, RU": [
+          {
+            "time": "2026-08-09T10:30:00",
+            "temp_c": 19.1,
+            "peak_state": "pre_peak"
+          }
+        ],
+        "Houston, US": [
+          {
+            "time": "2026-08-09T02:30:00",
+            "temp_c": 26.4,
+            "peak_state": "pre_peak"
+          }
+        ],
+        "Guangzhou, CN": [
+          {
+            "time": "2026-08-09T15:30:00",
+            "temp_c": 35.6,
+            "peak_state": "peak_window"
+          },
+          {
+            "time": "2026-08-09T15:30:00",
+            "temp_c": 35.6,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T15:45:00",
+            "temp_c": 35.6,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T15:45:00",
+            "temp_c": 35.6,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T15:45:00",
+            "temp_c": 35.6,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T15:45:00",
+            "temp_c": 35.6,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T15:45:00",
+            "temp_c": 35.6,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T16:00:00",
+            "temp_c": 35.5,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T16:00:00",
+            "temp_c": 35.5,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T16:00:00",
+            "temp_c": 35.5,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T16:00:00",
+            "temp_c": 35.5,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T16:00:00",
+            "temp_c": 35.5,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T16:15:00",
+            "temp_c": 35.5,
+            "peak_state": "in_window_rapid"
+          }
+        ],
+        "Singapore, SG": [
+          {
+            "time": "2026-08-09T15:30:00",
+            "temp_c": 32.6,
+            "peak_state": "peak_window"
+          },
+          {
+            "time": "2026-08-09T15:30:00",
+            "temp_c": 32.6,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T15:45:00",
+            "temp_c": 32.5,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T15:45:00",
+            "temp_c": 32.5,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T15:45:00",
+            "temp_c": 32.5,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T15:45:00",
+            "temp_c": 32.5,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T15:45:00",
+            "temp_c": 32.5,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T16:00:00",
+            "temp_c": 32.4,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T16:00:00",
+            "temp_c": 32.4,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T16:00:00",
+            "temp_c": 32.4,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T16:00:00",
+            "temp_c": 32.4,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T16:00:00",
+            "temp_c": 32.4,
+            "peak_state": "in_window_rapid"
+          },
+          {
+            "time": "2026-08-09T16:15:00",
+            "temp_c": 32.2,
+            "peak_state": "in_window_rapid"
+          }
+        ]
       },
       "summary": {
         "sigma_wins": 0,
