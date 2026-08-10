@@ -141,6 +141,53 @@ def _parse_market_question(question: str) -> dict[str, Any] | None:
     }
 
 
+def _extract_market_date(question: str) -> date | None:
+    """Extract the target date from a Polymarket temperature question.
+
+    Handles formats like:
+      - "Highest temperature in Shanghai on August 10?"
+      - "Lowest temperature in Tokyo on Aug 5?"
+      - "on 2026-08-10"
+
+    Returns the market date as a `date` object, or None if unparseable.
+    """
+    # ISO format: YYYY-MM-DD
+    m = re.search(r'(\d{4})-(\d{2})-(\d{2})', question)
+    if m:
+        try:
+            return date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+        except ValueError:
+            pass
+
+    # Human-readable: "August 10" / "Aug 10" / "August 10, 2026"
+    _MONTH_MAP: dict[str, int] = {
+        "january": 1, "february": 2, "march": 3, "april": 4,
+        "may": 5, "june": 6, "july": 7, "august": 8,
+        "september": 9, "october": 10, "november": 11, "december": 12,
+        "jan": 1, "feb": 2, "mar": 3, "apr": 4,
+        "jun": 6, "jul": 7, "aug": 8,
+        "sep": 9, "oct": 10, "nov": 11, "dec": 12,
+    }
+    m = re.search(
+        r'(January|February|March|April|May|June|July|August|September|October|November|December|'
+        r'Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+(\d{1,2})(?:,?\s+(\d{4}))?',
+        question, re.IGNORECASE,
+    )
+    if m:
+        month_name = m.group(1).lower()
+        day = int(m.group(2))
+        year_str = m.group(3)
+        year = int(year_str) if year_str else date.today().year
+        month = _MONTH_MAP.get(month_name)
+        if month:
+            try:
+                return date(year, month, day)
+            except ValueError:
+                return None
+
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Core: Compute Edge
 # ---------------------------------------------------------------------------
@@ -215,6 +262,16 @@ def load_market_prices() -> tuple[list[dict], str]:
 
         # Skip resolved/settled markets (price at extremes)
         if yes_price > 0.99 or yes_price < 0.01:
+            continue
+
+        # Stronger resolved filter: very low price (<2%) with negligible volume
+        # → likely a losing bucket in an already-resolved market
+        if yes_price < 0.02 and m.get("volume", 0) < 10:
+            continue
+
+        # Skip past-date markets (only show today or tomorrow)
+        market_date = _extract_market_date(question)
+        if market_date is not None and market_date < date.today():
             continue
 
         opportunities.append({
