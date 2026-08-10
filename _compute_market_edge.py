@@ -123,8 +123,8 @@ def fmt_temp(temp_c: float | int | str, city: str = "", unit: str = "°C") -> st
         val = temp_c
         return f"{val}{unit}" if unit else val
     if unit == "°F" or (city and is_us_city(city)):
-        f = round(c_to_f(float(temp_c)))
-        return f"{f}°F"
+        f = c_to_f(float(temp_c))
+        return f"{f:.1f}°F"
     return f"{temp_c}°C"
 
 
