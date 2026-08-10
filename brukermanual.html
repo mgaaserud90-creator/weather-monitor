@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VærMonitor — Brukermanual</title>
+<style>
+  :root {
+    --bg: #0d1117; --bg-card: #161b22; --bg-card-hover: #1c2333;
+    --border: #30363d; --text: #c9d1d9; --text-dim: #8b949e;
+    --green: #3fb950; --red: #f85149; --orange: #d2991d;
+    --blue: #58a6ff; --purple: #bc8cff; --teal: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.7;
+    max-width: 900px; margin: 0 auto; padding: 30px 20px 60px;
+  }
+  h1 { font-size: 2rem; color: var(--blue); margin-bottom: 4px; font-weight: 800; }
+  h2 { font-size: 1.4rem; color: var(--green); border-bottom: 1px solid var(--border); padding-bottom: 6px; margin: 36px 0 16px; }
+  h3 { font-size: 1.1rem; color: var(--teal); margin: 20px 0 8px; }
+  p { margin: 8px 0; }
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    background: #1c2333; color: var(--teal); padding: 2px 7px;
+    border-radius: 4px; font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 0.88em;
+  }
+  pre {
+    background: #161b22; border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px 20px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5;
+    margin: 12px 0;
+  }
+  pre code { background: none; padding: 0; }
+  table {
+    width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.9rem;
+  }
+  th, td {
+    border: 1px solid var(--border); padding: 8px 12px; text-align: left;
+  }
+  th {
+    background: #1c2333; color: var(--blue); font-weight: 600;
+  }
+  tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+  .tip {
+    background: rgba(63, 185, 80, 0.1); border-left: 4px solid var(--green);
+    padding: 12px 16px; border-radius: 0 6px 6px 0; margin: 16px 0;
+  }
+  .warn {
+    background: rgba(248, 81, 73, 0.1); border-left: 4px solid var(--red);
+    padding: 12px 16px; border-radius: 0 6px 6px 0; margin: 16px 0;
+  }
+  .info {
+    background: rgba(88, 166, 255, 0.1); border-left: 4px solid var(--blue);
+    padding: 12px 16px; border-radius: 0 6px 6px 0; margin: 16px 0;
+  }
+  .tip::before { content: "💡 Tips: "; font-weight: 700; color: var(--green); }
+  .warn::before { content: "⚠️ Advarsel: "; font-weight: 700; color: var(--red); }
+  .info::before { content: "ℹ️ "; font-weight: 700; color: var(--blue); }
+  .toc { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin: 20px 0; }
+  .toc ol { margin: 8px 0 0 20px; }
+  .toc li { margin: 4px 0; }
+  .back-link {
+    display: inline-block; margin-bottom: 20px; color: var(--text-dim);
+    font-size: 0.9rem; transition: color 0.2s;
+  }
+  .back-link:hover { color: var(--blue); text-decoration: none; }
+  .signal-buy { color: var(--green); font-weight: 700; }
+  .signal-short { color: var(--red); font-weight: 700; }
+  .signal-flat { color: var(--text-dim); }
+  .emoji { font-size: 1.2em; }
+  @media (max-width: 640px) {
+    body { padding: 15px 12px 40px; }
+    h1 { font-size: 1.5rem; }
+    pre { font-size: 0.78rem; padding: 12px; }
+    table { font-size: 0.78rem; }
+    th, td { padding: 6px 8px; }
+  }
+</style>
+</head>
+<body>
+
+<a href="index.html" class="back-link">← Tilbake til VærMonitor</a>
+<h1>🌤️ VærMonitor — Brukermanual</h1>
+<p style="color: var(--text-dim); font-size: 0.95rem;">Komplett guide til VærMonitor-dashbordet, trading-strategiene, og pipelinesystemet.</p>
+
+<div class="toc">
+  <strong style="color: var(--blue);">📑 Innhold</strong>
+  <ol>
+    <li><a href="#intro">Introduksjon</a></li>
+    <li><a href="#dashboardsider">Dashboard-sider</a></li>
+    <li><a href="#analyse">Slik fungerer analysen</a></li>
+    <li><a href="#strategier">Strategier</a></li>
+    <li><a href="#peak">Peak Detection</a></li>
+    <li><a href="#markedsedge">Markeds-edge</a></li>
+    <li><a href="#resolution">Resolution Arbitrage</a></li>
+    <li><a href="#sms">SMS-varsler</a></li>
+    <li><a href="#pipeline">Pipeline</a></li>
+    <li><a href="#feilsoking">Feilsøking</a></li>
+  </ol>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="intro">1. Introduksjon</h2>
+
+<p>VærMonitor er et avansert analyseverktøy som bruker <strong>8 uavhengige værvarslingsmodeller</strong> kombinert via Bayesiansk modell-gjennomsnitt (BMA) for å predikere daglige maksimumstemperaturer i <strong>51 byer globalt</strong>.</p>
+
+<p>Prediksjonene sammenlignes mot <a href="https://polymarket.com" target="_blank">Polymarket.com</a> sine temperaturmarkeder for å identifisere statistisk edge — situasjoner der markedet priser et utfall annerledes enn hva værmodellene tilsier.</p>
+
+<h3>Hva gjør VærMonitor unikt?</h3>
+<ul>
+  <li><strong>Multi-modell ensemble:</strong> ECMWF, GFS, ICON, GEM, UKMO, JMA, HRRR, og AIFS kombineres — ingen enkeltmodell dominerer.</li>
+  <li><strong>Early peak detection:</strong> Systemet oppdager at dagens maksimumstemperatur er nådd <em>før</em> Polymarket-markedet justerer seg.</li>
+  <li><strong>3 parallelle strategier:</strong> Sigma (adaptiv), P5 (ultra-konservativ), Mean (50/50 referanse).</li>
+  <li><strong>Helt automatisert:</strong> Pipeline kjører hver time via GitHub Actions, dashboard oppdateres automatisk.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="dashboardsider">2. Dashboard-sider</h2>
+
+<p>VærMonitor har fire dashboardsider, tilgjengelige fra <a href="index.html">hjemmesiden</a>:</p>
+
+<h3>📊 Kvalitetsrapport</h3>
+<p>Hovedsiden (<a href="_quality_report.html"><code>_quality_report.html</code></a>). Viser:</p>
+<ul>
+  <li><strong>Strategi-sammendrag:</strong> Win-rate kort for Sigma, P5, og Mean med W/L-statistikk.</li>
+  <li><strong>Top 5 i dag + i morgen:</strong> Byer med høyest BMA-confidence, med anbefalt posisjon per strategi.</li>
+  <li><strong>Avgjorte resultater:</strong> Alle byer som har fått bekreftet peak, med WIN/LOSS per strategi.</li>
+  <li><strong>Flip-anbefalinger:</strong> Byer der BUY-posisjonen tapte — anbefaling om å selge og gå SHORT.</li>
+  <li><strong>Edge Validation:</strong> A/B-test av hver feature (model weighting, spread filtering, dynamic k, UHI).</li>
+  <li><strong>Per-City strategi-anbefaling:</strong> Hvilken strategi som historisk har prestert best for hver by.</li>
+</ul>
+
+<h3>🌍 Alle 51 Byer</h3>
+<p>Full by-tabell (<a href="_all_cities.html"><code>_all_cities.html</code></a>). Viser:</p>
+<ul>
+  <li>Live temperatur for alle 51 byer (hentes ved knappetrykk via Open-Meteo).</li>
+  <li>BMA-prediksjon, BMA-sannsynlighet per bøtte, markedspris, edge, og signal.</li>
+  <li>Sparkline-grafer som viser dagens temperaturutvikling mot BMA-prediksjon.</li>
+  <li>Fargekodet: 🟢 BUY (BMA > Marked), 🔴 SHORT (BMA < Marked).</li>
+</ul>
+
+<h3>📈 Live Peak Detection</h3>
+<p>Sanntids-overvåkning (<a href="_peak_detection.html"><code>_peak_detection.html</code></a>). Viser:</p>
+<ul>
+  <li>Peak-status for valgte byer: STIGER, PEAK-VINDU, MULIG PEAK, PEAK BEKREFTET.</li>
+  <li>Live confidence (0-98%) med trend-indikator.</li>
+  <li>5 alert-nivåer: info, advarsel, kritisk, bekreftet.</li>
+</ul>
+
+<h3>📖 Brukermanual</h3>
+<p>Denne siden (<code>brukermanual.html</code>). Full dokumentasjon for sluttbrukere.</p>
+
+<!-- ============================================================ -->
+<h2 id="analyse">3. Slik fungerer analysen</h2>
+
+<h3>Steg 1: Værprognoser</h3>
+<p>Systemet henter daglige maksimumstemperatur-prognoser fra 8 uavhengige værmodeller via Open-Meteo sitt gratis API. Hver modell gir sin prediksjon for morgendagens maksimumstemperatur.</p>
+
+<h3>Steg 2: BMA Ensemble</h3>
+<p>De 8 modellene kombineres ved hjelp av <strong>Bayesian Model Averaging (BMA)</strong>:</p>
+<pre><code>μ = Σ(w_i × μ_i)        Vektet gjennomsnitt
+σ² = Σ(w_i × (σ²_i + (μ_i − μ)²))   Vektet standardavvik
+
+hvor w_i er modell-vekten (ECMWF: 0.30, GFS: 0.20, ICON: 0.15, osv.)</code></pre>
+
+<p>BMA-modellen produserer:</p>
+<ul>
+  <li><strong>μ (mean):</strong> Beste estimat for morgendagens maksimumstemperatur.</li>
+  <li><strong>σ (std):</strong> Usikkerhet i prediksjonen.</li>
+  <li><strong>P5–P95:</strong> 90% konfidensintervall.</li>
+  <li><strong>Confidence:</strong> Hvor sikker modellen er (0-99%).</li>
+</ul>
+
+<h3>Steg 3: Strategi-generering</h3>
+<p>Basert på BMA-resultatene beregnes anbefalt spill-nivå for hver av 3 strategier (se <a href="#strategier">Strategier</a>).</p>
+
+<h3>Steg 4: Markeds-sammenligning</h3>
+<p>Systemet henter Polymarket-priser for temperatur-markeder og sammenligner:</p>
+<pre><code>edge = BMA_sannsynlighet − markedspris
+
+🟢 BUY:  edge > 0  → BMA mener utfallet er mer sannsynlig enn markedet tror
+🔴 SHORT: edge < 0  → BMA mener utfallet er mindre sannsynlig enn markedet tror
+⚪ FLAT:  edge = 0  → Ingen edge</code></pre>
+
+<h3>Steg 5: Peak Detection</h3>
+<p>Gjennom dagen overvåkes temperaturen i sanntid. Når dagens maksimum er nådd, bekreftes peak, og alle strategier avgjøres som WIN eller LOSS (se <a href="#peak">Peak Detection</a>).</p>
+
+<!-- ============================================================ -->
+<h2 id="strategier">4. Strategier</h2>
+
+<p>VærMonitor evaluerer tre parallelle strategier for hver by, hver dag:</p>
+
+<table>
+  <tr><th>Strategi</th><th>Formel</th><th>Win-sannsynlighet</th><th>Stil</th></tr>
+  <tr>
+    <td>🎯 <strong>Sigma (μ−kσ)</strong></td>
+    <td><code>spill = ⌊μ − k × σ⌋</code></td>
+    <td>62–84%</td>
+    <td><strong>Adaptiv</strong> — k justeres automatisk</td>
+  </tr>
+  <tr>
+    <td>🛡️ <strong>P5-Basert</strong></td>
+    <td><code>spill = ⌊P5⌋</code></td>
+    <td>~95%</td>
+    <td><strong>Ultra-konservativ</strong> — nesten garantert gevinst</td>
+  </tr>
+  <tr>
+    <td>📊 <strong>Mean-Basert</strong></td>
+    <td><code>spill = ⌊μ⌋</code></td>
+    <td>~50%</td>
+    <td><strong>Balansert</strong> — 50/50 referanse</td>
+  </tr>
+</table>
+
+<h3>🎯 Sigma-strategien (anbefalt)</h3>
+<p>Dette er hovedstrategien. Den trekker fra et sikkerhetsmargin (<code>k × σ</code>) fra BMA-gjennomsnittet. k-faktoren justeres dynamisk:</p>
+
+<table>
+  <tr><th>BMA Confidence</th><th>k</th><th>Win-sannsynlighet</th><th>Forklaring</th></tr>
+  <tr><td>> 80%</td><td>0.3</td><td>~62%</td><td>Høy confidence → aggressivt spill</td></tr>
+  <tr><td>70–80%</td><td>0.5</td><td>~69%</td><td>Medium confidence → balansert</td></tr>
+  <tr><td>< 70%</td><td>0.7</td><td>~76%</td><td>Lav confidence → konservativt</td></tr>
+</table>
+
+<div class="tip">Sigma-strategien har historisk oppnådd ~60-75% win-rate. Den adaptive k-faktoren gjør at systemet er mer aggressivt når modellene er enige, og mer konservativt når de spriker.</div>
+
+<h3>Hvordan avgjøres WIN/LOSS?</h3>
+<p>Polymarket avgjør temperatur-markeder basert på <strong>avrundet faktisk maksimumstemperatur</strong>:</p>
+<pre><code>WIN  hvis round(faktisk_maks) == spill
+LOSS hvis round(faktisk_maks) != spill</code></pre>
+
+<p>Eksempel: Hvis BMA predikerer 35.4°C og sigma-strategien anbefaler BUY 35°C, og faktisk maks blir 35.2°C → <code>round(35.2) = 35</code> → WIN ✅</p>
+
+<!-- ============================================================ -->
+<h2 id="peak">5. Peak Detection</h2>
+
+<p>Peak detection er systemets evne til å oppdage <strong>når dagens maksimumstemperatur er nådd</strong> — ofte 10–30 minutter før Polymarket-markedet justerer seg.</p>
+
+<h3>7 Tilstander</h3>
+
+<table>
+  <tr><th>Tilstand</th><th>Emoji</th><th>Betydning</th></tr>
+  <tr><td><strong>Venter</strong></td><td>⏳</td><td>Måldatoen er i fremtiden — ingenting å overvåke enda</td></tr>
+  <tr><td><strong>Fullført</strong></td><td>✅</td><td>Måldatoen har passert</td></tr>
+  <tr><td><strong>Stiger</strong></td><td>🔵</td><td>Temperaturen øker, men peak-vinduet har ikke startet</td></tr>
+  <tr><td><strong>Peak-vindu</strong></td><td>🟡</td><td>Innenfor forventet peak-tid — temperaturen kan fortsatt stige</td></tr>
+  <tr><td><strong>Mulig peak</strong></td><td>🟠</td><td>Temperatur synkende, eller ingen ny maks på 60+ minutter</td></tr>
+  <tr><td><strong>Peak bekreftet</strong></td><td>🔴</td><td>Bekreftet: synkende 30+ minutter etter peak-vinduets slutt</td></tr>
+  <tr><td><strong>Fullført</strong></td><td>✅</td><td>2+ timer etter peak — markedet bør være avgjort</td></tr>
+</table>
+
+<h3>5 Alert-nivåer</h3>
+
+<table>
+  <tr><th>Nivå</th><th>Utløser</th><th>Handling</th></tr>
+  <tr><td>🟢 <strong>Info</strong></td><td>Temp > anbefalt spill</td><td>Vurder å selge — posisjonen er i pluss</td></tr>
+  <tr><td>🟡 <strong>Advarsel</strong></td><td>Live confidence > 60%</td><td>Peak sannsynlig nådd — overvåk nøye</td></tr>
+  <tr><td>🟠 <strong>Kritisk</strong></td><td>Live confidence > 80% + decline ≥ 10 min</td><td>SNU POSISJON NÅ — <5% sjanse for ny rekord</td></tr>
+  <tr><td>🔴 <strong>Bekreftet</strong></td><td>Live confidence > 90%</td><td>Peak låst — markedet justeres snart</td></tr>
+</table>
+
+<h3>Rapid Peak Monitor</h3>
+<p>Når en by er i peak-vinduet, aktiveres <strong>rapid peak monitor</strong>: polling hvert 3. minutt med alle 8 edge-filtre aktive (fuktighet, skydekke, UHI, Kelly, korrelasjon, spread).</p>
+
+<!-- ============================================================ -->
+<h2 id="markedsedge">6. Markeds-edge</h2>
+
+<p>Markeds-edge er forskjellen mellom hva BMA-modellen predikerer og hva Polymarket-markedet priser:</p>
+
+<pre><code>edge = BMA_prob − market_prob   (i prosentpoeng)
+
+Eksempel: Madrid 35°C
+  BMA sannsynlighet: 62%  (BMA μ=35.4°C, σ=0.6 → P(round=35) = 62%)
+  Markedspris:       45%  (Polymarket "Yes" = 45¢)
+  Edge:             +17%  → 🟢 BUY — markedet undervurderer 35°C</code></pre>
+
+<h3>Slik leser du edge-tabellen</h3>
+
+<table>
+  <tr><th>Kolonne</th><th>Forklaring</th></tr>
+  <tr><td><strong>By</strong></td><td>Byen markedet gjelder</td></tr>
+  <tr><td><strong>Spill (°C)</strong></td><td>Temperatur-bøtten det handles på</td></tr>
+  <tr><td><strong>BMA %</strong></td><td>BMA-modellens estimerte sannsynlighet for dette utfallet</td></tr>
+  <tr><td><strong>Marked %</strong></td><td>Polymarkets prising (0–100)</td></tr>
+  <tr><td><strong>Edge</strong></td><td>Differansen: positiv = undervurdert, negativ = overvurdert</td></tr>
+  <tr><td><strong>Signal</strong></td><td>🟢 BUY / 🔴 SHORT / ⚪ FLAT</td></tr>
+  <tr><td><strong>BMA μ / σ</strong></td><td>BMA-gjennomsnitt og standardavvik</td></tr>
+</table>
+
+<div class="info">Edge > 10% utheves med fet skrift. Dette er markedene med størst potensial.</div>
+
+<!-- ============================================================ -->
+<h2 id="resolution">7. Resolution Arbitrage</h2>
+
+<p><strong>Resolution Arbitrage</strong> er en spesiell type mulighet som oppstår <em>etter</em> at peak-vinduet har passert og faktisk temperatur er kjent, men markedet fortsatt handler som om utfallet er usikkert.</p>
+
+<h3>Slik fungerer det</h3>
+<ol>
+  <li>Peak-vinduet passerer (f.eks. Madrid 15:00–18:00 → kl. 19:00 er peak passert).</li>
+  <li>Faktisk maksimumstemperatur er kjent (f.eks. 36.1°C → vinner-bøtte = 36°C).</li>
+  <li>Systemet scanner Polymarket for bøtter som fortsatt har feil pris.</li>
+</ol>
+
+<h3>To typer muligheter</h3>
+
+<table>
+  <tr><th>Type</th><th>Betingelse</th><th>Profitt</th></tr>
+  <tr>
+    <td>🔴 <strong>SHORT taper</strong></td>
+    <td>Taper-bøtte @ 1–50¢</td>
+    <td>Selg til gjeldende pris, få 100¢ ved resolution → profitt = 100 − pris</td>
+  </tr>
+  <tr>
+    <td>🟢 <strong>BUY vinner</strong></td>
+    <td>Vinner-bøtte @ 50–95¢</td>
+    <td>Kjøp til gjeldende pris, få 100¢ ved resolution → profitt = 100 − pris</td>
+  </tr>
+</table>
+
+<div class="warn">Resolution arbitrage er tidskritisk — markedet kan korrigere seg når som helst. Handl raskt når muligheter dukker opp.</div>
+
+<!-- ============================================================ -->
+<h2 id="sms">8. SMS-varsler</h2>
+
+<p>VærMonitor kan sende SMS-varsler via Twilio når en strategi er i fare.</p>
+
+<h3>Når sendes SMS?</h3>
+<ul>
+  <li>BMA-confidence > 70% (modellen er sikker).</li>
+  <li>Sigma win-sannsynlighet < 50% (strategien er i fare).</li>
+  <li>Kun én SMS per by per dag (for å unngå spam).</li>
+</ul>
+
+<h3>Eksempel på SMS</h3>
+<pre><code>VARSMONITOR: Madrid, ES peak sannsynlig (82%).
+KJOP 35C star i fare (42% win prob).
+Vurder SELG. (2026-08-10)</code></pre>
+
+<h3>Oppsett</h3>
+<ol>
+  <li>Opprett konto på <a href="https://www.twilio.com" target="_blank">twilio.com</a></li>
+  <li>Skaff Account SID, Auth Token, og et Twilio-nummer</li>
+  <li>Sett som GitHub Secrets: <code>TWILIO_SID</code>, <code>TWILIO_TOKEN</code>, <code>TWILIO_FROM</code></li>
+  <li>Sett miljøvariabel <code>ALERT_PHONE</code> til ditt telefonnummer</li>
+</ol>
+
+<div class="tip">Twilio gir $15 gratis kreditt ved opprettelse — nok til ~200 SMS. Test med <code>python _sms_alert.py --test</code>.</div>
+
+<!-- ============================================================ -->
+<h2 id="pipeline">9. Pipeline</h2>
+
+<p>Hele systemet kjører automatisk via GitHub Actions. Du trenger ikke gjøre noe — pipeline går av seg selv.</p>
+
+<h3>Timeplan (UTC)</h3>
+
+<table>
+  <tr><th>Tid (UTC)</th><th>Hva skjer</th></tr>
+  <tr><td>Hver time</td><td><strong>hourly_active</strong> — BMA + peak check for byer i aktivt vindu</td></tr>
+  <tr><td>23:00</td><td><strong>daily_close</strong> — Hent arkivdata, avgjør ALLE 51 byer, generer rapport</td></tr>
+</table>
+
+<h3>Hva skjer ved hver kjøring?</h3>
+<ol>
+  <li>Systemet finner hvilke byer som er i sitt aktive vindu (04:00–peak_end+2 lokal tid).</li>
+  <li>BMA kjøres for aktive byer (lead_days=0 = i dag).</li>
+  <li>Peak detection sjekker om dagens maksimum er nådd.</li>
+  <li>Hvis noen by er i peak-vindu → rapid peak monitor starter (3-min polling).</li>
+  <li>Ved bekreftet peak → alle 3 strategier avgjøres (WIN/LOSS).</li>
+  <li>Markedspriser hentes fra Polymarket.</li>
+  <li>Dashboard (HTML) genereres og pushes til GitHub Pages.</li>
+  <li>SMS-varsler sendes ved behov.</li>
+</ol>
+
+<h3>Tidssone-bevissthet</h3>
+<p>Pipeline er <strong>tidssone-aware</strong> — den prosesserer kun byer som er i sitt aktive vindu. Dette betyr:</p>
+<ul>
+  <li>Europeiske byer prosesseres ~04:00–16:00 UTC</li>
+  <li>Amerikanske byer prosesseres ~08:00–23:00 UTC</li>
+  <li>Asiatiske byer prosesseres ~19:00–01:00 UTC (neste dag)</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="feilsoking">10. Feilsøking</h2>
+
+<h3>Dashboard viser gammel data</h3>
+<ol>
+  <li>Sjekk <a href="https://github.com/mgaaserud90-creator/weather-monitor/actions" target="_blank">GitHub Actions</a> — fullførte siste pipeline-kjøring OK?</li>
+  <li>Vent 1–2 minutter (GitHub Pages har cache).</li>
+  <li>Prøv <code>Ctrl+F5</code> (force refresh) i nettleseren.</li>
+</ol>
+
+<h3>Ingen data i dashboard</h3>
+<ol>
+  <li>Sjekk at pipeline ikke har feilet: Actions → "Model Quality Pipeline".</li>
+  <li>Hvis feil: sjekk loggen for feilmelding.</li>
+  <li>Vanligste feil: Open-Meteo rate limit (gratis tier: 10,000 kall/dag). Vent til neste dag.</li>
+</ol>
+
+<h3>Feilmelding: "orjson is not installed"</h3>
+<pre><code>pip install orjson</code></pre>
+
+<h3>Feilmelding: ".env file not found"</h3>
+<p>Lag en <code>.env</code>-fil i <code>vær monitor/</code> med minimum:</p>
+<pre><code>ENV=production
+WEATHER_BMA_ENABLED=true
+WEATHER_SATELLITE_ENABLED=false
+WEATHER_ENSEMBLE_CONFIDENCE_FLOOR=0.5</code></pre>
+
+<h3>Pipeline timeout</h3>
+<p>Hvis <code>hourly_active</code> times ut (etter 300 min = 5 timer): dette er normalt hvis peak-vinduet er langt. Pipeline fortsetter ved neste kjøring (neste time).</p>
+
+<h3>Korrupt loggfil</h3>
+<p>Hvis <code>_model_quality_log.json</code> er ødelagt:</p>
+<pre><code>Remove-Item _model_quality_log.json
+python _model_quality_tracker.py --mode daily_bma</code></pre>
+
+<div class="warn">Å slette loggfilen fjerner all historisk data! Ta backup først hvis dataene er verdifulle.</div>
+
+<!-- ============================================================ -->
+<hr style="border-color: var(--border); margin: 40px 0 20px;">
+<p style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">
+  VærMonitor · Bygget med Open-Meteo (gratis vær-API) og Bayesian Model Averaging.<br>
+  <a href="index.html">Tilbake til hjemmesiden</a> ·
+  <a href="_quality_report.html">Kvalitetsrapport</a> ·
+  <a href="https://github.com/mgaaserud90-creator/weather-monitor" target="_blank">GitHub</a>
+</p>
+
+</body>
+</html>
