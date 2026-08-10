@@ -35,6 +35,7 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
+    environment: github-pages
     # Dynamic timeout:
     #   hourly_active → 300 min (5h, fits GH 6h limit for rapid 3-min polling)
     #   daily_close   → 10 min (processes ALL cities with archive API)
