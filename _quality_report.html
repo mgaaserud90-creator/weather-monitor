@@ -147,12 +147,21 @@
   .col-peak { font-weight: 600; font-size: 0.8rem; }
   .col-trend { font-weight: 700; font-size: 1rem; text-align: center; }
   .col-spark { font-family: monospace; font-size: 0.85rem; white-space: nowrap; text-align: center; min-width: 90px; }
+  .mkt-group { cursor: pointer; transition: background 0.15s; }
+  .mkt-group:hover { background: var(--bg-card-hover) !important; }
+  .expand-icon { display: inline-block; width: 16px; transition: transform 0.2s; font-size: 0.7rem; margin-right: 4px; }
+  .mkt-group.expanded .expand-icon { transform: rotate(90deg); }
+  .mkt-bucket { display: none; font-size: 0.78rem; background: rgba(22, 27, 34, 0.4); }
+  .mkt-bucket.show { display: table-row; }
+  .mkt-bucket:hover { background: rgba(28, 35, 51, 0.6); }
+  .mkt-bucket td { padding: 5px 8px; border-bottom: 1px solid rgba(48, 54, 61, 0.3); color: var(--text-dim); }
+  .mkt-bucket td:first-child { padding-left: 32px; }
 </style>
 <script>
 // No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-08-10T17:20:05Z');
+    var deployTime = new Date('2026-08-10T17:59:47Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {
@@ -191,6 +200,29 @@
     updateTimer();
     setInterval(updateTimer, 10000); // Update every 10 seconds
 })();
+
+function toggleMarketBuckets(slug) {
+  var bucketRows = document.querySelectorAll('tr.mkt-bucket.' + slug);
+  var cityRow = document.querySelector('tr.mkt-group[onclick*="' + slug + '"]');
+  var anyVisible = false;
+  bucketRows.forEach(function(r) {
+    if (r.classList.contains('show')) anyVisible = true;
+  });
+  bucketRows.forEach(function(r) {
+    if (anyVisible) {
+      r.classList.remove('show');
+    } else {
+      r.classList.add('show');
+    }
+  });
+  if (cityRow) {
+    if (anyVisible) {
+      cityRow.classList.remove('expanded');
+    } else {
+      cityRow.classList.add('expanded');
+    }
+  }
+}
 
 function sortTable(colIdx) {
   const table = document.getElementById("strategyTable");
@@ -594,6 +626,471 @@ function sortTable(colIdx) {
       </div>
     </div>
 
+  <!-- EXPANDABLE MARKET DETAIL -->
+  
+    <div class="section">
+      <h2>📋 MARKEDSDETALJER — Utvidbar Per By</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        Klikk på en by for å se alle Polymarket-buckets. ✅ = resolved. Sortert alfabetisk.
+      </p>
+      <div style="max-height: 600px; overflow-y: auto;">
+      <table>
+        <thead><tr><th></th><th>By</th><th>Buckets</th><th>Volume</th><th>Resolved</th></tr></thead>
+        <tbody><tr class="mkt-group" onclick="toggleMarketBuckets('amsterdam')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Amsterdam</strong> <span style="color:#3fb950;font-size:0.7rem;">✅ → 23°C</span></td>
+            <td>1 buckets</td>
+            <td>$13K</td>
+            <td>1/1 resolved</td>
+        </tr><tr class="mkt-bucket amsterdam" style="color:var(--green);">
+            <td></td>
+            <td>23°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 20.2%</td>
+            <td>Mkt: 99.9%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('ankara')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Ankara</strong></td>
+            <td>1 buckets</td>
+            <td>$10K</td>
+            <td>1/1 resolved</td>
+        </tr><tr class="mkt-bucket ankara" style="color:var(--red);">
+            <td></td>
+            <td>30°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 33.7%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('busan')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Busan</strong> <span style="color:#3fb950;font-size:0.7rem;">✅ → 32°C</span></td>
+            <td>2 buckets</td>
+            <td>$15K</td>
+            <td>1/2 resolved</td>
+        </tr><tr class="mkt-bucket busan">
+            <td></td>
+            <td>31°C</td>
+            <td>BMA: 18.9%</td>
+            <td>Mkt: 19.5%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket busan" style="color:var(--green);">
+            <td></td>
+            <td>32°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 9.6%</td>
+            <td>Mkt: 100.0%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('chongqing')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Chongqing</strong> <span style="color:#3fb950;font-size:0.7rem;">✅ → 34°C</span></td>
+            <td>1 buckets</td>
+            <td>$11K</td>
+            <td>1/1 resolved</td>
+        </tr><tr class="mkt-bucket chongqing" style="color:var(--green);">
+            <td></td>
+            <td>34°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 21.2%</td>
+            <td>Mkt: 100.0%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('dallas')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Dallas</strong></td>
+            <td>2 buckets</td>
+            <td>$22K</td>
+            <td>0/2 resolved</td>
+        </tr><tr class="mkt-bucket dallas">
+            <td></td>
+            <td>37°C</td>
+            <td>BMA: 34.3%</td>
+            <td>Mkt: 70.0%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket dallas">
+            <td></td>
+            <td>38°C</td>
+            <td>BMA: 38.2%</td>
+            <td>Mkt: 25.5%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('guangzhou')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Guangzhou</strong></td>
+            <td>1 buckets</td>
+            <td>$470</td>
+            <td>1/1 resolved</td>
+        </tr><tr class="mkt-bucket guangzhou" style="color:var(--red);">
+            <td></td>
+            <td>31°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 0.0%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('helsinki')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Helsinki</strong></td>
+            <td>1 buckets</td>
+            <td>$21K</td>
+            <td>1/1 resolved</td>
+        </tr><tr class="mkt-bucket helsinki" style="color:var(--red);">
+            <td></td>
+            <td>22°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 0.3%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('hong-kong')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Hong Kong</strong> <span style="color:#3fb950;font-size:0.7rem;">✅ → 35°C</span></td>
+            <td>8 buckets</td>
+            <td>$236K</td>
+            <td>6/8 resolved</td>
+        </tr><tr class="mkt-bucket hong-kong">
+            <td></td>
+            <td>30°C</td>
+            <td>BMA: 1.4%</td>
+            <td>Mkt: 18.0%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket hong-kong" style="color:var(--red);">
+            <td></td>
+            <td>33°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 35.7%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket hong-kong" style="color:var(--red);">
+            <td></td>
+            <td>34°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 20.0%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket hong-kong" style="color:var(--green);">
+            <td></td>
+            <td>35°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 4.9%</td>
+            <td>Mkt: 100.0%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket hong-kong" style="color:var(--red);">
+            <td></td>
+            <td>36°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 0.5%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket hong-kong" style="color:var(--red);">
+            <td></td>
+            <td>37°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 0.0%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket hong-kong">
+            <td></td>
+            <td>37°C</td>
+            <td>BMA: 0.0%</td>
+            <td>Mkt: 2.7%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket hong-kong" style="color:var(--red);">
+            <td></td>
+            <td>38°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 0.0%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('london')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>London</strong></td>
+            <td>6 buckets</td>
+            <td>$126K</td>
+            <td>3/6 resolved</td>
+        </tr><tr class="mkt-bucket london" style="color:var(--red);">
+            <td></td>
+            <td>24°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 1.8%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket london">
+            <td></td>
+            <td>24°C</td>
+            <td>BMA: 1.8%</td>
+            <td>Mkt: 38.5%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket london" style="color:var(--red);">
+            <td></td>
+            <td>25°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 14.3%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket london">
+            <td></td>
+            <td>26°C</td>
+            <td>BMA: 38.2%</td>
+            <td>Mkt: 97.0%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket london">
+            <td></td>
+            <td>27°C</td>
+            <td>BMA: 34.3%</td>
+            <td>Mkt: 2.5%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket london" style="color:var(--red);">
+            <td></td>
+            <td>28°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 10.3%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('los-angeles')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Los Angeles</strong></td>
+            <td>1 buckets</td>
+            <td>$12K</td>
+            <td>0/1 resolved</td>
+        </tr><tr class="mkt-bucket los-angeles">
+            <td></td>
+            <td>24°C</td>
+            <td>BMA: 7.3%</td>
+            <td>Mkt: 11.0%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('madrid')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Madrid</strong></td>
+            <td>3 buckets</td>
+            <td>$47K</td>
+            <td>1/3 resolved</td>
+        </tr><tr class="mkt-bucket madrid" style="color:var(--red);">
+            <td></td>
+            <td>36°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 50.3%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket madrid">
+            <td></td>
+            <td>37°C</td>
+            <td>BMA: 19.1%</td>
+            <td>Mkt: 93.0%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket madrid">
+            <td></td>
+            <td>38°C</td>
+            <td>BMA: 1.4%</td>
+            <td>Mkt: 6.0%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('milan')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Milan</strong></td>
+            <td>5 buckets</td>
+            <td>$60K</td>
+            <td>4/5 resolved</td>
+        </tr><tr class="mkt-bucket milan" style="color:var(--red);">
+            <td></td>
+            <td>32°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 2.4%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket milan" style="color:var(--red);">
+            <td></td>
+            <td>33°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 6.7%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket milan">
+            <td></td>
+            <td>34°C</td>
+            <td>BMA: 13.4%</td>
+            <td>Mkt: 97.5%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket milan" style="color:var(--red);">
+            <td></td>
+            <td>35°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 20.0%</td>
+            <td>Mkt: 0.5%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket milan" style="color:var(--red);">
+            <td></td>
+            <td>36°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 21.9%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('moscow')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Moscow</strong></td>
+            <td>1 buckets</td>
+            <td>$5K</td>
+            <td>1/1 resolved</td>
+        </tr><tr class="mkt-bucket moscow" style="color:var(--red);">
+            <td></td>
+            <td>23°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 14.2%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('munich')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Munich</strong> <span style="color:#3fb950;font-size:0.7rem;">✅ → 34°C</span></td>
+            <td>5 buckets</td>
+            <td>$72K</td>
+            <td>5/5 resolved</td>
+        </tr><tr class="mkt-bucket munich" style="color:var(--red);">
+            <td></td>
+            <td>30°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 90.2%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket munich" style="color:var(--red);">
+            <td></td>
+            <td>32°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 1.4%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket munich" style="color:var(--red);">
+            <td></td>
+            <td>33°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 0.1%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket munich" style="color:var(--green);">
+            <td></td>
+            <td>34°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 0.0%</td>
+            <td>Mkt: 100.0%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket munich" style="color:var(--red);">
+            <td></td>
+            <td>35°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 0.0%</td>
+            <td>Mkt: 0.2%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('new-york')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>New York</strong></td>
+            <td>3 buckets</td>
+            <td>$33K</td>
+            <td>0/3 resolved</td>
+        </tr><tr class="mkt-bucket new-york">
+            <td></td>
+            <td>30°C</td>
+            <td>BMA: 12.2%</td>
+            <td>Mkt: 9.4%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket new-york">
+            <td></td>
+            <td>31°C</td>
+            <td>BMA: 28.1%</td>
+            <td>Mkt: 26.5%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket new-york">
+            <td></td>
+            <td>33°C</td>
+            <td>BMA: 18.5%</td>
+            <td>Mkt: 26.0%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('paris')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Paris</strong></td>
+            <td>1 buckets</td>
+            <td>$28K</td>
+            <td>1/1 resolved</td>
+        </tr><tr class="mkt-bucket paris" style="color:var(--red);">
+            <td></td>
+            <td>31°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 26.8%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('sao-paulo')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Sao Paulo</strong></td>
+            <td>1 buckets</td>
+            <td>$15K</td>
+            <td>1/1 resolved</td>
+        </tr><tr class="mkt-bucket sao-paulo" style="color:var(--red);">
+            <td></td>
+            <td>16°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 38.6%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('shanghai')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Shanghai</strong> <span style="color:#3fb950;font-size:0.7rem;">✅ → 28°C</span></td>
+            <td>1 buckets</td>
+            <td>$44K</td>
+            <td>1/1 resolved</td>
+        </tr><tr class="mkt-bucket shanghai" style="color:var(--green);">
+            <td></td>
+            <td>28°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 43.0%</td>
+            <td>Mkt: 100.0%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('shenzhen')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Shenzhen</strong></td>
+            <td>2 buckets</td>
+            <td>$27K</td>
+            <td>2/2 resolved</td>
+        </tr><tr class="mkt-bucket shenzhen" style="color:var(--red);">
+            <td></td>
+            <td>35°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 20.0%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket shenzhen" style="color:var(--red);">
+            <td></td>
+            <td>37°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 10.2%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('taipei')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Taipei</strong> <span style="color:#3fb950;font-size:0.7rem;">✅ → 36°C</span></td>
+            <td>2 buckets</td>
+            <td>$24K</td>
+            <td>2/2 resolved</td>
+        </tr><tr class="mkt-bucket taipei" style="color:var(--red);">
+            <td></td>
+            <td>35°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 20.9%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket taipei" style="color:var(--green);">
+            <td></td>
+            <td>36°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 9.3%</td>
+            <td>Mkt: 100.0%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('tokyo')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Tokyo</strong> <span style="color:#3fb950;font-size:0.7rem;">✅ → 30°C</span></td>
+            <td>1 buckets</td>
+            <td>$15K</td>
+            <td>1/1 resolved</td>
+        </tr><tr class="mkt-bucket tokyo" style="color:var(--green);">
+            <td></td>
+            <td>30°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 1.4%</td>
+            <td>Mkt: 100.0%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('wellington')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Wellington</strong></td>
+            <td>2 buckets</td>
+            <td>$13K</td>
+            <td>1/2 resolved</td>
+        </tr><tr class="mkt-bucket wellington" style="color:var(--red);">
+            <td></td>
+            <td>9°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 0.0%</td>
+            <td>Mkt: 0.2%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket wellington">
+            <td></td>
+            <td>12°C</td>
+            <td>BMA: 11.2%</td>
+            <td>Mkt: 56.5%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('wuhan')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Wuhan</strong> <span style="color:#3fb950;font-size:0.7rem;">✅ → 29°C</span></td>
+            <td>1 buckets</td>
+            <td>$23K</td>
+            <td>1/1 resolved</td>
+        </tr><tr class="mkt-bucket wuhan" style="color:var(--green);">
+            <td></td>
+            <td>29°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 22.7%</td>
+            <td>Mkt: 100.0%</td>
+            <td></td>
+        </tr></tbody>
+      </table>
+      </div>
+    </div>
+
   <!-- TOP 5 PREDICTIONS -->
   
     <div class="section">
@@ -603,7 +1100,7 @@ function sortTable(colIdx) {
       </p>
       <div style="overflow-x: auto;">
       <table>
-        <thead><tr><th>#</th><th>City</th><th>BMA μ</th><th>Sigma Pos</th><th>P5 Pos</th><th>Mean Pos</th><th>Conf</th><th>Models</th><th>Peak</th><th>Sigma</th><th>P5</th><th>Mean</th><th>Rec</th></tr></thead>
+        <thead><tr><th>#</th><th>City</th><th>BMA μ</th><th>Sigma Pos</th><th>P5 Pos</th><th>Mean Pos</th><th>Conf</th><th>Models</th><th>📡 Peak | Marked</th><th>Sigma</th><th>P5</th><th>Mean</th><th>Rec</th></tr></thead>
         <tbody>
             <tr>
                 <td>1</td>
@@ -674,7 +1171,7 @@ function sortTable(colIdx) {
                 <td>29°C</td>
                 <td>🟠 72%</td>
                 <td>7/8</td>
-                <td>—</td>
+                <td>📡 — | Marked: 28°C</td>
                 <td><span style="color:#8b949e;">⏳</span></td>
                 <td><span style="color:#8b949e;">⏳</span></td>
                 <td><span style="color:#8b949e;">⏳</span></td>
@@ -1045,10 +1542,11 @@ function sortTable(colIdx) {
       <h2>📊 AVGJORTE RESULTATER (4 byer, 2026-08-10)</h2>
       <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
         Resolved against archive data. ✅ WIN = round(actual peak) == spill bucket.
+        📡 = vår live peak | Marked = Polymarket utfall | ⚠️ Avvik = stasjonsfeil hvis >2°C
       </p>
      <div style="max-height: 600px; overflow-y: auto;">
      <table>
-       <thead><tr><th>By</th><th>Sigma Spill</th><th>Sigma Utfall</th><th>P5 Spill</th><th>P5 Utfall</th><th>Mean Spill</th><th>Mean Utfall</th></tr></thead>
+       <thead><tr><th>By</th><th>Sigma Spill</th><th>Sigma Utfall</th><th>P5 Spill</th><th>P5 Utfall</th><th>Mean Spill</th><th>Mean Utfall</th><th>Marked</th><th>⚠️ Avvik</th></tr></thead>
        <tbody>
                 <tr>
                     <td><strong>Jeddah, SA</strong></td>
@@ -1058,6 +1556,8 @@ function sortTable(colIdx) {
                     <td>❌ LOSS</td>
                     <td>40°C</td>
                     <td>❌ LOSS</td>
+                    <td>—</td>
+                    <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Karachi, PK</strong></td>
@@ -1067,6 +1567,8 @@ function sortTable(colIdx) {
                     <td>❌ LOSS</td>
                     <td>33°C</td>
                     <td>✅ WIN</td>
+                    <td>—</td>
+                    <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Lucknow, IN</strong></td>
@@ -1076,6 +1578,8 @@ function sortTable(colIdx) {
                     <td>❌ LOSS</td>
                     <td>32°C</td>
                     <td>✅ WIN</td>
+                    <td>—</td>
+                    <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Tel Aviv, IL</strong></td>
@@ -1085,6 +1589,8 @@ function sortTable(colIdx) {
                     <td>❌ LOSS</td>
                     <td>35°C</td>
                     <td>❌ LOSS</td>
+                    <td>—</td>
+                    <td>—</td>
                 </tr>
        </tbody>
      </table>
@@ -1272,7 +1778,7 @@ function sortTable(colIdx) {
 
 <script>
 const CITIES = [
-  {name: "Taipei, TW", lat: 25.0694, lon: 121.5517, tz: "Asia/Taipei", peakStart: 14, peakEnd: 16, has_market: true, is_resolved: true},
+  {name: "Taipei, TW", lat: 25.0378, lon: 121.5148, tz: "Asia/Taipei", peakStart: 14, peakEnd: 16, has_market: true, is_resolved: true},
   {name: "Hong Kong, HK", lat: 22.302, lon: 114.1742, tz: "Asia/Hong_Kong", peakStart: 14, peakEnd: 16, has_market: true, is_resolved: true},
   {name: "Shanghai, CN", lat: 31.1434, lon: 121.8053, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16, has_market: true, is_resolved: true},
   {name: "Seoul (Incheon), KR", lat: 37.4602, lon: 126.4407, tz: "Asia/Seoul", peakStart: 14, peakEnd: 16, has_market: false, is_resolved: false},

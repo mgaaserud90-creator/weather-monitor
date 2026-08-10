@@ -2029,6 +2029,97 @@ async function fetchLiveData() {{
 """
 
 
+def _build_expandable_market_section_html() -> str:
+    """Build expandable market detail section showing Polymarket buckets per city."""
+    if not HAS_MARKET_EDGE:
+        return ""
+
+    try:
+        market_opps, _ = load_market_prices()
+        bma_preds = load_bma_predictions()
+    except Exception:
+        return ""
+
+    if not market_opps:
+        return ""
+
+    city_buckets: dict[str, list[dict]] = {}
+    for opp in market_opps:
+        city = opp.get("city", "Unknown")
+        temp = opp.get("temp", 0)
+        market_prob = opp.get("market_prob", 0)
+        is_resolved = opp.get("is_resolved", False)
+        volume = opp.get("volume", 0)
+        bma_data = bma_preds.get(city)
+        if bma_data is None:
+            for bma_city, bd in bma_preds.items():
+                if bma_city.split(",")[0].strip().lower() == city.lower():
+                    bma_data = bd
+                    break
+        bma_pct = None
+        if bma_data:
+            bma_pct = compute_bma_prob(
+                bma_data["bma_mean"], bma_data["bma_std"],
+                temp, opp.get("type", "exact")
+            )
+        city_buckets.setdefault(city, []).append({
+            "temp": temp, "market_prob": market_prob,
+            "bma_prob": bma_pct, "is_resolved": is_resolved,
+            "volume": volume,
+        })
+
+    rows = ""
+    for city, buckets in sorted(city_buckets.items()):
+        buckets.sort(key=lambda b: b["temp"])
+        city_slug = re.sub(r'[^a-zA-Z0-9]+', '-', city).lower().strip('-')
+        n_buckets = len(buckets)
+        n_resolved = sum(1 for b in buckets if b["is_resolved"])
+        total_vol = sum(b["volume"] for b in buckets)
+        vol_str = f"${total_vol/1000:.0f}K" if total_vol >= 1000 else (f"${total_vol}" if total_vol > 0 else "—")
+        winners = [b for b in buckets if b["market_prob"] > 99]
+        win_info = f' <span style="color:#3fb950;font-size:0.7rem;">✅ → {winners[0]["temp"]}°C</span>' if winners else ""
+
+        rows += f"""<tr class="mkt-group" onclick="toggleMarketBuckets('{city_slug}')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>{city}</strong>{win_info}</td>
+            <td>{n_buckets} buckets</td>
+            <td>{vol_str}</td>
+            <td>{n_resolved}/{n_buckets} resolved</td>
+        </tr>"""
+
+        for b in buckets:
+            bma_str = f"{b['bma_prob']:.1f}%" if b["bma_prob"] is not None else "—"
+            mkt_str = f"{b['market_prob']:.1f}%"
+            resolved_icon = ' <span style="color:#3fb950;">✅</span>' if b["is_resolved"] else ""
+            row_style = ' style="color:var(--green);"' if b["is_resolved"] and b["market_prob"] > 99 else (
+                ' style="color:var(--red);"' if b["is_resolved"] and b["market_prob"] < 1 else ""
+            )
+            rows += f"""<tr class="mkt-bucket {city_slug}"{row_style}>
+            <td></td>
+            <td>{b['temp']}°C{resolved_icon}</td>
+            <td>BMA: {bma_str}</td>
+            <td>Mkt: {mkt_str}</td>
+            <td></td>
+        </tr>"""
+
+    if not rows:
+        return ""
+
+    return f"""
+    <div class="section">
+      <h2>📋 MARKEDSDETALJER — Utvidbar Per By</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        Klikk på en by for å se alle Polymarket-buckets. ✅ = resolved. Sortert alfabetisk.
+      </p>
+      <div style="max-height: 600px; overflow-y: auto;">
+      <table>
+        <thead><tr><th></th><th>By</th><th>Buckets</th><th>Volume</th><th>Resolved</th></tr></thead>
+        <tbody>{rows}</tbody>
+      </table>
+      </div>
+    </div>"""
+
+
 def _generate_html_report() -> str:
     """Generate a self-contained HTML dashboard with dark theme and 3-strategy comparison."""
     log_data = _load_log()
@@ -2257,6 +2348,9 @@ def _generate_html_report() -> str:
     # ── Market Edge Section (BMA vs Polymarket) ──
     market_edge_section = _build_market_edge_html_section()
 
+    # ── Expandable Market Detail Section ──
+    expandable_market_section = _build_expandable_market_section_html()
+
     # ── Edge Validation Section (Real vs Imagined) ──
     edge_validation_section = _build_edge_validation_html_section(runs)
 
@@ -2421,6 +2515,15 @@ def _generate_html_report() -> str:
   .col-peak {{ font-weight: 600; font-size: 0.8rem; }}
   .col-trend {{ font-weight: 700; font-size: 1rem; text-align: center; }}
   .col-spark {{ font-family: monospace; font-size: 0.85rem; white-space: nowrap; text-align: center; min-width: 90px; }}
+  .mkt-group {{ cursor: pointer; transition: background 0.15s; }}
+  .mkt-group:hover {{ background: var(--bg-card-hover) !important; }}
+  .expand-icon {{ display: inline-block; width: 16px; transition: transform 0.2s; font-size: 0.7rem; margin-right: 4px; }}
+  .mkt-group.expanded .expand-icon {{ transform: rotate(90deg); }}
+  .mkt-bucket {{ display: none; font-size: 0.78rem; background: rgba(22, 27, 34, 0.4); }}
+  .mkt-bucket.show {{ display: table-row; }}
+  .mkt-bucket:hover {{ background: rgba(28, 35, 51, 0.6); }}
+  .mkt-bucket td {{ padding: 5px 8px; border-bottom: 1px solid rgba(48, 54, 61, 0.3); color: var(--text-dim); }}
+  .mkt-bucket td:first-child {{ padding-left: 32px; }}
 </style>
 <script>
 // No auto-refresh — manual refresh only
@@ -2465,6 +2568,29 @@ def _generate_html_report() -> str:
     updateTimer();
     setInterval(updateTimer, 10000); // Update every 10 seconds
 }})();
+
+function toggleMarketBuckets(slug) {{
+  var bucketRows = document.querySelectorAll('tr.mkt-bucket.' + slug);
+  var cityRow = document.querySelector('tr.mkt-group[onclick*="' + slug + '"]');
+  var anyVisible = false;
+  bucketRows.forEach(function(r) {{
+    if (r.classList.contains('show')) anyVisible = true;
+  }});
+  bucketRows.forEach(function(r) {{
+    if (anyVisible) {{
+      r.classList.remove('show');
+    }} else {{
+      r.classList.add('show');
+    }}
+  }});
+  if (cityRow) {{
+    if (anyVisible) {{
+      cityRow.classList.remove('expanded');
+    }} else {{
+      cityRow.classList.add('expanded');
+    }}
+  }}
+}}
 
 function sortTable(colIdx) {{
   const table = document.getElementById("strategyTable");
@@ -2526,6 +2652,9 @@ function sortTable(colIdx) {{
 
   <!-- MARKET EDGE: BMA vs Polymarket -->
   {market_edge_section}
+
+  <!-- EXPANDABLE MARKET DETAIL -->
+  {expandable_market_section}
 
   <!-- TOP 5 PREDICTIONS -->
   {predictions_html}
@@ -2818,51 +2947,9 @@ def _generate_all_cities_html() -> str:
 
     # ---- Load market price lookup for edge computation ----
     market_lookup: dict[tuple[str, int], float] = {}
-    market_buckets_by_city: dict[str, list[dict]] = {}  # city -> list of {temp, price, volume, volume_display, resolved, question_type}
     if HAS_MARKET_EDGE:
         try:
             market_lookup = build_market_lookup()
-            # Also load full market opportunities grouped by city for bucket rows
-            market_opps, _ = load_market_prices()
-            bma_preds = load_bma_predictions()
-            for opp in market_opps:
-                city = opp["city"]
-                temp = opp["temp"]
-                market_prob = opp["market_prob"]
-                # Compute BMA probability for this bucket
-                bma_data = bma_preds.get(city)
-                if bma_data is None:
-                    # Try matching without country code
-                    for bma_city, bd in bma_preds.items():
-                        if bma_city.split(",")[0].strip().lower() == city.lower():
-                            bma_data = bd
-                            break
-                bma_pct = None
-                if bma_data:
-                    bma_pct = compute_bma_prob(
-                        bma_data["bma_mean"], bma_data["bma_std"],
-                        temp, opp.get("type", "exact")
-                    )
-                bucket = {
-                    "temp": temp,
-                    "market_prob": market_prob,
-                    "bma_prob": bma_pct,
-                    "volume": opp.get("volume", 0),
-                    "volume_display": opp.get("volume_display", ""),
-                    "is_resolved": opp.get("is_resolved", False),
-                    "question_type": opp.get("question_type", "unknown"),
-                    "date": opp.get("date", ""),
-                }
-                city_lower = city.lower().strip()
-                market_buckets_by_city.setdefault(city_lower, []).append(bucket)
-                # Also index without country code
-                city_base = city_lower.split(",")[0].strip()
-                if city_base != city_lower:
-                    existing = market_buckets_by_city.get(city_base, [])
-                    # Avoid duplicates
-                    existing_temps = {b["temp"] for b in existing}
-                    if temp not in existing_temps:
-                        market_buckets_by_city.setdefault(city_base, []).append(bucket)
         except Exception:
             pass
 
@@ -3012,7 +3099,7 @@ def _generate_all_cities_html() -> str:
             if round(actual_peak) == sigma_spill:
                 row_win = True
                 peak_won = True
-        row_class = "city-row city-group row-win" if row_win else "city-row city-group row-loss"
+        row_class = "city-row row-win" if row_win else "city-row row-loss"
 
         # Compute market price for this city's sigma spill temperature (data only, no signals)
         market_cell = "—"
@@ -3028,45 +3115,14 @@ def _generate_all_cities_html() -> str:
             if mkt_prob is not None:
                 market_cell = f"{mkt_prob:.1f}%"
 
-        # Build city slug for bucket toggling
-        city_slug = re.sub(r'[^a-zA-Z0-9]+', '-', city).lower().strip('-')
-
         safe_city_id = re.sub(r'[^a-zA-Z0-9]', '_', city)
 
-        # Get market buckets for this city
-        city_market_buckets = []
-        if HAS_MARKET_EDGE and market_buckets_by_city:
-            city_lower = city.lower()
-            city_market_buckets = market_buckets_by_city.get(city_lower, [])
-            if not city_market_buckets:
-                city_base = city_lower.split(",")[0].strip()
-                city_market_buckets = market_buckets_by_city.get(city_base, [])
-                if not city_market_buckets:
-                    city_no_paren = re.sub(r'\s*\(.*?\)\s*', '', city_base).strip()
-                    city_market_buckets = market_buckets_by_city.get(city_no_paren, [])
+        # Show actual_peak from log data immediately (don't wait for live fetch)
+        peak_display = f'📡 {actual_peak:.1f}°C ✅' if isinstance(actual_peak, (int, float)) else '⏳'
 
-        # Sort buckets by temperature
-        city_market_buckets.sort(key=lambda b: b["temp"])
-
-        # Compute bucket summary for the city-group row
-        n_buckets = len(city_market_buckets)
-        total_volume = sum(b.get("volume", 0) for b in city_market_buckets)
-        vol_display = f"${total_volume/1000:.0f}K" if total_volume >= 1000 else (f"${total_volume}" if total_volume > 0 else "—")
-        n_resolved = sum(1 for b in city_market_buckets if b.get("is_resolved"))
-
-        resolved_summary = ""
-        if n_resolved > 0:
-            # Find the winning bucket (price > 99%)
-            winners = [b for b in city_market_buckets if b["market_prob"] > 99]
-            if winners:
-                winning_temp = winners[0]["temp"]
-                resolved_summary = f' <span style="color: var(--green); font-size: 0.7rem;">✅ Resolved → {winning_temp}°C</span>'
-            else:
-                resolved_summary = f' <span style="color: var(--green); font-size: 0.7rem;">✅ {n_resolved} resolved</span>'
-
-        table_rows += f"""<tr class="{row_class}" data-lead="{ld}" data-city="{city}" data-conf="{conf:.3f}" onclick="toggleBuckets('{city_slug}')">
-            <td class="col-rank"><span class="expand-icon">▶</span></td>
-            <td class="col-city">{city}{resolved_summary}</td>
+        table_rows += f"""<tr class="{row_class}" data-lead="{ld}" data-city="{city}" data-conf="{conf:.3f}">
+            <td class="col-rank"></td>
+            <td class="col-city">{city}</td>
             <td class="col-bma">{bma_str} <span class="dim">σ={std_str}</span></td>
             <td class="col-range">{p5_p95}°C</td>
             <td class="col-sigma">{sigma_cell}</td>
@@ -3074,50 +3130,13 @@ def _generate_all_cities_html() -> str:
             <td class="col-mean">{mean_cell}</td>
             <td class="col-conf {conf_class}">{conf_icon} {(conf*100):.0f}%</td>
             <td class="col-models">{d['model_ct']}/8</td>
-            <td class="col-peak" id="peak-{city_slug}">⏳</td>
-            <td class="col-trend" id="trend-{city_slug}">—</td>
+            <td class="col-peak" id="peak-{safe_city_id}">{peak_display}</td>
+            <td class="col-trend" id="trend-{safe_city_id}">—</td>
             <td class="col-live" id="live-{safe_city_id}">—</td>
-            <td class="col-market">{market_cell} {f'<span class="dim">({n_buckets} buckets)</span>' if n_buckets > 0 else ''}</td>
+            <td class="col-market">{market_cell}</td>
             <td class="col-rec {rec_class}">{rec}</td>
             <td class="col-strat">{_build_strat_rec_cell(city, best_per_city)}</td>
             <td class="col-local">{local_time_str}</td>
-        </tr>
-"""
-
-        # Generate bucket rows for this city
-        for b in city_market_buckets:
-            temp = b["temp"]
-            market_p = b["market_prob"]
-            bma_p = b.get("bma_prob")
-            bma_p_str = f"{bma_p:.1f}%" if bma_p is not None else "—"
-            market_p_str = f"{market_p:.1f}%"
-            is_resolved = b.get("is_resolved", False)
-            resolved_icon = ' <span class="bucket-resolved">✅</span>' if is_resolved else ""
-
-            # Style resolved buckets
-            row_style = ""
-            if is_resolved:
-                if market_p > 99:
-                    row_style = ' style="color: var(--green);"'
-                elif market_p < 1:
-                    row_style = ' style="color: var(--red);"'
-
-            table_rows += f"""<tr class="bucket-row {city_slug}" data-lead="{ld}"{row_style}>
-            <td></td>
-            <td>{temp}°C{resolved_icon}</td>
-            <td class="dim">{bma_p_str}</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>{market_p_str}</td>
-            <td></td>
-            <td></td>
-            <td></td>
         </tr>
 """
 
@@ -3193,17 +3212,6 @@ def _generate_all_cities_html() -> str:
   td {{ padding: 7px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }}
   tr:hover {{ background: var(--bg-card-hover); }}
   tr.city-row.hidden {{ display: none; }}
-  tr.city-group {{ cursor: pointer; transition: background 0.15s; }}
-  tr.city-group:hover {{ background: var(--bg-card-hover) !important; }}
-  tr.city-group:hover td {{ color: var(--text) !important; }}
-  .expand-icon {{ display: inline-block; width: 16px; transition: transform 0.2s; font-size: 0.7rem; margin-right: 4px; }}
-  tr.city-group.expanded .expand-icon {{ transform: rotate(90deg); }}
-  tr.bucket-row {{ display: none; font-size: 0.78rem; background: rgba(22, 27, 34, 0.4); }}
-  tr.bucket-row.show {{ display: table-row; }}
-  tr.bucket-row:hover {{ background: rgba(28, 35, 51, 0.6); }}
-  tr.bucket-row td {{ padding: 5px 8px; border-bottom: 1px solid rgba(48, 54, 61, 0.3); color: var(--text-dim); }}
-  tr.bucket-row td:first-child {{ padding-left: 32px; }}
-  .bucket-resolved {{ color: var(--green); font-size: 0.7rem; }}
   .dim {{ color: var(--text-dim); font-size: 0.7rem; }}
   .conf-high {{ color: var(--green); font-weight: 600; }}
   .conf-mid {{ color: var(--orange); font-weight: 600; }}
@@ -3288,7 +3296,7 @@ def _generate_all_cities_html() -> str:
 
 // ---- Live Peak Detection (Hourly Archive API) ----
 function updateCityRow(cityName, maxTemp, trend, peakStatus) {{
-    const slug = cityName.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase().replace(/-+$/g, '');
+    const slug = cityName.replace(/[^a-zA-Z0-9]/g, '_');
     const peakEl = document.getElementById('peak-' + slug);
     const trendEl = document.getElementById('trend-' + slug);
     if (peakEl) {{
@@ -3331,6 +3339,10 @@ function computeAllCitiesConfidence(city, temps, localHour) {{
     return Math.min(98, confidence);
 }}
 
+var peakBatchOffset = 0;
+var peakBatchSize = 5;
+var peakAllCities = [];
+
 async function fetchLivePeak() {{
     const today = new Date().toISOString().slice(0, 10);
     const statusEl = document.getElementById('fetch-status');
@@ -3340,7 +3352,16 @@ async function fetchLivePeak() {{
     const activeCities = CITIES.filter(c => c.has_market === true && !c.is_resolved);
     const fetchCities = activeCities.length > 0 ? activeCities : CITIES;
 
-    for (const city of fetchCities) {{
+    // Reset batch on first call or when called from button
+    if (peakBatchOffset === 0 || peakAllCities.length === 0) {{
+        peakAllCities = fetchCities;
+        peakBatchOffset = 0;
+    }}
+
+    const batch = peakAllCities.slice(peakBatchOffset, peakBatchOffset + peakBatchSize);
+    peakBatchOffset += peakBatchSize;
+
+    for (const city of batch) {{
         try {{
             const url = 'https://archive-api.open-meteo.com/v1/archive?latitude=' + city.lat +
                 '&longitude=' + city.lon + '&start_date=' + today + '&end_date=' + today +
@@ -3420,7 +3441,29 @@ async function fetchLivePeak() {{
         }}
     }}
 
-    if (statusEl) statusEl.textContent = '✅ Peak-data oppdatert';
+    const remaining = peakAllCities.length - peakBatchOffset;
+    if (remaining > 0) {{
+        if (statusEl) statusEl.textContent = '✅ ' + (peakAllCities.length - remaining) + '/' + peakAllCities.length + ' lastet | Hent neste ' + Math.min(peakBatchSize, remaining);
+        // Add "next batch" button
+        const btn = document.getElementById('fetch-btn');
+        if (btn) {{
+            btn.disabled = false;
+            btn.textContent = '🔄 Hent neste ' + Math.min(peakBatchSize, remaining);
+        }}
+    }} else {{
+        if (statusEl) statusEl.textContent = '✅ Peak-data oppdatert (' + peakAllCities.length + ' byer)';
+        peakBatchOffset = 0; // Reset for next full fetch
+        const btn = document.getElementById('fetch-btn');
+        if (btn) {{
+            btn.disabled = true;
+            btn.textContent = '⏳ Vent 60s...';
+            setTimeout(() => {{
+                btn.disabled = false;
+                btn.textContent = '🔄 Hent Nåværende Temperatur & Døgnmaks';
+            }}, 60000);
+        }}
+    }}
+
     const updatedEl = document.getElementById('live-updated');
     if (updatedEl) updatedEl.textContent = new Date().toLocaleTimeString('no-NO');
 
@@ -3437,8 +3480,8 @@ async function fetchLivePeak() {{
     fetchLivePeak._timer = setTimeout(fetchLivePeak, nextInterval);
 }}
 
-// Auto-fetch on page load with adaptive rescheduling
-setTimeout(fetchLivePeak, 2000);
+// Auto-fetch first batch on page load
+setTimeout(function() {{ peakBatchOffset = 0; fetchLivePeak(); }}, 2000);
 
 var currentLead = {sorted_leads[0] if sorted_leads else 1};
 
@@ -3448,29 +3491,6 @@ function switchDate(lead) {{
     var btn = document.getElementById('btn-' + lead);
     if (btn) btn.classList.add('active');
     applyFilters();
-}}
-
-function toggleBuckets(slug) {{
-    var bucketRows = document.querySelectorAll('tr.bucket-row.' + slug);
-    var cityRow = document.querySelector('tr.city-group[onclick*="' + slug + '"]');
-    var anyVisible = false;
-    bucketRows.forEach(function(r) {{
-        if (r.classList.contains('show')) anyVisible = true;
-    }});
-    bucketRows.forEach(function(r) {{
-        if (anyVisible) {{
-            r.classList.remove('show');
-        }} else {{
-            r.classList.add('show');
-        }}
-    }});
-    if (cityRow) {{
-        if (anyVisible) {{
-            cityRow.classList.remove('expanded');
-        }} else {{
-            cityRow.classList.add('expanded');
-        }}
-    }}
 }}
 
 function applyFilters() {{
@@ -3487,17 +3507,6 @@ function applyFilters() {{
             visibleCount++;
         }} else {{
             row.classList.add('hidden');
-        }}
-    }});
-    // Also hide bucket rows whose parent city is hidden
-    var allBucketRows = document.querySelectorAll('#cityTable tbody tr.bucket-row');
-    allBucketRows.forEach(function(br) {{
-        var brLead = parseInt(br.getAttribute('data-lead'));
-        if (brLead !== currentLead) {{
-            br.classList.add('hidden');
-            br.classList.remove('show');
-        }} else {{
-            br.classList.remove('hidden');
         }}
     }});
     var rank = 1;
