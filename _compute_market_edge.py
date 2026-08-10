@@ -379,7 +379,8 @@ def compute_edges(
         min_vol: Minimum volume filter (0 = no filter)
 
     Returns:
-        List of trading opportunities with computed edges, sorted by |edge| desc.
+        List of trading opportunities with computed edges, sorted by confidence desc.
+        No BUY/SHORT/ARBITRAGE signals — pure data display.
     """
     results: list[dict] = []
 
@@ -441,36 +442,17 @@ def compute_edges(
         bma_prob = compute_bma_prob(mean_c, std_c, temp, qtype)
         market_prob = opp["market_prob"]
 
-        # Only compute trading edge for markets in 15-85% range.
-        # Markets outside this range are near-resolved and have terrible
-        # risk/reward (e.g., SHORT at 94% risks 94c to win 6c).
-        # These go to the resolution arbitrage section instead.
+        # Extract per-strategy spill temperatures from BMA predictions
+        strategies = bma.get("strategies", {})
+        sigma_spill = strategies.get("sigma", {}).get("spill", "?")
+        p5_spill = strategies.get("p5", {}).get("spill", "?")
+        mean_spill = strategies.get("mean", {}).get("spill", "?")
+
+        # Compute edge internally (not displayed, used for legacy sorting)
         if 15 < market_prob < 85:
             edge = round(bma_prob - market_prob, 1)
-
-            # edge = BMA_prob - market_price
-            #   edge > 0: BMA thinks MORE likely than market prices -> BUY
-            #   edge < 0: BMA thinks LESS likely than market prices -> SHORT
-            if edge > 0:
-                signal = "🟢 BUY"
-            elif edge < 0:
-                signal = "🔴 SHORT"
-            else:
-                signal = "⚪ FLAT"
         else:
-            # Near-resolved market: <=15% or >=85%
-            # Reclassify as resolution arbitrage, not a trading signal
             edge = 0
-            signal = "⚖️ ARBITRAGE"
-
-        # DEBUG: Show probability comparison for key cities
-        if city.lower().startswith("dallas") and temp == 37:
-            print(f"[DEBUG EDGE] {city} {temp}°C: "
-                  f"BMA μ={mean_c:.1f}°C σ={std_c:.2f}°C → "
-                  f"P(round={temp}) = {bma_prob:.1f}% vs "
-                  f"Market = {market_prob:.1f}% → "
-                  f"Edge = {edge:+.1f}% → Signal = {signal}",
-                  file=sys.stderr)
 
         results.append({
             "city": city,
@@ -479,10 +461,12 @@ def compute_edges(
             "bma_prob": bma_prob,
             "market_prob": market_prob,
             "edge": edge,
-            "signal": signal,
             "bma_mean": round(mean_c, 1),
             "bma_std": round(std_c, 2),
             "confidence": bma.get("confidence", 0),
+            "sigma_spill": sigma_spill,
+            "p5_spill": p5_spill,
+            "mean_spill": mean_spill,
             "volume": opp["volume"],
             "volume_display": opp["volume_display"],
             "date": opp["date"],
@@ -490,8 +474,6 @@ def compute_edges(
         })
 
     # Deduplicate by (city, temp, qtype) — keep entry with highest volume.
-    # This prevents the same market appearing twice when both lead_days
-    # predictions produce similar edges for the same Polymarket question.
     seen: dict[tuple[str, int, str], dict] = {}
     for r in results:
         key = (r["city"].lower(), r["temp"], r["qtype"])
@@ -499,8 +481,8 @@ def compute_edges(
             seen[key] = r
     results = list(seen.values())
 
-    # Sort by absolute edge descending
-    results.sort(key=lambda x: abs(x["edge"]), reverse=True)
+    # Sort by BMA confidence descending (primary), then edge descending (secondary)
+    results.sort(key=lambda x: (x["confidence"], abs(x["edge"])), reverse=True)
     return results
 
 
@@ -509,20 +491,20 @@ def compute_edges(
 # ---------------------------------------------------------------------------
 
 def format_edge_table(edges: list[dict]) -> str:
-    """Format edge results as a markdown table string."""
+    """Format edge results as a markdown table string — data-only, no signals."""
     if not edges:
         return "No trading opportunities found (no matching cities between BMA and market data)."
 
     lines = [
-        f"| By | Spill (°C) | BMA % | Marked % | Edge | Handel | BMA μ | BMA σ | Volum |",
-        f"|-----|-----------|-------|----------|------|--------|-------|-------|-------|",
+        f"| By | Spill (°C) | Sigma | Mean | P5 | Marked % | BMA μ | BMA σ | Volum |",
+        f"|-----|-----------|-------|------|-----|----------|-------|-------|-------|",
     ]
 
     for e in edges:
-        edge_str = f"{e['edge']:+.1f}%"
         lines.append(
-            f"| {e['city']} | {e['temp']}°C | {e['bma_prob']:.1f}% | "
-            f"{e['market_prob']:.1f}% | {edge_str} | {e['signal']} | "
+            f"| {e['city']} | {e['temp']}°C | "
+            f"{e.get('sigma_spill', '?')}°C | {e.get('mean_spill', '?')}°C | {e.get('p5_spill', '?')}°C | "
+            f"{e['market_prob']:.1f}% | "
             f"{e['bma_mean']:.1f}°C | σ={e['bma_std']:.1f} | {e['volume_display']} |"
         )
 
@@ -530,35 +512,26 @@ def format_edge_table(edges: list[dict]) -> str:
 
 
 def format_edge_html_rows(edges: list[dict]) -> str:
-    """Format edge results as HTML table rows."""
+    """Format edge results as HTML table rows — pure data display, no trading signals."""
     if not edges:
-        return '<tr><td colspan="8" style="color: var(--text-dim);">Ingen matchende markeder funnet.</td></tr>'
+        return '<tr><td colspan="9" style="color: var(--text-dim);">Ingen matchende markeder funnet.</td></tr>'
 
     rows = ""
     for i, e in enumerate(edges[:20]):  # Top 20
-        edge_val = e["edge"]
-        if abs(edge_val) > 10:
-            edge_class = 'style="font-weight:700; color: var(--green);"' if edge_val > 0 else 'style="font-weight:700; color: var(--red);"'
-        else:
-            edge_class = 'style="color: var(--text-dim);"'
-
-        signal_class = ""
-        if "BUY" in e["signal"]:
-            signal_class = 'style="color: var(--green); font-weight: 600;"'
-        elif "SHORT" in e["signal"]:
-            signal_class = 'style="color: var(--red); font-weight: 600;"'
-        elif "ARBITRAGE" in e["signal"]:
-            signal_class = 'style="color: var(--orange); font-weight: 600;"'
+        sigma_spill = e.get('sigma_spill', '?')
+        mean_spill = e.get('mean_spill', '?')
+        p5_spill = e.get('p5_spill', '?')
 
         rows += f"""<tr>
                 <td>{i+1}</td>
                 <td><strong>{e['city']}</strong></td>
                 <td>{e['temp']}°C</td>
-                <td>{e['bma_prob']:.1f}%</td>
+                <td>{sigma_spill}°C</td>
+                <td>{mean_spill}°C</td>
+                <td>{p5_spill}°C</td>
                 <td>{e['market_prob']:.1f}%</td>
-                <td {edge_class}>{e['edge']:+.1f}%</td>
-                <td {signal_class}>{e['signal']}</td>
-                <td style="color: var(--text-dim);">{e['bma_mean']:.1f}°C / σ={e['bma_std']:.1f}</td>
+                <td style="color: var(--text-dim);">{e['bma_mean']:.1f}°C</td>
+                <td style="color: var(--text-dim);">{e.get('volume_display', '')}</td>
             </tr>"""
 
     return rows
@@ -831,7 +804,7 @@ def main() -> int:
     args = parser.parse_args()
 
     print("╔══════════════════════════════════════════════════╗")
-    print("║   MARKED EDGE — BMA vs Polymarket Arbitrage     ║")
+    print("║   MARKEDSSAMMENLIGNING — BMA vs Polymarket      ║")
     print("╚══════════════════════════════════════════════════╝")
     print()
 
@@ -886,17 +859,12 @@ def main() -> int:
         }
         print(json.dumps(output, indent=2, ensure_ascii=False))
     else:
-        # Print summary stats
-        buys = [e for e in edges if e["edge"] > 0]
-        shorts = [e for e in edges if e["edge"] < 0]
-        big_edges = [e for e in edges if abs(e["edge"]) > 10]
-
-        print(f"  🟢 BUY signals:  {len(buys)}")
-        print(f"  🔴 SHORT signals: {len(shorts)}")
-        print(f"  ⚡ Edge >10%:    {len(big_edges)}")
+        # Print summary stats (data only, no trading signals)
+        print(f"  📊 Markeder matchet: {len(edges)}")
         print()
 
-        print("💹 MARKED EDGE — STØRST AVVIK BMA vs MARKED")
+        print("📊 MARKEDSSAMMENLIGNING — BMA vs Polymarket")
+        print("  (sortert etter BMA-konfidens)")
         print()
         print(format_edge_table(edges[:15]))
         print()

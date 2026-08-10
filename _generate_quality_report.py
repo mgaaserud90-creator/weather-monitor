@@ -510,7 +510,7 @@ def _build_top5_rows_html(predictions: dict, top5_cities: list[str]) -> str:
             rec_class = 'style="color:#d2991d;"'
 
         sigma_cell = (
-            f'BUY <strong>{sigma_spill}°C</strong> '
+            f'<strong>{sigma_spill}°C</strong> '
             f'<span style="font-size:0.75rem;color:#8b949e;">'
             f'(k={sigma_k}, {sigma_wp*100:.0f}%)</span>'
         )
@@ -521,8 +521,8 @@ def _build_top5_rows_html(predictions: dict, top5_cities: list[str]) -> str:
                 <td><strong>{city}</strong></td>
                 <td>{bma_str} <span style="color:#8b949e;font-size:0.75rem;">σ={std_str}</span></td>
                 <td>{sigma_cell}</td>
-                <td>BUY {p5_spill}°C</td>
-                <td>BUY {mean_spill}°C</td>
+                <td>{p5_spill}°C</td>
+                <td>{mean_spill}°C</td>
                 <td>{conf_icon} {(conf*100):.0f}%</td>
                 <td>{model_ct}/8</td>
                 <td>{actual_str}</td>
@@ -573,9 +573,9 @@ def _build_strategy_comparison_section(predictions: dict) -> str:
         rows += f"""
             <tr>
                 <td>{city}</td>
-                <td {sigma_hl}>BUY {sigma.get('spill','?')}°C {_win_icon(sigma_result)}</td>
-                <td {p5_hl}>BUY {p5s.get('spill','?')}°C {_win_icon(p5_result)}</td>
-                <td {mean_hl}>BUY {means.get('spill','?')}°C {_win_icon(mean_result)}</td>
+                <td {sigma_hl}>{sigma.get('spill','?')}°C {_win_icon(sigma_result)}</td>
+                <td {p5_hl}>{p5s.get('spill','?')}°C {_win_icon(p5_result)}</td>
+                <td {mean_hl}>{means.get('spill','?')}°C {_win_icon(mean_result)}</td>
             </tr>"""
     if not rows:
         return ""
@@ -675,7 +675,7 @@ def _build_flip_recommendations_section(predictions: dict, top5_cities: list[str
         rows += f"""
             <tr>
                 <td><strong>{city}</strong></td>
-                <td>BUY {spill}°C</td>
+                <td>{spill}°C</td>
                 <td>{actual_str}</td>
                 <td {rec_class}>{rec}</td>
                 <td>{profit_icon}</td>
@@ -688,7 +688,7 @@ def _build_flip_recommendations_section(predictions: dict, top5_cities: list[str
    <div class="section">
      <h2>🔄 Flip Recommendations</h2>
      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
-       Cities where the BUY position lost — recommendation is to SELL and go SHORT.
+       Cities where the position lost — recommendation is to reverse.
        💰 = flip would have been profitable (P5 strategy would have won).
      </p>
      <table>
@@ -732,9 +732,9 @@ def _build_city_divergence_section(predictions: dict) -> str:
         rows += f"""
             <tr>
                 <td><strong>{city}</strong></td>
-                <td>{sigma_icon} BUY {stats['sigma']['spill']}°C</td>
-                <td>{p5_icon} BUY {stats['p5']['spill']}°C</td>
-                <td>{mean_icon} BUY {stats['mean']['spill']}°C</td>
+                <td>{sigma_icon} {stats['sigma']['spill']}°C</td>
+                <td>{p5_icon} {stats['p5']['spill']}°C</td>
+                <td>{mean_icon} {stats['mean']['spill']}°C</td>
             </tr>"""
 
     if not rows:
@@ -1475,11 +1475,10 @@ def _build_resolution_arbitrage_html_section() -> str:
 # =============================================================================
 
 def _build_market_edge_html_section() -> str:
-   """Build HTML section showing BMA vs Polymarket edge for trading opportunities.
+   """Build HTML section showing BMA vs Polymarket — pure data comparison, no signals.
 
-   Splits into two sub-sections:
-     1. Active trading markets (15-85%): genuine BUY/SHORT signals
-     2. Near-resolved markets (<15% or >85%): reclassified as arbitrage
+   Single table sorted by BMA confidence descending:
+       City | Spill | Sigma | Mean | P5 | Marked Pris | BMA μ
    """
    if not HAS_MARKET_EDGE:
        return ""
@@ -1494,91 +1493,37 @@ def _build_market_edge_html_section() -> str:
 
    if not edges:
        return """<div class="section">
-     <h2>💹 MARKED EDGE — BMA vs Polymarket</h2>
+     <h2>📊 MARKEDSSAMMENLIGNING — BMA vs Polymarket</h2>
      <p style="color: var(--text-dim);">Ingen matchende markeder funnet. Kjør <code>python _fetch_market_prices.py</code> for å hente markedspriser.</p>
    </div>"""
 
-   # Split: active trading (15-85%) vs near-resolved arbitrage
-   trading_edges = [e for e in edges if "ARBITRAGE" not in e["signal"]]
-   arbitrage_edges = [e for e in edges if "ARBITRAGE" in e["signal"]]
+   # Already sorted by confidence descending from compute_edges()
+   rows_html = format_edge_html_rows(edges)
 
-   # ---- Active Trading Section (15-85%) ----
-   trading_html = ""
-   if trading_edges:
-       buys = [e for e in trading_edges if e["edge"] > 0]
-       shorts = [e for e in trading_edges if e["edge"] < 0]
-       big_edges = [e for e in trading_edges if abs(e["edge"]) > 10]
-       rows_html = format_edge_html_rows(trading_edges)
-
-       trading_html = f"""
+   return f"""
    <div class="section">
-     <h2>💹 AKTIVE MARKEDER (15–85%) — Tradingmuligheter</h2>
+     <h2>📊 MARKEDSSAMMENLIGNING — BMA vs Polymarket</h2>
      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
-       Markeder i 15–85% prisområde der BMA-modellen gir trading-signaler.
-       🟢 BUY = BMA > Marked (undervurdert) | 🔴 SHORT = BMA < Marked (overvurdert) | Edge >10% = uthevet.
+       Sammenligner BMA-ensemblets prediksjoner mot Polymarket-priser.
+       Sortert etter BMA-konfidens (høyest først). Ingen trading-signaler — ren data.
      </p>
      <div class="card-grid" style="margin-bottom: 20px;">
        <div class="card">
-         <div class="value" style="color: var(--green);">{len(buys)}</div>
-         <div class="label">🟢 BUY Signals</div>
+         <div class="value" style="color: var(--blue);">{len(edges)}</div>
+         <div class="label">Markeder Matchet</div>
        </div>
        <div class="card">
-         <div class="value" style="color: var(--red);">{len(shorts)}</div>
-         <div class="label">🔴 SHORT Signals</div>
-       </div>
-       <div class="card">
-         <div class="value" style="color: var(--purple);">{len(big_edges)}</div>
-         <div class="label">⚡ Edge >10%</div>
-       </div>
-       <div class="card">
-         <div class="value" style="color: var(--blue);">{len(trading_edges)}</div>
-         <div class="label">Totalt Matchet</div>
+         <div class="value" style="color: var(--purple);">{len(bma_preds)}</div>
+         <div class="label">Byer med BMA-data</div>
        </div>
      </div>
      <div style="overflow-x: auto;">
      <table>
-       <thead><tr><th>#</th><th>By</th><th>Spill</th><th>BMA %</th><th>Marked %</th><th>Edge</th><th>Signal</th><th>BMA μ / σ</th></tr></thead>
+       <thead><tr><th>#</th><th>By</th><th>Spill</th><th>Sigma</th><th>Mean</th><th>P5</th><th>Marked Pris</th><th>BMA μ</th><th>Volum</th></tr></thead>
        <tbody>{rows_html}</tbody>
      </table>
      </div>
    </div>"""
-   else:
-       trading_html = ""
-
-   # ---- Near-Resolved Arbitrage Section (<15% or >85%) ----
-   arbitrage_html = ""
-   if arbitrage_edges:
-       arb_count = len(arbitrage_edges)
-       arb_rows = format_edge_html_rows(arbitrage_edges)
-
-       arbitrage_html = f"""
-   <div class="section" style="border-color: rgba(210,153,29,0.3);">
-     <h2>💰 NÆR-RESOLVED ({'<15%' if any(e['market_prob'] <= 15 for e in arbitrage_edges) else ''}{' & ' if any(e['market_prob'] <= 15 for e in arbitrage_edges) and any(e['market_prob'] >= 85 for e in arbitrage_edges) else ''}{'>85%' if any(e['market_prob'] >= 85 for e in arbitrage_edges) else ''}) — Arbitrasje</h2>
-     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
-       Markeder med ekstrem prising (<15% eller >85%) — disse er nær-resolverte og gir
-       ikke tradisjonelle trading-signaler. Viser prising for arbitrasje-vurdering.
-       ⚠️ SHORT ved 94% har forferdelig risk/reward (risikerer 94c for å vinne 6c).
-     </p>
-     <div class="card-grid" style="margin-bottom: 20px;">
-       <div class="card">
-         <div class="value" style="color: var(--orange);">{arb_count}</div>
-         <div class="label">⚖️ Nær-Resolved Markeder</div>
-       </div>
-     </div>
-     <div style="overflow-x: auto;">
-     <table>
-       <thead><tr><th>#</th><th>By</th><th>Spill</th><th>BMA %</th><th>Marked %</th><th>Edge</th><th>Signal</th><th>BMA μ / σ</th></tr></thead>
-       <tbody>{arb_rows}</tbody>
-     </table>
-     </div>
-   </div>"""
-   else:
-       arbitrage_html = ""
-
-   if not trading_html and not arbitrage_html:
-       return ""
-
-   return trading_html + arbitrage_html
 
 
 # =============================================================================
@@ -1987,11 +1932,11 @@ def _generate_html_report() -> str:
                 resolved_rows += f"""
                 <tr>
                     <td><strong>{city}</strong></td>
-                    <td>BUY {sigma_spill}°C</td>
+                    <td>{sigma_spill}°C</td>
                     <td>{_ri(sigma.get('result', ''))} ({actual_str})</td>
-                    <td>BUY {p5_spill}°C</td>
+                    <td>{p5_spill}°C</td>
                     <td>{_ri(p5s.get('result', ''))}</td>
-                    <td>BUY {mean_spill}°C</td>
+                    <td>{mean_spill}°C</td>
                     <td>{_ri(means.get('result', ''))}</td>
                 </tr>"""
 
@@ -2611,9 +2556,9 @@ def _generate_all_cities_html() -> str:
                 return "❌"
             return "⏳"
 
-        sigma_cell = f'BUY {d["sigma_spill"]}°C {_ri(d["sigma_result"])}'
-        p5_cell = f'BUY {d["p5_spill"]}°C {_ri(d["p5_result"])}'
-        mean_cell = f'BUY {d["mean_spill"]}°C {_ri(d["mean_result"])}'
+        sigma_cell = f'{d["sigma_spill"]}°C {_ri(d["sigma_result"])}'
+        p5_cell = f'{d["p5_spill"]}°C {_ri(d["p5_result"])}'
+        mean_cell = f'{d["mean_spill"]}°C {_ri(d["mean_result"])}'
 
         actual_str = f"{d['actual_peak']:.1f}°C" if isinstance(d['actual_peak'], (int, float)) else "—"
 
@@ -2637,48 +2582,22 @@ def _generate_all_cities_html() -> str:
                 peak_won = True
         row_class = "city-row row-win" if row_win else "city-row row-loss"
 
-        # Compute market edge for this city's sigma spill temperature
+        # Compute market price for this city's sigma spill temperature (data only, no signals)
         market_cell = "—"
-        edge_cell = "—"
-        signal_cell = "—"
-        edge_data_attr = "0"
         if HAS_MARKET_EDGE and isinstance(sigma_spill, (int, float)) and market_lookup:
             city_lower = city.lower()
-            # Try "CityName, CC" format first, then base name without country
             mkt_prob = market_lookup.get((city_lower, int(sigma_spill)))
             if mkt_prob is None:
                 city_base = city_lower.split(",")[0].strip()
                 mkt_prob = market_lookup.get((city_base, int(sigma_spill)))
-                # Also try removing parenthetical (e.g., "Seoul (Incheon)")
                 if mkt_prob is None:
                     city_no_paren = re.sub(r'\s*\(.*?\)\s*', '', city_base).strip()
                     mkt_prob = market_lookup.get((city_no_paren, int(sigma_spill)))
             if mkt_prob is not None:
                 market_cell = f"{mkt_prob:.1f}%"
-                if isinstance(d.get('bma_mean'), (int, float)) and isinstance(d.get('bma_std'), (int, float)):
-                    bma_p = compute_bma_prob(d['bma_mean'], d['bma_std'], int(sigma_spill), "exact")
-                    edge = round(bma_p - mkt_prob, 1)
-                    edge_cell = f"{edge:+.1f}%"
-                    edge_data_attr = str(edge)
-                    # Only show BUY/SHORT signals for markets in 15-85% range.
-                    # Markets outside this range are near-resolved and get
-                    # reclassified as arbitrage (terrible risk/reward for SHORT at 94%).
-                    if 15 < mkt_prob < 85:
-                        if edge > 10:
-                            signal_cell = '<span style="color: var(--green); font-weight: 600;">🟢 BUY</span>'
-                        elif edge > 0:
-                            signal_cell = '<span style="color: var(--green);">🟢 BUY</span>'
-                        elif edge < -10:
-                            signal_cell = '<span style="color: var(--red); font-weight: 600;">🔴 SHORT</span>'
-                        elif edge < 0:
-                            signal_cell = '<span style="color: var(--red);">🔴 SHORT</span>'
-                        else:
-                            signal_cell = '⚪ FLAT'
-                    else:
-                        signal_cell = '<span style="color: var(--orange); font-weight: 600;">⚖️ ARBITRAGE</span>'
 
         safe_city_id = re.sub(r'[^a-zA-Z0-9]', '_', city)
-        table_rows += f"""<tr class="{row_class}" data-lead="{ld}" data-city="{city}" data-conf="{conf:.3f}" data-edge="{edge_data_attr}">
+        table_rows += f"""<tr class="{row_class}" data-lead="{ld}" data-city="{city}" data-conf="{conf:.3f}">
             <td class="col-rank"></td>
             <td class="col-city">{city}</td>
             <td class="col-bma">{bma_str} <span class="dim">σ={std_str}</span></td>
@@ -2691,8 +2610,6 @@ def _generate_all_cities_html() -> str:
             <td class="col-peak">{actual_str}{" ✅ VUNNET" if peak_won else ""}</td>
             <td class="col-live" id="live-{safe_city_id}">—</td>
             <td class="col-market">{market_cell}</td>
-            <td class="col-edge">{edge_cell}</td>
-            <td class="col-signal">{signal_cell}</td>
             <td class="col-rec {rec_class}">{rec}</td>
             <td class="col-strat">{_build_strat_rec_cell(city, best_per_city)}</td>
             <td class="col-local">{local_time_str}</td>
@@ -2831,11 +2748,9 @@ def _generate_all_cities_html() -> str:
           <th onclick="sortTable(9)">Peak</th>
           <th onclick="sortTable(10)">🔴 Live</th>
           <th onclick="sortTable(11)">Marked Pris</th>
-          <th onclick="sortTable(12)">Edge</th>
-          <th onclick="sortTable(13)">Signal</th>
-          <th onclick="sortTable(14)">Anbefaling</th>
-          <th onclick="sortTable(15)">🎯 Anbefalt Strategi</th>
-          <th onclick="sortTable(16)">🕐 Lokal</th>
+          <th onclick="sortTable(12)">Anbefaling</th>
+          <th onclick="sortTable(13)">🎯 Anbefalt Strategi</th>
+          <th onclick="sortTable(14)">🕐 Lokal</th>
        </tr>
       </thead>
       <tbody>
