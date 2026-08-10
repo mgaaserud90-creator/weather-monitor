@@ -18,6 +18,9 @@ Usage:
         await send_sms("VARSMONITOR: Oslo peak sannsynlig (82%). ...")
         mark_sms_sent("Oslo, NO")
 
+    # CLI: send a test SMS unconditionally
+    python _sms_alert.py --test
+
     # CLI: check latest log and send alerts automatically
     python _sms_alert.py --check-and-send
 """
@@ -256,9 +259,14 @@ async def check_and_send_from_log() -> int:
 
 
 def main() -> None:
-    """CLI entry point for --check-and-send mode."""
+    """CLI entry point for --test and --check-and-send modes."""
     parser = argparse.ArgumentParser(
         description="SMS Alert Module — Twilio-based notifications for VærMonitor.",
+    )
+    parser.add_argument(
+        "--test",
+        action="store_true",
+        help="Send an unconditional test SMS to verify Twilio configuration.",
     )
     parser.add_argument(
         "--check-and-send",
@@ -268,7 +276,16 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    if args.check_and_send:
+    if args.test:
+        print("[SMS] Sending test SMS...")
+        sent = asyncio.run(
+            send_sms("VarMonitor test: SMS fungerer! Pipeline klar.")
+        )
+        if sent:
+            print("[SMS] Test SMS sent!")
+        else:
+            print("[SMS] Test SMS failed — check Twilio credentials.")
+    elif args.check_and_send:
         sent = asyncio.run(check_and_send_from_log())
         if sent > 0:
             print(f"[SMS] Done — {sent} alert(s) sent.")
