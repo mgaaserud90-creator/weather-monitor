@@ -2070,11 +2070,16 @@ def _summarize_arbitrage(runs: list[dict]) -> dict:
 async def daily_close_mode() -> None:
     """Finalize daily results for ALL 51 cities, compare all 3 strategies, generate report.
 
-    Runs at 23:00 UTC. Resolves TODAY's BMA predictions against TODAY's
-    actual archive data. Simple: predict Aug 9 → resolve Aug 9.
+    Resolves cities as soon as their peak window has passed (peak_end + 2h local).
+    No longer waits until 23:00 UTC — per-city timezone-aware resolution:
+      - Asian cities (peak ended ~10:00 UTC) → resolved by 12:00 UTC
+      - European cities (peak ended ~17:00 UTC) → resolved by 19:00 UTC
+      - American cities (peak ended ~23:00 UTC) → resolved by 01:00 UTC next day
+
+    Can be run at any time; safely skips cities still in their active window.
     """
     print("╔══════════════════════════════════════════════════╗")
-    print("║   MODELLKVALITET — DAGLIG AVSLUTNING (23:00)     ║")
+    print("║   MODELLKVALITET — DAGLIG AVSLUTNING (PER-CITY) ║")
     print("╚══════════════════════════════════════════════════╝")
     print(f"   Start: {_now_utc()}")
 
@@ -2114,17 +2119,26 @@ async def daily_close_mode() -> None:
         strategies = _get_strategies(pdata)
 
         # ═══════════════════════════════════════════════════════════════
-        # TIME GUARD: Don't resolve today before 23:00 UTC.
-        # The archive API returns partial daily_max for the current date
-        # even early in the morning. Resolving before peak hours (14-16
-        # local) would use incomplete data. Only resolve today after 23:00.
+        # PER-CITY PEAK WINDOW GUARD: Resolve each city as soon as its
+        # peak window has passed (peak_end + 2h local). No blanket 23:00
+        # wait — timezone-aware per-city resolution.
+        #   Asia (peak ~10 UTC)   → resolved by 12:00 UTC
+        #   Europe (peak ~17 UTC) → resolved by 19:00 UTC
+        #   Americas (peak ~23 UTC) → resolved by 01:00 UTC next day
         # ═══════════════════════════════════════════════════════════════
         now_utc_dt = datetime.now(timezone.utc)
         if city_target >= today:
-            # Today (or future date — should not happen but guard anyway)
-            if now_utc_dt.hour < 23:
+            ph_end = pdata.get("_peak_hour_end", 16)
+            tz_city = pdata.get("_tz", "UTC")
+            offset = _get_utc_offset_for_city(city, tz_city)
+            local_hour = _compute_city_local_hour(offset, now_utc_dt.hour)
+            peak_end_plus_2 = ph_end + 2
+
+            # City can only be resolved if its local time is past peak_end + 2
+            if local_hour <= peak_end_plus_2:
                 print(f"  ⏰ {city:<30s}: target={city_target} — too early "
-                      f"(UTC {now_utc_dt.hour:02d}:00), skip (wait for 23:00 UTC)")
+                      f"(local {local_hour:02d}:00, peak ends {ph_end:02d}:00 "
+                      f"+ 2h = {peak_end_plus_2:02d}:00), skip")
                 unresolved += 1
                 continue
 
