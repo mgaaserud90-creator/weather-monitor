@@ -161,7 +161,7 @@
 // No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-08-10T18:42:34Z');
+    var deployTime = new Date('2026-08-10T18:54:59Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {
@@ -1810,7 +1810,7 @@ async function fetchLivePeak() {
         if (statusEl) statusEl.textContent = '⏳ Henter peak ' + done + '/' + total + '...';
         try {
             const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + city.lat +
-                '&longitude=' + city.lon + '&hourly=temperature_2m&past_days=1&forecast_days=1' +
+                '&longitude=' + city.lon + '&hourly=temperature_2m&daily=temperature_2m_max&past_days=1&forecast_days=1' +
                 '&timezone=' + encodeURIComponent(city.tz);
             const resp = await fetch(url, { headers: { 'User-Agent': 'WeatherMonitor/1.0' } });
             const data = await resp.json();
@@ -1824,7 +1824,10 @@ async function fetchLivePeak() {
                 await new Promise(r => setTimeout(r, 500));
                 continue;
             }
-            const maxTemp = Math.max.apply(null, temps);
+            // Use official daily max from forecast API (index 1 = today when past_days=1).
+            // This matches the archive API value and is more accurate than max(hourly).
+            const dailyMax = data.daily?.temperature_2m_max?.[1];
+            const maxTemp = (dailyMax != null) ? dailyMax : Math.max.apply(null, temps);
             const latestTemp = temps[temps.length - 1];
             const prevTemp = temps[temps.length - 2];
             const trend = latestTemp > prevTemp ? '↑' : (latestTemp < prevTemp ? '↓' : '→');
