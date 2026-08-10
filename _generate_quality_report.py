@@ -1718,8 +1718,9 @@ def _build_cities_js_array() -> str:
                 lon = loc.get("lon", 0)
                 tz = loc.get("tz", "UTC")
                 if name:
+                    pw = PEAK_WINDOWS.get(name, (14, 17))
                     entries.append(
-                        f'  {{name: "{name}", lat: {lat}, lon: {lon}, tz: "{tz}"}}'
+                        f'  {{name: "{name}", lat: {lat}, lon: {lon}, tz: "{tz}", peakStart: {pw[0]}, peakEnd: {pw[1]}}}'
                     )
         except Exception:
             pass
@@ -2816,7 +2817,8 @@ def _generate_all_cities_html() -> str:
             <td class="col-mean">{mean_cell}</td>
             <td class="col-conf {conf_class}">{conf_icon} {(conf*100):.0f}%</td>
             <td class="col-models">{d['model_ct']}/8</td>
-            <td class="col-peak">{actual_str}{" ✅ VUNNET" if peak_won else ""}</td>
+            <td class="col-peak" id="peak-{city_slug}">⏳</td>
+            <td class="col-trend" id="trend-{city_slug}">—</td>
             <td class="col-live" id="live-{safe_city_id}">—</td>
             <td class="col-market">{market_cell} {f'<span class="dim">({n_buckets} buckets)</span>' if n_buckets > 0 else ''}</td>
             <td class="col-rec {rec_class}">{rec}</td>
@@ -2909,6 +2911,8 @@ def _generate_all_cities_html() -> str:
   .live-status {{ color: var(--text-dim); font-size: 0.85rem; margin-left: 12px; }}
   .live-updated {{ color: var(--text-dim); font-size: 0.8rem; margin-left: 8px; }}
   .col-live {{ color: var(--green); font-weight: 600; font-size: 0.78rem; }}
+  .col-peak {{ font-weight: 600; font-size: 0.8rem; }}
+  .col-trend {{ font-weight: 700; font-size: 1rem; text-align: center; }}
   .col-spark {{ font-family: monospace; font-size: 0.85rem; letter-spacing: -1px; white-space: nowrap; text-align: center; min-width: 90px; }}
   .col-spark .peak-marker {{ color: var(--red); font-weight: 700; }}
   .spark-loading {{ color: var(--text-dim); font-size: 0.7rem; }}
@@ -3002,10 +3006,10 @@ def _generate_all_cities_html() -> str:
           <th onclick="sortTable(6)">📊 Mean</th>
           <th onclick="sortTable(7)">Konf</th>
           <th onclick="sortTable(8)">Modeller</th>
-          <th onclick="sortTable(9)">Peak</th>
-          <th onclick="sortTable(10)">🔴 Live</th>
-          <th onclick="sortTable(11)">Marked Pris</th>
-          <th onclick="sortTable(12)">Anbefaling</th>
+          <th onclick="sortTable(9)">📡 Foreløpig Peak</th>
+          <th onclick="sortTable(10)">📈 Trend</th>
+          <th onclick="sortTable(11)">🔴 Live</th>
+          <th onclick="sortTable(12)">Marked Pris</th>
           <th onclick="sortTable(13)">🎯 Anbefalt Strategi</th>
           <th onclick="sortTable(14)">🕐 Lokal</th>
        </tr>
@@ -3024,6 +3028,77 @@ def _generate_all_cities_html() -> str:
 
 <script>
 {cities_js}
+
+// ---- Live Peak Detection (Hourly Archive API) ----
+function updateCityRow(cityName, maxTemp, trend, peakStatus) {{
+    const slug = cityName.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase().replace(/-+$/g, '');
+    const peakEl = document.getElementById('peak-' + slug);
+    const trendEl = document.getElementById('trend-' + slug);
+    if (peakEl) {{
+        peakEl.innerHTML = '📡 ' + maxTemp.toFixed(1) + '°C ' + peakStatus;
+    }}
+    if (trendEl) {{
+        trendEl.textContent = trend;
+        trendEl.style.color = trend === '↑' ? 'var(--red)' : (trend === '↓' ? 'var(--blue)' : 'var(--text-dim)');
+    }}
+}}
+
+async function fetchLivePeak() {{
+    const today = new Date().toISOString().slice(0, 10);
+    const statusEl = document.getElementById('fetch-status');
+    if (statusEl) statusEl.textContent = '⏳ Henter peak-data...';
+
+    for (const city of CITIES) {{
+        try {{
+            const url = 'https://archive-api.open-meteo.com/v1/archive?latitude=' + city.lat +
+                '&longitude=' + city.lon + '&start_date=' + today + '&end_date=' + today +
+                '&hourly=temperature_2m&timezone=' + encodeURIComponent(city.tz);
+            const resp = await fetch(url, {{ headers: {{ 'User-Agent': 'WeatherMonitor/1.0' }} }});
+            const data = await resp.json();
+            if (data.error) continue;
+
+            const temps = data.hourly.temperature_2m.filter(function(t) {{ return t !== null; }});
+            if (temps.length < 2) continue;
+
+            const maxTemp = Math.max.apply(null, temps);
+            const latestTemp = temps[temps.length - 1];
+            const prevTemp = temps[temps.length - 2];
+            const trend = latestTemp > prevTemp ? '↑' : (latestTemp < prevTemp ? '↓' : '→');
+
+            // Peak status: based on trend + time proximity to peak window
+            const times = data.hourly.time;
+            const lastTime = times[times.length - 1];
+            const hour = parseInt(lastTime.split('T')[1].split(':')[0]);
+            const peakStart = city.peakStart || 14;
+            const peakEnd = city.peakEnd || 17;
+            const inPeakWindow = (hour >= peakStart && hour <= peakEnd);
+            const pastPeakWindow = (hour > peakEnd);
+
+            var peakStatus;
+            if (pastPeakWindow) {{
+                peakStatus = '🔴 PEAK NÅDD';
+            }} else if (inPeakWindow && trend === '↑') {{
+                peakStatus = '🟢 STIGER';
+            }} else if (inPeakWindow) {{
+                peakStatus = '🟡 NÆR PEAK';
+            }} else {{
+                peakStatus = '⏳ VENTER';
+            }}
+
+            updateCityRow(city.name, maxTemp, trend, peakStatus);
+        }} catch (e) {{
+            // Silently skip failed cities
+        }}
+    }}
+
+    if (statusEl) statusEl.textContent = '✅ Peak-data oppdatert';
+    const updatedEl = document.getElementById('live-updated');
+    if (updatedEl) updatedEl.textContent = new Date().toLocaleTimeString('no-NO');
+}}
+
+// Auto-fetch on page load + every 10 minutes
+setTimeout(fetchLivePeak, 2000);
+setInterval(fetchLivePeak, 600000);
 
 var currentLead = {sorted_leads[0] if sorted_leads else 1};
 
@@ -3123,7 +3198,7 @@ function sortTable(colIdx) {{
         }}
         var aVal = (a.cells[colIdx] ? a.cells[colIdx].textContent.trim() : '');
         var bVal = (b.cells[colIdx] ? b.cells[colIdx].textContent.trim() : '');
-        if (colIdx === 0 || colIdx === 2 || colIdx === 3 || colIdx === 8 || colIdx === 9) {{
+        if (colIdx === 0 || colIdx === 2 || colIdx === 3 || colIdx === 8) {{
             var aNum = parseFloat(aVal) || 0;
             var bNum = parseFloat(bVal) || 0;
             return sortAsc ? aNum - bNum : bNum - aNum;

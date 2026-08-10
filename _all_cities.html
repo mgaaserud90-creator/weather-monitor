@@ -42,6 +42,8 @@
   .live-status { color: var(--text-dim); font-size: 0.85rem; margin-left: 12px; }
   .live-updated { color: var(--text-dim); font-size: 0.8rem; margin-left: 8px; }
   .col-live { color: var(--green); font-weight: 600; font-size: 0.78rem; }
+  .col-peak { font-weight: 600; font-size: 0.8rem; }
+  .col-trend { font-weight: 700; font-size: 1rem; text-align: center; }
   .col-spark { font-family: monospace; font-size: 0.85rem; letter-spacing: -1px; white-space: nowrap; text-align: center; min-width: 90px; }
   .col-spark .peak-marker { color: var(--red); font-weight: 700; }
   .spark-loading { color: var(--text-dim); font-size: 0.7rem; }
@@ -98,7 +100,7 @@
 <body>
 <header>
   <h1>🌍 ALLE 51 BYER — BMA Ensemble</h1>
-  <div class="subtitle">Generert: 2026-08-10 16:57:13 UTC | Multi-Strategy: 🎯 Sigma · 🛡️ P5 · 📊 Mean</div>
+  <div class="subtitle">Generert: 2026-08-10 17:03:44 UTC | Multi-Strategy: 🎯 Sigma · 🛡️ P5 · 📊 Mean</div>
 </header>
 <div class="live-bar">
   <button class="live-btn" onclick="fetchLiveData()" id="fetch-btn">🔄 Hent Nåværende Temperatur & Døgnmaks</button>
@@ -141,10 +143,10 @@
           <th onclick="sortTable(6)">📊 Mean</th>
           <th onclick="sortTable(7)">Konf</th>
           <th onclick="sortTable(8)">Modeller</th>
-          <th onclick="sortTable(9)">Peak</th>
-          <th onclick="sortTable(10)">🔴 Live</th>
-          <th onclick="sortTable(11)">Marked Pris</th>
-          <th onclick="sortTable(12)">Anbefaling</th>
+          <th onclick="sortTable(9)">📡 Foreløpig Peak</th>
+          <th onclick="sortTable(10)">📈 Trend</th>
+          <th onclick="sortTable(11)">🔴 Live</th>
+          <th onclick="sortTable(12)">Marked Pris</th>
           <th onclick="sortTable(13)">🎯 Anbefalt Strategi</th>
           <th onclick="sortTable(14)">🕐 Lokal</th>
        </tr>
@@ -160,12 +162,13 @@
             <td class="col-mean">23°C ⏳</td>
             <td class="col-conf conf-low">🔴 53%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-amsterdam-nl">⏳</td>
+            <td class="col-trend" id="trend-amsterdam-nl">—</td>
             <td class="col-live" id="live-Amsterdam__NL">—</td>
             <td class="col-market">— <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">18:57</td>
+            <td class="col-local">19:03</td>
         </tr>
 <tr class="bucket-row amsterdam-nl" data-lead="0" style="color: var(--green);">
             <td></td>
@@ -194,12 +197,13 @@
             <td class="col-mean">30°C ⏳</td>
             <td class="col-conf conf-low">🔴 64%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-ankara-tr">⏳</td>
+            <td class="col-trend" id="trend-ankara-tr">—</td>
             <td class="col-live" id="live-Ankara__TR">—</td>
             <td class="col-market">— <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">19:57</td>
+            <td class="col-local">20:03</td>
         </tr>
 <tr class="bucket-row ankara-tr" data-lead="0" style="color: var(--red);">
             <td></td>
@@ -228,12 +232,13 @@
             <td class="col-mean">32°C ⏳</td>
             <td class="col-conf conf-low">🔴 37%</td>
             <td class="col-models">8/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-atlanta-us">⏳</td>
+            <td class="col-trend" id="trend-atlanta-us">—</td>
             <td class="col-live" id="live-Atlanta__US">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">12:57</td>
+            <td class="col-local">13:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Austin, US" data-conf="0.540" onclick="toggleBuckets('austin-us')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -245,12 +250,13 @@
             <td class="col-mean">36°C ⏳</td>
             <td class="col-conf conf-low">🔴 54%</td>
             <td class="col-models">8/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-austin-us">⏳</td>
+            <td class="col-trend" id="trend-austin-us">—</td>
             <td class="col-live" id="live-Austin__US">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">11:57</td>
+            <td class="col-local">12:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Beijing, CN" data-conf="0.568" onclick="toggleBuckets('beijing-cn')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -262,12 +268,13 @@
             <td class="col-mean">33°C ⏳</td>
             <td class="col-conf conf-low">🔴 57%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-beijing-cn">⏳</td>
+            <td class="col-trend" id="trend-beijing-cn">—</td>
             <td class="col-live" id="live-Beijing__CN">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:57</td>
+            <td class="col-local">01:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Buenos Aires, AR" data-conf="0.754" onclick="toggleBuckets('buenos-aires-ar')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -279,12 +286,13 @@
             <td class="col-mean">11°C ⏳</td>
             <td class="col-conf conf-mid">🟠 75%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-buenos-aires-ar">⏳</td>
+            <td class="col-trend" id="trend-buenos-aires-ar">—</td>
             <td class="col-live" id="live-Buenos_Aires__AR">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">13:57</td>
+            <td class="col-local">14:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Busan, KR" data-conf="0.699" onclick="toggleBuckets('busan-kr')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -296,12 +304,13 @@
             <td class="col-mean">29°C ⏳</td>
             <td class="col-conf conf-low">🔴 70%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-busan-kr">⏳</td>
+            <td class="col-trend" id="trend-busan-kr">—</td>
             <td class="col-live" id="live-Busan__KR">—</td>
             <td class="col-market">— <span class="dim">(2 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">01:57</td>
+            <td class="col-local">02:03</td>
         </tr>
 <tr class="bucket-row busan-kr" data-lead="0">
             <td></td>
@@ -347,12 +356,13 @@
             <td class="col-mean">15°C ⏳</td>
             <td class="col-conf conf-low">🔴 63%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-cape-town-za">⏳</td>
+            <td class="col-trend" id="trend-cape-town-za">—</td>
             <td class="col-live" id="live-Cape_Town__ZA">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">18:57</td>
+            <td class="col-local">19:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Chengdu, CN" data-conf="0.465" onclick="toggleBuckets('chengdu-cn')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -364,12 +374,13 @@
             <td class="col-mean">34°C ⏳</td>
             <td class="col-conf conf-low">🔴 46%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-chengdu-cn">⏳</td>
+            <td class="col-trend" id="trend-chengdu-cn">—</td>
             <td class="col-live" id="live-Chengdu__CN">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:57</td>
+            <td class="col-local">01:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Chicago, US" data-conf="0.381" onclick="toggleBuckets('chicago-us')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -381,12 +392,13 @@
             <td class="col-mean">29°C ⏳</td>
             <td class="col-conf conf-low">🔴 38%</td>
             <td class="col-models">8/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-chicago-us">⏳</td>
+            <td class="col-trend" id="trend-chicago-us">—</td>
             <td class="col-live" id="live-Chicago__US">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">11:57</td>
+            <td class="col-local">12:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Chongqing, CN" data-conf="0.607" onclick="toggleBuckets('chongqing-cn')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -398,12 +410,13 @@
             <td class="col-mean">34°C ⏳</td>
             <td class="col-conf conf-low">🔴 61%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-chongqing-cn">⏳</td>
+            <td class="col-trend" id="trend-chongqing-cn">—</td>
             <td class="col-live" id="live-Chongqing__CN">—</td>
             <td class="col-market">— <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:57</td>
+            <td class="col-local">01:03</td>
         </tr>
 <tr class="bucket-row chongqing-cn" data-lead="0" style="color: var(--green);">
             <td></td>
@@ -432,12 +445,13 @@
             <td class="col-mean">38°C ⏳</td>
             <td class="col-conf conf-mid">🟠 76%</td>
             <td class="col-models">8/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-dallas-us">⏳</td>
+            <td class="col-trend" id="trend-dallas-us">—</td>
             <td class="col-live" id="live-Dallas__US">—</td>
             <td class="col-market">70.0% <span class="dim">(2 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">11:57</td>
+            <td class="col-local">12:03</td>
         </tr>
 <tr class="bucket-row dallas-us" data-lead="0">
             <td></td>
@@ -483,12 +497,13 @@
             <td class="col-mean">35°C ⏳</td>
             <td class="col-conf conf-low">🔴 69%</td>
             <td class="col-models">8/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-denver-us">⏳</td>
+            <td class="col-trend" id="trend-denver-us">—</td>
             <td class="col-live" id="live-Denver__US">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">10:57</td>
+            <td class="col-local">11:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Guangzhou, CN" data-conf="0.719" onclick="toggleBuckets('guangzhou-cn')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -500,12 +515,13 @@
             <td class="col-mean">35°C ⏳</td>
             <td class="col-conf conf-mid">🟠 72%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-guangzhou-cn">⏳</td>
+            <td class="col-trend" id="trend-guangzhou-cn">—</td>
             <td class="col-live" id="live-Guangzhou__CN">—</td>
             <td class="col-market">— <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:57</td>
+            <td class="col-local">01:03</td>
         </tr>
 <tr class="bucket-row guangzhou-cn" data-lead="0" style="color: var(--red);">
             <td></td>
@@ -534,12 +550,13 @@
             <td class="col-mean">22°C ⏳</td>
             <td class="col-conf conf-low">🔴 66%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-helsinki-fi">⏳</td>
+            <td class="col-trend" id="trend-helsinki-fi">—</td>
             <td class="col-live" id="live-Helsinki__FI">—</td>
             <td class="col-market">— <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">19:57</td>
+            <td class="col-local">20:03</td>
         </tr>
 <tr class="bucket-row helsinki-fi" data-lead="0" style="color: var(--red);">
             <td></td>
@@ -568,12 +585,13 @@
             <td class="col-mean">34°C ⏳</td>
             <td class="col-conf conf-low">🔴 64%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-hong-kong-hk">⏳</td>
+            <td class="col-trend" id="trend-hong-kong-hk">—</td>
             <td class="col-live" id="live-Hong_Kong__HK">—</td>
             <td class="col-market">0.1% <span class="dim">(8 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:57</td>
+            <td class="col-local">01:03</td>
         </tr>
 <tr class="bucket-row hong-kong-hk" data-lead="0">
             <td></td>
@@ -721,12 +739,13 @@
             <td class="col-mean">32°C ⏳</td>
             <td class="col-conf conf-low">🔴 53%</td>
             <td class="col-models">8/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-houston-us">⏳</td>
+            <td class="col-trend" id="trend-houston-us">—</td>
             <td class="col-live" id="live-Houston__US">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">11:57</td>
+            <td class="col-local">12:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Istanbul, TR" data-conf="0.499" onclick="toggleBuckets('istanbul-tr')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -738,12 +757,13 @@
             <td class="col-mean">27°C ⏳</td>
             <td class="col-conf conf-low">🔴 50%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-istanbul-tr">⏳</td>
+            <td class="col-trend" id="trend-istanbul-tr">—</td>
             <td class="col-live" id="live-Istanbul__TR">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">19:57</td>
+            <td class="col-local">20:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Jeddah, SA" data-conf="0.381" onclick="toggleBuckets('jeddah-sa')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -755,12 +775,13 @@
             <td class="col-mean">40°C ⏳</td>
             <td class="col-conf conf-low">🔴 38%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-jeddah-sa">⏳</td>
+            <td class="col-trend" id="trend-jeddah-sa">—</td>
             <td class="col-live" id="live-Jeddah__SA">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">19:57</td>
+            <td class="col-local">20:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Jinan, CN" data-conf="0.576" onclick="toggleBuckets('jinan-cn')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -772,12 +793,13 @@
             <td class="col-mean">31°C ⏳</td>
             <td class="col-conf conf-low">🔴 58%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-jinan-cn">⏳</td>
+            <td class="col-trend" id="trend-jinan-cn">—</td>
             <td class="col-live" id="live-Jinan__CN">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:57</td>
+            <td class="col-local">01:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Karachi, PK" data-conf="0.457" onclick="toggleBuckets('karachi-pk')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -789,12 +811,13 @@
             <td class="col-mean">33°C ⏳</td>
             <td class="col-conf conf-low">🔴 46%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-karachi-pk">⏳</td>
+            <td class="col-trend" id="trend-karachi-pk">—</td>
             <td class="col-live" id="live-Karachi__PK">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">21:57</td>
+            <td class="col-local">22:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Kuala Lumpur, MY" data-conf="0.592" onclick="toggleBuckets('kuala-lumpur-my')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -806,12 +829,13 @@
             <td class="col-mean">31°C ⏳</td>
             <td class="col-conf conf-low">🔴 59%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-kuala-lumpur-my">⏳</td>
+            <td class="col-trend" id="trend-kuala-lumpur-my">—</td>
             <td class="col-live" id="live-Kuala_Lumpur__MY">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:57</td>
+            <td class="col-local">01:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="London, UK" data-conf="0.565" onclick="toggleBuckets('london-uk')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -823,12 +847,13 @@
             <td class="col-mean">26°C ⏳</td>
             <td class="col-conf conf-low">🔴 56%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-london-uk">⏳</td>
+            <td class="col-trend" id="trend-london-uk">—</td>
             <td class="col-live" id="live-London__UK">—</td>
             <td class="col-market">0.1% <span class="dim">(6 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">17:57</td>
+            <td class="col-local">18:03</td>
         </tr>
 <tr class="bucket-row london-uk" data-lead="0" style="color: var(--red);">
             <td></td>
@@ -942,12 +967,13 @@
             <td class="col-mean">29°C ⏳</td>
             <td class="col-conf conf-low">🔴 34%</td>
             <td class="col-models">8/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-los-angeles-us">⏳</td>
+            <td class="col-trend" id="trend-los-angeles-us">—</td>
             <td class="col-live" id="live-Los_Angeles__US">—</td>
             <td class="col-market">— <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">09:57</td>
+            <td class="col-local">10:03</td>
         </tr>
 <tr class="bucket-row los-angeles-us" data-lead="0">
             <td></td>
@@ -976,12 +1002,13 @@
             <td class="col-mean">32°C ⏳</td>
             <td class="col-conf conf-low">🔴 46%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-lucknow-in">⏳</td>
+            <td class="col-trend" id="trend-lucknow-in">—</td>
             <td class="col-live" id="live-Lucknow__IN">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">22:27</td>
+            <td class="col-local">22:33</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Madrid, ES" data-conf="0.592" onclick="toggleBuckets('madrid-es')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -993,12 +1020,13 @@
             <td class="col-mean">36°C ⏳</td>
             <td class="col-conf conf-low">🔴 59%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-madrid-es">⏳</td>
+            <td class="col-trend" id="trend-madrid-es">—</td>
             <td class="col-live" id="live-Madrid__ES">—</td>
             <td class="col-market">— <span class="dim">(3 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">18:57</td>
+            <td class="col-local">19:03</td>
         </tr>
 <tr class="bucket-row madrid-es" data-lead="0" style="color: var(--red);">
             <td></td>
@@ -1061,12 +1089,13 @@
             <td class="col-mean">30°C ⏳</td>
             <td class="col-conf conf-low">🔴 53%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-manila-ph">⏳</td>
+            <td class="col-trend" id="trend-manila-ph">—</td>
             <td class="col-live" id="live-Manila__PH">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:57</td>
+            <td class="col-local">01:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Mexico City, MX" data-conf="0.568" onclick="toggleBuckets('mexico-city-mx')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -1078,12 +1107,13 @@
             <td class="col-mean">24°C ⏳</td>
             <td class="col-conf conf-low">🔴 57%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-mexico-city-mx">⏳</td>
+            <td class="col-trend" id="trend-mexico-city-mx">—</td>
             <td class="col-live" id="live-Mexico_City__MX">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">10:57</td>
+            <td class="col-local">11:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Miami, US" data-conf="0.626" onclick="toggleBuckets('miami-us')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -1095,12 +1125,13 @@
             <td class="col-mean">33°C ⏳</td>
             <td class="col-conf conf-low">🔴 63%</td>
             <td class="col-models">8/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-miami-us">⏳</td>
+            <td class="col-trend" id="trend-miami-us">—</td>
             <td class="col-live" id="live-Miami__US">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">12:57</td>
+            <td class="col-local">13:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Milan, IT" data-conf="0.394" onclick="toggleBuckets('milan-it')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -1112,12 +1143,13 @@
             <td class="col-mean">35°C ⏳</td>
             <td class="col-conf conf-low">🔴 39%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-milan-it">⏳</td>
+            <td class="col-trend" id="trend-milan-it">—</td>
             <td class="col-live" id="live-Milan__IT">—</td>
             <td class="col-market">0.1% <span class="dim">(5 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">18:57</td>
+            <td class="col-local">19:03</td>
         </tr>
 <tr class="bucket-row milan-it" data-lead="0" style="color: var(--red);">
             <td></td>
@@ -1214,12 +1246,13 @@
             <td class="col-mean">24°C ⏳</td>
             <td class="col-conf conf-mid">🟠 74%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-moscow-ru">⏳</td>
+            <td class="col-trend" id="trend-moscow-ru">—</td>
             <td class="col-live" id="live-Moscow__RU">—</td>
             <td class="col-market">0.1% <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">19:57</td>
+            <td class="col-local">20:03</td>
         </tr>
 <tr class="bucket-row moscow-ru" data-lead="0" style="color: var(--red);">
             <td></td>
@@ -1248,12 +1281,13 @@
             <td class="col-mean">32°C ⏳</td>
             <td class="col-conf conf-low">🔴 60%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-munich-de">⏳</td>
+            <td class="col-trend" id="trend-munich-de">—</td>
             <td class="col-live" id="live-Munich__DE">—</td>
             <td class="col-market">— <span class="dim">(5 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">18:57</td>
+            <td class="col-local">19:03</td>
         </tr>
 <tr class="bucket-row munich-de" data-lead="0" style="color: var(--red);">
             <td></td>
@@ -1350,12 +1384,13 @@
             <td class="col-mean">32°C ⏳</td>
             <td class="col-conf conf-low">🔴 62%</td>
             <td class="col-models">8/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-new-york-us">⏳</td>
+            <td class="col-trend" id="trend-new-york-us">—</td>
             <td class="col-live" id="live-New_York__US">—</td>
             <td class="col-market">26.5% <span class="dim">(3 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">12:57</td>
+            <td class="col-local">13:03</td>
         </tr>
 <tr class="bucket-row new-york-us" data-lead="0">
             <td></td>
@@ -1418,12 +1453,13 @@
             <td class="col-mean">33°C ⏳</td>
             <td class="col-conf conf-low">🔴 46%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-panama-city-pa">⏳</td>
+            <td class="col-trend" id="trend-panama-city-pa">—</td>
             <td class="col-live" id="live-Panama_City__PA">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">11:57</td>
+            <td class="col-local">12:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Paris, FR" data-conf="0.580" onclick="toggleBuckets('paris-fr')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -1435,12 +1471,13 @@
             <td class="col-mean">31°C ⏳</td>
             <td class="col-conf conf-low">🔴 58%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-paris-fr">⏳</td>
+            <td class="col-trend" id="trend-paris-fr">—</td>
             <td class="col-live" id="live-Paris__FR">—</td>
             <td class="col-market">— <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">18:57</td>
+            <td class="col-local">19:03</td>
         </tr>
 <tr class="bucket-row paris-fr" data-lead="0" style="color: var(--red);">
             <td></td>
@@ -1469,12 +1506,13 @@
             <td class="col-mean">31°C ⏳</td>
             <td class="col-conf conf-low">🔴 60%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-qingdao-cn">⏳</td>
+            <td class="col-trend" id="trend-qingdao-cn">—</td>
             <td class="col-live" id="live-Qingdao__CN">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:57</td>
+            <td class="col-local">01:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="San Francisco, US" data-conf="0.328" onclick="toggleBuckets('san-francisco-us')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -1486,12 +1524,13 @@
             <td class="col-mean">22°C ⏳</td>
             <td class="col-conf conf-low">🔴 33%</td>
             <td class="col-models">8/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-san-francisco-us">⏳</td>
+            <td class="col-trend" id="trend-san-francisco-us">—</td>
             <td class="col-live" id="live-San_Francisco__US">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">09:57</td>
+            <td class="col-local">10:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Sao Paulo, BR" data-conf="0.448" onclick="toggleBuckets('sao-paulo-br')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -1503,12 +1542,13 @@
             <td class="col-mean">17°C ⏳</td>
             <td class="col-conf conf-low">🔴 45%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-sao-paulo-br">⏳</td>
+            <td class="col-trend" id="trend-sao-paulo-br">—</td>
             <td class="col-live" id="live-Sao_Paulo__BR">—</td>
             <td class="col-market">0.1% <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">13:57</td>
+            <td class="col-local">14:03</td>
         </tr>
 <tr class="bucket-row sao-paulo-br" data-lead="0" style="color: var(--red);">
             <td></td>
@@ -1537,12 +1577,13 @@
             <td class="col-mean">24°C ⏳</td>
             <td class="col-conf conf-low">🔴 59%</td>
             <td class="col-models">8/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-seattle-us">⏳</td>
+            <td class="col-trend" id="trend-seattle-us">—</td>
             <td class="col-live" id="live-Seattle__US">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">09:57</td>
+            <td class="col-local">10:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Seoul (Incheon), KR" data-conf="0.296" onclick="toggleBuckets('seoul-incheon-kr')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -1554,12 +1595,13 @@
             <td class="col-mean">31°C ⏳</td>
             <td class="col-conf conf-low">🔴 30%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-seoul-incheon-kr">⏳</td>
+            <td class="col-trend" id="trend-seoul-incheon-kr">—</td>
             <td class="col-live" id="live-Seoul__Incheon___KR">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">01:57</td>
+            <td class="col-local">02:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Shanghai, CN" data-conf="0.715" onclick="toggleBuckets('shanghai-cn')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -1571,12 +1613,13 @@
             <td class="col-mean">29°C ⏳</td>
             <td class="col-conf conf-mid">🟠 72%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-shanghai-cn">⏳</td>
+            <td class="col-trend" id="trend-shanghai-cn">—</td>
             <td class="col-live" id="live-Shanghai__CN">—</td>
             <td class="col-market">100.0% <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:57</td>
+            <td class="col-local">01:03</td>
         </tr>
 <tr class="bucket-row shanghai-cn" data-lead="0" style="color: var(--green);">
             <td></td>
@@ -1605,12 +1648,13 @@
             <td class="col-mean">35°C ⏳</td>
             <td class="col-conf conf-low">🔴 43%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-shenzhen-cn">⏳</td>
+            <td class="col-trend" id="trend-shenzhen-cn">—</td>
             <td class="col-live" id="live-Shenzhen__CN">—</td>
             <td class="col-market">— <span class="dim">(2 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:57</td>
+            <td class="col-local">01:03</td>
         </tr>
 <tr class="bucket-row shenzhen-cn" data-lead="0" style="color: var(--red);">
             <td></td>
@@ -1656,12 +1700,13 @@
             <td class="col-mean">32°C ⏳</td>
             <td class="col-conf conf-low">🔴 65%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-singapore-sg">⏳</td>
+            <td class="col-trend" id="trend-singapore-sg">—</td>
             <td class="col-live" id="live-Singapore__SG">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:57</td>
+            <td class="col-local">01:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Taipei, TW" data-conf="0.587" onclick="toggleBuckets('taipei-tw')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -1673,12 +1718,13 @@
             <td class="col-mean">33°C ⏳</td>
             <td class="col-conf conf-low">🔴 59%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-taipei-tw">⏳</td>
+            <td class="col-trend" id="trend-taipei-tw">—</td>
             <td class="col-live" id="live-Taipei__TW">—</td>
             <td class="col-market">— <span class="dim">(2 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:57</td>
+            <td class="col-local">01:03</td>
         </tr>
 <tr class="bucket-row taipei-tw" data-lead="0" style="color: var(--red);">
             <td></td>
@@ -1724,12 +1770,13 @@
             <td class="col-mean">35°C ⏳</td>
             <td class="col-conf conf-low">🔴 52%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-tel-aviv-il">⏳</td>
+            <td class="col-trend" id="trend-tel-aviv-il">—</td>
             <td class="col-live" id="live-Tel_Aviv__IL">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">19:57</td>
+            <td class="col-local">20:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Tokyo, JP" data-conf="0.593" onclick="toggleBuckets('tokyo-jp')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -1741,12 +1788,13 @@
             <td class="col-mean">29°C ⏳</td>
             <td class="col-conf conf-low">🔴 59%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-tokyo-jp">⏳</td>
+            <td class="col-trend" id="trend-tokyo-jp">—</td>
             <td class="col-live" id="live-Tokyo__JP">—</td>
             <td class="col-market">— <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">01:57</td>
+            <td class="col-local">02:03</td>
         </tr>
 <tr class="bucket-row tokyo-jp" data-lead="0" style="color: var(--green);">
             <td></td>
@@ -1775,12 +1823,13 @@
             <td class="col-mean">27°C ⏳</td>
             <td class="col-conf conf-low">🔴 43%</td>
             <td class="col-models">8/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-toronto-ca">⏳</td>
+            <td class="col-trend" id="trend-toronto-ca">—</td>
             <td class="col-live" id="live-Toronto__CA">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">12:57</td>
+            <td class="col-local">13:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Warsaw, PL" data-conf="0.415" onclick="toggleBuckets('warsaw-pl')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -1792,12 +1841,13 @@
             <td class="col-mean">31°C ⏳</td>
             <td class="col-conf conf-low">🔴 42%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-warsaw-pl">⏳</td>
+            <td class="col-trend" id="trend-warsaw-pl">—</td>
             <td class="col-live" id="live-Warsaw__PL">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">18:57</td>
+            <td class="col-local">19:03</td>
         </tr>
 <tr class="city-row city-group row-loss" data-lead="0" data-city="Wellington, NZ" data-conf="0.611" onclick="toggleBuckets('wellington-nz')">
             <td class="col-rank"><span class="expand-icon">▶</span></td>
@@ -1809,12 +1859,13 @@
             <td class="col-mean">12°C ⏳</td>
             <td class="col-conf conf-low">🔴 61%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-wellington-nz">⏳</td>
+            <td class="col-trend" id="trend-wellington-nz">—</td>
             <td class="col-live" id="live-Wellington__NZ">—</td>
             <td class="col-market">— <span class="dim">(2 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">04:57</td>
+            <td class="col-local">05:03</td>
         </tr>
 <tr class="bucket-row wellington-nz" data-lead="0" style="color: var(--red);">
             <td></td>
@@ -1860,12 +1911,13 @@
             <td class="col-mean">28°C ⏳</td>
             <td class="col-conf conf-low">🔴 39%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-wuhan-cn">⏳</td>
+            <td class="col-trend" id="trend-wuhan-cn">—</td>
             <td class="col-live" id="live-Wuhan__CN">—</td>
             <td class="col-market">— <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:57</td>
+            <td class="col-local">01:03</td>
         </tr>
 <tr class="bucket-row wuhan-cn" data-lead="0" style="color: var(--green);">
             <td></td>
@@ -1894,12 +1946,13 @@
             <td class="col-mean">25°C ⏳</td>
             <td class="col-conf conf-low">🔴 59%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak">—</td>
+            <td class="col-peak" id="peak-zhengzhou-cn">⏳</td>
+            <td class="col-trend" id="trend-zhengzhou-cn">—</td>
             <td class="col-live" id="live-Zhengzhou__CN">—</td>
             <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:57</td>
+            <td class="col-local">01:03</td>
         </tr>
 
       </tbody>
@@ -1914,58 +1967,129 @@
 
 <script>
 const CITIES = [
-  {name: "Taipei, TW", lat: 25.0694, lon: 121.5517, tz: "Asia/Taipei"},
-  {name: "Hong Kong, HK", lat: 22.302, lon: 114.1742, tz: "Asia/Hong_Kong"},
-  {name: "Shanghai, CN", lat: 31.1434, lon: 121.8053, tz: "Asia/Shanghai"},
-  {name: "Seoul (Incheon), KR", lat: 37.4602, lon: 126.4407, tz: "Asia/Seoul"},
-  {name: "Kuala Lumpur, MY", lat: 2.7456, lon: 101.7099, tz: "Asia/Kuala_Lumpur"},
-  {name: "Madrid, ES", lat: 40.4719, lon: -3.5626, tz: "Europe/Madrid"},
-  {name: "Paris, FR", lat: 48.9694, lon: 2.4414, tz: "Europe/Paris"},
-  {name: "Munich, DE", lat: 48.3538, lon: 11.7861, tz: "Europe/Berlin"},
-  {name: "Wellington, NZ", lat: -41.3272, lon: 174.8053, tz: "Pacific/Auckland"},
-  {name: "Shenzhen, CN", lat: 22.6394, lon: 113.811, tz: "Asia/Shanghai"},
-  {name: "Singapore, SG", lat: 1.3592, lon: 103.9894, tz: "Asia/Singapore"},
-  {name: "Guangzhou, CN", lat: 23.3924, lon: 113.2988, tz: "Asia/Shanghai"},
-  {name: "New York, US", lat: 40.7772, lon: -73.8726, tz: "America/New_York"},
-  {name: "London, UK", lat: 51.4775, lon: -0.4614, tz: "Europe/London"},
-  {name: "Milan, IT", lat: 45.6306, lon: 8.7281, tz: "Europe/Rome"},
-  {name: "Los Angeles, US", lat: 33.9416, lon: -118.4085, tz: "America/Los_Angeles"},
-  {name: "Tokyo, JP", lat: 35.5494, lon: 139.7798, tz: "Asia/Tokyo"},
-  {name: "Helsinki, FI", lat: 60.3172, lon: 24.9633, tz: "Europe/Helsinki"},
-  {name: "Chongqing, CN", lat: 29.7192, lon: 106.6417, tz: "Asia/Shanghai"},
-  {name: "Chengdu, CN", lat: 30.5785, lon: 103.9469, tz: "Asia/Shanghai"},
-  {name: "Wuhan, CN", lat: 30.7838, lon: 114.2081, tz: "Asia/Shanghai"},
-  {name: "Qingdao, CN", lat: 36.2661, lon: 120.3744, tz: "Asia/Shanghai"},
-  {name: "Jeddah, SA", lat: 21.6796, lon: 39.1565, tz: "Asia/Riyadh"},
-  {name: "Istanbul, TR", lat: 41.2613, lon: 28.742, tz: "Europe/Istanbul"},
-  {name: "Ankara, TR", lat: 40.1281, lon: 32.995, tz: "Europe/Istanbul"},
-  {name: "Busan, KR", lat: 35.1796, lon: 128.9382, tz: "Asia/Seoul"},
-  {name: "Dallas, US", lat: 32.8472, lon: -96.8518, tz: "America/Chicago"},
-  {name: "Houston, US", lat: 29.6454, lon: -95.2789, tz: "America/Chicago"},
-  {name: "Atlanta, US", lat: 33.6407, lon: -84.4277, tz: "America/New_York"},
-  {name: "Lucknow, IN", lat: 26.7606, lon: 80.8893, tz: "Asia/Kolkata"},
-  {name: "Manila, PH", lat: 14.5086, lon: 121.0196, tz: "Asia/Manila"},
-  {name: "Karachi, PK", lat: 24.9065, lon: 67.1608, tz: "Asia/Karachi"},
-  {name: "Beijing, CN", lat: 40.0799, lon: 116.6031, tz: "Asia/Shanghai"},
-  {name: "Chicago, US", lat: 41.9742, lon: -87.9073, tz: "America/Chicago"},
-  {name: "Toronto, CA", lat: 43.6777, lon: -79.6248, tz: "America/Toronto"},
-  {name: "Austin, US", lat: 30.1945, lon: -97.6699, tz: "America/Chicago"},
-  {name: "Amsterdam, NL", lat: 52.3086, lon: 4.7639, tz: "Europe/Amsterdam"},
-  {name: "Warsaw, PL", lat: 52.1657, lon: 20.9671, tz: "Europe/Warsaw"},
-  {name: "Miami, US", lat: 25.7959, lon: -80.287, tz: "America/New_York"},
-  {name: "Cape Town, ZA", lat: -33.9715, lon: 18.6021, tz: "Africa/Johannesburg"},
-  {name: "Tel Aviv, IL", lat: 32.0114, lon: 34.8867, tz: "Asia/Jerusalem"},
-  {name: "Buenos Aires, AR", lat: -34.8222, lon: -58.5358, tz: "America/Argentina/Buenos_Aires"},
-  {name: "Denver, US", lat: 39.7017, lon: -104.7516, tz: "America/Denver"},
-  {name: "San Francisco, US", lat: 37.6213, lon: -122.379, tz: "America/Los_Angeles"},
-  {name: "Mexico City, MX", lat: 19.4363, lon: -99.0721, tz: "America/Mexico_City"},
-  {name: "Seattle, US", lat: 47.4502, lon: -122.3088, tz: "America/Los_Angeles"},
-  {name: "Sao Paulo, BR", lat: -23.4356, lon: -46.4731, tz: "America/Sao_Paulo"},
-  {name: "Zhengzhou, CN", lat: 34.5197, lon: 113.8409, tz: "Asia/Shanghai"},
-  {name: "Moscow, RU", lat: 55.9725, lon: 37.4122, tz: "Europe/Moscow"},
-  {name: "Panama City, PA", lat: 8.9733, lon: -79.5556, tz: "America/Panama"},
-  {name: "Jinan, CN", lat: 36.8572, lon: 117.2158, tz: "Asia/Shanghai"}
+  {name: "Taipei, TW", lat: 25.0694, lon: 121.5517, tz: "Asia/Taipei", peakStart: 14, peakEnd: 16},
+  {name: "Hong Kong, HK", lat: 22.302, lon: 114.1742, tz: "Asia/Hong_Kong", peakStart: 14, peakEnd: 16},
+  {name: "Shanghai, CN", lat: 31.1434, lon: 121.8053, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16},
+  {name: "Seoul (Incheon), KR", lat: 37.4602, lon: 126.4407, tz: "Asia/Seoul", peakStart: 14, peakEnd: 16},
+  {name: "Kuala Lumpur, MY", lat: 2.7456, lon: 101.7099, tz: "Asia/Kuala_Lumpur", peakStart: 14, peakEnd: 16},
+  {name: "Madrid, ES", lat: 40.4719, lon: -3.5626, tz: "Europe/Madrid", peakStart: 15, peakEnd: 18},
+  {name: "Paris, FR", lat: 48.9694, lon: 2.4414, tz: "Europe/Paris", peakStart: 15, peakEnd: 18},
+  {name: "Munich, DE", lat: 48.3538, lon: 11.7861, tz: "Europe/Berlin", peakStart: 15, peakEnd: 18},
+  {name: "Wellington, NZ", lat: -41.3272, lon: 174.8053, tz: "Pacific/Auckland", peakStart: 14, peakEnd: 17},
+  {name: "Shenzhen, CN", lat: 22.6394, lon: 113.811, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16},
+  {name: "Singapore, SG", lat: 1.3592, lon: 103.9894, tz: "Asia/Singapore", peakStart: 14, peakEnd: 16},
+  {name: "Guangzhou, CN", lat: 23.3924, lon: 113.2988, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16},
+  {name: "New York, US", lat: 40.7772, lon: -73.8726, tz: "America/New_York", peakStart: 14, peakEnd: 17},
+  {name: "London, UK", lat: 51.4775, lon: -0.4614, tz: "Europe/London", peakStart: 15, peakEnd: 18},
+  {name: "Milan, IT", lat: 45.6306, lon: 8.7281, tz: "Europe/Rome", peakStart: 15, peakEnd: 18},
+  {name: "Los Angeles, US", lat: 33.9416, lon: -118.4085, tz: "America/Los_Angeles", peakStart: 14, peakEnd: 17},
+  {name: "Tokyo, JP", lat: 35.5494, lon: 139.7798, tz: "Asia/Tokyo", peakStart: 14, peakEnd: 16},
+  {name: "Helsinki, FI", lat: 60.3172, lon: 24.9633, tz: "Europe/Helsinki", peakStart: 15, peakEnd: 18},
+  {name: "Chongqing, CN", lat: 29.7192, lon: 106.6417, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16},
+  {name: "Chengdu, CN", lat: 30.5785, lon: 103.9469, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16},
+  {name: "Wuhan, CN", lat: 30.7838, lon: 114.2081, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16},
+  {name: "Qingdao, CN", lat: 36.2661, lon: 120.3744, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16},
+  {name: "Jeddah, SA", lat: 21.6796, lon: 39.1565, tz: "Asia/Riyadh", peakStart: 14, peakEnd: 17},
+  {name: "Istanbul, TR", lat: 41.2613, lon: 28.742, tz: "Europe/Istanbul", peakStart: 14, peakEnd: 17},
+  {name: "Ankara, TR", lat: 40.1281, lon: 32.995, tz: "Europe/Istanbul", peakStart: 14, peakEnd: 17},
+  {name: "Busan, KR", lat: 35.1796, lon: 128.9382, tz: "Asia/Seoul", peakStart: 14, peakEnd: 16},
+  {name: "Dallas, US", lat: 32.8472, lon: -96.8518, tz: "America/Chicago", peakStart: 14, peakEnd: 17},
+  {name: "Houston, US", lat: 29.6454, lon: -95.2789, tz: "America/Chicago", peakStart: 14, peakEnd: 17},
+  {name: "Atlanta, US", lat: 33.6407, lon: -84.4277, tz: "America/New_York", peakStart: 14, peakEnd: 17},
+  {name: "Lucknow, IN", lat: 26.7606, lon: 80.8893, tz: "Asia/Kolkata", peakStart: 14, peakEnd: 17},
+  {name: "Manila, PH", lat: 14.5086, lon: 121.0196, tz: "Asia/Manila", peakStart: 14, peakEnd: 16},
+  {name: "Karachi, PK", lat: 24.9065, lon: 67.1608, tz: "Asia/Karachi", peakStart: 14, peakEnd: 17},
+  {name: "Beijing, CN", lat: 40.0799, lon: 116.6031, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16},
+  {name: "Chicago, US", lat: 41.9742, lon: -87.9073, tz: "America/Chicago", peakStart: 14, peakEnd: 17},
+  {name: "Toronto, CA", lat: 43.6777, lon: -79.6248, tz: "America/Toronto", peakStart: 14, peakEnd: 17},
+  {name: "Austin, US", lat: 30.1945, lon: -97.6699, tz: "America/Chicago", peakStart: 14, peakEnd: 17},
+  {name: "Amsterdam, NL", lat: 52.3086, lon: 4.7639, tz: "Europe/Amsterdam", peakStart: 15, peakEnd: 18},
+  {name: "Warsaw, PL", lat: 52.1657, lon: 20.9671, tz: "Europe/Warsaw", peakStart: 15, peakEnd: 18},
+  {name: "Miami, US", lat: 25.7959, lon: -80.287, tz: "America/New_York", peakStart: 14, peakEnd: 17},
+  {name: "Cape Town, ZA", lat: -33.9715, lon: 18.6021, tz: "Africa/Johannesburg", peakStart: 14, peakEnd: 17},
+  {name: "Tel Aviv, IL", lat: 32.0114, lon: 34.8867, tz: "Asia/Jerusalem", peakStart: 14, peakEnd: 17},
+  {name: "Buenos Aires, AR", lat: -34.8222, lon: -58.5358, tz: "America/Argentina/Buenos_Aires", peakStart: 14, peakEnd: 17},
+  {name: "Denver, US", lat: 39.7017, lon: -104.7516, tz: "America/Denver", peakStart: 14, peakEnd: 17},
+  {name: "San Francisco, US", lat: 37.6213, lon: -122.379, tz: "America/Los_Angeles", peakStart: 14, peakEnd: 17},
+  {name: "Mexico City, MX", lat: 19.4363, lon: -99.0721, tz: "America/Mexico_City", peakStart: 14, peakEnd: 17},
+  {name: "Seattle, US", lat: 47.4502, lon: -122.3088, tz: "America/Los_Angeles", peakStart: 14, peakEnd: 17},
+  {name: "Sao Paulo, BR", lat: -23.4356, lon: -46.4731, tz: "America/Sao_Paulo", peakStart: 14, peakEnd: 17},
+  {name: "Zhengzhou, CN", lat: 34.5197, lon: 113.8409, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16},
+  {name: "Moscow, RU", lat: 55.9725, lon: 37.4122, tz: "Europe/Moscow", peakStart: 15, peakEnd: 18},
+  {name: "Panama City, PA", lat: 8.9733, lon: -79.5556, tz: "America/Panama", peakStart: 14, peakEnd: 17},
+  {name: "Jinan, CN", lat: 36.8572, lon: 117.2158, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16}
 ];
+
+// ---- Live Peak Detection (Hourly Archive API) ----
+function updateCityRow(cityName, maxTemp, trend, peakStatus) {
+    const slug = cityName.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase().replace(/-+$/g, '');
+    const peakEl = document.getElementById('peak-' + slug);
+    const trendEl = document.getElementById('trend-' + slug);
+    if (peakEl) {
+        peakEl.innerHTML = '📡 ' + maxTemp.toFixed(1) + '°C ' + peakStatus;
+    }
+    if (trendEl) {
+        trendEl.textContent = trend;
+        trendEl.style.color = trend === '↑' ? 'var(--red)' : (trend === '↓' ? 'var(--blue)' : 'var(--text-dim)');
+    }
+}
+
+async function fetchLivePeak() {
+    const today = new Date().toISOString().slice(0, 10);
+    const statusEl = document.getElementById('fetch-status');
+    if (statusEl) statusEl.textContent = '⏳ Henter peak-data...';
+
+    for (const city of CITIES) {
+        try {
+            const url = 'https://archive-api.open-meteo.com/v1/archive?latitude=' + city.lat +
+                '&longitude=' + city.lon + '&start_date=' + today + '&end_date=' + today +
+                '&hourly=temperature_2m&timezone=' + encodeURIComponent(city.tz);
+            const resp = await fetch(url, { headers: { 'User-Agent': 'WeatherMonitor/1.0' } });
+            const data = await resp.json();
+            if (data.error) continue;
+
+            const temps = data.hourly.temperature_2m.filter(function(t) { return t !== null; });
+            if (temps.length < 2) continue;
+
+            const maxTemp = Math.max.apply(null, temps);
+            const latestTemp = temps[temps.length - 1];
+            const prevTemp = temps[temps.length - 2];
+            const trend = latestTemp > prevTemp ? '↑' : (latestTemp < prevTemp ? '↓' : '→');
+
+            // Peak status: based on trend + time proximity to peak window
+            const times = data.hourly.time;
+            const lastTime = times[times.length - 1];
+            const hour = parseInt(lastTime.split('T')[1].split(':')[0]);
+            const peakStart = city.peakStart || 14;
+            const peakEnd = city.peakEnd || 17;
+            const inPeakWindow = (hour >= peakStart && hour <= peakEnd);
+            const pastPeakWindow = (hour > peakEnd);
+
+            var peakStatus;
+            if (pastPeakWindow) {
+                peakStatus = '🔴 PEAK NÅDD';
+            } else if (inPeakWindow && trend === '↑') {
+                peakStatus = '🟢 STIGER';
+            } else if (inPeakWindow) {
+                peakStatus = '🟡 NÆR PEAK';
+            } else {
+                peakStatus = '⏳ VENTER';
+            }
+
+            updateCityRow(city.name, maxTemp, trend, peakStatus);
+        } catch (e) {
+            // Silently skip failed cities
+        }
+    }
+
+    if (statusEl) statusEl.textContent = '✅ Peak-data oppdatert';
+    const updatedEl = document.getElementById('live-updated');
+    if (updatedEl) updatedEl.textContent = new Date().toLocaleTimeString('no-NO');
+}
+
+// Auto-fetch on page load + every 10 minutes
+setTimeout(fetchLivePeak, 2000);
+setInterval(fetchLivePeak, 600000);
 
 var currentLead = 0;
 
@@ -2065,7 +2189,7 @@ function sortTable(colIdx) {
         }
         var aVal = (a.cells[colIdx] ? a.cells[colIdx].textContent.trim() : '');
         var bVal = (b.cells[colIdx] ? b.cells[colIdx].textContent.trim() : '');
-        if (colIdx === 0 || colIdx === 2 || colIdx === 3 || colIdx === 8 || colIdx === 9) {
+        if (colIdx === 0 || colIdx === 2 || colIdx === 3 || colIdx === 8) {
             var aNum = parseFloat(aVal) || 0;
             var bNum = parseFloat(bVal) || 0;
             return sortAsc ? aNum - bNum : bNum - aNum;
