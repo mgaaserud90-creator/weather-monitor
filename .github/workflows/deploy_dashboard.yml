@@ -50,6 +50,12 @@ jobs:
       - name: Generate All-Cities HTML
         run: python _generate_quality_report.py --all-cities
 
+      - name: Generate index
+        run: python _generate_quality_report.py --index
+
+      - name: Generate peak detection
+        run: python _generate_quality_report.py --peak
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 

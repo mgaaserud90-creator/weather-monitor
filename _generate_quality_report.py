@@ -40,6 +40,8 @@ if sys.platform == "win32":
 LOG_FILE = Path(_SCRIPT_DIR) / "_model_quality_log.json"
 REPORT_FILE = Path(_SCRIPT_DIR) / "_quality_report.md"
 HTML_REPORT_FILE = Path(_SCRIPT_DIR) / "_quality_report.html"
+INDEX_FILE = Path(_SCRIPT_DIR) / "index.html"
+PEAK_DETECTION_FILE = Path(_SCRIPT_DIR) / "_peak_detection.html"
 
 # Market edge computation (BMA vs Polymarket)
 try:
@@ -2863,6 +2865,537 @@ function sortTable(colIdx) {{
     return html
 
 
+def _generate_index_html() -> str:
+    """Generate the landing page (index.html) with links to all dashboards."""
+    now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    return f"""<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VaerMonitor — Hjem</title>
+<style>
+  :root {{
+    --bg: #0d1117; --bg-card: #161b22; --bg-card-hover: #1c2333;
+    --border: #30363d; --text: #c9d1d9; --text-dim: #8b949e;
+    --green: #3fb950; --red: #f85149; --orange: #d2991d;
+    --blue: #58a6ff; --purple: #bc8cff;
+  }}
+  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  body {{
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    line-height: 1.6;
+  }}
+  .container {{ text-align: center; max-width: 600px; padding: 40px 20px; }}
+  h1 {{ font-size: 2.5rem; color: var(--blue); margin-bottom: 8px; font-weight: 800; }}
+  .subtitle {{ color: var(--text-dim); font-size: 1rem; margin-bottom: 36px; }}
+  .nav-grid {{
+    display: flex; flex-direction: column; gap: 14px;
+    margin-bottom: 40px;
+  }}
+  .nav-card {{
+    display: flex; align-items: center; gap: 16px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px 28px;
+    text-decoration: none; color: var(--text);
+    transition: all 0.2s; cursor: pointer;
+  }}
+  .nav-card:hover {{ background: var(--bg-card-hover); border-color: var(--blue); transform: translateY(-2px); box-shadow: 0 4px 20px rgba(88, 166, 255, 0.1); }}
+  .nav-icon {{ font-size: 2rem; min-width: 48px; text-align: center; }}
+  .nav-text {{ text-align: left; }}
+  .nav-text h3 {{ font-size: 1.1rem; font-weight: 700; margin-bottom: 2px; }}
+  .nav-text p {{ color: var(--text-dim); font-size: 0.82rem; }}
+  footer {{ color: var(--text-dim); font-size: 0.75rem; }}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🌤️ VaerMonitor</h1>
+  <p class="subtitle">BMA Multi-Model Ensemble · Temperatur Peak Prediksjon · 51 Byer</p>
+  <div class="nav-grid">
+    <a href="_quality_report.html" class="nav-card">
+      <span class="nav-icon">📊</span>
+      <span class="nav-text"><h3>Kvalitetsrapport</h3><p>3-strategi dashboard · Sigma / P5 / Mean · Edge Validation</p></span>
+    </a>
+    <a href="_all_cities.html" class="nav-card">
+      <span class="nav-icon">🌍</span>
+      <span class="nav-text"><h3>Alle 51 Byer</h3><p>Full by-tabell · Live temp · Sparklines · Marked Edge</p></span>
+    </a>
+    <a href="_peak_detection.html" class="nav-card">
+      <span class="nav-icon">📈</span>
+      <span class="nav-text"><h3>Live Peak Detection</h3><p>Sanntids-overvakning · Velg byer · PEAK NADD / STIGER / VENTER</p></span>
+    </a>
+  </div>
+  <footer>Generert: {now_str} · GitHub Pages Deploy</footer>
+</div>
+</body>
+</html>"""
+
+
+def _generate_peak_detection_html() -> str:
+    """Generate a live-updating peak detection page with city toggle cards."""
+    defaults_path = Path(_SCRIPT_DIR) / "weather_monitor_defaults.json"
+    cities_js_entries: list[str] = []
+    if defaults_path.exists():
+        try:
+            defaults = json.loads(defaults_path.read_text(encoding="utf-8"))
+            for loc in defaults.get("default_locations", []):
+                name = loc.get("name", "")
+                lat = loc.get("lat", 0)
+                lon = loc.get("lon", 0)
+                tz = loc.get("tz", "UTC")
+                if name:
+                    cities_js_entries.append(
+                        f'  {{name: "{name}", lat: {lat}, lon: {lon}, tz: "{tz}"}}'
+                    )
+        except Exception:
+            pass
+    cities_js_array = "const ALL_CITIES = [\n" + ",\n".join(cities_js_entries) + "\n];"
+
+    now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+    return f"""<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Peak Detection — VaerMonitor</title>
+<style>
+  :root {{
+    --bg: #0d1117; --bg-card: #161b22; --bg-card-hover: #1c2333;
+    --border: #30363d; --text: #c9d1d9; --text-dim: #8b949e;
+    --green: #3fb950; --red: #f85149; --orange: #d2991d;
+    --blue: #58a6ff; --purple: #bc8cff;
+  }}
+  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }}
+  .container {{ max-width: 1400px; margin: 0 auto; padding: 20px; }}
+  header {{ text-align: center; padding: 24px 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }}
+  header h1 {{ font-size: 1.6rem; color: var(--blue); font-weight: 700; }}
+  header .subtitle {{ color: var(--text-dim); font-size: 0.85rem; margin-top: 4px; }}
+  .back-link {{ display: inline-block; margin-top: 10px; color: var(--text-dim); text-decoration: none; font-size: 0.8rem; }}
+  .back-link:hover {{ color: var(--blue); }}
+  .controls {{ display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; margin-bottom: 20px; }}
+  .controls button {{
+    background: var(--bg-card); border: 1px solid var(--border); color: var(--text);
+    padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.85rem;
+    font-weight: 600; transition: all 0.2s;
+  }}
+  .controls button:hover {{ background: var(--bg-card-hover); border-color: var(--blue); }}
+  .controls button.active {{ background: rgba(88, 166, 255, 0.15); border-color: var(--blue); color: var(--blue); }}
+  .controls .status {{ color: var(--text-dim); font-size: 0.85rem; margin-left: 12px; }}
+  .status-bar {{ text-align: center; padding: 10px 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; font-size: 0.85rem; color: var(--text-dim); }}
+  .city-selector {{ display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; max-height: 200px; overflow-y: auto; padding: 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; justify-content: center; }}
+  .city-selector label {{
+    display: flex; align-items: center; gap: 4px; padding: 4px 10px;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    cursor: pointer; font-size: 0.78rem; transition: all 0.15s; user-select: none;
+  }}
+  .city-selector label:hover {{ border-color: var(--blue); }}
+  .city-selector input[type="checkbox"] {{ accent-color: var(--blue); }}
+  .cards-grid {{
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }}
+  .peak-card {{
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px; transition: all 0.3s;
+  }}
+  .peak-card.status-peak {{ border-color: var(--green); box-shadow: 0 0 12px rgba(63, 185, 80, 0.15); }}
+  .peak-card.status-rising {{ border-color: var(--orange); }}
+  .peak-card.status-waiting {{ border-color: var(--border); }}
+  .peak-card.status-unknown {{ border-color: var(--border); opacity: 0.6; }}
+  .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }}
+  .card-header h3 {{ font-size: 1.05rem; font-weight: 700; }}
+  .card-status {{
+    font-size: 0.75rem; font-weight: 700; padding: 4px 12px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }}
+  .card-status.peak {{ background: rgba(63, 185, 80, 0.15); color: var(--green); }}
+  .card-status.rising {{ background: rgba(210, 153, 29, 0.15); color: var(--orange); }}
+  .card-status.waiting {{ background: rgba(139, 148, 158, 0.15); color: var(--text-dim); }}
+  .card-status.unknown {{ background: rgba(139, 148, 158, 0.1); color: var(--text-dim); }}
+  .card-temp {{ font-size: 2.4rem; font-weight: 800; margin-bottom: 4px; }}
+  .card-meta {{ display: flex; gap: 16px; font-size: 0.78rem; color: var(--text-dim); margin-bottom: 12px; flex-wrap: wrap; }}
+  .card-meta span {{ white-space: nowrap; }}
+  .sparkline-canvas {{ width: 100%; height: 80px; margin-bottom: 8px; border-radius: 4px; background: rgba(13, 17, 23, 0.5); }}
+  .card-info {{ display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-dim); }}
+  .card-info .conf {{ font-weight: 600; }}
+  .card-info .conf.high {{ color: var(--green); }}
+  .card-info .conf.medium {{ color: var(--orange); }}
+  .card-info .conf.low {{ color: var(--red); }}
+  .empty-state {{ text-align: center; padding: 60px 20px; color: var(--text-dim); }}
+  .empty-state .icon {{ font-size: 3rem; margin-bottom: 12px; }}
+  footer {{ text-align: center; padding: 16px; color: var(--text-dim); font-size: 0.75rem; border-top: 1px solid var(--border); margin-top: 20px; }}
+</style>
+</head>
+<body>
+<header>
+  <h1>📈 Live Peak Detection</h1>
+  <div class="subtitle">Sanntids-overvakning · Velg byer for a spore temperaturtopper</div>
+  <a href="index.html" class="back-link">← Tilbake til VaerMonitor</a>
+</header>
+
+<div class="container">
+  <div class="status-bar" id="status-bar">
+    Klar — velg byer og trykk "Start Overvakning"
+  </div>
+
+  <div class="controls">
+    <button id="btn-select-all" onclick="selectAll()">Velg Alle</button>
+    <button id="btn-deselect-all" onclick="deselectAll()">Fjern Alle</button>
+    <button id="btn-start" onclick="startMonitoring()" style="background: rgba(88,166,255,0.15); border-color: var(--blue); color: var(--blue);">Start Overvakning</button>
+    <button id="btn-stop" onclick="stopMonitoring()" style="display:none;">Stopp</button>
+    <span class="status" id="monitor-status"></span>
+  </div>
+
+  <div class="city-selector" id="city-selector">
+  </div>
+
+  <div class="cards-grid" id="cards-grid">
+    <div class="empty-state">
+      <div class="icon">📈</div>
+      <p>Velg byer over og trykk "Start Overvakning" for a begynne.</p>
+      <p style="font-size:0.8rem; margin-top:8px;">Temperatur hentes hvert 3. minutt fra Open-Meteo.</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Live Peak Detection · Open-Meteo API · GitHub Pages Deploy
+</footer>
+
+<script>
+{cities_js_array}
+
+// ---- State ----
+let monitoredCities = [];
+let monitoringInterval = null;
+const FETCH_INTERVAL_MS = 180000;
+const cityData = {{}};
+const MAX_DATA_POINTS = 30;
+
+// ---- Build city selector checkboxes ----
+(function buildSelector() {{
+    const container = document.getElementById('city-selector');
+    ALL_CITIES.forEach(city => {{
+        const label = document.createElement('label');
+        label.innerHTML = '<input type="checkbox" value="' + city.name + '" onchange="onCityToggle()"> ' + city.name;
+        container.appendChild(label);
+    }});
+}})();
+
+function getCheckedCities() {{
+    const checks = document.querySelectorAll('#city-selector input[type="checkbox"]:checked');
+    return Array.from(checks).map(c => c.value);
+}}
+
+function onCityToggle() {{ /* tracked on Start */ }}
+
+function selectAll() {{
+    document.querySelectorAll('#city-selector input[type="checkbox"]').forEach(cb => cb.checked = true);
+}}
+
+function deselectAll() {{
+    document.querySelectorAll('#city-selector input[type="checkbox"]').forEach(cb => cb.checked = false);
+}}
+
+async function fetchCurrentTemp(city) {{
+    try {{
+        const resp = await fetch(
+            'https://api.open-meteo.com/v1/forecast?latitude=' + city.lat + '&longitude=' + city.lon + '&current=temperature_2m&timezone=' + encodeURIComponent(city.tz),
+            {{ headers: {{ 'User-Agent': 'WeatherMonitor/1.0' }} }}
+        );
+        const data = await resp.json();
+        if (data.error) throw new Error(data.reason);
+        const temp = data.current?.temperature_2m;
+        const time = data.current?.time || new Date().toISOString();
+        return {{ temp, time }};
+    }} catch (e) {{
+        console.error('Fetch failed for ' + city.name + ':', e);
+        return null;
+    }}
+}}
+
+function initCityData(cityName) {{
+    if (!cityData[cityName]) {{
+        cityData[cityName] = {{ temps: [], timestamps: [], bmaLine: null }};
+    }}
+}}
+
+function drawSparkline(cityName, canvasId) {{
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const data = cityData[cityName];
+    if (!data || data.temps.length < 2) {{
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#8b949e';
+        ctx.font = '11px monospace';
+        ctx.fillText('Venter pa data...', 8, canvas.height / 2 + 4);
+        return;
+    }}
+
+    const w = canvas.width;
+    const h = canvas.height;
+    const margin = {{ top: 6, right: 10, bottom: 6, left: 10 }};
+    const pw = w - margin.left - margin.right;
+    const ph = h - margin.top - margin.bottom;
+
+    const temps = data.temps;
+    const tMin = Math.min(...temps) - 0.5;
+    const tMax = Math.max(...temps) + 0.5;
+    const tRange = tMax - tMin || 1;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(48, 54, 61, 0.5)';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= 4; i++) {{
+        const y = margin.top + (ph / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(margin.left, y);
+        ctx.lineTo(w - margin.right, y);
+        ctx.stroke();
+    }}
+
+    // BMA line
+    if (data.bmaLine !== null) {{
+        const bmaY = margin.top + ph - ((data.bmaLine - tMin) / tRange) * ph;
+        ctx.strokeStyle = 'rgba(188, 140, 255, 0.7)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(margin.left, bmaY);
+        ctx.lineTo(w - margin.right, bmaY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = '#bc8cff';
+        ctx.font = '9px monospace';
+        ctx.fillText('BMA ' + data.bmaLine.toFixed(1), w - margin.right - 55, bmaY - 4);
+    }}
+
+    // Temperature line
+    ctx.strokeStyle = '#58a6ff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < temps.length; i++) {{
+        const x = margin.left + (pw / (MAX_DATA_POINTS - 1)) * i;
+        const y = margin.top + ph - ((temps[i] - tMin) / tRange) * ph;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }}
+    ctx.stroke();
+
+    // Current temp dot
+    const lastX = margin.left + (pw / (MAX_DATA_POINTS - 1)) * (temps.length - 1);
+    const lastY = margin.top + ph - ((temps[temps.length - 1] - tMin) / tRange) * ph;
+    ctx.fillStyle = '#58a6ff';
+    ctx.beginPath();
+    ctx.arc(lastX, lastY, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Min/max labels
+    ctx.fillStyle = '#8b949e';
+    ctx.font = '9px monospace';
+    ctx.fillText(tMax.toFixed(1) + '', 2, margin.top + 10);
+    ctx.fillText(tMin.toFixed(1) + '', 2, h - margin.bottom);
+}}
+
+function computePeakStatus(cityName, currentTemp) {{
+    const data = cityData[cityName];
+    if (!data || data.temps.length < 3) return {{ status: 'unknown', label: 'VENTER', cssClass: 'unknown', confidence: 0 }};
+
+    const temps = data.temps;
+    const recentSlice = temps.slice(-6);
+    const trend = recentSlice[recentSlice.length - 1] - recentSlice[0];
+
+    const allTimeMax = Math.max(...temps);
+    const currentIsMax = Math.abs(currentTemp - allTimeMax) < 0.3;
+    const trendIsFlattening = Math.abs(trend) < 0.5 && temps.length >= 6;
+
+    const confidence = Math.min(0.95, 0.4 + temps.length * 0.02);
+
+    if (currentIsMax && trendIsFlattening) {{
+        return {{ status: 'peak', label: 'PEAK NADD', cssClass: 'peak', confidence }};
+    }} else if (trend > 0.3) {{
+        return {{ status: 'rising', label: 'STIGER', cssClass: 'rising', confidence: Math.min(0.8, confidence) }};
+    }} else if (trend < -0.3) {{
+        return {{ status: 'waiting', label: 'VENTER', cssClass: 'waiting', confidence }};
+    }} else {{
+        return {{ status: 'waiting', label: 'VENTER', cssClass: 'waiting', confidence }};
+    }}
+}}
+
+function updateCard(cityName, result) {{
+    const card = document.getElementById('card-' + cityName.replace(/[^a-zA-Z0-9]/g, '_'));
+    if (!card) return;
+
+    const tempEl = card.querySelector('.card-temp');
+    const statusEl = card.querySelector('.card-status');
+    const updatedEl = card.querySelector('.card-updated');
+    const confEl = card.querySelector('.card-info .conf');
+    const dataInfoEl = card.querySelector('.card-info span:last-child');
+
+    if (result && result.temp !== null && result.temp !== undefined) {{
+        const data = cityData[cityName];
+        data.temps.push(result.temp);
+        data.timestamps.push(result.time || new Date().toISOString());
+        if (data.temps.length > MAX_DATA_POINTS) {{
+            data.temps.shift();
+            data.timestamps.shift();
+        }}
+
+        tempEl.textContent = result.temp.toFixed(1) + '°C';
+        const peakInfo = computePeakStatus(cityName, result.temp);
+
+        statusEl.textContent = peakInfo.label;
+        statusEl.className = 'card-status ' + peakInfo.cssClass;
+        card.className = 'peak-card status-' + peakInfo.cssClass;
+
+        const confPct = Math.round(peakInfo.confidence * 100);
+        confEl.textContent = 'Konf: ' + confPct + '%';
+        confEl.className = 'conf ' + (peakInfo.confidence >= 0.8 ? 'high' : peakInfo.confidence >= 0.6 ? 'medium' : 'low');
+
+        updatedEl.textContent = 'Oppdatert: ' + new Date().toLocaleTimeString('no-NO');
+        if (dataInfoEl) dataInfoEl.textContent = 'Data: ' + data.temps.length + ' pkt';
+        drawSparkline(cityName, 'spark-' + cityName.replace(/[^a-zA-Z0-9]/g, '_'));
+    }} else {{
+        updatedEl.textContent = 'Kunne ikke hente';
+    }}
+}}
+
+function buildCardHTML(city) {{
+    const safeId = city.name.replace(/[^a-zA-Z0-9]/g, '_');
+    return '<div class="peak-card status-unknown" id="card-' + safeId + '">' +
+      '<div class="card-header">' +
+        '<h3>' + city.name + '</h3>' +
+        '<span class="card-status unknown">VENTER</span>' +
+      '</div>' +
+      '<div class="card-temp">—°C</div>' +
+      '<div class="card-meta">' +
+        '<span>' + city.lat.toFixed(2) + ', ' + city.lon.toFixed(2) + '</span>' +
+        '<span>' + city.tz + '</span>' +
+        '<span class="card-updated">—</span>' +
+      '</div>' +
+      '<canvas id="spark-' + safeId + '" class="sparkline-canvas" width="320" height="80"></canvas>' +
+      '<div class="card-info">' +
+        '<span class="conf">Konf: —%</span>' +
+        '<span>Data: 0 pkt</span>' +
+      '</div>' +
+    '</div>';
+}}
+
+function startMonitoring() {{
+    const checked = getCheckedCities();
+    if (checked.length === 0) {{
+        document.getElementById('status-bar').textContent = 'Velg minst en by forst!';
+        return;
+    }}
+
+    monitoredCities = ALL_CITIES.filter(c => checked.includes(c.name));
+
+    monitoredCities.forEach(c => {{
+        initCityData(c.name);
+        cityData[c.name].temps = [];
+        cityData[c.name].timestamps = [];
+        cityData[c.name].bmaLine = null;
+    }});
+
+    // Try to set BMA predictions from quality log
+    fetch('_model_quality_log.json')
+        .then(r => r.json())
+        .then(log => {{
+            const runs = log.runs || [];
+            if (runs.length > 0) {{
+                const lastRun = runs[runs.length - 1];
+                const preds = lastRun.predictions || {{}};
+                monitoredCities.forEach(c => {{
+                    const p = preds[c.name];
+                    if (p && p.bma_mean != null) {{
+                        cityData[c.name].bmaLine = p.bma_mean;
+                    }}
+                }});
+            }}
+        }}).catch(() => {{}});
+
+    const grid = document.getElementById('cards-grid');
+    grid.innerHTML = monitoredCities.map(c => buildCardHTML(c)).join('');
+
+    monitoredCities.forEach(c => {{
+        const safeId = c.name.replace(/[^a-zA-Z0-9]/g, '_');
+        const canvas = document.getElementById('spark-' + safeId);
+        if (canvas) {{
+            canvas.width = canvas.offsetWidth || 320;
+            canvas.height = 80;
+            drawSparkline(c.name, 'spark-' + safeId);
+        }}
+    }});
+
+    document.getElementById('btn-start').style.display = 'none';
+    document.getElementById('btn-stop').style.display = 'inline-block';
+    document.getElementById('monitor-status').textContent = 'Overvaker ' + monitoredCities.length + ' byer';
+    document.getElementById('status-bar').textContent = 'Overvakning aktiv — henter data hvert 3. minutt';
+
+    fetchAllMonitored();
+
+    if (monitoringInterval) clearInterval(monitoringInterval);
+    monitoringInterval = setInterval(fetchAllMonitored, FETCH_INTERVAL_MS);
+}}
+
+function stopMonitoring() {{
+    if (monitoringInterval) {{
+        clearInterval(monitoringInterval);
+        monitoringInterval = null;
+    }}
+    document.getElementById('btn-start').style.display = 'inline-block';
+    document.getElementById('btn-stop').style.display = 'none';
+    document.getElementById('monitor-status').textContent = '';
+    document.getElementById('status-bar').textContent = 'Overvakning stoppet';
+}}
+
+async function fetchAllMonitored() {{
+    if (monitoredCities.length === 0) return;
+    document.getElementById('status-bar').textContent = 'Henter temperaturer...';
+
+    const promises = monitoredCities.map(async (city, idx) => {{
+        if (idx > 0) await new Promise(r => setTimeout(r, 300));
+        const result = await fetchCurrentTemp(city);
+        if (result) {{
+            updateCard(city.name, result);
+        }} else {{
+            updateCard(city.name, null);
+        }}
+        return result;
+    }});
+
+    await Promise.allSettled(promises);
+    document.getElementById('status-bar').textContent =
+        'Overvakning aktiv — ' + monitoredCities.length + ' byer — Sist oppdatert: ' + new Date().toLocaleTimeString('no-NO');
+}}
+
+window.addEventListener('resize', () => {{
+    monitoredCities.forEach(c => {{
+        const safeId = c.name.replace(/[^a-zA-Z0-9]/g, '_');
+        const canvas = document.getElementById('spark-' + safeId);
+        if (canvas) {{
+            canvas.width = canvas.offsetWidth || 320;
+            drawSparkline(c.name, 'spark-' + safeId);
+        }}
+    }});
+}});
+</script>
+</body>
+</html>"""
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Generate human-readable quality report from _model_quality_log.json",
@@ -2877,9 +3410,27 @@ def main() -> None:
         action="store_true",
         help="Generate all-51-cities standalone HTML page (_all_cities.html)",
     )
+    parser.add_argument(
+        "--index",
+        action="store_true",
+        help="Generate landing page (index.html) with links to all dashboards",
+    )
+    parser.add_argument(
+        "--peak",
+        action="store_true",
+        help="Generate live peak detection page (_peak_detection.html)",
+    )
     args = parser.parse_args()
 
-    if args.all_cities:
+    if args.index:
+        html = _generate_index_html()
+        INDEX_FILE.write_text(html, encoding="utf-8")
+        print(f"Index page written to: {INDEX_FILE}")
+    elif args.peak:
+        html = _generate_peak_detection_html()
+        PEAK_DETECTION_FILE.write_text(html, encoding="utf-8")
+        print(f"Peak detection page written to: {PEAK_DETECTION_FILE}")
+    elif args.all_cities:
         html = _generate_all_cities_html()
         ALL_CITIES_HTML_FILE.write_text(html, encoding="utf-8")
         print(f"All-cities HTML dashboard written to: {ALL_CITIES_HTML_FILE}")
