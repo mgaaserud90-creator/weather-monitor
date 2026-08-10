@@ -448,6 +448,7 @@ def _build_strat_rec_html_section(best_per_city: dict) -> str:
 
 def _build_top5_rows_html(predictions: dict, top5_cities: list[str]) -> str:
     """Build HTML table rows for top 5 cities with all 3 strategy results."""
+    resolved_market = _load_resolved_market_outcomes()
     rows = ""
     for i, city in enumerate(top5_cities):
         pdata = predictions.get(city, {})
@@ -501,6 +502,22 @@ def _build_top5_rows_html(predictions: dict, top5_cities: list[str]) -> str:
 
         actual_str = f"{sigma_actual:.1f}°C" if isinstance(sigma_actual, (int, float)) else "—"
 
+        # Market deviation cell
+        market_peak_str = actual_str
+        city_base = city.split(",")[0].strip()
+        market_temp = resolved_market.get(city_base) or resolved_market.get(city)
+        if market_temp is not None and isinstance(sigma_actual, (int, float)):
+            gap = round(sigma_actual - market_temp, 1)
+            gap_color = "#f85149" if abs(gap) > 2.0 else ("#d2991d" if abs(gap) > 1.0 else "#3fb950")
+            avvik_icon = "⚠️" if abs(gap) > 2.0 else ("🟡" if abs(gap) > 1.0 else "✅")
+            market_peak_str = (
+                f'📡 {actual_str} | Marked: {market_temp}°C '
+                f'<span style="color:{gap_color};font-weight:600;">'
+                f'{avvik_icon} {gap:+.1f}°C</span>'
+            )
+        elif market_temp is not None:
+            market_peak_str = f'📡 {actual_str} | Marked: {market_temp}°C'
+
         # Recommendation styling
         rec_class = ""
         if rec and "HOLD" in str(rec):
@@ -526,7 +543,7 @@ def _build_top5_rows_html(predictions: dict, top5_cities: list[str]) -> str:
                 <td>{mean_spill}°C</td>
                 <td>{conf_icon} {(conf*100):.0f}%</td>
                 <td>{model_ct}/8</td>
-                <td>{actual_str}</td>
+                <td>{market_peak_str}</td>
                 <td>{sigma_badge}</td>
                 <td>{p5_badge}</td>
                 <td>{mean_badge}</td>
@@ -1705,6 +1722,54 @@ def _build_market_edge_html_section() -> str:
 # Live Temperature Fetch — Shared JavaScript helpers
 # =============================================================================
 
+def _load_resolved_market_outcomes() -> dict[str, int]:
+    """Extract resolved market outcomes from _market_prices.json.
+    
+    Returns: {city_name: resolved_temperature_celsius}
+    
+    A market is "resolved" when any outcome has price > 0.99.
+    The resolved temperature is extracted from the question text
+    (e.g., "Will the highest temperature in Hong Kong be 35°C on...").
+    """
+    import re
+    resolved: dict[str, int] = {}
+    market_path = Path(_SCRIPT_DIR) / "_market_prices.json"
+    if not market_path.exists():
+        return resolved
+    try:
+        mp = json.loads(market_path.read_text(encoding="utf-8"))
+        markets = mp if isinstance(mp, list) else mp.get("markets", [])
+    except Exception:
+        return resolved
+    
+    for m in markets:
+        city = m.get("city", "")
+        if not city or city == "Unknown":
+            continue
+        question = m.get("question", "")
+        outcomes = m.get("outcomes", [])
+        if m.get("question_type") != "highest":
+            continue
+        
+        # Check if any outcome is >0.99 (resolved YES)
+        resolved_temp = None
+        for o in outcomes:
+            if o.get("price", 0) > 0.99 and o.get("label", "").lower() == "yes":
+                # Extract temperature from question
+                match = re.search(r'(\d+)°C', question)
+                if match:
+                    resolved_temp = int(match.group(1))
+                break
+        
+        if resolved_temp is not None:
+            # Map city to resolved temp, preferring full name matches
+            city_key = city  # "Hong Kong", "Taipei", etc.
+            if city_key not in resolved:
+                resolved[city_key] = resolved_temp
+    
+    return resolved
+
+
 def _load_market_city_set() -> tuple[set[str], set[str]]:
     """Return (active_cities, resolved_cities) from _market_prices.json."""
     active: set[str] = set()
@@ -2083,7 +2148,7 @@ def _generate_html_report() -> str:
       </p>
       <div style="overflow-x: auto;">
       <table>
-        <thead><tr><th>#</th><th>City</th><th>BMA μ</th><th>Sigma Pos</th><th>P5 Pos</th><th>Mean Pos</th><th>Conf</th><th>Models</th><th>Peak</th><th>Sigma</th><th>P5</th><th>Mean</th><th>Rec</th></tr></thead>
+        <thead><tr><th>#</th><th>City</th><th>BMA μ</th><th>Sigma Pos</th><th>P5 Pos</th><th>Mean Pos</th><th>Conf</th><th>Models</th><th>📡 Peak | Marked</th><th>Sigma</th><th>P5</th><th>Mean</th><th>Rec</th></tr></thead>
         <tbody>{top5_rows}
         </tbody>
       </table>
@@ -2094,6 +2159,7 @@ def _generate_html_report() -> str:
     {strategy_comparison}"""
 
         # ── RESOLVED RESULTS section (show all 51 cities' outcomes) ──
+        resolved_market_outcomes = _load_resolved_market_outcomes()
         resolved_rows = ""
         resolved_cities = []
         for city, pdata in sorted(preds.items()):
@@ -2116,6 +2182,21 @@ def _generate_html_report() -> str:
                 actual = sigma.get("actual_peak")
                 actual_str = f"{actual:.1f}°C" if isinstance(actual, (int, float)) else "—"
 
+                # Market deviation: compare our live peak with Polymarket resolved outcome
+                market_cell = "—"
+                avvik_cell = "—"
+                city_base = city.split(",")[0].strip()  # "Taipei, TW" → "Taipei"
+                market_temp = resolved_market_outcomes.get(city_base) or resolved_market_outcomes.get(city)
+                if market_temp is not None and isinstance(actual, (int, float)):
+                    market_cell = f'{market_temp}°C'
+                    gap = round(actual - market_temp, 1)
+                    gap_color = "#f85149" if abs(gap) > 2.0 else ("#d2991d" if abs(gap) > 1.0 else "#3fb950")
+                    avvik_icon = "⚠️" if abs(gap) > 2.0 else ("🟡" if abs(gap) > 1.0 else "✅")
+                    avvik_cell = f'<span style="color:{gap_color};font-weight:600;">{avvik_icon} {gap:+.1f}°C</span>'
+                elif market_temp is not None:
+                    market_cell = f'{market_temp}°C'
+                    avvik_cell = '<span style="color:var(--text-dim);">—</span>'
+
                 resolved_rows += f"""
                 <tr>
                     <td><strong>{city}</strong></td>
@@ -2125,6 +2206,8 @@ def _generate_html_report() -> str:
                     <td>{_ri(p5s.get('result', ''))}</td>
                     <td>{mean_spill}°C</td>
                     <td>{_ri(means.get('result', ''))}</td>
+                    <td>{market_cell}</td>
+                    <td>{avvik_cell}</td>
                 </tr>"""
 
             predictions_html += f"""
@@ -2132,10 +2215,11 @@ def _generate_html_report() -> str:
       <h2>📊 AVGJORTE RESULTATER ({len(resolved_cities)} byer, {target_date})</h2>
       <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
         Resolved against archive data. ✅ WIN = round(actual peak) == spill bucket.
+        📡 = vår live peak | Marked = Polymarket utfall | ⚠️ Avvik = stasjonsfeil hvis >2°C
       </p>
      <div style="max-height: 600px; overflow-y: auto;">
      <table>
-       <thead><tr><th>By</th><th>Sigma Spill</th><th>Sigma Utfall</th><th>P5 Spill</th><th>P5 Utfall</th><th>Mean Spill</th><th>Mean Utfall</th></tr></thead>
+       <thead><tr><th>By</th><th>Sigma Spill</th><th>Sigma Utfall</th><th>P5 Spill</th><th>P5 Utfall</th><th>Mean Spill</th><th>Mean Utfall</th><th>Marked</th><th>⚠️ Avvik</th></tr></thead>
        <tbody>{resolved_rows}
        </tbody>
      </table>
