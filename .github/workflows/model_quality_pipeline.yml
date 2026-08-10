@@ -112,7 +112,14 @@ jobs:
           print(f'Runs in log: {len(d.get(\"runs\", d if isinstance(d, list) else []))}')
           "
 
+      - name: Send SMS alerts
+        env:
+          TWILIO_SID: ${{ secrets.TWILIO_SID }}
+          TWILIO_TOKEN: ${{ secrets.TWILIO_TOKEN }}
+          TWILIO_FROM: ${{ secrets.TWILIO_FROM }}
+        run: python _sms_alert.py --check-and-send
+
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Auto: ${{ steps.mode.outputs.mode }} $(date -Iminutes)"
-          file_pattern: '_model_quality_log.json _quality_report.md _quality_report.html _all_cities.html _rapid_peak_log.json _market_prices.json'
+          file_pattern: '_model_quality_log.json _quality_report.md _quality_report.html _all_cities.html _rapid_peak_log.json _market_prices.json _sms_log.json'

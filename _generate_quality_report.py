@@ -1362,7 +1362,122 @@ def _build_cities_js_array() -> str:
     return "const CITIES = [\n" + ",\n".join(entries) + "\n];"
 
 
-def _build_live_fetch_js(*, with_rate_limiting: bool = False) -> str:
+def _build_sparkline_data_js(city_table: dict, lead: int = 0) -> str:
+    """Build JS object mapping city name -> {{lat, lon, bma_mean}} for sparklines."""
+    entries: list[str] = []
+    defaults_path = Path(_SCRIPT_DIR) / "weather_monitor_defaults.json"
+    city_meta: dict[str, dict] = {}
+    if defaults_path.exists():
+        try:
+            defaults = json.loads(defaults_path.read_text(encoding="utf-8"))
+            for loc in defaults.get("default_locations", []):
+                name = loc.get("name", "")
+                if name:
+                    city_meta[name] = {"lat": loc.get("lat", 0), "lon": loc.get("lon", 0)}
+        except Exception:
+            pass
+
+    for city, leads in city_table.items():
+        d = leads.get(lead)
+        lat = city_meta.get(city, {}).get("lat", 0)
+        lon = city_meta.get(city, {}).get("lon", 0)
+        if d and d.get("bma_mean") is not None:
+            entries.append(
+                f'  "{city}": {{lat: {lat}, lon: {lon}, bma: {d["bma_mean"]:.1f}}}'
+            )
+    return "const SPARKLINE_DATA = {\n" + ",\n".join(entries) + "\n};"
+
+
+def _build_sparkline_fetch_js() -> str:
+    """Build JavaScript for fetching hourly temperature and rendering sparklines."""
+    return """// ---- Sparkline: Peak Trend (Unicode block characters) ----
+const SPARK_BLOCKS = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+
+async function fetchSparklineForCity(cityId, cityName) {
+    const data = SPARKLINE_DATA[cityName];
+    if (!data) return;
+
+    const el = document.getElementById('spark-' + cityId);
+    if (!el) return;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${data.lat}&longitude=${data.lon}&start_date=${today}&end_date=${today}&hourly=temperature_2m&timezone=UTC`;
+
+    try {
+        const resp = await fetch(url, { headers: { 'User-Agent': 'WeatherMonitor/1.0' } });
+        const json = await resp.json();
+        const temps = json.hourly?.temperature_2m;
+        if (!temps || temps.length === 0) {
+            el.innerHTML = '<span class="spark-loading">no data</span>';
+            return;
+        }
+
+        // Filter to peak hours (roughly 10-18 local, or just use all 24h)
+        const validTemps = temps.filter(t => t != null);
+        if (validTemps.length === 0) {
+            el.innerHTML = '<span class="spark-loading">no data</span>';
+            return;
+        }
+
+        const tMin = Math.min(...validTemps);
+        const tMax = Math.max(...validTemps);
+        const tRange = tMax - tMin || 1;
+
+        // Build sparkline string (last ~16 hours, or all)
+        const displayTemps = validTemps.length > 18
+            ? validTemps.slice(validTemps.length - 18)
+            : validTemps;
+
+        let spark = '';
+        let peakIdx = -1;
+        let closestDist = Infinity;
+
+        for (let i = 0; i < displayTemps.length; i++) {
+            const t = displayTemps[i];
+            const normalized = (t - tMin) / tRange;
+            const blockIdx = Math.min(7, Math.max(0, Math.round(normalized * 7)));
+            spark += SPARK_BLOCKS[blockIdx + 1];
+
+            // Track closest temp to BMA predicted peak
+            const dist = Math.abs(t - data.bma);
+            if (dist < closestDist) {
+                closestDist = dist;
+                peakIdx = i;
+            }
+        }
+
+        // Insert peak marker (replace closest block with red marker)
+        if (peakIdx >= 0 && peakIdx < spark.length) {
+            const chars = [...spark];
+            chars[peakIdx] = `<span class="peak-marker" title="BMA pred: ${data.bma}°C">█</span>`;
+            spark = chars.join('');
+        }
+
+        const peakLabel = data.bma != null ? ` 🔴${data.bma.toFixed(0)}°C` : '';
+        el.innerHTML = spark + peakLabel;
+
+    } catch (e) {
+        el.innerHTML = '<span class="spark-loading">err</span>';
+    }
+}
+
+async function fetchAllSparklines() {
+    const cells = document.querySelectorAll('.col-spark');
+    const promises = [];
+    cells.forEach(cell => {
+        const row = cell.closest('tr');
+        if (!row) return;
+        const cityName = row.getAttribute('data-city');
+        const cityId = cityName ? cityName.replace(/[^a-zA-Z0-9]/g, '_') : '';
+        if (cityName && SPARKLINE_DATA[cityName]) {
+            promises.push(fetchSparklineForCity(cityId, cityName));
+        } else {
+            cell.innerHTML = '<span class="spark-loading">—</span>';
+        }
+    });
+    await Promise.allSettled(promises);
+}
+"""
     """Build the JavaScript for live temperature fetching via Open-Meteo API.
     
     Fetches current temperature only (no daily parameter, which uses a separate
@@ -2306,6 +2421,7 @@ def _generate_all_cities_html() -> str:
                 <td class="col-conf {conf_class}">{conf_icon} {(conf*100):.0f}%</td>
                 <td class="col-models">{d['model_ct']}/8</td>
                 <td class="col-peak">{actual_str}{" ✅ VUNNET" if peak_won else ""}</td>
+                <td class="col-spark" id="spark-{safe_city_id}">—</td>
                 <td class="col-live" id="live-{safe_city_id}">—</td>
                 <td class="col-market">{market_cell}</td>
                 <td class="col-edge">{edge_cell}</td>
@@ -2318,6 +2434,8 @@ def _generate_all_cities_html() -> str:
 
     cities_js = _build_cities_js_array()
     live_fetch_js = _build_live_fetch_js(with_rate_limiting=True)
+    sparkline_data_js = _build_sparkline_data_js(city_table, 0)
+    sparkline_fetch_js = _build_sparkline_fetch_js()
 
     # ---- Build full HTML (no auto-refresh) ----
     html = f"""<!DOCTYPE html>
@@ -2364,6 +2482,9 @@ def _generate_all_cities_html() -> str:
   .live-status {{ color: var(--text-dim); font-size: 0.85rem; margin-left: 12px; }}
   .live-updated {{ color: var(--text-dim); font-size: 0.8rem; margin-left: 8px; }}
   .col-live {{ color: var(--green); font-weight: 600; font-size: 0.78rem; }}
+  .col-spark {{ font-family: monospace; font-size: 0.85rem; letter-spacing: -1px; white-space: nowrap; text-align: center; min-width: 90px; }}
+  .col-spark .peak-marker {{ color: var(--red); font-weight: 700; }}
+  .spark-loading {{ color: var(--text-dim); font-size: 0.7rem; }}
   .date-bar {{ display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }}
   .date-btn {{ background: var(--bg-card); border: 1px solid var(--border); color: var(--text); padding: 10px 24px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s; }}
   .date-btn:hover {{ background: var(--bg-card-hover); border-color: var(--blue); }}
@@ -2442,13 +2563,14 @@ def _generate_all_cities_html() -> str:
           <th onclick="sortTable(7)">Konf</th>
           <th onclick="sortTable(8)">Modeller</th>
           <th onclick="sortTable(9)">Peak</th>
-          <th onclick="sortTable(10)">🔴 Live</th>
-          <th onclick="sortTable(11)">Marked Pris</th>
-          <th onclick="sortTable(12)">Edge</th>
-          <th onclick="sortTable(13)">Signal</th>
-          <th onclick="sortTable(14)">Anbefaling</th>
-          <th onclick="sortTable(15)">🎯 Anbefalt Strategi</th>
-          <th onclick="sortTable(16)">🕐 Lokal</th>
+          <th onclick="sortTable(10)">📈 Peak Trend</th>
+          <th onclick="sortTable(11)">🔴 Live</th>
+          <th onclick="sortTable(12)">Marked Pris</th>
+          <th onclick="sortTable(13)">Edge</th>
+          <th onclick="sortTable(14)">Signal</th>
+          <th onclick="sortTable(15)">Anbefaling</th>
+          <th onclick="sortTable(16)">🎯 Anbefalt Strategi</th>
+          <th onclick="sortTable(17)">🕐 Lokal</th>
        </tr>
       </thead>
       <tbody>
@@ -2466,7 +2588,11 @@ def _generate_all_cities_html() -> str:
 <script>
 {cities_js}
 
+{sparkline_data_js}
+
 {live_fetch_js}
+
+{sparkline_fetch_js}
 
 var currentLead = {sorted_leads[0] if sorted_leads else 1};
 
@@ -2550,6 +2676,8 @@ function sortTable(colIdx) {{
     sortCol = 7;
     sortAsc = false;
     sortTable(7);
+    // Fetch peak trend sparklines (async, does not block)
+    fetchAllSparklines();
 }})();
 </script>
 </body>
