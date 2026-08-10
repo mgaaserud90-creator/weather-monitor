@@ -42,6 +42,9 @@
   .live-status { color: var(--text-dim); font-size: 0.85rem; margin-left: 12px; }
   .live-updated { color: var(--text-dim); font-size: 0.8rem; margin-left: 8px; }
   .col-live { color: var(--green); font-weight: 600; font-size: 0.78rem; }
+  .col-spark { font-family: monospace; font-size: 0.85rem; letter-spacing: -1px; white-space: nowrap; text-align: center; min-width: 90px; }
+  .col-spark .peak-marker { color: var(--red); font-weight: 700; }
+  .spark-loading { color: var(--text-dim); font-size: 0.7rem; }
   .date-bar { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
   .date-btn { background: var(--bg-card); border: 1px solid var(--border); color: var(--text); padding: 10px 24px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s; }
   .date-btn:hover { background: var(--bg-card-hover); border-color: var(--blue); }
@@ -84,7 +87,7 @@
 <body>
 <header>
   <h1>🌍 ALLE 51 BYER — BMA Ensemble</h1>
-  <div class="subtitle">Generert: 2026-08-10 10:02:31 UTC | Multi-Strategy: 🎯 Sigma · 🛡️ P5 · 📊 Mean</div>
+  <div class="subtitle">Generert: 2026-08-10 13:34:19 UTC | Multi-Strategy: 🎯 Sigma · 🛡️ P5 · 📊 Mean</div>
 </header>
 <div class="live-bar">
   <button class="live-btn" onclick="fetchLiveData()" id="fetch-btn">🔄 Hent Nåværende Temperatur & Døgnmaks</button>
@@ -122,13 +125,14 @@
           <th onclick="sortTable(7)">Konf</th>
           <th onclick="sortTable(8)">Modeller</th>
           <th onclick="sortTable(9)">Peak</th>
-          <th onclick="sortTable(10)">🔴 Live</th>
-          <th onclick="sortTable(11)">Marked Pris</th>
-          <th onclick="sortTable(12)">Edge</th>
-          <th onclick="sortTable(13)">Signal</th>
-          <th onclick="sortTable(14)">Anbefaling</th>
-          <th onclick="sortTable(15)">🎯 Anbefalt Strategi</th>
-          <th onclick="sortTable(16)">🕐 Lokal</th>
+          <th onclick="sortTable(10)">📈 Peak Trend</th>
+          <th onclick="sortTable(11)">🔴 Live</th>
+          <th onclick="sortTable(12)">Marked Pris</th>
+          <th onclick="sortTable(13)">Edge</th>
+          <th onclick="sortTable(14)">Signal</th>
+          <th onclick="sortTable(15)">Anbefaling</th>
+          <th onclick="sortTable(16)">🎯 Anbefalt Strategi</th>
+          <th onclick="sortTable(17)">🕐 Lokal</th>
        </tr>
       </thead>
       <tbody>
@@ -143,13 +147,14 @@
                 <td class="col-conf conf-low">🔴 52%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Amsterdam__NL">—</td>
                 <td class="col-live" id="live-Amsterdam__NL">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">12:02</td>
+                <td class="col-local">15:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Amsterdam, NL" data-conf="0.474" data-edge="0">
                 <td class="col-rank"></td>
@@ -162,13 +167,14 @@
                 <td class="col-conf conf-low">🔴 47%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Amsterdam__NL">—</td>
                 <td class="col-live" id="live-Amsterdam__NL">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">12:02</td>
+                <td class="col-local">15:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Ankara, TR" data-conf="0.589" data-edge="0">
                 <td class="col-rank"></td>
@@ -181,13 +187,14 @@
                 <td class="col-conf conf-low">🔴 59%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Ankara__TR">—</td>
                 <td class="col-live" id="live-Ankara__TR">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">13:02</td>
+                <td class="col-local">16:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Ankara, TR" data-conf="0.782" data-edge="0">
                 <td class="col-rank"></td>
@@ -200,13 +207,14 @@
                 <td class="col-conf conf-mid">🟠 78%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Ankara__TR">—</td>
                 <td class="col-live" id="live-Ankara__TR">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">13:02</td>
+                <td class="col-local">16:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Atlanta, US" data-conf="0.376" data-edge="0">
                 <td class="col-rank"></td>
@@ -219,13 +227,14 @@
                 <td class="col-conf conf-low">🔴 38%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Atlanta__US">—</td>
                 <td class="col-live" id="live-Atlanta__US">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">06:02</td>
+                <td class="col-local">09:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Atlanta, US" data-conf="0.528" data-edge="0">
                 <td class="col-rank"></td>
@@ -238,13 +247,14 @@
                 <td class="col-conf conf-low">🔴 53%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Atlanta__US">—</td>
                 <td class="col-live" id="live-Atlanta__US">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">06:02</td>
+                <td class="col-local">09:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Austin, US" data-conf="0.584" data-edge="0">
                 <td class="col-rank"></td>
@@ -257,13 +267,14 @@
                 <td class="col-conf conf-low">🔴 58%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Austin__US">—</td>
                 <td class="col-live" id="live-Austin__US">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">05:02</td>
+                <td class="col-local">08:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Austin, US" data-conf="0.709" data-edge="0">
                 <td class="col-rank"></td>
@@ -276,13 +287,14 @@
                 <td class="col-conf conf-mid">🟠 71%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Austin__US">—</td>
                 <td class="col-live" id="live-Austin__US">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">05:02</td>
+                <td class="col-local">08:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Beijing, CN" data-conf="0.530" data-edge="-77.5">
                 <td class="col-rank"></td>
@@ -295,13 +307,14 @@
                 <td class="col-conf conf-low">🔴 53%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Beijing__CN">—</td>
                 <td class="col-live" id="live-Beijing__CN">—</td>
                 <td class="col-market">99.5%</td>
                 <td class="col-edge">-77.5%</td>
                 <td class="col-signal"><span style="color: var(--red); font-weight: 600;">🔴 SHORT</span></td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Beijing, CN" data-conf="0.466" data-edge="-77.6">
                 <td class="col-rank"></td>
@@ -314,13 +327,14 @@
                 <td class="col-conf conf-low">🔴 47%</td>
                 <td class="col-models">6/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Beijing__CN">—</td>
                 <td class="col-live" id="live-Beijing__CN">—</td>
                 <td class="col-market">99.5%</td>
                 <td class="col-edge">-77.6%</td>
                 <td class="col-signal"><span style="color: var(--red); font-weight: 600;">🔴 SHORT</span></td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Buenos Aires, AR" data-conf="0.748" data-edge="0">
                 <td class="col-rank"></td>
@@ -333,13 +347,14 @@
                 <td class="col-conf conf-mid">🟠 75%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Buenos_Aires__AR">—</td>
                 <td class="col-live" id="live-Buenos_Aires__AR">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">07:02</td>
+                <td class="col-local">10:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Buenos Aires, AR" data-conf="0.562" data-edge="0">
                 <td class="col-rank"></td>
@@ -352,13 +367,14 @@
                 <td class="col-conf conf-low">🔴 56%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Buenos_Aires__AR">—</td>
                 <td class="col-live" id="live-Buenos_Aires__AR">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">07:02</td>
+                <td class="col-local">10:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Busan, KR" data-conf="0.621" data-edge="0">
                 <td class="col-rank"></td>
@@ -371,13 +387,14 @@
                 <td class="col-conf conf-low">🔴 62%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Busan__KR">—</td>
                 <td class="col-live" id="live-Busan__KR">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">19:02</td>
+                <td class="col-local">22:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Busan, KR" data-conf="0.599" data-edge="0">
                 <td class="col-rank"></td>
@@ -390,13 +407,14 @@
                 <td class="col-conf conf-low">🔴 60%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Busan__KR">—</td>
                 <td class="col-live" id="live-Busan__KR">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">19:02</td>
+                <td class="col-local">22:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Cape Town, ZA" data-conf="0.628" data-edge="0">
                 <td class="col-rank"></td>
@@ -409,13 +427,14 @@
                 <td class="col-conf conf-low">🔴 63%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Cape_Town__ZA">—</td>
                 <td class="col-live" id="live-Cape_Town__ZA">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">12:02</td>
+                <td class="col-local">15:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Cape Town, ZA" data-conf="0.429" data-edge="0">
                 <td class="col-rank"></td>
@@ -428,13 +447,14 @@
                 <td class="col-conf conf-low">🔴 43%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Cape_Town__ZA">—</td>
                 <td class="col-live" id="live-Cape_Town__ZA">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">12:02</td>
+                <td class="col-local">15:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Chengdu, CN" data-conf="0.440" data-edge="0">
                 <td class="col-rank"></td>
@@ -447,13 +467,14 @@
                 <td class="col-conf conf-low">🔴 44%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Chengdu__CN">—</td>
                 <td class="col-live" id="live-Chengdu__CN">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Chengdu, CN" data-conf="0.431" data-edge="0">
                 <td class="col-rank"></td>
@@ -466,13 +487,14 @@
                 <td class="col-conf conf-low">🔴 43%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Chengdu__CN">—</td>
                 <td class="col-live" id="live-Chengdu__CN">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Chicago, US" data-conf="0.437" data-edge="0">
                 <td class="col-rank"></td>
@@ -485,13 +507,14 @@
                 <td class="col-conf conf-low">🔴 44%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Chicago__US">—</td>
                 <td class="col-live" id="live-Chicago__US">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">05:02</td>
+                <td class="col-local">08:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Chicago, US" data-conf="0.518" data-edge="0">
                 <td class="col-rank"></td>
@@ -504,13 +527,14 @@
                 <td class="col-conf conf-low">🔴 52%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Chicago__US">—</td>
                 <td class="col-live" id="live-Chicago__US">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">05:02</td>
+                <td class="col-local">08:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Chongqing, CN" data-conf="0.644" data-edge="0">
                 <td class="col-rank"></td>
@@ -523,13 +547,14 @@
                 <td class="col-conf conf-low">🔴 64%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Chongqing__CN">—</td>
                 <td class="col-live" id="live-Chongqing__CN">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Chongqing, CN" data-conf="0.579" data-edge="0">
                 <td class="col-rank"></td>
@@ -542,13 +567,14 @@
                 <td class="col-conf conf-low">🔴 58%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Chongqing__CN">—</td>
                 <td class="col-live" id="live-Chongqing__CN">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Dallas, US" data-conf="0.758" data-edge="-24.5">
                 <td class="col-rank"></td>
@@ -561,13 +587,14 @@
                 <td class="col-conf conf-mid">🟠 76%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Dallas__US">—</td>
                 <td class="col-live" id="live-Dallas__US">—</td>
                 <td class="col-market">64.0%</td>
                 <td class="col-edge">-24.5%</td>
                 <td class="col-signal"><span style="color: var(--red); font-weight: 600;">🔴 SHORT</span></td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">05:02</td>
+                <td class="col-local">08:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Dallas, US" data-conf="0.529" data-edge="-42.7">
                 <td class="col-rank"></td>
@@ -580,13 +607,14 @@
                 <td class="col-conf conf-low">🔴 53%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Dallas__US">—</td>
                 <td class="col-live" id="live-Dallas__US">—</td>
                 <td class="col-market">64.0%</td>
                 <td class="col-edge">-42.7%</td>
                 <td class="col-signal"><span style="color: var(--red); font-weight: 600;">🔴 SHORT</span></td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">05:02</td>
+                <td class="col-local">08:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Denver, US" data-conf="0.755" data-edge="0">
                 <td class="col-rank"></td>
@@ -599,13 +627,14 @@
                 <td class="col-conf conf-mid">🟠 76%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Denver__US">—</td>
                 <td class="col-live" id="live-Denver__US">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">04:02</td>
+                <td class="col-local">07:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Denver, US" data-conf="0.511" data-edge="0">
                 <td class="col-rank"></td>
@@ -618,13 +647,14 @@
                 <td class="col-conf conf-low">🔴 51%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Denver__US">—</td>
                 <td class="col-live" id="live-Denver__US">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">04:02</td>
+                <td class="col-local">07:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Guangzhou, CN" data-conf="0.725" data-edge="0">
                 <td class="col-rank"></td>
@@ -637,13 +667,14 @@
                 <td class="col-conf conf-mid">🟠 72%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Guangzhou__CN">—</td>
                 <td class="col-live" id="live-Guangzhou__CN">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Guangzhou, CN" data-conf="0.657" data-edge="0">
                 <td class="col-rank"></td>
@@ -656,13 +687,14 @@
                 <td class="col-conf conf-low">🔴 66%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Guangzhou__CN">—</td>
                 <td class="col-live" id="live-Guangzhou__CN">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Helsinki, FI" data-conf="0.567" data-edge="0">
                 <td class="col-rank"></td>
@@ -675,13 +707,14 @@
                 <td class="col-conf conf-low">🔴 57%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Helsinki__FI">—</td>
                 <td class="col-live" id="live-Helsinki__FI">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">13:02</td>
+                <td class="col-local">16:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Helsinki, FI" data-conf="0.547" data-edge="0">
                 <td class="col-rank"></td>
@@ -694,13 +727,14 @@
                 <td class="col-conf conf-low">🔴 55%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Helsinki__FI">—</td>
                 <td class="col-live" id="live-Helsinki__FI">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">13:02</td>
+                <td class="col-local">16:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Hong Kong, HK" data-conf="0.531" data-edge="12.8">
                 <td class="col-rank"></td>
@@ -713,13 +747,14 @@
                 <td class="col-conf conf-low">🔴 53%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Hong_Kong__HK">—</td>
                 <td class="col-live" id="live-Hong_Kong__HK">—</td>
                 <td class="col-market">0.1%</td>
                 <td class="col-edge">+12.8%</td>
                 <td class="col-signal"><span style="color: var(--green); font-weight: 600;">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Hong Kong, HK" data-conf="0.548" data-edge="28.7">
                 <td class="col-rank"></td>
@@ -732,13 +767,14 @@
                 <td class="col-conf conf-low">🔴 55%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Hong_Kong__HK">—</td>
                 <td class="col-live" id="live-Hong_Kong__HK">—</td>
                 <td class="col-market">0.1%</td>
                 <td class="col-edge">+28.7%</td>
                 <td class="col-signal"><span style="color: var(--green); font-weight: 600;">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Houston, US" data-conf="0.503" data-edge="0">
                 <td class="col-rank"></td>
@@ -751,13 +787,14 @@
                 <td class="col-conf conf-low">🔴 50%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Houston__US">—</td>
                 <td class="col-live" id="live-Houston__US">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">05:02</td>
+                <td class="col-local">08:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Houston, US" data-conf="0.634" data-edge="0">
                 <td class="col-rank"></td>
@@ -770,13 +807,14 @@
                 <td class="col-conf conf-low">🔴 63%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Houston__US">—</td>
                 <td class="col-live" id="live-Houston__US">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">05:02</td>
+                <td class="col-local">08:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Istanbul, TR" data-conf="0.498" data-edge="0">
                 <td class="col-rank"></td>
@@ -789,13 +827,14 @@
                 <td class="col-conf conf-low">🔴 50%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Istanbul__TR">—</td>
                 <td class="col-live" id="live-Istanbul__TR">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">13:02</td>
+                <td class="col-local">16:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Istanbul, TR" data-conf="0.457" data-edge="0">
                 <td class="col-rank"></td>
@@ -808,13 +847,14 @@
                 <td class="col-conf conf-low">🔴 46%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Istanbul__TR">—</td>
                 <td class="col-live" id="live-Istanbul__TR">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">13:02</td>
+                <td class="col-local">16:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Jeddah, SA" data-conf="0.336" data-edge="0">
                 <td class="col-rank"></td>
@@ -827,13 +867,14 @@
                 <td class="col-conf conf-low">🔴 34%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Jeddah__SA">—</td>
                 <td class="col-live" id="live-Jeddah__SA">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">13:02</td>
+                <td class="col-local">16:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Jeddah, SA" data-conf="0.336" data-edge="0">
                 <td class="col-rank"></td>
@@ -846,13 +887,14 @@
                 <td class="col-conf conf-low">🔴 34%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Jeddah__SA">—</td>
                 <td class="col-live" id="live-Jeddah__SA">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">13:02</td>
+                <td class="col-local">16:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Jinan, CN" data-conf="0.394" data-edge="0">
                 <td class="col-rank"></td>
@@ -865,13 +907,14 @@
                 <td class="col-conf conf-low">🔴 39%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Jinan__CN">—</td>
                 <td class="col-live" id="live-Jinan__CN">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Jinan, CN" data-conf="0.359" data-edge="0">
                 <td class="col-rank"></td>
@@ -884,13 +927,14 @@
                 <td class="col-conf conf-low">🔴 36%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Jinan__CN">—</td>
                 <td class="col-live" id="live-Jinan__CN">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Karachi, PK" data-conf="0.440" data-edge="0">
                 <td class="col-rank"></td>
@@ -903,13 +947,14 @@
                 <td class="col-conf conf-low">🔴 44%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Karachi__PK">—</td>
                 <td class="col-live" id="live-Karachi__PK">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">15:02</td>
+                <td class="col-local">18:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Karachi, PK" data-conf="0.375" data-edge="0">
                 <td class="col-rank"></td>
@@ -922,13 +967,14 @@
                 <td class="col-conf conf-low">🔴 38%</td>
                 <td class="col-models">3/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Karachi__PK">—</td>
                 <td class="col-live" id="live-Karachi__PK">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">15:02</td>
+                <td class="col-local">18:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Kuala Lumpur, MY" data-conf="0.508" data-edge="0">
                 <td class="col-rank"></td>
@@ -941,13 +987,14 @@
                 <td class="col-conf conf-low">🔴 51%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Kuala_Lumpur__MY">—</td>
                 <td class="col-live" id="live-Kuala_Lumpur__MY">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Kuala Lumpur, MY" data-conf="0.440" data-edge="0">
                 <td class="col-rank"></td>
@@ -960,13 +1007,14 @@
                 <td class="col-conf conf-low">🔴 44%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Kuala_Lumpur__MY">—</td>
                 <td class="col-live" id="live-Kuala_Lumpur__MY">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="London, UK" data-conf="0.564" data-edge="6.6">
                 <td class="col-rank"></td>
@@ -979,13 +1027,14 @@
                 <td class="col-conf conf-low">🔴 56%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-London__UK">—</td>
                 <td class="col-live" id="live-London__UK">—</td>
                 <td class="col-market">10.0%</td>
                 <td class="col-edge">+6.6%</td>
                 <td class="col-signal"><span style="color: var(--green);">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">11:02</td>
+                <td class="col-local">14:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="London, UK" data-conf="0.611" data-edge="1.8">
                 <td class="col-rank"></td>
@@ -998,13 +1047,14 @@
                 <td class="col-conf conf-low">🔴 61%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-London__UK">—</td>
                 <td class="col-live" id="live-London__UK">—</td>
                 <td class="col-market">10.0%</td>
                 <td class="col-edge">+1.8%</td>
                 <td class="col-signal"><span style="color: var(--green);">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">11:02</td>
+                <td class="col-local">14:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Los Angeles, US" data-conf="0.295" data-edge="0">
                 <td class="col-rank"></td>
@@ -1017,13 +1067,14 @@
                 <td class="col-conf conf-low">🔴 30%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Los_Angeles__US">—</td>
                 <td class="col-live" id="live-Los_Angeles__US">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">03:02</td>
+                <td class="col-local">06:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Los Angeles, US" data-conf="0.342" data-edge="0">
                 <td class="col-rank"></td>
@@ -1036,13 +1087,14 @@
                 <td class="col-conf conf-low">🔴 34%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Los_Angeles__US">—</td>
                 <td class="col-live" id="live-Los_Angeles__US">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">03:02</td>
+                <td class="col-local">06:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Lucknow, IN" data-conf="0.486" data-edge="0">
                 <td class="col-rank"></td>
@@ -1055,13 +1107,14 @@
                 <td class="col-conf conf-low">🔴 49%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Lucknow__IN">—</td>
                 <td class="col-live" id="live-Lucknow__IN">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">15:32</td>
+                <td class="col-local">19:04</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Lucknow, IN" data-conf="0.531" data-edge="0">
                 <td class="col-rank"></td>
@@ -1074,13 +1127,14 @@
                 <td class="col-conf conf-low">🔴 53%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Lucknow__IN">—</td>
                 <td class="col-live" id="live-Lucknow__IN">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">15:32</td>
+                <td class="col-local">19:04</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Madrid, ES" data-conf="0.583" data-edge="0">
                 <td class="col-rank"></td>
@@ -1093,13 +1147,14 @@
                 <td class="col-conf conf-low">🔴 58%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Madrid__ES">—</td>
                 <td class="col-live" id="live-Madrid__ES">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">12:02</td>
+                <td class="col-local">15:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Madrid, ES" data-conf="0.585" data-edge="0">
                 <td class="col-rank"></td>
@@ -1112,13 +1167,14 @@
                 <td class="col-conf conf-low">🔴 58%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Madrid__ES">—</td>
                 <td class="col-live" id="live-Madrid__ES">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">12:02</td>
+                <td class="col-local">15:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Manila, PH" data-conf="0.722" data-edge="0">
                 <td class="col-rank"></td>
@@ -1131,13 +1187,14 @@
                 <td class="col-conf conf-mid">🟠 72%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Manila__PH">—</td>
                 <td class="col-live" id="live-Manila__PH">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Manila, PH" data-conf="0.553" data-edge="0">
                 <td class="col-rank"></td>
@@ -1150,13 +1207,14 @@
                 <td class="col-conf conf-low">🔴 55%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Manila__PH">—</td>
                 <td class="col-live" id="live-Manila__PH">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Mexico City, MX" data-conf="0.566" data-edge="0">
                 <td class="col-rank"></td>
@@ -1169,13 +1227,14 @@
                 <td class="col-conf conf-low">🔴 57%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Mexico_City__MX">—</td>
                 <td class="col-live" id="live-Mexico_City__MX">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">04:02</td>
+                <td class="col-local">07:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Mexico City, MX" data-conf="0.579" data-edge="0">
                 <td class="col-rank"></td>
@@ -1188,13 +1247,14 @@
                 <td class="col-conf conf-low">🔴 58%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Mexico_City__MX">—</td>
                 <td class="col-live" id="live-Mexico_City__MX">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">04:02</td>
+                <td class="col-local">07:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Miami, US" data-conf="0.652" data-edge="0">
                 <td class="col-rank"></td>
@@ -1207,13 +1267,14 @@
                 <td class="col-conf conf-low">🔴 65%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Miami__US">—</td>
                 <td class="col-live" id="live-Miami__US">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">06:02</td>
+                <td class="col-local">09:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Miami, US" data-conf="0.617" data-edge="0">
                 <td class="col-rank"></td>
@@ -1226,13 +1287,14 @@
                 <td class="col-conf conf-low">🔴 62%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Miami__US">—</td>
                 <td class="col-live" id="live-Miami__US">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">06:02</td>
+                <td class="col-local">09:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Milan, IT" data-conf="0.464" data-edge="0">
                 <td class="col-rank"></td>
@@ -1245,13 +1307,14 @@
                 <td class="col-conf conf-low">🔴 46%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Milan__IT">—</td>
                 <td class="col-live" id="live-Milan__IT">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">12:02</td>
+                <td class="col-local">15:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Milan, IT" data-conf="0.346" data-edge="0">
                 <td class="col-rank"></td>
@@ -1264,13 +1327,14 @@
                 <td class="col-conf conf-low">🔴 35%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Milan__IT">—</td>
                 <td class="col-live" id="live-Milan__IT">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">12:02</td>
+                <td class="col-local">15:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Moscow, RU" data-conf="0.732" data-edge="0">
                 <td class="col-rank"></td>
@@ -1283,13 +1347,14 @@
                 <td class="col-conf conf-mid">🟠 73%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Moscow__RU">—</td>
                 <td class="col-live" id="live-Moscow__RU">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">13:02</td>
+                <td class="col-local">16:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Moscow, RU" data-conf="0.599" data-edge="0">
                 <td class="col-rank"></td>
@@ -1302,13 +1367,14 @@
                 <td class="col-conf conf-low">🔴 60%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Moscow__RU">—</td>
                 <td class="col-live" id="live-Moscow__RU">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">13:02</td>
+                <td class="col-local">16:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Munich, DE" data-conf="0.551" data-edge="0">
                 <td class="col-rank"></td>
@@ -1321,13 +1387,14 @@
                 <td class="col-conf conf-low">🔴 55%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Munich__DE">—</td>
                 <td class="col-live" id="live-Munich__DE">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">12:02</td>
+                <td class="col-local">15:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Munich, DE" data-conf="0.674" data-edge="0">
                 <td class="col-rank"></td>
@@ -1340,13 +1407,14 @@
                 <td class="col-conf conf-low">🔴 67%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Munich__DE">—</td>
                 <td class="col-live" id="live-Munich__DE">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">12:02</td>
+                <td class="col-local">15:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="New York, US" data-conf="0.605" data-edge="0">
                 <td class="col-rank"></td>
@@ -1359,13 +1427,14 @@
                 <td class="col-conf conf-low">🔴 60%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-New_York__US">—</td>
                 <td class="col-live" id="live-New_York__US">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">06:02</td>
+                <td class="col-local">09:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="New York, US" data-conf="0.427" data-edge="0">
                 <td class="col-rank"></td>
@@ -1378,13 +1447,14 @@
                 <td class="col-conf conf-low">🔴 43%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-New_York__US">—</td>
                 <td class="col-live" id="live-New_York__US">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">06:02</td>
+                <td class="col-local">09:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Panama City, PA" data-conf="0.539" data-edge="0">
                 <td class="col-rank"></td>
@@ -1397,13 +1467,14 @@
                 <td class="col-conf conf-low">🔴 54%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Panama_City__PA">—</td>
                 <td class="col-live" id="live-Panama_City__PA">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">05:02</td>
+                <td class="col-local">08:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Panama City, PA" data-conf="0.607" data-edge="0">
                 <td class="col-rank"></td>
@@ -1416,13 +1487,14 @@
                 <td class="col-conf conf-low">🔴 61%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Panama_City__PA">—</td>
                 <td class="col-live" id="live-Panama_City__PA">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">05:02</td>
+                <td class="col-local">08:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Paris, FR" data-conf="0.599" data-edge="0">
                 <td class="col-rank"></td>
@@ -1435,13 +1507,14 @@
                 <td class="col-conf conf-low">🔴 60%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Paris__FR">—</td>
                 <td class="col-live" id="live-Paris__FR">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">12:02</td>
+                <td class="col-local">15:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Paris, FR" data-conf="0.503" data-edge="0">
                 <td class="col-rank"></td>
@@ -1454,13 +1527,14 @@
                 <td class="col-conf conf-low">🔴 50%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Paris__FR">—</td>
                 <td class="col-live" id="live-Paris__FR">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">12:02</td>
+                <td class="col-local">15:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Qingdao, CN" data-conf="0.430" data-edge="0">
                 <td class="col-rank"></td>
@@ -1473,13 +1547,14 @@
                 <td class="col-conf conf-low">🔴 43%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Qingdao__CN">—</td>
                 <td class="col-live" id="live-Qingdao__CN">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Qingdao, CN" data-conf="0.608" data-edge="0">
                 <td class="col-rank"></td>
@@ -1492,13 +1567,14 @@
                 <td class="col-conf conf-low">🔴 61%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Qingdao__CN">—</td>
                 <td class="col-live" id="live-Qingdao__CN">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="San Francisco, US" data-conf="0.278" data-edge="0">
                 <td class="col-rank"></td>
@@ -1511,13 +1587,14 @@
                 <td class="col-conf conf-low">🔴 28%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-San_Francisco__US">—</td>
                 <td class="col-live" id="live-San_Francisco__US">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">03:02</td>
+                <td class="col-local">06:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="San Francisco, US" data-conf="0.391" data-edge="0">
                 <td class="col-rank"></td>
@@ -1530,13 +1607,14 @@
                 <td class="col-conf conf-low">🔴 39%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-San_Francisco__US">—</td>
                 <td class="col-live" id="live-San_Francisco__US">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">03:02</td>
+                <td class="col-local">06:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Sao Paulo, BR" data-conf="0.462" data-edge="0">
                 <td class="col-rank"></td>
@@ -1549,13 +1627,14 @@
                 <td class="col-conf conf-low">🔴 46%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Sao_Paulo__BR">—</td>
                 <td class="col-live" id="live-Sao_Paulo__BR">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">07:02</td>
+                <td class="col-local">10:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Sao Paulo, BR" data-conf="0.545" data-edge="0">
                 <td class="col-rank"></td>
@@ -1568,13 +1647,14 @@
                 <td class="col-conf conf-low">🔴 55%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Sao_Paulo__BR">—</td>
                 <td class="col-live" id="live-Sao_Paulo__BR">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">07:02</td>
+                <td class="col-local">10:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Seattle, US" data-conf="0.570" data-edge="0">
                 <td class="col-rank"></td>
@@ -1587,13 +1667,14 @@
                 <td class="col-conf conf-low">🔴 57%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Seattle__US">—</td>
                 <td class="col-live" id="live-Seattle__US">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">03:02</td>
+                <td class="col-local">06:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Seattle, US" data-conf="0.563" data-edge="0">
                 <td class="col-rank"></td>
@@ -1606,13 +1687,14 @@
                 <td class="col-conf conf-low">🔴 56%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Seattle__US">—</td>
                 <td class="col-live" id="live-Seattle__US">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">03:02</td>
+                <td class="col-local">06:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Seoul (Incheon), KR" data-conf="0.373" data-edge="0">
                 <td class="col-rank"></td>
@@ -1625,13 +1707,14 @@
                 <td class="col-conf conf-low">🔴 37%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Seoul__Incheon___KR">—</td>
                 <td class="col-live" id="live-Seoul__Incheon___KR">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">19:02</td>
+                <td class="col-local">22:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Seoul (Incheon), KR" data-conf="0.335" data-edge="0">
                 <td class="col-rank"></td>
@@ -1644,13 +1727,14 @@
                 <td class="col-conf conf-low">🔴 34%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Seoul__Incheon___KR">—</td>
                 <td class="col-live" id="live-Seoul__Incheon___KR">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">19:02</td>
+                <td class="col-local">22:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Shanghai, CN" data-conf="0.565" data-edge="18.1">
                 <td class="col-rank"></td>
@@ -1663,13 +1747,14 @@
                 <td class="col-conf conf-low">🔴 56%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Shanghai__CN">—</td>
                 <td class="col-live" id="live-Shanghai__CN">—</td>
                 <td class="col-market">0.1%</td>
                 <td class="col-edge">+18.1%</td>
                 <td class="col-signal"><span style="color: var(--green); font-weight: 600;">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Shanghai, CN" data-conf="0.716" data-edge="30.2">
                 <td class="col-rank"></td>
@@ -1682,13 +1767,14 @@
                 <td class="col-conf conf-mid">🟠 72%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Shanghai__CN">—</td>
                 <td class="col-live" id="live-Shanghai__CN">—</td>
                 <td class="col-market">0.1%</td>
                 <td class="col-edge">+30.2%</td>
                 <td class="col-signal"><span style="color: var(--green); font-weight: 600;">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Shenzhen, CN" data-conf="0.491" data-edge="16.0">
                 <td class="col-rank"></td>
@@ -1701,13 +1787,14 @@
                 <td class="col-conf conf-low">🔴 49%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Shenzhen__CN">—</td>
                 <td class="col-live" id="live-Shenzhen__CN">—</td>
                 <td class="col-market">0.1%</td>
                 <td class="col-edge">+16.0%</td>
                 <td class="col-signal"><span style="color: var(--green); font-weight: 600;">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Shenzhen, CN" data-conf="0.493" data-edge="11.4">
                 <td class="col-rank"></td>
@@ -1720,13 +1807,14 @@
                 <td class="col-conf conf-low">🔴 49%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Shenzhen__CN">—</td>
                 <td class="col-live" id="live-Shenzhen__CN">—</td>
                 <td class="col-market">0.1%</td>
                 <td class="col-edge">+11.4%</td>
                 <td class="col-signal"><span style="color: var(--green); font-weight: 600;">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Singapore, SG" data-conf="0.650" data-edge="0">
                 <td class="col-rank"></td>
@@ -1739,13 +1827,14 @@
                 <td class="col-conf conf-low">🔴 65%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Singapore__SG">—</td>
                 <td class="col-live" id="live-Singapore__SG">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Singapore, SG" data-conf="0.632" data-edge="0">
                 <td class="col-rank"></td>
@@ -1758,13 +1847,14 @@
                 <td class="col-conf conf-low">🔴 63%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Singapore__SG">—</td>
                 <td class="col-live" id="live-Singapore__SG">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Taipei, TW" data-conf="0.476" data-edge="0">
                 <td class="col-rank"></td>
@@ -1777,13 +1867,14 @@
                 <td class="col-conf conf-low">🔴 48%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Taipei__TW">—</td>
                 <td class="col-live" id="live-Taipei__TW">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Taipei, TW" data-conf="0.518" data-edge="0">
                 <td class="col-rank"></td>
@@ -1796,13 +1887,14 @@
                 <td class="col-conf conf-low">🔴 52%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Taipei__TW">—</td>
                 <td class="col-live" id="live-Taipei__TW">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Tel Aviv, IL" data-conf="0.443" data-edge="0">
                 <td class="col-rank"></td>
@@ -1815,13 +1907,14 @@
                 <td class="col-conf conf-low">🔴 44%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Tel_Aviv__IL">—</td>
                 <td class="col-live" id="live-Tel_Aviv__IL">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">13:02</td>
+                <td class="col-local">16:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Tel Aviv, IL" data-conf="0.539" data-edge="0">
                 <td class="col-rank"></td>
@@ -1834,13 +1927,14 @@
                 <td class="col-conf conf-low">🔴 54%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Tel_Aviv__IL">—</td>
                 <td class="col-live" id="live-Tel_Aviv__IL">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">13:02</td>
+                <td class="col-local">16:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Tokyo, JP" data-conf="0.539" data-edge="-80.1">
                 <td class="col-rank"></td>
@@ -1853,13 +1947,14 @@
                 <td class="col-conf conf-low">🔴 54%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Tokyo__JP">—</td>
                 <td class="col-live" id="live-Tokyo__JP">—</td>
                 <td class="col-market">100.0%</td>
                 <td class="col-edge">-80.1%</td>
                 <td class="col-signal"><span style="color: var(--red); font-weight: 600;">🔴 SHORT</span></td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">19:02</td>
+                <td class="col-local">22:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Tokyo, JP" data-conf="0.602" data-edge="0">
                 <td class="col-rank"></td>
@@ -1872,13 +1967,14 @@
                 <td class="col-conf conf-low">🔴 60%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Tokyo__JP">—</td>
                 <td class="col-live" id="live-Tokyo__JP">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">19:02</td>
+                <td class="col-local">22:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Toronto, CA" data-conf="0.413" data-edge="0">
                 <td class="col-rank"></td>
@@ -1891,13 +1987,14 @@
                 <td class="col-conf conf-low">🔴 41%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Toronto__CA">—</td>
                 <td class="col-live" id="live-Toronto__CA">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">06:02</td>
+                <td class="col-local">09:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Toronto, CA" data-conf="0.493" data-edge="0">
                 <td class="col-rank"></td>
@@ -1910,13 +2007,14 @@
                 <td class="col-conf conf-low">🔴 49%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Toronto__CA">—</td>
                 <td class="col-live" id="live-Toronto__CA">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">06:02</td>
+                <td class="col-local">09:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Warsaw, PL" data-conf="0.429" data-edge="0">
                 <td class="col-rank"></td>
@@ -1929,13 +2027,14 @@
                 <td class="col-conf conf-low">🔴 43%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Warsaw__PL">—</td>
                 <td class="col-live" id="live-Warsaw__PL">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">12:02</td>
+                <td class="col-local">15:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Warsaw, PL" data-conf="0.513" data-edge="0">
                 <td class="col-rank"></td>
@@ -1948,13 +2047,14 @@
                 <td class="col-conf conf-low">🔴 51%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Warsaw__PL">—</td>
                 <td class="col-live" id="live-Warsaw__PL">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">12:02</td>
+                <td class="col-local">15:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Wellington, NZ" data-conf="0.578" data-edge="30.1">
                 <td class="col-rank"></td>
@@ -1967,13 +2067,14 @@
                 <td class="col-conf conf-low">🔴 58%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Wellington__NZ">—</td>
                 <td class="col-live" id="live-Wellington__NZ">—</td>
                 <td class="col-market">0.1%</td>
                 <td class="col-edge">+30.1%</td>
                 <td class="col-signal"><span style="color: var(--green); font-weight: 600;">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">22:02</td>
+                <td class="col-local">01:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Wellington, NZ" data-conf="0.594" data-edge="0">
                 <td class="col-rank"></td>
@@ -1986,13 +2087,14 @@
                 <td class="col-conf conf-low">🔴 59%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Wellington__NZ">—</td>
                 <td class="col-live" id="live-Wellington__NZ">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">22:02</td>
+                <td class="col-local">01:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Wuhan, CN" data-conf="0.614" data-edge="13.1">
                 <td class="col-rank"></td>
@@ -2005,13 +2107,14 @@
                 <td class="col-conf conf-low">🔴 61%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Wuhan__CN">—</td>
                 <td class="col-live" id="live-Wuhan__CN">—</td>
                 <td class="col-market">0.1%</td>
                 <td class="col-edge">+13.1%</td>
                 <td class="col-signal"><span style="color: var(--green); font-weight: 600;">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Wuhan, CN" data-conf="0.412" data-edge="0">
                 <td class="col-rank"></td>
@@ -2024,13 +2127,14 @@
                 <td class="col-conf conf-low">🔴 41%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Wuhan__CN">—</td>
                 <td class="col-live" id="live-Wuhan__CN">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Zhengzhou, CN" data-conf="0.615" data-edge="0">
                 <td class="col-rank"></td>
@@ -2043,13 +2147,14 @@
                 <td class="col-conf conf-low">🔴 62%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Zhengzhou__CN">—</td>
                 <td class="col-live" id="live-Zhengzhou__CN">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 <tr class="city-row row-loss" data-lead="1" data-city="Zhengzhou, CN" data-conf="0.622" data-edge="0">
                 <td class="col-rank"></td>
@@ -2062,13 +2167,14 @@
                 <td class="col-conf conf-low">🔴 62%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
+                <td class="col-spark" id="spark-Zhengzhou__CN">—</td>
                 <td class="col-live" id="live-Zhengzhou__CN">—</td>
                 <td class="col-market">—</td>
                 <td class="col-edge">—</td>
                 <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
                 <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-                <td class="col-local">18:02</td>
+                <td class="col-local">21:34</td>
             </tr>
 
       </tbody>
@@ -2136,71 +2242,236 @@ const CITIES = [
   {name: "Jinan, CN", lat: 36.8572, lon: 117.2158, tz: "Asia/Shanghai"}
 ];
 
-// ---- Live Temperature Fetch (Open-Meteo, no API key) ----
-async function fetchOneCity(city) {
-    const safeId = city.name.replace(/[^a-zA-Z0-9]/g, '_');
-    for (let attempt = 0; attempt < 2; attempt++) {
-        try {
-            const resp = await fetch(
-                `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current=temperature_2m&timezone=${encodeURIComponent(city.tz)}`,
-                { headers: { 'User-Agent': 'WeatherMonitor/1.0' } }
-            );
-            const data = await resp.json();
-            if (data.error) throw new Error(data.reason);
-            
-            const currentTemp = data.current?.temperature_2m;
-            const el = document.getElementById('live-' + safeId);
-            if (el) {
-                el.textContent = currentTemp != null
-                    ? `🌡️${currentTemp.toFixed(1)}°C`
-                    : '—';
-            }
-            return { name: city.name, currentTemp };
-        } catch (e) {
-            if (attempt === 0) await new Promise(r => setTimeout(r, 3000));
-            else {
-                const el = document.getElementById('live-' + safeId);
-                if (el) el.textContent = '⚠️';
+const SPARKLINE_DATA = {
+  "Amsterdam, NL": {lat: 52.3086, lon: 4.7639, bma: 22.9},
+  "Ankara, TR": {lat: 40.1281, lon: 32.995, bma: 30.0},
+  "Atlanta, US": {lat: 33.6407, lon: -84.4277, bma: 32.4},
+  "Austin, US": {lat: 30.1945, lon: -97.6699, bma: 36.0},
+  "Beijing, CN": {lat: 40.0799, lon: 116.6031, bma: 33.1},
+  "Buenos Aires, AR": {lat: -34.8222, lon: -58.5358, bma: 11.2},
+  "Busan, KR": {lat: 35.1796, lon: 128.9382, bma: 29.7},
+  "Cape Town, ZA": {lat: -33.9715, lon: 18.6021, bma: 14.7},
+  "Chengdu, CN": {lat: 30.5785, lon: 103.9469, bma: 34.4},
+  "Chicago, US": {lat: 41.9742, lon: -87.9073, bma: 29.0},
+  "Chongqing, CN": {lat: 29.7192, lon: 106.6417, bma: 32.6},
+  "Dallas, US": {lat: 32.8472, lon: -96.8518, bma: 37.6},
+  "Denver, US": {lat: 39.7017, lon: -104.7516, bma: 34.6},
+  "Guangzhou, CN": {lat: 23.3924, lon: 113.2988, bma: 35.3},
+  "Helsinki, FI": {lat: 60.3172, lon: 24.9633, bma: 21.9},
+  "Hong Kong, HK": {lat: 22.302, lon: 114.1742, bma: 34.6},
+  "Houston, US": {lat: 29.6454, lon: -95.2789, bma: 32.7},
+  "Istanbul, TR": {lat: 41.2613, lon: 28.742, bma: 27.0},
+  "Jeddah, SA": {lat: 21.6796, lon: 39.1565, bma: 39.9},
+  "Jinan, CN": {lat: 36.8572, lon: 117.2158, bma: 34.6},
+  "Karachi, PK": {lat: 24.9065, lon: 67.1608, bma: 32.9},
+  "Kuala Lumpur, MY": {lat: 2.7456, lon: 101.7099, bma: 31.8},
+  "London, UK": {lat: 51.4775, lon: -0.4614, bma: 26.3},
+  "Los Angeles, US": {lat: 33.9416, lon: -118.4085, bma: 28.8},
+  "Lucknow, IN": {lat: 26.7606, lon: 80.8893, bma: 32.6},
+  "Madrid, ES": {lat: 40.4719, lon: -3.5626, bma: 36.0},
+  "Manila, PH": {lat: 14.5086, lon: 121.0196, bma: 29.0},
+  "Mexico City, MX": {lat: 19.4363, lon: -99.0721, bma: 23.4},
+  "Miami, US": {lat: 25.7959, lon: -80.287, bma: 32.7},
+  "Milan, IT": {lat: 45.6306, lon: 8.7281, bma: 35.6},
+  "Moscow, RU": {lat: 55.9725, lon: 37.4122, bma: 23.4},
+  "Munich, DE": {lat: 48.3538, lon: 11.7861, bma: 31.8},
+  "New York, US": {lat: 40.7772, lon: -73.8726, bma: 32.3},
+  "Panama City, PA": {lat: 8.9733, lon: -79.5556, bma: 32.4},
+  "Paris, FR": {lat: 48.9694, lon: 2.4414, bma: 31.1},
+  "Qingdao, CN": {lat: 36.2661, lon: 120.3744, bma: 31.5},
+  "San Francisco, US": {lat: 37.6213, lon: -122.379, bma: 22.2},
+  "Sao Paulo, BR": {lat: -23.4356, lon: -46.4731, bma: 17.1},
+  "Seattle, US": {lat: 47.4502, lon: -122.3088, bma: 24.6},
+  "Seoul (Incheon), KR": {lat: 37.4602, lon: 126.4407, bma: 31.2},
+  "Shanghai, CN": {lat: 31.1434, lon: 121.8053, bma: 28.2},
+  "Shenzhen, CN": {lat: 22.6394, lon: 113.811, bma: 35.5},
+  "Singapore, SG": {lat: 1.3592, lon: 103.9894, bma: 31.4},
+  "Taipei, TW": {lat: 25.0694, lon: 121.5517, bma: 31.9},
+  "Tel Aviv, IL": {lat: 32.0114, lon: 34.8867, bma: 35.4},
+  "Tokyo, JP": {lat: 35.5494, lon: 139.7798, bma: 31.2},
+  "Toronto, CA": {lat: 43.6777, lon: -79.6248, bma: 27.6},
+  "Warsaw, PL": {lat: 52.1657, lon: 20.9671, bma: 31.2},
+  "Wellington, NZ": {lat: -41.3272, lon: 174.8053, bma: 13.8},
+  "Wuhan, CN": {lat: 30.7838, lon: 114.2081, bma: 28.5},
+  "Zhengzhou, CN": {lat: 34.5197, lon: 113.8409, bma: 30.4}
+};
+
+// ---- Sparkline: Peak Trend (Unicode block characters) ----
+const SPARK_BLOCKS = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+
+async function fetchSparklineForCity(cityId, cityName) {
+    const data = SPARKLINE_DATA[cityName];
+    if (!data) return;
+
+    const el = document.getElementById('spark-' + cityId);
+    if (!el) return;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${data.lat}&longitude=${data.lon}&start_date=${today}&end_date=${today}&hourly=temperature_2m&timezone=UTC`;
+
+    try {
+        const resp = await fetch(url, { headers: { 'User-Agent': 'WeatherMonitor/1.0' } });
+        const json = await resp.json();
+        const temps = json.hourly?.temperature_2m;
+        if (!temps || temps.length === 0) {
+            el.innerHTML = '<span class="spark-loading">no data</span>';
+            return;
+        }
+
+        // Filter to peak hours (roughly 10-18 local, or just use all 24h)
+        const validTemps = temps.filter(t => t != null);
+        if (validTemps.length === 0) {
+            el.innerHTML = '<span class="spark-loading">no data</span>';
+            return;
+        }
+
+        const tMin = Math.min(...validTemps);
+        const tMax = Math.max(...validTemps);
+        const tRange = tMax - tMin || 1;
+
+        // Build sparkline string (last ~16 hours, or all)
+        const displayTemps = validTemps.length > 18
+            ? validTemps.slice(validTemps.length - 18)
+            : validTemps;
+
+        let spark = '';
+        let peakIdx = -1;
+        let closestDist = Infinity;
+
+        for (let i = 0; i < displayTemps.length; i++) {
+            const t = displayTemps[i];
+            const normalized = (t - tMin) / tRange;
+            const blockIdx = Math.min(7, Math.max(0, Math.round(normalized * 7)));
+            spark += SPARK_BLOCKS[blockIdx + 1];
+
+            // Track closest temp to BMA predicted peak
+            const dist = Math.abs(t - data.bma);
+            if (dist < closestDist) {
+                closestDist = dist;
+                peakIdx = i;
             }
         }
+
+        // Insert peak marker (replace closest block with red marker)
+        if (peakIdx >= 0 && peakIdx < spark.length) {
+            const chars = [...spark];
+            chars[peakIdx] = `<span class="peak-marker" title="BMA pred: ${data.bma}°C">█</span>`;
+            spark = chars.join('');
+        }
+
+        const peakLabel = data.bma != null ? ` 🔴${data.bma.toFixed(0)}°C` : '';
+        el.innerHTML = spark + peakLabel;
+
+    } catch (e) {
+        el.innerHTML = '<span class="spark-loading">err</span>';
     }
 }
 
-async function fetchLiveData() {
-    const statusEl = document.getElementById('fetch-status');
-    const updatedEl = document.getElementById('live-updated');
-    if (statusEl) statusEl.textContent = '⏳ Henter...';
-    
-    const results = [];
-    const total = CITIES.length;
-    let done = 0;
-    for (const city of CITIES) {
-        await fetchOneCity(city);
-        done++;
-        if (done < total) {
-            document.getElementById('fetch-status').textContent = `⏳ Henter ${done}/${total}...`;
-            await new Promise(r => setTimeout(r, 1000));
+async function fetchAllSparklines() {
+    const cells = document.querySelectorAll('.col-spark');
+    const promises = [];
+    cells.forEach(cell => {
+        const row = cell.closest('tr');
+        if (!row) return;
+        const cityName = row.getAttribute('data-city');
+        const cityId = cityName ? cityName.replace(/[^a-zA-Z0-9]/g, '_') : '';
+        if (cityName && SPARKLINE_DATA[cityName]) {
+            promises.push(fetchSparklineForCity(cityId, cityName));
+        } else {
+            cell.innerHTML = '<span class="spark-loading">—</span>';
         }
-    }
-    
-    if (statusEl) statusEl.textContent = '✅ Oppdatert';
-    if (updatedEl) updatedEl.textContent = new Date().toLocaleTimeString('no-NO');
-    
-    // Auto-disable button for 60s to prevent spam
-    const btn = document.getElementById('fetch-btn');
-    if (btn) {
-        btn.disabled = true;
-        btn.textContent = '⏳ Vent 60s...';
-        setTimeout(() => {
-            btn.disabled = false;
-            btn.textContent = '🔄 Hent Nåværende Temperatur';
-        }, 60000);
-    }
-    
-    return results;
+    });
+    await Promise.allSettled(promises);
 }
 
-// Manual fetch only — button click required, no auto-fetch on page load
+
+// ---- Sparkline: Peak Trend (Unicode block characters) ----
+const SPARK_BLOCKS = [' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+
+async function fetchSparklineForCity(cityId, cityName) {
+    const data = SPARKLINE_DATA[cityName];
+    if (!data) return;
+
+    const el = document.getElementById('spark-' + cityId);
+    if (!el) return;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${data.lat}&longitude=${data.lon}&start_date=${today}&end_date=${today}&hourly=temperature_2m&timezone=UTC`;
+
+    try {
+        const resp = await fetch(url, { headers: { 'User-Agent': 'WeatherMonitor/1.0' } });
+        const json = await resp.json();
+        const temps = json.hourly?.temperature_2m;
+        if (!temps || temps.length === 0) {
+            el.innerHTML = '<span class="spark-loading">no data</span>';
+            return;
+        }
+
+        // Filter to peak hours (roughly 10-18 local, or just use all 24h)
+        const validTemps = temps.filter(t => t != null);
+        if (validTemps.length === 0) {
+            el.innerHTML = '<span class="spark-loading">no data</span>';
+            return;
+        }
+
+        const tMin = Math.min(...validTemps);
+        const tMax = Math.max(...validTemps);
+        const tRange = tMax - tMin || 1;
+
+        // Build sparkline string (last ~16 hours, or all)
+        const displayTemps = validTemps.length > 18
+            ? validTemps.slice(validTemps.length - 18)
+            : validTemps;
+
+        let spark = '';
+        let peakIdx = -1;
+        let closestDist = Infinity;
+
+        for (let i = 0; i < displayTemps.length; i++) {
+            const t = displayTemps[i];
+            const normalized = (t - tMin) / tRange;
+            const blockIdx = Math.min(7, Math.max(0, Math.round(normalized * 7)));
+            spark += SPARK_BLOCKS[blockIdx + 1];
+
+            // Track closest temp to BMA predicted peak
+            const dist = Math.abs(t - data.bma);
+            if (dist < closestDist) {
+                closestDist = dist;
+                peakIdx = i;
+            }
+        }
+
+        // Insert peak marker (replace closest block with red marker)
+        if (peakIdx >= 0 && peakIdx < spark.length) {
+            const chars = [...spark];
+            chars[peakIdx] = `<span class="peak-marker" title="BMA pred: ${data.bma}°C">█</span>`;
+            spark = chars.join('');
+        }
+
+        const peakLabel = data.bma != null ? ` 🔴${data.bma.toFixed(0)}°C` : '';
+        el.innerHTML = spark + peakLabel;
+
+    } catch (e) {
+        el.innerHTML = '<span class="spark-loading">err</span>';
+    }
+}
+
+async function fetchAllSparklines() {
+    const cells = document.querySelectorAll('.col-spark');
+    const promises = [];
+    cells.forEach(cell => {
+        const row = cell.closest('tr');
+        if (!row) return;
+        const cityName = row.getAttribute('data-city');
+        const cityId = cityName ? cityName.replace(/[^a-zA-Z0-9]/g, '_') : '';
+        if (cityName && SPARKLINE_DATA[cityName]) {
+            promises.push(fetchSparklineForCity(cityId, cityName));
+        } else {
+            cell.innerHTML = '<span class="spark-loading">—</span>';
+        }
+    });
+    await Promise.allSettled(promises);
+}
 
 
 var currentLead = 0;
@@ -2285,6 +2556,8 @@ function sortTable(colIdx) {
     sortCol = 7;
     sortAsc = false;
     sortTable(7);
+    // Fetch peak trend sparklines (async, does not block)
+    fetchAllSparklines();
 })();
 </script>
 </body>

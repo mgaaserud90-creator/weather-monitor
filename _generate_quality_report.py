@@ -2613,7 +2613,7 @@ def _generate_all_cities_html() -> str:
 """
 
     cities_js = _build_cities_js_array()
-    live_fetch_js = _build_live_fetch_js(with_rate_limiting=True)
+    live_fetch_js = _build_sparkline_fetch_js()
     sparkline_data_js = _build_sparkline_data_js(city_table, 0)
     sparkline_fetch_js = _build_sparkline_fetch_js()
 
