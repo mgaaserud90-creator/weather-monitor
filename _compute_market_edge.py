@@ -231,6 +231,10 @@ def load_market_prices() -> tuple[list[dict], str]:
 def load_bma_predictions() -> dict[str, dict]:
     """Load BMA predictions from quality log for the latest run.
 
+    Prefers lead_days=1 predictions (tomorrow) for market edge comparison.
+    lead_days=0 (today) is for model quality tracking only — markets trade
+    on tomorrow's temperature, not today's.
+
     Returns:
         {city_name: {"bma_mean": float, "bma_std": float, ...}, ...}
     """
@@ -244,9 +248,21 @@ def load_bma_predictions() -> dict[str, dict]:
     if not runs:
         return {}
 
-    # Use latest run's predictions
+    # Use latest run — prefer multi_day.day2 (lead_days=1 = tomorrow)
+    # which is what Polymarket markets trade on.
+    # Fall back to predictions (lead_days=0) if day2 not available.
     latest = runs[-1]
-    predictions = latest.get("predictions", {})
+    multi_day = latest.get("predictions_multi_day", {})
+    day2 = multi_day.get("day2", {}) if multi_day else {}
+
+    if day2:
+        predictions = day2
+        source = "predictions_multi_day.day2 (lead_days=1)"
+    else:
+        predictions = latest.get("predictions", {})
+        source = "predictions (lead_days=0, fallback)"
+
+    print(f"[INFO] BMA predictions loaded from: {source}", file=sys.stderr)
 
     result: dict[str, dict] = {}
     for city, pdata in predictions.items():

@@ -250,6 +250,217 @@ def _today_iso() -> str:
     return date.today().isoformat()
 
 
+# =============================================================================
+# Timezone-Region Mapping & Active Window Helpers
+# =============================================================================
+
+# Region → UTC offset mapping for all 51 cities.
+# Used for reporting (region grouping) and for computing local time.
+REGION_TZ_MAP: dict[str, dict[str, str | int | float]] = {
+    # ── ASIA (UTC+8/9) ──
+    "Tokyo, JP":               {"region": "ASIA", "utc_offset": 9},
+    "Seoul (Incheon), KR":     {"region": "ASIA", "utc_offset": 9},
+    "Shanghai, CN":            {"region": "ASIA", "utc_offset": 8},
+    "Beijing, CN":             {"region": "ASIA", "utc_offset": 8},
+    "Taipei, TW":              {"region": "ASIA", "utc_offset": 8},
+    "Hong Kong, HK":           {"region": "ASIA", "utc_offset": 8},
+    "Singapore, SG":           {"region": "ASIA", "utc_offset": 8},
+    "Manila, PH":              {"region": "ASIA", "utc_offset": 8},
+    "Kuala Lumpur, MY":        {"region": "ASIA", "utc_offset": 8},
+    "Busan, KR":               {"region": "ASIA", "utc_offset": 9},
+    "Osaka, JP":               {"region": "ASIA", "utc_offset": 9},
+    "Bangkok, TH":             {"region": "ASIA", "utc_offset": 7},
+    "Jakarta, ID":             {"region": "ASIA", "utc_offset": 7},
+    "Mumbai, IN":              {"region": "ASIA", "utc_offset": 5.5},
+    "Delhi, IN":               {"region": "ASIA", "utc_offset": 5.5},
+    "Hanoi, VN":               {"region": "ASIA", "utc_offset": 7},
+
+    # ── EUROPE (UTC+1/2/3) ──
+    "London, GB":              {"region": "EUROPE", "utc_offset": 1},
+    "Paris, FR":               {"region": "EUROPE", "utc_offset": 2},
+    "Madrid, ES":              {"region": "EUROPE", "utc_offset": 2},
+    "Berlin, DE":              {"region": "EUROPE", "utc_offset": 2},
+    "Rome, IT":                {"region": "EUROPE", "utc_offset": 2},
+    "Moscow, RU":              {"region": "EUROPE", "utc_offset": 3},
+    "Istanbul, TR":            {"region": "EUROPE", "utc_offset": 3},
+    "Warsaw, PL":              {"region": "EUROPE", "utc_offset": 2},
+    "Stockholm, SE":           {"region": "EUROPE", "utc_offset": 2},
+    "Oslo, NO":                {"region": "EUROPE", "utc_offset": 2},
+
+    # ── AMERICAS (UTC-4 to -7) ──
+    "New York, US":            {"region": "AMERICAS", "utc_offset": -4},
+    "Chicago, US":             {"region": "AMERICAS", "utc_offset": -5},
+    "Dallas, US":              {"region": "AMERICAS", "utc_offset": -5},
+    "Los Angeles, US":         {"region": "AMERICAS", "utc_offset": -7},
+    "Denver, US":              {"region": "AMERICAS", "utc_offset": -6},
+    "Toronto, CA":             {"region": "AMERICAS", "utc_offset": -4},
+    "Mexico City, MX":         {"region": "AMERICAS", "utc_offset": -6},
+    "San Francisco, US":       {"region": "AMERICAS", "utc_offset": -7},
+    "Miami, US":               {"region": "AMERICAS", "utc_offset": -4},
+    "Houston, US":             {"region": "AMERICAS", "utc_offset": -5},
+    "Atlanta, US":             {"region": "AMERICAS", "utc_offset": -4},
+    "Panama City, PA":         {"region": "AMERICAS", "utc_offset": -5},
+
+    # ── MIDDLE_EAST (UTC+3) ──
+    "Jeddah, SA":              {"region": "MIDDLE_EAST", "utc_offset": 3},
+    "Tel Aviv, IL":            {"region": "MIDDLE_EAST", "utc_offset": 3},
+    "Ankara, TR":              {"region": "MIDDLE_EAST", "utc_offset": 3},
+    "Dubai, AE":               {"region": "MIDDLE_EAST", "utc_offset": 4},
+    "Tehran, IR":              {"region": "MIDDLE_EAST", "utc_offset": 3.5},
+
+    # ── OCEANIA (UTC+12) ──
+    "Wellington, NZ":          {"region": "OCEANIA", "utc_offset": 12},
+    "Sydney, AU":              {"region": "OCEANIA", "utc_offset": 10},
+    "Melbourne, AU":           {"region": "OCEANIA", "utc_offset": 10},
+
+    # ── AFRICA (UTC+2) ──
+    "Cape Town, ZA":           {"region": "AFRICA", "utc_offset": 2},
+    "Cairo, EG":               {"region": "AFRICA", "utc_offset": 3},
+    "Lagos, NG":               {"region": "AFRICA", "utc_offset": 1},
+    "Nairobi, KE":             {"region": "AFRICA", "utc_offset": 3},
+
+    # ── SOUTH_AM (UTC-3) ──
+    "Buenos Aires, AR":        {"region": "SOUTH_AM", "utc_offset": -3},
+    "Sao Paulo, BR":           {"region": "SOUTH_AM", "utc_offset": -3},
+    "Lima, PE":                 {"region": "SOUTH_AM", "utc_offset": -5},
+    "Santiago, CL":             {"region": "SOUTH_AM", "utc_offset": -4},
+}
+
+
+def _get_utc_offset_for_city(city_name: str, tz_str: str = "UTC") -> float:
+    """Get UTC offset for a city.
+
+    Prefers the hardcoded REGION_TZ_MAP, falls back to ZoneInfo from tz string,
+    then defaults to 0 (UTC).
+    """
+    # Try exact match first
+    entry = REGION_TZ_MAP.get(city_name)
+    if entry is not None:
+        return float(entry["utc_offset"])
+
+    # Try matching base name (strip country code)
+    base = city_name.split(",")[0].strip()
+    for key, val in REGION_TZ_MAP.items():
+        if key.split(",")[0].strip() == base:
+            return float(val["utc_offset"])
+
+    # Fall back to ZoneInfo
+    try:
+        tz_obj = ZoneInfo(tz_str)
+        now = datetime.now(tz_obj)
+        offset = now.utcoffset()
+        if offset is not None:
+            return offset.total_seconds() / 3600.0
+    except Exception:
+        pass
+    return 0.0
+
+
+def _get_region_for_city(city_name: str) -> str:
+    """Get geographic region for a city name."""
+    entry = REGION_TZ_MAP.get(city_name)
+    if entry is not None:
+        return str(entry["region"])
+
+    # Try matching base name
+    base = city_name.split(",")[0].strip()
+    for key, val in REGION_TZ_MAP.items():
+        if key.split(",")[0].strip() == base:
+            return str(val["region"])
+
+    return "Unknown"
+
+
+def _compute_city_local_hour(utc_offset: float, utc_hour: int) -> int:
+    """Convert UTC hour to city-local hour given its UTC offset."""
+    return int((utc_hour + utc_offset + 24) % 24)
+
+
+def _is_city_active(
+    tz_str: str,
+    city_name: str,
+    peak_hour_end: int,
+    utc_hour: int,
+) -> bool:
+    """Check if a city is in its active window.
+
+    Active window = 04:00 local time to (peak_hour_end + 2) local time.
+    Before 04:00 = too early, no data. After peak_end+2 = market settled.
+    """
+    offset = _get_utc_offset_for_city(city_name, tz_str)
+    local_hour = _compute_city_local_hour(offset, utc_hour)
+
+    active_start = 4  # 04:00 local
+    active_end = peak_hour_end + 2  # e.g., peak 14-16 → end at 18:00 local
+
+    # Handle wrap-around: active_end may be < active_start
+    # (e.g., Tokyo: active 04:00-18:00 doesn't wrap, but if peak was 22:00 it could)
+    if active_start <= active_end:
+        return active_start <= local_hour <= active_end
+    else:
+        # Wrap-around window (active over midnight)
+        return local_hour >= active_start or local_hour <= active_end
+
+
+def _get_active_cities(
+    locations: list["SavedLocation"],
+    utc_hour: int | None = None,
+) -> list["SavedLocation"]:
+    """Return only cities currently in their active window.
+
+    Active window: 04:00 local to peak_hour_end+2 local.
+    At these hours predictions are relevant and markets are open.
+
+    Args:
+        locations: All available city locations.
+        utc_hour: Current UTC hour (0-23). Defaults to now.
+
+    Returns:
+        Filtered list of locations in active window.
+    """
+    if utc_hour is None:
+        utc_hour = datetime.now(timezone.utc).hour
+
+    active: list["SavedLocation"] = []
+    for loc in locations:
+        tz = getattr(loc, "tz", "UTC")
+        name = getattr(loc, "name", "")
+        ph_end = getattr(loc, "peak_hour_end", 16)
+
+        if _is_city_active(tz, name, ph_end, utc_hour):
+            active.append(loc)
+
+    # Sort by region for organized processing
+    active.sort(key=lambda loc: _get_region_for_city(getattr(loc, "name", "")))
+    return active
+
+
+def _format_active_summary(active: list["SavedLocation"], utc_hour: int) -> str:
+    """Generate a human-readable summary of active cities by region."""
+    if not active:
+        return "  No cities in active window.\n"
+
+    regions: dict[str, list[str]] = {}
+    for loc in active:
+        name = getattr(loc, "name", "?")
+        region = _get_region_for_city(name)
+        offset = _get_utc_offset_for_city(name, getattr(loc, "tz", "UTC"))
+        local_h = _compute_city_local_hour(offset, utc_hour)
+        ph_end = getattr(loc, "peak_hour_end", 16)
+        active_until = ph_end + 2
+        regions.setdefault(region, []).append(
+            f"{name} (local {local_h:02d}:00, active until {active_until:02d}:00)"
+        )
+
+    lines = [f"  📍 {len(active)} active city(s) at UTC {utc_hour:02d}:00:\n"]
+    for region, cities in sorted(regions.items()):
+        lines.append(f"  🌍 {region} ({len(cities)}):")
+        for c in cities:
+            lines.append(f"     • {c}")
+        lines.append("")
+    return "\n".join(lines)
+
+
 def _find_or_create_today_entry(log_data: dict) -> dict:
     """Find today's run entry in the log, or create a new one.
 
@@ -462,7 +673,308 @@ def _is_in_peak_window(local_dt: datetime, peak_start: int, peak_end: int) -> bo
 
 
 # =============================================================================
-# --mode daily_bma
+# --mode hourly_active  (replaces daily_bma + hourly_check)
+# =============================================================================
+
+async def hourly_active_mode() -> None:
+    """Timezone-aware hourly run: process only cities in their active window.
+
+    Replaces the old daily_bma (06:00 UTC for ALL 51 cities) and hourly_check
+    (top 5 only) with a unified timezone-aware approach:
+
+    1. Determine which cities are in their active window (04:00 local → peak_end+2)
+    2. Run BMA for those cities (if not already done today)
+    3. Run hourly peak check for active cities
+
+    This reduces API calls from 51×2 per day to only processing cities when
+    their local time makes predictions relevant.
+    """
+    now_utc_dt = datetime.now(timezone.utc)
+    utc_hour = now_utc_dt.hour
+    active_region_names: set[str] = set()
+
+    print("╔══════════════════════════════════════════════════╗")
+    print(f"║   MODELLKVALITET — TIMEZONE-AWARE ({utc_hour:02d}:00 UTC)     ║")
+    print("╚══════════════════════════════════════════════════╝")
+    print(f"   Start: {_now_utc()}")
+
+    lm = LocationManager()
+    all_locations = lm.locations
+    active = _get_active_cities(all_locations, utc_hour)
+
+    print(f"\n{_format_active_summary(active, utc_hour)}")
+
+    if not active:
+        print("  ⚠️ No cities in active window — nothing to do.")
+        print("     Next run will check again.\n")
+        return
+
+    for loc in active:
+        active_region_names.add(_get_region_for_city(getattr(loc, "name", "")))
+
+    regions_str = ", ".join(sorted(active_region_names))
+    print(f"  🌐 Active regions: {regions_str}")
+    print(f"  📊 Running BMA + peak check for {len(active)} cities.\n")
+
+    analyzer = WeatherAnalyzer()
+    await analyzer.initialize()
+
+    try:
+        today_date = date.today()
+        today_str = today_date.isoformat()
+
+        print(f"\n   🎯 BMA (lead_days=0, target: {today_str} — I DAG)\n")
+        predictions = await run_bma_for_all(analyzer, active, lead_days=0)
+        top5 = select_top_n(predictions, 5)
+
+        print(f"\n  {'─'*60}")
+        print(f"  🏆 TOP 5 — ACTIVE ({today_str}):")
+        for i, p in enumerate(top5):
+            utc_peak = _local_peak_to_utc(p.tz, p.peak_hour_start, p.peak_hour_end)
+            print(f"     {i+1}. {p.city:<30s} spill={p.suggested_spill}°C  "
+                  f"μ={p.bma_mean:.1f}°C  conf={p.confidence:.3f}  "
+                  f"({p.model_count}/8 modeller)  peak={utc_peak}")
+
+        log_data = _load_log()
+        entry = _find_or_create_today_entry(log_data)
+        entry["phase"] = "hourly_active"
+        entry["last_updated"] = _now_utc()
+        entry["target_date"] = today_str
+        entry["utc_hour"] = utc_hour
+        entry["active_regions"] = sorted(active_region_names)
+        entry["active_city_count"] = len(active)
+        entry["all_city_count"] = len(all_locations)
+
+        top5_city_names = [p.city for p in top5]
+        entry["top_5_confidence"] = top5_city_names
+
+        # Merge predictions — don't overwrite cities from earlier hourly runs.
+        # This ensures all 51 cities accumulate by 23:00 UTC for daily_close.
+        new_preds = _preds_to_dict(predictions, active, lead_days=0)
+        existing_preds = entry.get("predictions", {})
+        existing_preds.update(new_preds)
+        entry["predictions"] = existing_preds
+        # Track which cities were active in THIS run (for debugging)
+        entry["predictions_active"] = new_preds
+
+        obs = entry.setdefault("observations", {})
+        for city in [p.city for p in predictions]:
+            if city not in obs:
+                obs[city] = []
+
+        _save_log(log_data)
+
+        total_predictions = len(predictions)
+        coverage_pct = round(len(active) / max(1, len(all_locations)) * 100, 1)
+        print(f"\n  ✅ hourly_active fullført — {total_predictions} predictions "
+              f"({len(active)}/{len(all_locations)} cities, {coverage_pct}% coverage)")
+        print(f"  🎯 Top 5 for peak monitoring: {', '.join(top5_city_names)}")
+        print(f"  🌐 Regions: {regions_str}\n")
+
+        await _hourly_check_active(entry, predictions, active, log_data)
+
+    finally:
+        await analyzer.close()
+
+
+async def _hourly_check_active(
+    entry: dict,
+    predictions: list[CityPrediction],
+    active_locations: list["SavedLocation"],
+    log_data: dict,
+) -> None:
+    """Run peak detection for active cities (timezone-aware hourly check).
+
+    Replaces old hourly_check_mode which only checked top 5.
+    Now checks ALL active cities in their peak windows.
+    """
+    now_utc_dt = datetime.now(timezone.utc)
+    utc_hour = now_utc_dt.hour
+    today = _today_iso()
+
+    preds_dict = entry.get("predictions", {})
+    observations = entry.setdefault("observations", {})
+
+    print(f"\n  {'─'*60}")
+    print(f"  🔍 PEAK CHECK — {len(predictions)} active cities")
+    print(f"  {'─'*60}\n")
+
+    all_confirmed = True
+    newly_confirmed = 0
+
+    for pred in predictions:
+        city = pred.city
+        pdata = preds_dict.get(city)
+        if pdata is None:
+            print(f"  ⚠️ {city}: mangler data — hopper over")
+            continue
+
+        strategies = _get_strategies(pdata)
+        sigma_result = strategies.get("sigma", {}).get("result")
+        if sigma_result in ("WIN", "LOSS"):
+            print(f"  ✅ {city}: allerede ferdig (sigma={sigma_result})")
+            continue
+
+        all_confirmed = False
+
+        lat = pdata.get("_lat", 0)
+        lon = pdata.get("_lon", 0)
+        tz = pdata.get("_tz", "UTC")
+        ph_start = pdata.get("_peak_hour_start", 14)
+        ph_end = pdata.get("_peak_hour_end", 16)
+        suggested_spill = _get_sigma_spill(pdata)
+
+        current = await fetch_current_temp(lat, lon, tz)
+        if current is None:
+            print(f"  ⚠️ {city}: kunne ikke hente temperatur")
+            continue
+
+        temp_c = current["temp_c"]
+        local_dt = current["time_local"]
+
+        city_obs = observations.setdefault(city, [])
+        city_obs.append({
+            "time": local_dt.isoformat(),
+            "temp_c": temp_c,
+            "peak_state": "unknown",
+        })
+        if len(city_obs) > MAX_OBS_HISTORY:
+            observations[city] = city_obs[-MAX_OBS_HISTORY:]
+
+        in_window = _is_in_peak_window(local_dt, ph_start, ph_end)
+
+        if in_window:
+            obs_history: list[tuple[datetime, float]] = []
+            for o in city_obs:
+                try:
+                    t = datetime.fromisoformat(o["time"])
+                    obs_history.append((t, o["temp_c"]))
+                except (ValueError, TypeError):
+                    pass
+
+            target_date_obj = date.today()
+            today_obs = [(dt, t) for dt, t in obs_history if dt.date() == target_date_obj]
+            today_max: tuple[float, datetime] | None = None
+            if today_obs:
+                today_max = (max(t[1] for t in today_obs),
+                             max(today_obs, key=lambda x: x[1])[0])
+
+            peak_confirmed = None
+            if pdata.get("peak_detected_at"):
+                sigma_ap = strategies.get("sigma", {}).get("actual_peak")
+                if sigma_ap is not None:
+                    try:
+                        confirmed_time = datetime.fromisoformat(pdata["peak_detected_at"])
+                        peak_confirmed = (float(sigma_ap), confirmed_time)
+                    except (ValueError, TypeError):
+                        pass
+
+            peak_state = detect_peak_state(
+                obs_history=obs_history,
+                today_max=today_max,
+                peak_hour_start=ph_start,
+                peak_hour_end=ph_end,
+                local_now=local_dt,
+                target_date=target_date_obj,
+                peak_confirmed=peak_confirmed,
+                suggested_temp=float(suggested_spill),
+            )
+
+            status_icon = getattr(peak_state, "emoji", "🌡️")
+            status_text = getattr(peak_state, "state_label", peak_state.state)
+            trend = getattr(peak_state, "trend", "")
+            live_conf = getattr(peak_state, "live_confidence", 0)
+            print(f"  {status_icon} {city:<30s} {temp_c:.1f}°C {trend}  "
+                  f"{status_text} (live conf: {live_conf:.0f}%)  🔍 IN WINDOW")
+
+            if city_obs:
+                city_obs[-1]["peak_state"] = peak_state.state
+
+            if peak_state.state in ("confirmed", "completed"):
+                confirmed_temp = getattr(peak_state, "confirmed_temp", None)
+                confirmed_time = getattr(peak_state, "confirmed_time", None)
+                if (confirmed_temp is not None and confirmed_time is not None
+                        and not pdata.get("peak_detected_at")):
+                    pdata["peak_detected_at"] = confirmed_time.isoformat()
+
+                    for strat_name in ("sigma", "p5", "mean"):
+                        strat = strategies.get(strat_name, {})
+                        spill = strat.get("spill", 0)
+                        is_win = round(confirmed_temp) == spill
+                        strat["result"] = "WIN" if is_win else "LOSS"
+                        strat["actual_peak"] = round(confirmed_temp, 1)
+
+                    _update_recommendation(pdata)
+
+                    sigma_result2 = strategies.get("sigma", {}).get("result", "?")
+                    result_icon = "✅ WIN" if sigma_result2 == "WIN" else "❌ LOSS"
+                    print(f"\n  ╔{'═'*58}╗")
+                    print(f"  ║  {result_icon}: {city}")
+                    print(f"  ║  Spill (sigma): BUY {suggested_spill}°C")
+                    print(f"  ║  Faktisk peak: {confirmed_temp:.1f}°C")
+                    print(f"  ║  P5 strat: {strategies.get('p5', {}).get('result', '?')} | "
+                          f"Mean strat: {strategies.get('mean', {}).get('result', '?')}")
+                    print(f"  ║  {pdata.get('recommendation', '')}")
+                    print(f"  ║  Bekreftet: {confirmed_time.strftime('%H:%M:%S')}")
+                    print(f"  ╚{'═'*58}╝")
+                    newly_confirmed += 1
+        else:
+            local_h = local_dt.hour
+            active_until = ph_end + 2
+            print(f"  🌡️ {city:<30s} {temp_c:.1f}°C  "
+                  f"(local {local_h:02d}:00, peak={ph_start}-{ph_end}, "
+                  f"active until {active_until:02d}:00)  ⏳ venter")
+
+            if city_obs:
+                city_obs[-1]["peak_state"] = "pre_peak" if local_dt.hour < ph_start else "post_peak"
+
+    cities_for_rapid: list[str] = []
+    for pred in predictions:
+        city = pred.city
+        pdata = preds_dict.get(city)
+        if pdata is None:
+            continue
+        strategies = _get_strategies(pdata)
+        if strategies.get("sigma", {}).get("result") in ("WIN", "LOSS"):
+            continue
+        lat = pdata.get("_lat", 0)
+        lon = pdata.get("_lon", 0)
+        tz = pdata.get("_tz", "UTC")
+        ph_start = pdata.get("_peak_hour_start", 14)
+        ph_end = pdata.get("_peak_hour_end", 16)
+        try:
+            tz_obj = ZoneInfo(tz) if tz != "UTC" else timezone.utc
+            local_dt = datetime.now(tz_obj)
+            if _is_in_peak_window(local_dt, ph_start, ph_end):
+                cities_for_rapid.append(city)
+        except Exception:
+            utc_hour_now = datetime.now(timezone.utc).hour
+            if 10 <= utc_hour_now <= 18:
+                cities_for_rapid.append(city)
+
+    entry["phase"] = "hourly_active"
+    entry["last_updated"] = _now_utc()
+    _save_log(log_data)
+
+    if all_confirmed and not newly_confirmed:
+        print(f"\n  🎉 ALLE AKTIVE HAR BEKREFTET PEAK — venter på daily_close kl 23:00 UTC\n")
+    elif newly_confirmed:
+        print(f"\n  🔔 {newly_confirmed} ny(e) peak(er) bekreftet denne runden.\n")
+    elif cities_for_rapid:
+        print(f"\n  ⚡ {len(cities_for_rapid)} by(er) i peak-vindu — starter 3-min rapid monitor\n")
+        await _rapid_peak_monitor(
+            entry=entry,
+            cities_in_window=cities_for_rapid,
+            predictions=preds_dict,
+            observations=observations,
+        )
+        _save_log(log_data)
+    else:
+        print(f"\n  ✅ timesone-aktiv sjekk fullført — {_now_utc()}\n")
+
+
+# =============================================================================
+# --mode daily_bma  (kept for backward compat — prefer hourly_active)
 # =============================================================================
 
 def _norm_cdf(x: float) -> float:
@@ -2003,13 +2515,15 @@ def main() -> None:
     parser.add_argument(
         "--mode",
         required=True,
-        choices=["daily_bma", "hourly_check", "daily_close", "full_report"],
+        choices=["daily_bma", "hourly_check", "hourly_active", "daily_close", "full_report"],
         help="Run mode for GitHub Actions pipeline",
     )
 
     args = parser.parse_args()
 
-    if args.mode == "daily_bma":
+    if args.mode == "hourly_active":
+        asyncio.run(hourly_active_mode())
+    elif args.mode == "daily_bma":
         asyncio.run(daily_bma_mode())
     elif args.mode == "hourly_check":
         asyncio.run(hourly_check_mode())
