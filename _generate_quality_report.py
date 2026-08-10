@@ -2423,6 +2423,18 @@ def _generate_html_report() -> str:
     deploy_time_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     has_data = len(runs) > 0
+    
+    # Extract last pipeline run time from log
+    last_pipeline_str = "—"
+    if runs:
+        last_run = runs[-1]
+        lu = last_run.get("last_updated") or last_run.get("run_started", "")
+        if lu:
+            try:
+                dt = datetime.fromisoformat(str(lu).replace("Z", "+00:00"))
+                last_pipeline_str = dt.strftime("%H:%M UTC")
+            except Exception:
+                pass
 
     # ── Today vs Tomorrow separation ──
     today_tomorrow_section = _build_today_tomorrow_section(runs)
@@ -2707,7 +2719,7 @@ function sortTable(colIdx) {{
 <body>
 <header>
   <h1>🌡️ Model Quality Dashboard <span class="rapid-badge">3 STRATEGIES</span></h1>
-  <div class="subtitle" id="last-updated">{'⏳ Ingen data enda — første pipeline-kjøring kl 06:00 UTC' if not has_data else '🔄 Sist oppdatert: … | Auto-refresh hvert 5. min | Neste pipeline: …'}</div>
+  <div class="subtitle" id="last-updated">{'⏳ Ingen data enda — første pipeline-kjøring kl 06:00 UTC' if not has_data else f'🤖 Siste pipeline: {last_pipeline_str} | Neste pipeline-oppdatering: …'}</div>
 </header>
 <div class="container">
 
