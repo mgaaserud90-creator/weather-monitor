@@ -49,6 +49,7 @@ try:
         compute_edges, load_market_prices, load_bma_predictions,
         format_edge_html_rows, build_market_lookup, compute_bma_prob,
         compute_resolution_arbitrage, format_resolution_arbitrage_summary_html,
+        split_edges_by_type, build_market_type_section_html,
     )
     HAS_MARKET_EDGE = True
 except ImportError:
@@ -1621,10 +1622,11 @@ def _build_resolution_arbitrage_html_section() -> str:
 # =============================================================================
 
 def _build_market_edge_html_section() -> str:
-   """Build HTML section showing BMA vs Polymarket — pure data comparison, no signals.
+   """Build HTML section showing BMA vs Polymarket — separate highest/lowest tables.
 
-   Single table sorted by BMA confidence descending:
-       City | Spill | Sigma | Mean | P5 | Marked Pris | BMA μ
+   Each market type gets its own section with title:
+       🔺 HØYESTE TEMPERATUR
+       🔻 LAVESTE TEMPERATUR
    """
    if not HAS_MARKET_EDGE:
        return ""
@@ -1633,7 +1635,6 @@ def _build_market_edge_html_section() -> str:
        market_opps, _ = load_market_prices()
        bma_preds = load_bma_predictions()
        edges = compute_edges(market_opps, bma_preds, min_vol=0)
-
    except Exception:
        return ""
 
@@ -1643,33 +1644,61 @@ def _build_market_edge_html_section() -> str:
      <p style="color: var(--text-dim);">Ingen matchende markeder funnet. Kjør <code>python _fetch_market_prices.py</code> for å hente markedspriser.</p>
    </div>"""
 
-   # Already sorted by confidence descending from compute_edges()
-   rows_html = format_edge_html_rows(edges)
+   # Split by market type
+   highest, lowest, other = split_edges_by_type(edges)
 
-   return f"""
+   sections: list[str] = []
+
+   # Summary cards
+   sections.append(f"""
    <div class="section">
      <h2>📊 MARKEDSSAMMENLIGNING — BMA vs Polymarket</h2>
      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
-       Sammenligner BMA-ensemblets prediksjoner mot Polymarket-priser.
+       Sammenligner BMA-ensemblets prediksjoner mot dagens Polymarket-priser.
+       Markeder er separert i høyeste og laveste temperatur.
        Sortert etter BMA-konfidens (høyest først). Ingen trading-signaler — ren data.
      </p>
      <div class="card-grid" style="margin-bottom: 20px;">
        <div class="card">
          <div class="value" style="color: var(--blue);">{len(edges)}</div>
-         <div class="label">Markeder Matchet</div>
+         <div class="label">Totale Markeder Matchet</div>
+       </div>
+       <div class="card">
+         <div class="value" style="color: var(--red);">{len(highest)}</div>
+         <div class="label">🔺 Høyeste</div>
+       </div>
+       <div class="card">
+         <div class="value" style="color: var(--blue);">{len(lowest)}</div>
+         <div class="label">🔻 Laveste</div>
        </div>
        <div class="card">
          <div class="value" style="color: var(--purple);">{len(bma_preds)}</div>
          <div class="label">Byer med BMA-data</div>
        </div>
      </div>
-     <div style="overflow-x: auto;">
-     <table>
-       <thead><tr><th>#</th><th>By</th><th>Spill</th><th>BMA Sanns.</th><th>Marked Pris</th><th>BMA μ</th><th>Volum</th></tr></thead>
-       <tbody>{rows_html}</tbody>
-     </table>
-     </div>
-   </div>"""
+   </div>""")
+
+   # Highest temperature section
+   if highest:
+       sections.append(build_market_type_section_html(
+           highest, "HØYESTE TEMPERATUR", "🔺",
+           "rgba(248,81,73,0.3)", n_show=20
+       ))
+
+   # Lowest temperature section
+   if lowest:
+       sections.append(build_market_type_section_html(
+           lowest, "LAVESTE TEMPERATUR", "🔻",
+           "rgba(88,166,255,0.3)", n_show=20
+       ))
+
+   if other:
+       sections.append(build_market_type_section_html(
+           other, "ANDRE TEMPERATURMARKEDER", "📊",
+           "rgba(188,140,255,0.3)", n_show=20
+       ))
+
+   return "\n".join(sections)
 
 
 # =============================================================================

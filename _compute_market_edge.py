@@ -87,6 +87,15 @@ def _parse_market_question(question: str) -> dict[str, Any] | None:
 
     Returns None if it's not a city-specific temperature market.
     """
+    # Determine question_type: highest or lowest
+    q_lower = question.lower()
+    if "highest temperature" in q_lower or "highest temp" in q_lower:
+        question_type = "highest"
+    elif "lowest temperature" in q_lower or "lowest temp" in q_lower:
+        question_type = "lowest"
+    else:
+        question_type = "unknown"
+
     # Pattern: "Will the highest temperature in CityName be XX°C on YYYY-MM-DD?"
     m = re.search(
         r"(?:highest|lowest)\s+temperature\s+in\s+"
@@ -118,6 +127,7 @@ def _parse_market_question(question: str) -> dict[str, Any] | None:
                 "temp_range": f"{lo_c}-{hi_c}",
                 "type": "bucket",  # Treat range as a single bucket
                 "date": date_str,
+                "question_type": question_type,
             }
         return None
 
@@ -138,6 +148,7 @@ def _parse_market_question(question: str) -> dict[str, Any] | None:
         "temp": temp,
         "type": qtype,
         "date": date_str,
+        "question_type": question_type,
     }
 
 
@@ -269,16 +280,35 @@ def load_market_prices() -> tuple[list[dict], str]:
         if yes_price < 0.02 and m.get("volume", 0) < 10:
             continue
 
-        # Skip past-date markets (only show today or tomorrow)
+        # Extract question type (highest/lowest) — from parsed question or raw market data
+        question_type = parsed.get("question_type", m.get("question_type", "unknown"))
+
+        # Only include today's markets — skip past and tomorrow markets
         market_date = _extract_market_date(question)
-        if market_date is not None and market_date < date.today():
-            continue
+        today = date.today()
+        if market_date is not None:
+            if market_date < today:
+                continue  # Skip past markets
+            if market_date > today:
+                continue  # Skip tomorrow markets
+        else:
+            # If we can't parse the date from the question, use the market date field
+            raw_date_str = parsed.get("date") or m.get("date", "")
+            if raw_date_str and raw_date_str not in ("", "Unknown"):
+                try:
+                    raw_date = date.fromisoformat(raw_date_str[:10])
+                    if raw_date != today:
+                        continue  # Only today
+                except (ValueError, TypeError):
+                    pass  # Can't parse, include anyway
+            # If no date at all is available, include it (best effort)
 
         opportunities.append({
             "city": city,
             "city_raw": parsed["city_raw"],
             "temp": parsed["temp"],
             "type": parsed["type"],
+            "question_type": question_type,
             "market_prob": market_prob,
             "volume": m.get("volume", 0),
             "volume_display": m.get("volume_display", ""),
@@ -420,6 +450,13 @@ def compute_edges(
             if bma_base_no_paren == mc:
                 return bma_city, bma_data
         
+        # Try fuzzy matching: market city is contained in BMA city or vice versa
+        # e.g., market "Kuala Lumpur" → BMA "Kuala Lumpur, MY"
+        for bma_city, bma_data in bma_cities.items():
+            bma_lower = bma_city.lower()
+            if mc in bma_lower or bma_lower in mc:
+                return bma_city, bma_data
+        
         return None, None
 
     for opp in market_opps:
@@ -441,6 +478,7 @@ def compute_edges(
 
         bma_prob = compute_bma_prob(mean_c, std_c, temp, qtype)
         market_prob = opp["market_prob"]
+        question_type = opp.get("question_type", "unknown")
 
         # Extract per-strategy spill temperatures from BMA predictions
         strategies = bma.get("strategies", {})
@@ -458,6 +496,7 @@ def compute_edges(
             "city": city,
             "temp": temp,
             "qtype": qtype,
+            "question_type": question_type,
             "bma_prob": bma_prob,
             "market_prob": market_prob,
             "edge": edge,
@@ -493,25 +532,65 @@ def compute_edges(
 def format_edge_table(edges: list[dict]) -> str:
     """Format edge results as a markdown table string — data-only, no signals.
 
-    Shows per-market BMA probability instead of city-level strategy spills,
-    since different temperature buckets for the same city have different
-    BMA probabilities but the same sigma/mean/p5 spills.
+    Separates highest and lowest temperature markets into distinct sections.
+    Shows per-market BMA probability instead of city-level strategy spills.
     """
     if not edges:
         return "No trading opportunities found (no matching cities between BMA and market data)."
 
-    lines = [
-        f"| By | Spill | BMA Sanns. | Marked Pris | BMA μ | Volum |",
-        f"|-----|-------|-----------|-------------|-------|-------|",
-    ]
+    # Split by question type
+    highest = [e for e in edges if e.get("question_type") == "highest"]
+    lowest = [e for e in edges if e.get("question_type") == "lowest"]
+    other = [e for e in edges if e.get("question_type") not in ("highest", "lowest")]
 
-    for e in edges:
-        lines.append(
-            f"| {e['city']} | {e['temp']}°C | "
-            f"{e['bma_prob']:.1f}% | "
-            f"{e['market_prob']:.1f}% | "
-            f"{e['bma_mean']:.1f}°C | {e['volume_display']} |"
-        )
+    lines: list[str] = []
+    header = "| By | Dato | Spill | BMA Sanns. | Marked | BMA μ | Volum |"
+    sep = "|-----|------|-------|-----------|--------|-------|-------|"
+
+    if highest:
+        lines.append("")
+        lines.append("🔺 HØYESTE TEMPERATUR")
+        lines.append("")
+        lines.append(header)
+        lines.append(sep)
+        for e in highest:
+            date_display = e.get("date", "?") or "?"
+            lines.append(
+                f"| {e['city']} | {date_display} | {e['temp']}°C | "
+                f"{e['bma_prob']:.1f}% | "
+                f"{e['market_prob']:.1f}% | "
+                f"{e['bma_mean']:.1f}°C | {e['volume_display']} |"
+            )
+
+    if lowest:
+        lines.append("")
+        lines.append("🔻 LAVESTE TEMPERATUR")
+        lines.append("")
+        lines.append(header)
+        lines.append(sep)
+        for e in lowest:
+            date_display = e.get("date", "?") or "?"
+            lines.append(
+                f"| {e['city']} | {date_display} | {e['temp']}°C | "
+                f"{e['bma_prob']:.1f}% | "
+                f"{e['market_prob']:.1f}% | "
+                f"{e['bma_mean']:.1f}°C | {e['volume_display']} |"
+            )
+
+    if other:
+        lines.append("")
+        lines.append("📊 ANDRE TEMPERATURMARKEDER")
+        lines.append("")
+        lines.append(header)
+        lines.append(sep)
+        for e in other:
+            date_display = e.get("date", "?") or "?"
+            lines.append(
+                f"| {e['city']} | {date_display} | {e['temp']}°C | "
+                f"{e['bma_prob']:.1f}% | "
+                f"{e['market_prob']:.1f}% | "
+                f"{e['bma_mean']:.1f}°C | {e['volume_display']} |"
+            )
 
     return "\n".join(lines)
 
@@ -522,13 +601,15 @@ def format_edge_html_rows(edges: list[dict]) -> str:
     Shows per-market BMA probability instead of city-level strategy spills.
     """
     if not edges:
-        return '<tr><td colspan="7" style="color: var(--text-dim);">Ingen matchende markeder funnet.</td></tr>'
+        return '<tr><td colspan="8" style="color: var(--text-dim);">Ingen matchende markeder funnet.</td></tr>'
 
     rows = ""
     for i, e in enumerate(edges[:20]):  # Top 20
+        date_display = e.get("date", "?") or "?"
         rows += f"""<tr>
                 <td>{i+1}</td>
                 <td><strong>{e['city']}</strong></td>
+                <td>{date_display}</td>
                 <td>{e['temp']}°C</td>
                 <td>{e['bma_prob']:.1f}%</td>
                 <td>{e['market_prob']:.1f}%</td>
@@ -537,6 +618,54 @@ def format_edge_html_rows(edges: list[dict]) -> str:
             </tr>"""
 
     return rows
+
+
+def split_edges_by_type(edges: list[dict]) -> tuple[list[dict], list[dict], list[dict]]:
+    """Split edges into highest, lowest, and other markets."""
+    highest = [e for e in edges if e.get("question_type") == "highest"]
+    lowest = [e for e in edges if e.get("question_type") == "lowest"]
+    other = [e for e in edges if e.get("question_type") not in ("highest", "lowest")]
+    return highest, lowest, other
+
+
+def build_market_type_section_html(
+    edges: list[dict], title: str, emoji: str, color: str, n_show: int = 20
+) -> str:
+    """Build an HTML section for a specific market type (highest or lowest).
+
+    Includes the full HTML table with header, not just rows.
+    """
+    if not edges:
+        return ""
+
+    rows_html = ""
+    for i, e in enumerate(edges[:n_show]):
+        date_display = e.get("date", "?") or "?"
+        rows_html += f"""<tr>
+                <td>{i+1}</td>
+                <td><strong>{e['city']}</strong></td>
+                <td>{date_display}</td>
+                <td>{e['temp']}°C</td>
+                <td>{e['bma_prob']:.1f}%</td>
+                <td>{e['market_prob']:.1f}%</td>
+                <td style="color: var(--text-dim);">{e['bma_mean']:.1f}°C</td>
+                <td style="color: var(--text-dim);">{e.get('volume_display', '')}</td>
+            </tr>"""
+
+    return f"""
+    <div class="section" style="border-color: {color};">
+      <h2>{emoji} {title} <span style="color: var(--text-dim); font-size: 0.8rem;">({len(edges)} markeder)</span></h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        Sammenligner BMA-ensemblets prediksjoner mot Polymarket-priser.
+        Sortert etter BMA-konfidens (høyest først). Ingen trading-signaler — ren data.
+      </p>
+      <div style="overflow-x: auto;">
+      <table>
+        <thead><tr><th>#</th><th>By</th><th>Dato</th><th>Spill</th><th>BMA Sanns.</th><th>Marked</th><th>BMA μ</th><th>Volum</th></tr></thead>
+        <tbody>{rows_html}</tbody>
+      </table>
+      </div>
+    </div>"""
 
 
 # ---------------------------------------------------------------------------

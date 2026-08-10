@@ -190,6 +190,60 @@ def _parse_json_string(val: Any) -> Any:
 # Standardization
 # ---------------------------------------------------------------------------
 
+def _extract_question_type(question: str) -> str:
+    """Determine if this is a highest or lowest temperature market.
+
+    Returns 'highest', 'lowest', or 'unknown'.
+    """
+    q = question.lower()
+    if "highest temperature" in q or "highest temp" in q or "høyeste temperatur" in q:
+        return "highest"
+    if "lowest temperature" in q or "lowest temp" in q or "laveste temperatur" in q:
+        return "lowest"
+    return "unknown"
+
+
+def _extract_market_date_from_question(question: str) -> str:
+    """Extract the target date from the question text.
+
+    Handles: 'on 2026-08-10', 'August 10', 'Aug 10, 2026', etc.
+    Returns YYYY-MM-DD or empty string.
+    """
+    # ISO format: YYYY-MM-DD
+    import re as _re
+    m = _re.search(r'(\d{4})-(\d{2})-(\d{2})', question)
+    if m:
+        return f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
+
+    # Human-readable month names
+    _MONTH_MAP = {
+        "january": 1, "february": 2, "march": 3, "april": 4,
+        "may": 5, "june": 6, "july": 7, "august": 8,
+        "september": 9, "october": 10, "november": 11, "december": 12,
+        "jan": 1, "feb": 2, "mar": 3, "apr": 4,
+        "jun": 6, "jul": 7, "aug": 8,
+        "sep": 9, "oct": 10, "nov": 11, "dec": 12,
+    }
+    m = _re.search(
+        r'(January|February|March|April|May|June|July|August|September|October|November|December|'
+        r'Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+(\d{1,2})(?:,?\s+(\d{4}))?',
+        question, _re.IGNORECASE,
+    )
+    if m:
+        month_name = m.group(1).lower()
+        day = int(m.group(2))
+        year_str = m.group(3)
+        from datetime import date as _date
+        year = int(year_str) if year_str else _date.today().year
+        month = _MONTH_MAP.get(month_name)
+        if month:
+            try:
+                return _date(year, month, day).isoformat()
+            except ValueError:
+                pass
+    return ""
+
+
 def standardize_market(raw: dict) -> Optional[dict]:
     """Convert raw API market/event data to standardized format."""
     question = (
@@ -280,6 +334,13 @@ def standardize_market(raw: dict) -> Optional[dict]:
             date_str = str(raw[k])[:10]
             break
 
+    # Try to extract date from question text if not found in metadata
+    if date_str == "Unknown":
+        date_str = _extract_market_date_from_question(question) or "Unknown"
+
+    # ---- Question Type (highest vs lowest) ----
+    question_type = _extract_question_type(question)
+
     return {
         "city": city,
         "question": question,
@@ -287,6 +348,7 @@ def standardize_market(raw: dict) -> Optional[dict]:
         "volume": int(vol_num),
         "volume_display": _format_volume(vol_num),
         "date": date_str,
+        "question_type": question_type,
         "slug": raw.get("slug", "") or raw.get("market_slug", ""),
         "condition_id": raw.get("conditionId", "") or raw.get("condition_id", ""),
     }
@@ -875,6 +937,7 @@ def save_results(markets: list[dict], source_info: str) -> None:
                 "volume": m["volume"],
                 "volume_display": m["volume_display"],
                 "date": m["date"],
+                "question_type": m.get("question_type", "unknown"),
             }
             for m in markets
         ],
