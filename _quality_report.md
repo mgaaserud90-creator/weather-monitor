@@ -1,91 +1,72 @@
-# Model Quality Report
+════════════════════════════════════════════════════════════
+     MODELLKVALITET — KUMULATIV RAPPORT (3 STRATEGIER)
+════════════════════════════════════════════════════════════
 
-**Generated:** 2026-08-10T16:56:50.328519+00:00
-**Days tracked:** 1
+Generert: 2026-08-10
 
-## Today's Results — All 3 Strategies
+Dager kjørt: 1
+Totalt by-prediksjoner: 51
 
-| # | City | Sigma Spill | P5 Spill | Mean Spill | Actual Peak | Sigma | P5 | Mean | Rec |
-|---|------|------------|---------|-----------|-------------|-------|----|------|-----|
-| 1 | Dallas, US | 37°C | 36°C | 38°C | None | ⏳ | ⏳ | ⏳ | — |
-| 2 | Buenos Aires, AR | 11°C | 10°C | 11°C | None | ⏳ | ⏳ | ⏳ | — |
-| 3 | Moscow, RU | 23°C | 22°C | 24°C | None | ⏳ | ⏳ | ⏳ | — |
-| 4 | Guangzhou, CN | 34°C | 34°C | 35°C | None | ⏳ | ⏳ | ⏳ | — |
-| 5 | Shanghai, CN | 28°C | 27°C | 29°C | None | ⏳ | ⏳ | ⏳ | — |
+📊 PER-STRATEGI RESULTATER:
+   🎯 Sigma (μ−kσ):  V:1 T:3  (25.0%)
+   🛡️ P5-basert:      V:0 T:4  (0.0%)
+   📊 Mean-basert:    V:2 T:2  (50.0%)
 
-**Today — Sigma:** 1W/3L (25.0%) | **P5:** 0W/4L (0.0%) | **Mean:** 2W/2L (50.0%)
+🏆 BESTE STRATEGI: Mean-basert (50.0%)
 
-## Cumulative Strategy Performance
+🔍 BYER MED STRATEGI-FORSKJELLER (>20pp):
+   Ingen signifikante forskjeller funnet.
 
-| Strategy | Wins | Losses | Win Rate |
-|----------|------|--------|----------|
-| 🎯 Sigma (μ−kσ) | 1 | 3 | 25.0% |
-| 🛡️ P5-Basert | 0 | 4 | 0.0% |
-| 📊 Mean-Basert | 2 | 2 | 50.0% |
+🔄 FLIP-ANBEFALINGER: 3 totalt (0 ville vært profitable via P5)
 
-## Sigma Strategy by Confidence Tier
+────────────────────────────────────────────────────────────
+📋 PER DAG:
+────────────────────────────────────────────────────────────
+   2026-08-10  │   51 byer  │  sigma=1/3 (25.0%)  p5=0/4  mean=2/2
 
-| Tier | Positions | Wins | Losses | Win Rate |
-|------|-----------|------|--------|----------|
-| 🟢 >80% | 0 | 0 | 0 | N/A |
-| 🟠 70-80% | 0 | 0 | 0 | N/A |
-| 🔴 60-70% | 0 | 0 | 0 | N/A |
-| 🔴 <60% | 4 | 1 | 3 | 25.0% |
+════════════════════════════════════════════════════════════
+     🎯 RESULTANT MONITOR — Per-City Optimal Strategy
+════════════════════════════════════════════════════════════
 
-## Recent Daily Results
+Byer med Sigma som best:    49 (96.1%)
+Byer med Mean som best:      2 (3.9%)
+Byer med P5 som best:        0 (0.0%)
 
-| Date | Sigma W/L | P5 W/L | Mean W/L |
-|------|-----------|--------|----------|
-| 2026-08-10 | 1/3 | 0/4 | 2/2 |
+Samlet edge (hvis alle fulgte anbefalt): 75.0%
 
-**Total flip recommendations (SHORT):** 3
+🏆 TOP 10 PER CITY:
+    1. Tel Aviv, IL                   → Sigma (100.0%) [1 resolved]
+    2. Lucknow, IN                    → Mean (100.0%) [1 resolved]
+    3. Karachi, PK                    → Mean (100.0%) [1 resolved]
+    4. Dallas, US                     → Sigma (0.0%) [0 resolved]
+    5. Buenos Aires, AR               → Sigma (0.0%) [0 resolved]
+    6. Moscow, RU                     → Sigma (0.0%) [0 resolved]
+    7. Guangzhou, CN                  → Sigma (0.0%) [0 resolved]
+    8. Shanghai, CN                   → Sigma (0.0%) [0 resolved]
+    9. Busan, KR                      → Sigma (0.0%) [0 resolved]
+   10. Denver, US                     → Sigma (0.0%) [0 resolved]
 
-## 📊 Model Agreement & Win Rate
+────────────────────────────────────────────────────────────
+📊 PER-CITY STRATEGI-ANALYSE:
+────────────────────────────────────────────────────────────
+   📊 Tel Aviv, IL — Strategi-analyse (1 resolved trades)
+      Sigma: 1W/0L = 100.0% ← ANBEFALT
+      P5:    0W/1L = 0.0%
+      Mean:  0W/1L = 0.0%
 
-| Agreement | Positions | Record | Win Rate |
-|---|---|---|---|
-| 8/8 enige | 0 | 0W/0L | N/A |
-| 7/8 enige | 4 | 1W/3L | 25.0% |
-| 6/8 enige | 0 | 0W/0L | N/A |
-| <6 enige | 0 | 0W/0L | N/A |
+   📊 Lucknow, IN — Strategi-analyse (1 resolved trades)
+      Sigma: 0W/1L = 0.0%
+      P5:    0W/1L = 0.0%
+      Mean:  1W/0L = 100.0% ← ANBEFALT
 
-## 📏 P5-P95 Range & Accuracy
+   📊 Karachi, PK — Strategi-analyse (1 resolved trades)
+      Sigma: 0W/1L = 0.0%
+      P5:    0W/1L = 0.0%
+      Mean:  1W/0L = 100.0% ← ANBEFALT
 
-| Range Size | Positions | Record | Win Rate |
-|---|---|---|---|
-| Smal (<2°C) | 0 | 0W/0L | N/A |
-| Medium (2-4°C) | 2 | 1W/1L | 50.0% |
-| Bred (>4°C) | 2 | 0W/2L | 0.0% |
+   📊 Jeddah, SA — Strategi-analyse (1 resolved trades)
+      Sigma: 0W/1L = 0.0% ← ANBEFALT
+      P5:    0W/1L = 0.0%
+      Mean:  0W/1L = 0.0%
 
-## 📊 Optimal Strategy by Confidence Level
-
-| Tier | 🎯 Sigma | 🛡️ P5 | 📊 Mean | 🏆 Best |
-|---|---|---|---|---|
-| 🟢 >80% | 0% | 0% | 0% | **Sigma (0%)** |
-| 🟠 70-80% | 0% | 0% | 0% | **Sigma (0%)** |
-| 🟡 60-70% | 0% | 0% | 0% | **Sigma (0%)** |
-| 🔴 50-60% | 100.0% | 0.0% | 0.0% | **Sigma (100.0%)** |
-| 🔴 <50% | 0.0% | 0.0% | 66.7% | **Mean (66.7%)** |
-
-## 📈 Cumulative Edge Tracker
-
-*Simulates betting $100 on each sigma-recommended position. Wins return $139 (odds ~1.39).*
-
-| Date | Sigma Record | Daily Edge | Cumulative |
-|---|---|---|---|
-| 2026-08-10 | 1W/3L | -261 units | -261 units |
-
-## 🌍 Region Performance
-
-| Region | Positions | Record | Win Rate |
-|---|---|---|---|
-| Asia | 4 | 1W/3L | 25.0% |
-
-## 🏙️ UHI Adjustment Accuracy
-
-| UHI Category | Count | Avg BMA Error |
-|---|---|---|
-| High UHI cities (≥1.0°C) | 2 | 0.65°C |
-| Low UHI cities (≤0.5°C) | 1 | 1.5°C |
-
-⚠️ For få resolved prediksjoner til edge impact analyse (<5).
+════════════════════════════════════════════════════════════

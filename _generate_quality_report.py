@@ -2768,7 +2768,7 @@ function computeAllCitiesConfidence(city, temps, localHour) {{
 async function fetchLivePeak() {{
     const today = new Date().toISOString().slice(0, 10);
     const statusEl = document.getElementById('fetch-status');
-    const activeCities = CITIES.filter(c => c.has_market === true && !c.is_resolved);
+    const activeCities = CITIES.filter(c => c.has_market === true);
     const fetchCities = activeCities.length > 0 ? activeCities : CITIES;
     const total = fetchCities.length;
     let done = 0;
@@ -3369,7 +3369,7 @@ async function fetchLivePeak() {{
     const statusEl = document.getElementById('fetch-status');
 
     // Only fetch cities with active markets, or all if none filtered
-    const activeCities = CITIES.filter(c => c.has_market === true && !c.is_resolved);
+    const activeCities = CITIES.filter(c => c.has_market === true);
     const fetchCities = activeCities.length > 0 ? activeCities : CITIES;
     const total = fetchCities.length;
     let done = 0;
@@ -4312,7 +4312,7 @@ function startMonitoring() {{
     }}
 
     // Only monitor cities with active Polymarket markets (if any), else all checked
-    const marketCities = ALL_CITIES.filter(c => c.has_market === true && !c.is_resolved);
+    const marketCities = ALL_CITIES.filter(c => c.has_market === true);
     const useMarketFilter = marketCities.length > 0;
 
     monitoredCities = ALL_CITIES.filter(c => {{
