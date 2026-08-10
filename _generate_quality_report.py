@@ -2560,9 +2560,51 @@ def _generate_all_cities_html() -> str:
 
     # ---- Load market price lookup for edge computation ----
     market_lookup: dict[tuple[str, int], float] = {}
+    market_buckets_by_city: dict[str, list[dict]] = {}  # city -> list of {temp, price, volume, volume_display, resolved, question_type}
     if HAS_MARKET_EDGE:
         try:
             market_lookup = build_market_lookup()
+            # Also load full market opportunities grouped by city for bucket rows
+            market_opps, _ = load_market_prices()
+            bma_preds = load_bma_predictions()
+            for opp in market_opps:
+                city = opp["city"]
+                temp = opp["temp"]
+                market_prob = opp["market_prob"]
+                # Compute BMA probability for this bucket
+                bma_data = bma_preds.get(city)
+                if bma_data is None:
+                    # Try matching without country code
+                    for bma_city, bd in bma_preds.items():
+                        if bma_city.split(",")[0].strip().lower() == city.lower():
+                            bma_data = bd
+                            break
+                bma_pct = None
+                if bma_data:
+                    bma_pct = compute_bma_prob(
+                        bma_data["bma_mean"], bma_data["bma_std"],
+                        temp, opp.get("type", "exact")
+                    )
+                bucket = {
+                    "temp": temp,
+                    "market_prob": market_prob,
+                    "bma_prob": bma_pct,
+                    "volume": opp.get("volume", 0),
+                    "volume_display": opp.get("volume_display", ""),
+                    "is_resolved": opp.get("is_resolved", False),
+                    "question_type": opp.get("question_type", "unknown"),
+                    "date": opp.get("date", ""),
+                }
+                city_lower = city.lower().strip()
+                market_buckets_by_city.setdefault(city_lower, []).append(bucket)
+                # Also index without country code
+                city_base = city_lower.split(",")[0].strip()
+                if city_base != city_lower:
+                    existing = market_buckets_by_city.get(city_base, [])
+                    # Avoid duplicates
+                    existing_temps = {b["temp"] for b in existing}
+                    if temp not in existing_temps:
+                        market_buckets_by_city.setdefault(city_base, []).append(bucket)
         except Exception:
             pass
 
@@ -2712,7 +2754,7 @@ def _generate_all_cities_html() -> str:
             if round(actual_peak) == sigma_spill:
                 row_win = True
                 peak_won = True
-        row_class = "city-row row-win" if row_win else "city-row row-loss"
+        row_class = "city-row city-group row-win" if row_win else "city-row city-group row-loss"
 
         # Compute market price for this city's sigma spill temperature (data only, no signals)
         market_cell = "—"
@@ -2728,10 +2770,45 @@ def _generate_all_cities_html() -> str:
             if mkt_prob is not None:
                 market_cell = f"{mkt_prob:.1f}%"
 
+        # Build city slug for bucket toggling
+        city_slug = re.sub(r'[^a-zA-Z0-9]+', '-', city).lower().strip('-')
+
         safe_city_id = re.sub(r'[^a-zA-Z0-9]', '_', city)
-        table_rows += f"""<tr class="{row_class}" data-lead="{ld}" data-city="{city}" data-conf="{conf:.3f}">
-            <td class="col-rank"></td>
-            <td class="col-city">{city}</td>
+
+        # Get market buckets for this city
+        city_market_buckets = []
+        if HAS_MARKET_EDGE and market_buckets_by_city:
+            city_lower = city.lower()
+            city_market_buckets = market_buckets_by_city.get(city_lower, [])
+            if not city_market_buckets:
+                city_base = city_lower.split(",")[0].strip()
+                city_market_buckets = market_buckets_by_city.get(city_base, [])
+                if not city_market_buckets:
+                    city_no_paren = re.sub(r'\s*\(.*?\)\s*', '', city_base).strip()
+                    city_market_buckets = market_buckets_by_city.get(city_no_paren, [])
+
+        # Sort buckets by temperature
+        city_market_buckets.sort(key=lambda b: b["temp"])
+
+        # Compute bucket summary for the city-group row
+        n_buckets = len(city_market_buckets)
+        total_volume = sum(b.get("volume", 0) for b in city_market_buckets)
+        vol_display = f"${total_volume/1000:.0f}K" if total_volume >= 1000 else (f"${total_volume}" if total_volume > 0 else "—")
+        n_resolved = sum(1 for b in city_market_buckets if b.get("is_resolved"))
+
+        resolved_summary = ""
+        if n_resolved > 0:
+            # Find the winning bucket (price > 99%)
+            winners = [b for b in city_market_buckets if b["market_prob"] > 99]
+            if winners:
+                winning_temp = winners[0]["temp"]
+                resolved_summary = f' <span style="color: var(--green); font-size: 0.7rem;">✅ Resolved → {winning_temp}°C</span>'
+            else:
+                resolved_summary = f' <span style="color: var(--green); font-size: 0.7rem;">✅ {n_resolved} resolved</span>'
+
+        table_rows += f"""<tr class="{row_class}" data-lead="{ld}" data-city="{city}" data-conf="{conf:.3f}" onclick="toggleBuckets('{city_slug}')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">{city}{resolved_summary}</td>
             <td class="col-bma">{bma_str} <span class="dim">σ={std_str}</span></td>
             <td class="col-range">{p5_p95}°C</td>
             <td class="col-sigma">{sigma_cell}</td>
@@ -2741,10 +2818,47 @@ def _generate_all_cities_html() -> str:
             <td class="col-models">{d['model_ct']}/8</td>
             <td class="col-peak">{actual_str}{" ✅ VUNNET" if peak_won else ""}</td>
             <td class="col-live" id="live-{safe_city_id}">—</td>
-            <td class="col-market">{market_cell}</td>
+            <td class="col-market">{market_cell} {f'<span class="dim">({n_buckets} buckets)</span>' if n_buckets > 0 else ''}</td>
             <td class="col-rec {rec_class}">{rec}</td>
             <td class="col-strat">{_build_strat_rec_cell(city, best_per_city)}</td>
             <td class="col-local">{local_time_str}</td>
+        </tr>
+"""
+
+        # Generate bucket rows for this city
+        for b in city_market_buckets:
+            temp = b["temp"]
+            market_p = b["market_prob"]
+            bma_p = b.get("bma_prob")
+            bma_p_str = f"{bma_p:.1f}%" if bma_p is not None else "—"
+            market_p_str = f"{market_p:.1f}%"
+            is_resolved = b.get("is_resolved", False)
+            resolved_icon = ' <span class="bucket-resolved">✅</span>' if is_resolved else ""
+
+            # Style resolved buckets
+            row_style = ""
+            if is_resolved:
+                if market_p > 99:
+                    row_style = ' style="color: var(--green);"'
+                elif market_p < 1:
+                    row_style = ' style="color: var(--red);"'
+
+            table_rows += f"""<tr class="bucket-row {city_slug}" data-lead="{ld}"{row_style}>
+            <td></td>
+            <td>{temp}°C{resolved_icon}</td>
+            <td class="dim">{bma_p_str}</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>{market_p_str}</td>
+            <td></td>
+            <td></td>
+            <td></td>
         </tr>
 """
 
@@ -2818,6 +2932,17 @@ def _generate_all_cities_html() -> str:
   td {{ padding: 7px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }}
   tr:hover {{ background: var(--bg-card-hover); }}
   tr.city-row.hidden {{ display: none; }}
+  tr.city-group {{ cursor: pointer; transition: background 0.15s; }}
+  tr.city-group:hover {{ background: var(--bg-card-hover) !important; }}
+  tr.city-group:hover td {{ color: var(--text) !important; }}
+  .expand-icon {{ display: inline-block; width: 16px; transition: transform 0.2s; font-size: 0.7rem; margin-right: 4px; }}
+  tr.city-group.expanded .expand-icon {{ transform: rotate(90deg); }}
+  tr.bucket-row {{ display: none; font-size: 0.78rem; background: rgba(22, 27, 34, 0.4); }}
+  tr.bucket-row.show {{ display: table-row; }}
+  tr.bucket-row:hover {{ background: rgba(28, 35, 51, 0.6); }}
+  tr.bucket-row td {{ padding: 5px 8px; border-bottom: 1px solid rgba(48, 54, 61, 0.3); color: var(--text-dim); }}
+  tr.bucket-row td:first-child {{ padding-left: 32px; }}
+  .bucket-resolved {{ color: var(--green); font-size: 0.7rem; }}
   .dim {{ color: var(--text-dim); font-size: 0.7rem; }}
   .conf-high {{ color: var(--green); font-weight: 600; }}
   .conf-mid {{ color: var(--orange); font-weight: 600; }}
@@ -2910,6 +3035,29 @@ function switchDate(lead) {{
     applyFilters();
 }}
 
+function toggleBuckets(slug) {{
+    var bucketRows = document.querySelectorAll('tr.bucket-row.' + slug);
+    var cityRow = document.querySelector('tr.city-group[onclick*="' + slug + '"]');
+    var anyVisible = false;
+    bucketRows.forEach(function(r) {{
+        if (r.classList.contains('show')) anyVisible = true;
+    }});
+    bucketRows.forEach(function(r) {{
+        if (anyVisible) {{
+            r.classList.remove('show');
+        }} else {{
+            r.classList.add('show');
+        }}
+    }});
+    if (cityRow) {{
+        if (anyVisible) {{
+            cityRow.classList.remove('expanded');
+        }} else {{
+            cityRow.classList.add('expanded');
+        }}
+    }}
+}}
+
 function applyFilters() {{
     var filterText = (document.getElementById('cityFilter').value || '').toLowerCase();
     var rows = document.querySelectorAll('#cityTable tbody tr.city-row');
@@ -2926,10 +3074,28 @@ function applyFilters() {{
             row.classList.add('hidden');
         }}
     }});
+    // Also hide bucket rows whose parent city is hidden
+    var allBucketRows = document.querySelectorAll('#cityTable tbody tr.bucket-row');
+    allBucketRows.forEach(function(br) {{
+        var brLead = parseInt(br.getAttribute('data-lead'));
+        if (brLead !== currentLead) {{
+            br.classList.add('hidden');
+            br.classList.remove('show');
+        }} else {{
+            br.classList.remove('hidden');
+        }}
+    }});
     var rank = 1;
     rows.forEach(function(row) {{
         if (!row.classList.contains('hidden')) {{
-            row.querySelector('.col-rank').textContent = rank++;
+            var rankCell = row.querySelector('.col-rank');
+            if (rankCell) {{
+                // Keep expand icon, prepend rank number
+                var iconSpan = rankCell.querySelector('.expand-icon');
+                rankCell.innerHTML = '';
+                if (iconSpan) rankCell.appendChild(iconSpan);
+                rankCell.appendChild(document.createTextNode(rank++));
+            }}
         }}
     }});
     document.getElementById('visibleCount').textContent = visibleCount + ' byer vist';

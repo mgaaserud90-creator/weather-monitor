@@ -1,307 +1,80 @@
-════════════════════════════════════════════════════════════
-     MODELLKVALITET — KUMULATIV RAPPORT (3 STRATEGIER)
-════════════════════════════════════════════════════════════
+# Model Quality Report
 
-Generert: 2026-08-10
+**Generated:** 2026-08-10T16:49:05.357473+00:00
+**Days tracked:** 1
 
-Dager kjørt: 1
-Totalt by-prediksjoner: 51
+## Today's Results — All 3 Strategies
 
-📊 PER-STRATEGI RESULTATER:
-   🎯 Sigma (μ−kσ):  V:11 T:40  (21.6%)
-   🛡️ P5-basert:      V:2 T:49  (3.9%)
-   📊 Mean-basert:    V:20 T:31  (39.2%)
+| # | City | Sigma Spill | P5 Spill | Mean Spill | Actual Peak | Sigma | P5 | Mean | Rec |
+|---|------|------------|---------|-----------|-------------|-------|----|------|-----|
+| 1 | Dallas, US | 37°C | 36°C | 38°C | None | ⏳ | ⏳ | ⏳ | — |
+| 2 | Buenos Aires, AR | 11°C | 10°C | 11°C | None | ⏳ | ⏳ | ⏳ | — |
+| 3 | Moscow, RU | 23°C | 22°C | 24°C | None | ⏳ | ⏳ | ⏳ | — |
+| 4 | Guangzhou, CN | 34°C | 34°C | 35°C | None | ⏳ | ⏳ | ⏳ | — |
+| 5 | Shanghai, CN | 28°C | 27°C | 29°C | None | ⏳ | ⏳ | ⏳ | — |
 
-🏆 BESTE STRATEGI: Mean-basert (39.2%)
+**Today — Sigma:** 0W/0L (0.0%) | **P5:** 0W/0L (0.0%) | **Mean:** 0W/0L (0.0%)
 
-🔍 BYER MED STRATEGI-FORSKJELLER (>20pp):
-   Ingen signifikante forskjeller funnet.
+## Cumulative Strategy Performance
 
-🔄 FLIP-ANBEFALINGER: 40 totalt (0 ville vært profitable via P5)
+| Strategy | Wins | Losses | Win Rate |
+|----------|------|--------|----------|
+| 🎯 Sigma (μ−kσ) | 0 | 0 | 0.0% |
+| 🛡️ P5-Basert | 0 | 0 | 0.0% |
+| 📊 Mean-Basert | 0 | 0 | 0.0% |
 
-────────────────────────────────────────────────────────────
-📋 PER DAG:
-────────────────────────────────────────────────────────────
-   2026-08-10  │   51 byer  │  sigma=11/40 (21.6%)  p5=2/49  mean=20/31
+## Sigma Strategy by Confidence Tier
 
-════════════════════════════════════════════════════════════
-     🎯 RESULTANT MONITOR — Per-City Optimal Strategy
-════════════════════════════════════════════════════════════
+| Tier | Positions | Wins | Losses | Win Rate |
+|------|-----------|------|--------|----------|
+| 🟢 >80% | 0 | 0 | 0 | N/A |
+| 🟠 70-80% | 0 | 0 | 0 | N/A |
+| 🔴 60-70% | 0 | 0 | 0 | N/A |
+| 🔴 <60% | 0 | 0 | 0 | N/A |
 
-Byer med Sigma som best:    33 (64.7%)
-Byer med Mean som best:     18 (35.3%)
-Byer med P5 som best:        0 (0.0%)
+## Recent Daily Results
 
-Samlet edge (hvis alle fulgte anbefalt): 56.9%
+| Date | Sigma W/L | P5 W/L | Mean W/L |
+|------|-----------|--------|----------|
+| 2026-08-10 | 0/0 | 0/0 | 0/0 |
 
-🏆 TOP 10 PER CITY:
-    1. Moscow, RU                     → Sigma (100.0%) [1 resolved]
-    2. Buenos Aires, AR               → Mean (100.0%) [1 resolved]
-    3. Guangzhou, CN                  → Sigma (100.0%) [1 resolved]
-    4. Manila, PH                     → Mean (100.0%) [1 resolved]
-    5. Cape Town, ZA                  → Sigma (100.0%) [1 resolved]
-    6. Austin, US                     → Mean (100.0%) [1 resolved]
-    7. Helsinki, FI                   → Mean (100.0%) [1 resolved]
-    8. Miami, US                      → Sigma (100.0%) [1 resolved]
-    9. Busan, KR                      → Mean (100.0%) [1 resolved]
-   10. Wuhan, CN                      → Mean (100.0%) [1 resolved]
+## 📊 Model Agreement & Win Rate
 
-────────────────────────────────────────────────────────────
-📊 PER-CITY STRATEGI-ANALYSE:
-────────────────────────────────────────────────────────────
-   📊 Moscow, RU — Strategi-analyse (1 resolved trades)
-      Sigma: 1W/0L = 100.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  1W/0L = 100.0%
+| Agreement | Positions | Record | Win Rate |
+|---|---|---|---|
+| 8/8 enige | 0 | 0W/0L | N/A |
+| 7/8 enige | 0 | 0W/0L | N/A |
+| 6/8 enige | 0 | 0W/0L | N/A |
+| <6 enige | 0 | 0W/0L | N/A |
 
-   📊 Buenos Aires, AR — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0%
-      P5:    0W/1L = 0.0%
-      Mean:  1W/0L = 100.0% ← ANBEFALT
+## 📏 P5-P95 Range & Accuracy
 
-   📊 Dallas, US — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
+| Range Size | Positions | Record | Win Rate |
+|---|---|---|---|
+| Smal (<2°C) | 0 | 0W/0L | N/A |
+| Medium (2-4°C) | 0 | 0W/0L | N/A |
+| Bred (>4°C) | 0 | 0W/0L | N/A |
 
-   📊 Singapore, SG — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
+## 📊 Optimal Strategy by Confidence Level
 
-   📊 Guangzhou, CN — Strategi-analyse (1 resolved trades)
-      Sigma: 1W/0L = 100.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  1W/0L = 100.0%
+| Tier | 🎯 Sigma | 🛡️ P5 | 📊 Mean | 🏆 Best |
+|---|---|---|---|---|
+| 🟢 >80% | 0% | 0% | 0% | **Sigma (0%)** |
+| 🟠 70-80% | 0% | 0% | 0% | **Sigma (0%)** |
+| 🟡 60-70% | 0% | 0% | 0% | **Sigma (0%)** |
+| 🔴 50-60% | 0% | 0% | 0% | **Sigma (0%)** |
+| 🔴 <50% | 0% | 0% | 0% | **Sigma (0%)** |
 
-   📊 Manila, PH — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0%
-      P5:    0W/1L = 0.0%
-      Mean:  1W/0L = 100.0% ← ANBEFALT
+## 🌍 Region Performance
 
-   📊 Cape Town, ZA — Strategi-analyse (1 resolved trades)
-      Sigma: 1W/0L = 100.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
+| Region | Positions | Record | Win Rate |
+|---|---|---|---|
 
-   📊 Denver, US — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
+## 🏙️ UHI Adjustment Accuracy
 
-   📊 Madrid, ES — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
+| UHI Category | Count | Avg BMA Error |
+|---|---|---|
+| High UHI cities (≥1.0°C) | 0 | —°C |
+| Low UHI cities (≤0.5°C) | 0 | —°C |
 
-   📊 Austin, US — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0%
-      P5:    0W/1L = 0.0%
-      Mean:  1W/0L = 100.0% ← ANBEFALT
-
-   📊 Helsinki, FI — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0%
-      P5:    0W/1L = 0.0%
-      Mean:  1W/0L = 100.0% ← ANBEFALT
-
-   📊 Miami, US — Strategi-analyse (1 resolved trades)
-      Sigma: 1W/0L = 100.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Beijing, CN — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Busan, KR — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0%
-      P5:    0W/1L = 0.0%
-      Mean:  1W/0L = 100.0% ← ANBEFALT
-
-   📊 Wuhan, CN — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0%
-      P5:    0W/1L = 0.0%
-      Mean:  1W/0L = 100.0% ← ANBEFALT
-
-   📊 New York, US — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Zhengzhou, CN — Strategi-analyse (1 resolved trades)
-      Sigma: 1W/0L = 100.0% ← ANBEFALT
-      P5:    1W/0L = 100.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Houston, US — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Paris, FR — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0%
-      P5:    0W/1L = 0.0%
-      Mean:  1W/0L = 100.0% ← ANBEFALT
-
-   📊 Ankara, TR — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Wellington, NZ — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0%
-      P5:    0W/1L = 0.0%
-      Mean:  1W/0L = 100.0% ← ANBEFALT
-
-   📊 Chongqing, CN — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Shanghai, CN — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0%
-      P5:    0W/1L = 0.0%
-      Mean:  1W/0L = 100.0% ← ANBEFALT
-
-   📊 Seattle, US — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0%
-      P5:    0W/1L = 0.0%
-      Mean:  1W/0L = 100.0% ← ANBEFALT
-
-   📊 Munich, DE — Strategi-analyse (1 resolved trades)
-      Sigma: 1W/0L = 100.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Taipei, TW — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Mexico City, MX — Strategi-analyse (1 resolved trades)
-      Sigma: 1W/0L = 100.0% ← ANBEFALT
-      P5:    1W/0L = 100.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Panama City, PA — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 London, UK — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0%
-      P5:    0W/1L = 0.0%
-      Mean:  1W/0L = 100.0% ← ANBEFALT
-
-   📊 Toronto, CA — Strategi-analyse (1 resolved trades)
-      Sigma: 1W/0L = 100.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Kuala Lumpur, MY — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0%
-      P5:    0W/1L = 0.0%
-      Mean:  1W/0L = 100.0% ← ANBEFALT
-
-   📊 Amsterdam, NL — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0%
-      P5:    0W/1L = 0.0%
-      Mean:  1W/0L = 100.0% ← ANBEFALT
-
-   📊 Istanbul, TR — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0%
-      P5:    0W/1L = 0.0%
-      Mean:  1W/0L = 100.0% ← ANBEFALT
-
-   📊 Sao Paulo, BR — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Tokyo, JP — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Chengdu, CN — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0%
-      P5:    0W/1L = 0.0%
-      Mean:  1W/0L = 100.0% ← ANBEFALT
-
-   📊 Hong Kong, HK — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Karachi, PK — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Chicago, US — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Atlanta, US — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Tel Aviv, IL — Strategi-analyse (1 resolved trades)
-      Sigma: 1W/0L = 100.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Qingdao, CN — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0%
-      P5:    0W/1L = 0.0%
-      Mean:  1W/0L = 100.0% ← ANBEFALT
-
-   📊 Lucknow, IN — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0%
-      P5:    0W/1L = 0.0%
-      Mean:  1W/0L = 100.0% ← ANBEFALT
-
-   📊 Shenzhen, CN — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Warsaw, PL — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Jinan, CN — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Seoul (Incheon), KR — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Milan, IT — Strategi-analyse (1 resolved trades)
-      Sigma: 1W/0L = 100.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 Jeddah, SA — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0%
-      P5:    0W/1L = 0.0%
-      Mean:  1W/0L = 100.0% ← ANBEFALT
-
-   📊 Los Angeles, US — Strategi-analyse (1 resolved trades)
-      Sigma: 1W/0L = 100.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-   📊 San Francisco, US — Strategi-analyse (1 resolved trades)
-      Sigma: 0W/1L = 0.0% ← ANBEFALT
-      P5:    0W/1L = 0.0%
-      Mean:  0W/1L = 0.0%
-
-════════════════════════════════════════════════════════════
+⚠️ For få resolved prediksjoner til edge impact analyse (<5).

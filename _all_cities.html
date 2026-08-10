@@ -65,6 +65,17 @@
   td { padding: 7px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
   tr:hover { background: var(--bg-card-hover); }
   tr.city-row.hidden { display: none; }
+  tr.city-group { cursor: pointer; transition: background 0.15s; }
+  tr.city-group:hover { background: var(--bg-card-hover) !important; }
+  tr.city-group:hover td { color: var(--text) !important; }
+  .expand-icon { display: inline-block; width: 16px; transition: transform 0.2s; font-size: 0.7rem; margin-right: 4px; }
+  tr.city-group.expanded .expand-icon { transform: rotate(90deg); }
+  tr.bucket-row { display: none; font-size: 0.78rem; background: rgba(22, 27, 34, 0.4); }
+  tr.bucket-row.show { display: table-row; }
+  tr.bucket-row:hover { background: rgba(28, 35, 51, 0.6); }
+  tr.bucket-row td { padding: 5px 8px; border-bottom: 1px solid rgba(48, 54, 61, 0.3); color: var(--text-dim); }
+  tr.bucket-row td:first-child { padding-left: 32px; }
+  .bucket-resolved { color: var(--green); font-size: 0.7rem; }
   .dim { color: var(--text-dim); font-size: 0.7rem; }
   .conf-high { color: var(--green); font-weight: 600; }
   .conf-mid { color: var(--orange); font-weight: 600; }
@@ -87,7 +98,7 @@
 <body>
 <header>
   <h1>🌍 ALLE 51 BYER — BMA Ensemble</h1>
-  <div class="subtitle">Generert: 2026-08-10 16:29:34 UTC | Multi-Strategy: 🎯 Sigma · 🛡️ P5 · 📊 Mean</div>
+  <div class="subtitle">Generert: 2026-08-10 16:52:14 UTC | Multi-Strategy: 🎯 Sigma · 🛡️ P5 · 📊 Mean</div>
 </header>
 <div class="live-bar">
   <button class="live-btn" onclick="fetchLiveData()" id="fetch-btn">🔄 Hent Nåværende Temperatur & Døgnmaks</button>
@@ -139,9 +150,9 @@
        </tr>
       </thead>
       <tbody>
-        <tr class="city-row row-loss" data-lead="0" data-city="Amsterdam, NL" data-conf="0.527">
-            <td class="col-rank"></td>
-            <td class="col-city">Amsterdam, NL</td>
+        <tr class="city-row city-group row-loss" data-lead="0" data-city="Amsterdam, NL" data-conf="0.527" onclick="toggleBuckets('amsterdam-nl')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">Amsterdam, NL <span style="color: var(--green); font-size: 0.7rem;">✅ Resolved → 23°C</span></td>
             <td class="col-bma">23.0 <span class="dim">σ=1.1</span></td>
             <td class="col-range">21-22°C</td>
             <td class="col-sigma">22°C ⏳</td>
@@ -151,14 +162,31 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Amsterdam__NL">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">18:29</td>
+            <td class="col-local">18:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Ankara, TR" data-conf="0.636">
-            <td class="col-rank"></td>
-            <td class="col-city">Ankara, TR</td>
+<tr class="bucket-row amsterdam-nl" data-lead="0" style="color: var(--green);">
+            <td></td>
+            <td>23°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">20.2%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>99.9%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Ankara, TR" data-conf="0.636" onclick="toggleBuckets('ankara-tr')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">Ankara, TR <span style="color: var(--green); font-size: 0.7rem;">✅ 1 resolved</span></td>
             <td class="col-bma">29.9 <span class="dim">σ=0.8</span></td>
             <td class="col-range">28-29°C</td>
             <td class="col-sigma">29°C ⏳</td>
@@ -168,13 +196,30 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Ankara__TR">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">19:29</td>
+            <td class="col-local">19:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Atlanta, US" data-conf="0.371">
-            <td class="col-rank"></td>
+<tr class="bucket-row ankara-tr" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>30°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">33.7%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Atlanta, US" data-conf="0.371" onclick="toggleBuckets('atlanta-us')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Atlanta, US</td>
             <td class="col-bma">32.4 <span class="dim">σ=1.9</span></td>
             <td class="col-range">29-31°C</td>
@@ -185,13 +230,13 @@
             <td class="col-models">8/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Atlanta__US">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">12:29</td>
+            <td class="col-local">12:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Austin, US" data-conf="0.540">
-            <td class="col-rank"></td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Austin, US" data-conf="0.540" onclick="toggleBuckets('austin-us')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Austin, US</td>
             <td class="col-bma">35.8 <span class="dim">σ=0.8</span></td>
             <td class="col-range">34-35°C</td>
@@ -202,13 +247,13 @@
             <td class="col-models">8/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Austin__US">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">11:29</td>
+            <td class="col-local">11:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Beijing, CN" data-conf="0.568">
-            <td class="col-rank"></td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Beijing, CN" data-conf="0.568" onclick="toggleBuckets('beijing-cn')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Beijing, CN</td>
             <td class="col-bma">33.2 <span class="dim">σ=1.3</span></td>
             <td class="col-range">31-32°C</td>
@@ -219,13 +264,13 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Beijing__CN">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:29</td>
+            <td class="col-local">00:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Buenos Aires, AR" data-conf="0.754">
-            <td class="col-rank"></td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Buenos Aires, AR" data-conf="0.754" onclick="toggleBuckets('buenos-aires-ar')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Buenos Aires, AR</td>
             <td class="col-bma">11.4 <span class="dim">σ=0.6</span></td>
             <td class="col-range">10-11°C</td>
@@ -236,14 +281,14 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Buenos_Aires__AR">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">13:29</td>
+            <td class="col-local">13:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Busan, KR" data-conf="0.699">
-            <td class="col-rank"></td>
-            <td class="col-city">Busan, KR</td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Busan, KR" data-conf="0.699" onclick="toggleBuckets('busan-kr')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">Busan, KR <span style="color: var(--green); font-size: 0.7rem;">✅ Resolved → 32°C</span></td>
             <td class="col-bma">28.9 <span class="dim">σ=0.9</span></td>
             <td class="col-range">27-28°C</td>
             <td class="col-sigma">28°C ⏳</td>
@@ -253,13 +298,47 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Busan__KR">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— <span class="dim">(2 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">01:29</td>
+            <td class="col-local">01:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Cape Town, ZA" data-conf="0.631">
-            <td class="col-rank"></td>
+<tr class="bucket-row busan-kr" data-lead="0">
+            <td></td>
+            <td>31°C</td>
+            <td class="dim">18.9%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>19.5%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row busan-kr" data-lead="0" style="color: var(--green);">
+            <td></td>
+            <td>32°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">9.6%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>100.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Cape Town, ZA" data-conf="0.631" onclick="toggleBuckets('cape-town-za')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Cape Town, ZA</td>
             <td class="col-bma">14.6 <span class="dim">σ=0.9</span></td>
             <td class="col-range">13-13°C</td>
@@ -270,13 +349,13 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Cape_Town__ZA">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">18:29</td>
+            <td class="col-local">18:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Chengdu, CN" data-conf="0.465">
-            <td class="col-rank"></td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Chengdu, CN" data-conf="0.465" onclick="toggleBuckets('chengdu-cn')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Chengdu, CN</td>
             <td class="col-bma">34.1 <span class="dim">σ=1.2</span></td>
             <td class="col-range">32-33°C</td>
@@ -287,13 +366,13 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Chengdu__CN">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:29</td>
+            <td class="col-local">00:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Chicago, US" data-conf="0.381">
-            <td class="col-rank"></td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Chicago, US" data-conf="0.381" onclick="toggleBuckets('chicago-us')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Chicago, US</td>
             <td class="col-bma">29.0 <span class="dim">σ=1.8</span></td>
             <td class="col-range">26-27°C</td>
@@ -304,14 +383,14 @@
             <td class="col-models">8/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Chicago__US">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">11:29</td>
+            <td class="col-local">11:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Chongqing, CN" data-conf="0.607">
-            <td class="col-rank"></td>
-            <td class="col-city">Chongqing, CN</td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Chongqing, CN" data-conf="0.607" onclick="toggleBuckets('chongqing-cn')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">Chongqing, CN <span style="color: var(--green); font-size: 0.7rem;">✅ Resolved → 34°C</span></td>
             <td class="col-bma">34.0 <span class="dim">σ=0.6</span></td>
             <td class="col-range">33-33°C</td>
             <td class="col-sigma">33°C ⏳</td>
@@ -321,13 +400,30 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Chongqing__CN">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:29</td>
+            <td class="col-local">00:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Dallas, US" data-conf="0.761">
-            <td class="col-rank"></td>
+<tr class="bucket-row chongqing-cn" data-lead="0" style="color: var(--green);">
+            <td></td>
+            <td>34°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">21.2%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>100.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Dallas, US" data-conf="0.761" onclick="toggleBuckets('dallas-us')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Dallas, US</td>
             <td class="col-bma">37.5 <span class="dim">σ=0.6</span></td>
             <td class="col-range">36-37°C</td>
@@ -338,13 +434,47 @@
             <td class="col-models">8/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Dallas__US">—</td>
-            <td class="col-market">70.0%</td>
+            <td class="col-market">70.0% <span class="dim">(2 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">11:29</td>
+            <td class="col-local">11:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Denver, US" data-conf="0.694">
-            <td class="col-rank"></td>
+<tr class="bucket-row dallas-us" data-lead="0">
+            <td></td>
+            <td>37°C</td>
+            <td class="dim">34.3%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>70.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row dallas-us" data-lead="0">
+            <td></td>
+            <td>38°C</td>
+            <td class="dim">38.2%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>25.5%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Denver, US" data-conf="0.694" onclick="toggleBuckets('denver-us')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Denver, US</td>
             <td class="col-bma">35.1 <span class="dim">σ=0.9</span></td>
             <td class="col-range">34-34°C</td>
@@ -355,14 +485,14 @@
             <td class="col-models">8/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Denver__US">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">10:29</td>
+            <td class="col-local">10:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Guangzhou, CN" data-conf="0.719">
-            <td class="col-rank"></td>
-            <td class="col-city">Guangzhou, CN</td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Guangzhou, CN" data-conf="0.719" onclick="toggleBuckets('guangzhou-cn')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">Guangzhou, CN <span style="color: var(--green); font-size: 0.7rem;">✅ 1 resolved</span></td>
             <td class="col-bma">35.1 <span class="dim">σ=0.8</span></td>
             <td class="col-range">34-34°C</td>
             <td class="col-sigma">34°C ⏳</td>
@@ -372,14 +502,31 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Guangzhou__CN">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:29</td>
+            <td class="col-local">00:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Helsinki, FI" data-conf="0.665">
-            <td class="col-rank"></td>
-            <td class="col-city">Helsinki, FI</td>
+<tr class="bucket-row guangzhou-cn" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>31°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">0.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Helsinki, FI" data-conf="0.665" onclick="toggleBuckets('helsinki-fi')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">Helsinki, FI <span style="color: var(--green); font-size: 0.7rem;">✅ 1 resolved</span></td>
             <td class="col-bma">22.3 <span class="dim">σ=0.7</span></td>
             <td class="col-range">21-21°C</td>
             <td class="col-sigma">21°C ⏳</td>
@@ -389,14 +536,31 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Helsinki__FI">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">19:29</td>
+            <td class="col-local">19:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Hong Kong, HK" data-conf="0.641">
-            <td class="col-rank"></td>
-            <td class="col-city">Hong Kong, HK</td>
+<tr class="bucket-row helsinki-fi" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>22°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">0.3%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Hong Kong, HK" data-conf="0.641" onclick="toggleBuckets('hong-kong-hk')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">Hong Kong, HK <span style="color: var(--green); font-size: 0.7rem;">✅ Resolved → 35°C</span></td>
             <td class="col-bma">33.8 <span class="dim">σ=0.8</span></td>
             <td class="col-range">32-33°C</td>
             <td class="col-sigma">33°C ⏳</td>
@@ -406,13 +570,149 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Hong_Kong__HK">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">0.1% <span class="dim">(8 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:29</td>
+            <td class="col-local">00:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Houston, US" data-conf="0.526">
-            <td class="col-rank"></td>
+<tr class="bucket-row hong-kong-hk" data-lead="0">
+            <td></td>
+            <td>30°C</td>
+            <td class="dim">1.4%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>18.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row hong-kong-hk" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>33°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">35.7%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row hong-kong-hk" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>34°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">20.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row hong-kong-hk" data-lead="0" style="color: var(--green);">
+            <td></td>
+            <td>35°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">4.9%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>100.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row hong-kong-hk" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>36°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">0.5%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row hong-kong-hk" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>37°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">0.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row hong-kong-hk" data-lead="0">
+            <td></td>
+            <td>37°C</td>
+            <td class="dim">0.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>2.7%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row hong-kong-hk" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>38°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">0.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Houston, US" data-conf="0.526" onclick="toggleBuckets('houston-us')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Houston, US</td>
             <td class="col-bma">31.8 <span class="dim">σ=0.9</span></td>
             <td class="col-range">30-31°C</td>
@@ -423,13 +723,13 @@
             <td class="col-models">8/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Houston__US">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">11:29</td>
+            <td class="col-local">11:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Istanbul, TR" data-conf="0.499">
-            <td class="col-rank"></td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Istanbul, TR" data-conf="0.499" onclick="toggleBuckets('istanbul-tr')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Istanbul, TR</td>
             <td class="col-bma">26.8 <span class="dim">σ=1.3</span></td>
             <td class="col-range">25-25°C</td>
@@ -440,13 +740,13 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Istanbul__TR">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">19:29</td>
+            <td class="col-local">19:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Jeddah, SA" data-conf="0.381">
-            <td class="col-rank"></td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Jeddah, SA" data-conf="0.381" onclick="toggleBuckets('jeddah-sa')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Jeddah, SA</td>
             <td class="col-bma">39.7 <span class="dim">σ=2.7</span></td>
             <td class="col-range">35-37°C</td>
@@ -457,13 +757,13 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Jeddah__SA">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">19:29</td>
+            <td class="col-local">19:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Jinan, CN" data-conf="0.576">
-            <td class="col-rank"></td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Jinan, CN" data-conf="0.576" onclick="toggleBuckets('jinan-cn')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Jinan, CN</td>
             <td class="col-bma">30.6 <span class="dim">σ=1.2</span></td>
             <td class="col-range">29-29°C</td>
@@ -474,13 +774,13 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Jinan__CN">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:29</td>
+            <td class="col-local">00:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Karachi, PK" data-conf="0.457">
-            <td class="col-rank"></td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Karachi, PK" data-conf="0.457" onclick="toggleBuckets('karachi-pk')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Karachi, PK</td>
             <td class="col-bma">32.8 <span class="dim">σ=1.2</span></td>
             <td class="col-range">31-31°C</td>
@@ -491,13 +791,13 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Karachi__PK">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">21:29</td>
+            <td class="col-local">21:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Kuala Lumpur, MY" data-conf="0.592">
-            <td class="col-rank"></td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Kuala Lumpur, MY" data-conf="0.592" onclick="toggleBuckets('kuala-lumpur-my')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Kuala Lumpur, MY</td>
             <td class="col-bma">30.8 <span class="dim">σ=1.1</span></td>
             <td class="col-range">29-30°C</td>
@@ -508,14 +808,14 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Kuala_Lumpur__MY">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:29</td>
+            <td class="col-local">00:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="London, UK" data-conf="0.565">
-            <td class="col-rank"></td>
-            <td class="col-city">London, UK</td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="London, UK" data-conf="0.565" onclick="toggleBuckets('london-uk')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">London, UK <span style="color: var(--green); font-size: 0.7rem;">✅ 3 resolved</span></td>
             <td class="col-bma">26.0 <span class="dim">σ=0.8</span></td>
             <td class="col-range">25-25°C</td>
             <td class="col-sigma">25°C ⏳</td>
@@ -525,13 +825,115 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-London__UK">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">0.1% <span class="dim">(6 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">17:29</td>
+            <td class="col-local">17:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Los Angeles, US" data-conf="0.336">
-            <td class="col-rank"></td>
+<tr class="bucket-row london-uk" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>24°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">1.8%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row london-uk" data-lead="0">
+            <td></td>
+            <td>24°C</td>
+            <td class="dim">1.8%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>38.5%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row london-uk" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>25°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">14.3%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row london-uk" data-lead="0">
+            <td></td>
+            <td>26°C</td>
+            <td class="dim">38.2%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>97.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row london-uk" data-lead="0">
+            <td></td>
+            <td>27°C</td>
+            <td class="dim">34.3%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>2.5%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row london-uk" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>28°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">10.3%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Los Angeles, US" data-conf="0.336" onclick="toggleBuckets('los-angeles-us')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Los Angeles, US</td>
             <td class="col-bma">28.6 <span class="dim">σ=3.0</span></td>
             <td class="col-range">24-26°C</td>
@@ -542,13 +944,30 @@
             <td class="col-models">8/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Los_Angeles__US">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">09:29</td>
+            <td class="col-local">09:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Lucknow, IN" data-conf="0.464">
-            <td class="col-rank"></td>
+<tr class="bucket-row los-angeles-us" data-lead="0">
+            <td></td>
+            <td>24°C</td>
+            <td class="dim">7.3%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>11.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Lucknow, IN" data-conf="0.464" onclick="toggleBuckets('lucknow-in')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Lucknow, IN</td>
             <td class="col-bma">32.4 <span class="dim">σ=1.7</span></td>
             <td class="col-range">30-31°C</td>
@@ -559,14 +978,14 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Lucknow__IN">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">21:59</td>
+            <td class="col-local">22:22</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Madrid, ES" data-conf="0.592">
-            <td class="col-rank"></td>
-            <td class="col-city">Madrid, ES</td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Madrid, ES" data-conf="0.592" onclick="toggleBuckets('madrid-es')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">Madrid, ES <span style="color: var(--green); font-size: 0.7rem;">✅ 1 resolved</span></td>
             <td class="col-bma">36.0 <span class="dim">σ=0.7</span></td>
             <td class="col-range">35-35°C</td>
             <td class="col-sigma">35°C ⏳</td>
@@ -576,13 +995,64 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Madrid__ES">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— <span class="dim">(3 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">18:29</td>
+            <td class="col-local">18:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Manila, PH" data-conf="0.530">
-            <td class="col-rank"></td>
+<tr class="bucket-row madrid-es" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>36°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">50.3%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row madrid-es" data-lead="0">
+            <td></td>
+            <td>37°C</td>
+            <td class="dim">19.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>93.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row madrid-es" data-lead="0">
+            <td></td>
+            <td>38°C</td>
+            <td class="dim">1.4%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>6.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Manila, PH" data-conf="0.530" onclick="toggleBuckets('manila-ph')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Manila, PH</td>
             <td class="col-bma">29.6 <span class="dim">σ=1.1</span></td>
             <td class="col-range">28-28°C</td>
@@ -593,13 +1063,13 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Manila__PH">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:29</td>
+            <td class="col-local">00:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Mexico City, MX" data-conf="0.568">
-            <td class="col-rank"></td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Mexico City, MX" data-conf="0.568" onclick="toggleBuckets('mexico-city-mx')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Mexico City, MX</td>
             <td class="col-bma">23.6 <span class="dim">σ=0.8</span></td>
             <td class="col-range">22-23°C</td>
@@ -610,13 +1080,13 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Mexico_City__MX">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">10:29</td>
+            <td class="col-local">10:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Miami, US" data-conf="0.626">
-            <td class="col-rank"></td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Miami, US" data-conf="0.626" onclick="toggleBuckets('miami-us')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Miami, US</td>
             <td class="col-bma">32.8 <span class="dim">σ=1.0</span></td>
             <td class="col-range">31-32°C</td>
@@ -627,14 +1097,14 @@
             <td class="col-models">8/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Miami__US">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">12:29</td>
+            <td class="col-local">12:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Milan, IT" data-conf="0.394">
-            <td class="col-rank"></td>
-            <td class="col-city">Milan, IT</td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Milan, IT" data-conf="0.394" onclick="toggleBuckets('milan-it')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">Milan, IT <span style="color: var(--green); font-size: 0.7rem;">✅ 4 resolved</span></td>
             <td class="col-bma">35.2 <span class="dim">σ=1.9</span></td>
             <td class="col-range">32-33°C</td>
             <td class="col-sigma">33°C ⏳</td>
@@ -644,14 +1114,99 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Milan__IT">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">0.1% <span class="dim">(5 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">18:29</td>
+            <td class="col-local">18:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Moscow, RU" data-conf="0.735">
-            <td class="col-rank"></td>
-            <td class="col-city">Moscow, RU</td>
+<tr class="bucket-row milan-it" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>32°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">2.4%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row milan-it" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>33°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">6.7%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row milan-it" data-lead="0">
+            <td></td>
+            <td>34°C</td>
+            <td class="dim">13.4%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>97.5%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row milan-it" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>35°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">20.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.5%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row milan-it" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>36°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">21.9%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Moscow, RU" data-conf="0.735" onclick="toggleBuckets('moscow-ru')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">Moscow, RU <span style="color: var(--green); font-size: 0.7rem;">✅ 1 resolved</span></td>
             <td class="col-bma">23.5 <span class="dim">σ=0.7</span></td>
             <td class="col-range">22-23°C</td>
             <td class="col-sigma">23°C ⏳</td>
@@ -661,14 +1216,31 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Moscow__RU">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">0.1% <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">19:29</td>
+            <td class="col-local">19:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Munich, DE" data-conf="0.600">
-            <td class="col-rank"></td>
-            <td class="col-city">Munich, DE</td>
+<tr class="bucket-row moscow-ru" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>23°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">14.2%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Munich, DE" data-conf="0.600" onclick="toggleBuckets('munich-de')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">Munich, DE <span style="color: var(--green); font-size: 0.7rem;">✅ Resolved → 34°C</span></td>
             <td class="col-bma">32.0 <span class="dim">σ=1.1</span></td>
             <td class="col-range">30-31°C</td>
             <td class="col-sigma">31°C ⏳</td>
@@ -678,13 +1250,98 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Munich__DE">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— <span class="dim">(5 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">18:29</td>
+            <td class="col-local">18:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="New York, US" data-conf="0.616">
-            <td class="col-rank"></td>
+<tr class="bucket-row munich-de" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>30°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">90.2%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row munich-de" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>32°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">1.4%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row munich-de" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>33°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row munich-de" data-lead="0" style="color: var(--green);">
+            <td></td>
+            <td>34°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">0.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>100.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row munich-de" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>35°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">0.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.2%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="New York, US" data-conf="0.616" onclick="toggleBuckets('new-york-us')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">New York, US</td>
             <td class="col-bma">32.1 <span class="dim">σ=1.0</span></td>
             <td class="col-range">30-31°C</td>
@@ -695,13 +1352,64 @@
             <td class="col-models">8/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-New_York__US">—</td>
-            <td class="col-market">26.5%</td>
+            <td class="col-market">26.5% <span class="dim">(3 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">12:29</td>
+            <td class="col-local">12:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Panama City, PA" data-conf="0.456">
-            <td class="col-rank"></td>
+<tr class="bucket-row new-york-us" data-lead="0">
+            <td></td>
+            <td>30°C</td>
+            <td class="dim">12.2%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>9.4%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row new-york-us" data-lead="0">
+            <td></td>
+            <td>31°C</td>
+            <td class="dim">28.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>26.5%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row new-york-us" data-lead="0">
+            <td></td>
+            <td>33°C</td>
+            <td class="dim">18.5%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>26.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Panama City, PA" data-conf="0.456" onclick="toggleBuckets('panama-city-pa')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Panama City, PA</td>
             <td class="col-bma">32.8 <span class="dim">σ=1.2</span></td>
             <td class="col-range">31-31°C</td>
@@ -712,14 +1420,14 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Panama_City__PA">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">11:29</td>
+            <td class="col-local">11:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Paris, FR" data-conf="0.580">
-            <td class="col-rank"></td>
-            <td class="col-city">Paris, FR</td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Paris, FR" data-conf="0.580" onclick="toggleBuckets('paris-fr')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">Paris, FR <span style="color: var(--green); font-size: 0.7rem;">✅ 1 resolved</span></td>
             <td class="col-bma">31.0 <span class="dim">σ=1.2</span></td>
             <td class="col-range">29-30°C</td>
             <td class="col-sigma">30°C ⏳</td>
@@ -729,13 +1437,30 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Paris__FR">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">18:29</td>
+            <td class="col-local">18:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Qingdao, CN" data-conf="0.597">
-            <td class="col-rank"></td>
+<tr class="bucket-row paris-fr" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>31°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">26.8%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Qingdao, CN" data-conf="0.597" onclick="toggleBuckets('qingdao-cn')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Qingdao, CN</td>
             <td class="col-bma">31.4 <span class="dim">σ=1.1</span></td>
             <td class="col-range">30-30°C</td>
@@ -746,13 +1471,13 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Qingdao__CN">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:29</td>
+            <td class="col-local">00:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="San Francisco, US" data-conf="0.328">
-            <td class="col-rank"></td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="San Francisco, US" data-conf="0.328" onclick="toggleBuckets('san-francisco-us')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">San Francisco, US</td>
             <td class="col-bma">21.6 <span class="dim">σ=1.9</span></td>
             <td class="col-range">18-20°C</td>
@@ -763,14 +1488,14 @@
             <td class="col-models">8/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-San_Francisco__US">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">09:29</td>
+            <td class="col-local">09:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Sao Paulo, BR" data-conf="0.448">
-            <td class="col-rank"></td>
-            <td class="col-city">Sao Paulo, BR</td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Sao Paulo, BR" data-conf="0.448" onclick="toggleBuckets('sao-paulo-br')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">Sao Paulo, BR <span style="color: var(--green); font-size: 0.7rem;">✅ 1 resolved</span></td>
             <td class="col-bma">17.1 <span class="dim">σ=1.3</span></td>
             <td class="col-range">15-16°C</td>
             <td class="col-sigma">16°C ⏳</td>
@@ -780,13 +1505,30 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Sao_Paulo__BR">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">0.1% <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">13:29</td>
+            <td class="col-local">13:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Seattle, US" data-conf="0.594">
-            <td class="col-rank"></td>
+<tr class="bucket-row sao-paulo-br" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>16°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">38.6%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Seattle, US" data-conf="0.594" onclick="toggleBuckets('seattle-us')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Seattle, US</td>
             <td class="col-bma">24.4 <span class="dim">σ=0.8</span></td>
             <td class="col-range">23-23°C</td>
@@ -797,13 +1539,13 @@
             <td class="col-models">8/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Seattle__US">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">09:29</td>
+            <td class="col-local">09:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Seoul (Incheon), KR" data-conf="0.296">
-            <td class="col-rank"></td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Seoul (Incheon), KR" data-conf="0.296" onclick="toggleBuckets('seoul-incheon-kr')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Seoul (Incheon), KR</td>
             <td class="col-bma">30.7 <span class="dim">σ=2.6</span></td>
             <td class="col-range">26-28°C</td>
@@ -814,14 +1556,14 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Seoul__Incheon___KR">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">01:29</td>
+            <td class="col-local">01:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Shanghai, CN" data-conf="0.715">
-            <td class="col-rank"></td>
-            <td class="col-city">Shanghai, CN</td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Shanghai, CN" data-conf="0.715" onclick="toggleBuckets('shanghai-cn')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">Shanghai, CN <span style="color: var(--green); font-size: 0.7rem;">✅ Resolved → 28°C</span></td>
             <td class="col-bma">28.6 <span class="dim">σ=0.8</span></td>
             <td class="col-range">27-28°C</td>
             <td class="col-sigma">28°C ⏳</td>
@@ -831,14 +1573,31 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Shanghai__CN">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">100.0% <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:29</td>
+            <td class="col-local">00:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Shenzhen, CN" data-conf="0.434">
-            <td class="col-rank"></td>
-            <td class="col-city">Shenzhen, CN</td>
+<tr class="bucket-row shanghai-cn" data-lead="0" style="color: var(--green);">
+            <td></td>
+            <td>28°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">43.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>100.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Shenzhen, CN" data-conf="0.434" onclick="toggleBuckets('shenzhen-cn')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">Shenzhen, CN <span style="color: var(--green); font-size: 0.7rem;">✅ 2 resolved</span></td>
             <td class="col-bma">34.8 <span class="dim">σ=1.4</span></td>
             <td class="col-range">32-33°C</td>
             <td class="col-sigma">33°C ⏳</td>
@@ -848,13 +1607,47 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Shenzhen__CN">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— <span class="dim">(2 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:29</td>
+            <td class="col-local">00:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Singapore, SG" data-conf="0.646">
-            <td class="col-rank"></td>
+<tr class="bucket-row shenzhen-cn" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>35°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">20.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row shenzhen-cn" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>37°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">10.2%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Singapore, SG" data-conf="0.646" onclick="toggleBuckets('singapore-sg')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Singapore, SG</td>
             <td class="col-bma">31.5 <span class="dim">σ=0.8</span></td>
             <td class="col-range">30-30°C</td>
@@ -865,14 +1658,14 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Singapore__SG">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:29</td>
+            <td class="col-local">00:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Taipei, TW" data-conf="0.587">
-            <td class="col-rank"></td>
-            <td class="col-city">Taipei, TW</td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Taipei, TW" data-conf="0.587" onclick="toggleBuckets('taipei-tw')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">Taipei, TW <span style="color: var(--green); font-size: 0.7rem;">✅ Resolved → 36°C</span></td>
             <td class="col-bma">33.3 <span class="dim">σ=1.2</span></td>
             <td class="col-range">31-32°C</td>
             <td class="col-sigma">32°C ⏳</td>
@@ -882,13 +1675,47 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Taipei__TW">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— <span class="dim">(2 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:29</td>
+            <td class="col-local">00:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Tel Aviv, IL" data-conf="0.524">
-            <td class="col-rank"></td>
+<tr class="bucket-row taipei-tw" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>35°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">20.9%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.1%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row taipei-tw" data-lead="0" style="color: var(--green);">
+            <td></td>
+            <td>36°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">9.3%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>100.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Tel Aviv, IL" data-conf="0.524" onclick="toggleBuckets('tel-aviv-il')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Tel Aviv, IL</td>
             <td class="col-bma">35.1 <span class="dim">σ=1.1</span></td>
             <td class="col-range">33-34°C</td>
@@ -899,14 +1726,14 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Tel_Aviv__IL">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">19:29</td>
+            <td class="col-local">19:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Tokyo, JP" data-conf="0.593">
-            <td class="col-rank"></td>
-            <td class="col-city">Tokyo, JP</td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Tokyo, JP" data-conf="0.593" onclick="toggleBuckets('tokyo-jp')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">Tokyo, JP <span style="color: var(--green); font-size: 0.7rem;">✅ Resolved → 30°C</span></td>
             <td class="col-bma">28.7 <span class="dim">σ=1.1</span></td>
             <td class="col-range">27-27°C</td>
             <td class="col-sigma">27°C ⏳</td>
@@ -916,13 +1743,30 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Tokyo__JP">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">01:29</td>
+            <td class="col-local">01:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Toronto, CA" data-conf="0.428">
-            <td class="col-rank"></td>
+<tr class="bucket-row tokyo-jp" data-lead="0" style="color: var(--green);">
+            <td></td>
+            <td>30°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">1.4%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>100.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Toronto, CA" data-conf="0.428" onclick="toggleBuckets('toronto-ca')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Toronto, CA</td>
             <td class="col-bma">27.4 <span class="dim">σ=1.8</span></td>
             <td class="col-range">24-26°C</td>
@@ -933,13 +1777,13 @@
             <td class="col-models">8/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Toronto__CA">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">12:29</td>
+            <td class="col-local">12:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Warsaw, PL" data-conf="0.415">
-            <td class="col-rank"></td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Warsaw, PL" data-conf="0.415" onclick="toggleBuckets('warsaw-pl')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Warsaw, PL</td>
             <td class="col-bma">31.1 <span class="dim">σ=1.6</span></td>
             <td class="col-range">28-29°C</td>
@@ -950,14 +1794,14 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Warsaw__PL">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">18:29</td>
+            <td class="col-local">18:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Wellington, NZ" data-conf="0.611">
-            <td class="col-rank"></td>
-            <td class="col-city">Wellington, NZ</td>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Wellington, NZ" data-conf="0.611" onclick="toggleBuckets('wellington-nz')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">Wellington, NZ <span style="color: var(--green); font-size: 0.7rem;">✅ 1 resolved</span></td>
             <td class="col-bma">12.1 <span class="dim">σ=0.6</span></td>
             <td class="col-range">11-11°C</td>
             <td class="col-sigma">11°C ⏳</td>
@@ -967,14 +1811,48 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Wellington__NZ">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— <span class="dim">(2 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">04:29</td>
+            <td class="col-local">04:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Wuhan, CN" data-conf="0.388">
-            <td class="col-rank"></td>
-            <td class="col-city">Wuhan, CN</td>
+<tr class="bucket-row wellington-nz" data-lead="0" style="color: var(--red);">
+            <td></td>
+            <td>9°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">0.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>0.2%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="bucket-row wellington-nz" data-lead="0">
+            <td></td>
+            <td>12°C</td>
+            <td class="dim">11.2%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>56.5%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Wuhan, CN" data-conf="0.388" onclick="toggleBuckets('wuhan-cn')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
+            <td class="col-city">Wuhan, CN <span style="color: var(--green); font-size: 0.7rem;">✅ Resolved → 29°C</span></td>
             <td class="col-bma">28.1 <span class="dim">σ=1.9</span></td>
             <td class="col-range">25-26°C</td>
             <td class="col-sigma">26°C ⏳</td>
@@ -984,13 +1862,30 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Wuhan__CN">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— <span class="dim">(1 buckets)</span></td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:29</td>
+            <td class="col-local">00:52</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Zhengzhou, CN" data-conf="0.593">
-            <td class="col-rank"></td>
+<tr class="bucket-row wuhan-cn" data-lead="0" style="color: var(--green);">
+            <td></td>
+            <td>29°C <span class="bucket-resolved">✅</span></td>
+            <td class="dim">22.7%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>100.0%</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+<tr class="city-row city-group row-loss" data-lead="0" data-city="Zhengzhou, CN" data-conf="0.593" onclick="toggleBuckets('zhengzhou-cn')">
+            <td class="col-rank"><span class="expand-icon">▶</span></td>
             <td class="col-city">Zhengzhou, CN</td>
             <td class="col-bma">25.2 <span class="dim">σ=1.1</span></td>
             <td class="col-range">23-24°C</td>
@@ -1001,10 +1896,10 @@
             <td class="col-models">7/8</td>
             <td class="col-peak">—</td>
             <td class="col-live" id="live-Zhengzhou__CN">—</td>
-            <td class="col-market">—</td>
+            <td class="col-market">— </td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
-            <td class="col-local">00:29</td>
+            <td class="col-local">00:52</td>
         </tr>
 
       </tbody>
@@ -1082,6 +1977,29 @@ function switchDate(lead) {
     applyFilters();
 }
 
+function toggleBuckets(slug) {
+    var bucketRows = document.querySelectorAll('tr.bucket-row.' + slug);
+    var cityRow = document.querySelector('tr.city-group[onclick*="' + slug + '"]');
+    var anyVisible = false;
+    bucketRows.forEach(function(r) {
+        if (r.classList.contains('show')) anyVisible = true;
+    });
+    bucketRows.forEach(function(r) {
+        if (anyVisible) {
+            r.classList.remove('show');
+        } else {
+            r.classList.add('show');
+        }
+    });
+    if (cityRow) {
+        if (anyVisible) {
+            cityRow.classList.remove('expanded');
+        } else {
+            cityRow.classList.add('expanded');
+        }
+    }
+}
+
 function applyFilters() {
     var filterText = (document.getElementById('cityFilter').value || '').toLowerCase();
     var rows = document.querySelectorAll('#cityTable tbody tr.city-row');
@@ -1098,10 +2016,28 @@ function applyFilters() {
             row.classList.add('hidden');
         }
     });
+    // Also hide bucket rows whose parent city is hidden
+    var allBucketRows = document.querySelectorAll('#cityTable tbody tr.bucket-row');
+    allBucketRows.forEach(function(br) {
+        var brLead = parseInt(br.getAttribute('data-lead'));
+        if (brLead !== currentLead) {
+            br.classList.add('hidden');
+            br.classList.remove('show');
+        } else {
+            br.classList.remove('hidden');
+        }
+    });
     var rank = 1;
     rows.forEach(function(row) {
         if (!row.classList.contains('hidden')) {
-            row.querySelector('.col-rank').textContent = rank++;
+            var rankCell = row.querySelector('.col-rank');
+            if (rankCell) {
+                // Keep expand icon, prepend rank number
+                var iconSpan = rankCell.querySelector('.expand-icon');
+                rankCell.innerHTML = '';
+                if (iconSpan) rankCell.appendChild(iconSpan);
+                rankCell.appendChild(document.createTextNode(rank++));
+            }
         }
     });
     document.getElementById('visibleCount').textContent = visibleCount + ' byer vist';
