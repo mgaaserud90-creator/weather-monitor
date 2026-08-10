@@ -465,7 +465,7 @@ def _is_in_peak_window(local_dt: datetime, peak_start: int, peak_end: int) -> bo
 # --mode daily_bma
 # =============================================================================
 
-def _preds_to_dict(predictions: list[CityPrediction], locations: list[SavedLocation]) -> dict[str, dict]:
+def _preds_to_dict(predictions: list[CityPrediction], locations: list[SavedLocation], lead_days: int = 0) -> dict[str, dict]:
     """Convert CityPrediction list to log-ready dict with 3 strategies per city.
 
     New structure:
@@ -481,7 +481,7 @@ def _preds_to_dict(predictions: list[CityPrediction], locations: list[SavedLocat
         "peak_detected_at": null,
         "recommendation": null,
         "_lat": ..., "_lon": ..., "_tz": ..., "_peak_hour_start": ..., "_peak_hour_end": ...,
-        "_target_date": ..., "_uhi_adjustment": ...
+        "_target_date": ..., "_uhi_adjustment": ..., "_lead_days": 0
       }
     }
     """
@@ -530,6 +530,7 @@ def _preds_to_dict(predictions: list[CityPrediction], locations: list[SavedLocat
             "_peak_hour_end": p.peak_hour_end,
             "_target_date": p.target_date,
             "_uhi_adjustment": round(uhi, 1),
+            "_lead_days": lead_days,
         }
     return preds_dict
 
@@ -603,10 +604,10 @@ async def daily_bma_mode() -> None:
         entry["target_date"] = today_str
         top5_city_names = [p.city for p in top5]
         entry["top_5_confidence"] = top5_city_names
-        entry["predictions"] = _preds_to_dict(predictions_day1, locations)
+        entry["predictions"] = _preds_to_dict(predictions_day1, locations, lead_days=0)
         entry["predictions_multi_day"] = {
-            "day1": _preds_to_dict(predictions_day1, locations),
-            "day2": _preds_to_dict(predictions_day2, locations),
+            "day1": _preds_to_dict(predictions_day1, locations, lead_days=0),
+            "day2": _preds_to_dict(predictions_day2, locations, lead_days=1),
         }
         entry["observations"] = {city: [] for city in top5_city_names}
 

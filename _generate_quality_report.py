@@ -509,6 +509,125 @@ def _build_city_divergence_section(predictions: dict) -> str:
 
 
 # =============================================================================
+# Today vs Tomorrow Separation + Edge Decay
+# =============================================================================
+
+def _build_today_tomorrow_section(runs: list) -> str:
+    """Build today vs tomorrow win rate comparison with edge decay.
+
+    Iterates ALL runs, checks resolved predictions' _lead_days field,
+    and computes separate win rates for today (lead_days=0) vs tomorrow (lead_days=1).
+    """
+    today_counts = {"sigma": {"wins": 0, "losses": 0}, "p5": {"wins": 0, "losses": 0}, "mean": {"wins": 0, "losses": 0}}
+    tomorrow_counts = {"sigma": {"wins": 0, "losses": 0}, "p5": {"wins": 0, "losses": 0}, "mean": {"wins": 0, "losses": 0}}
+
+    for run in runs:
+        # Check multi_day first (richer source), fall back to flat predictions
+        multi_day = run.get("predictions_multi_day", {})
+        flat_preds = run.get("predictions", {})
+
+        # Collect all prediction sources with known lead_days
+        sources: list[tuple[dict, int]] = []
+
+        if multi_day:
+            day1_preds = multi_day.get("day1", {})
+            day2_preds = multi_day.get("day2", {})
+            # day1 is lead_days=0 (today), day2 is lead_days=1 (tomorrow)
+            for city, pdata in day1_preds.items():
+                sources.append((pdata, 0))
+            for city, pdata in day2_preds.items():
+                sources.append((pdata, 1))
+        else:
+            # Fallback: use flat predictions with _lead_days field
+            for city, pdata in flat_preds.items():
+                ld = pdata.get("_lead_days", 0)
+                sources.append((pdata, ld))
+
+        for pdata, ld in sources:
+            strategies = pdata.get("strategies", {})
+            for sn in ("sigma", "p5", "mean"):
+                s = strategies.get(sn, {})
+                result = s.get("result", "")
+                if result not in ("WIN", "LOSS"):
+                    continue
+                bucket = today_counts if ld == 0 else tomorrow_counts
+                if result == "WIN":
+                    bucket[sn]["wins"] += 1
+                else:
+                    bucket[sn]["losses"] += 1
+
+    def _rate(wins: int, losses: int) -> float:
+        total = wins + losses
+        return round(wins / max(1, total) * 100, 1)
+
+    today_sigma_r = _rate(today_counts["sigma"]["wins"], today_counts["sigma"]["losses"])
+    today_p5_r = _rate(today_counts["p5"]["wins"], today_counts["p5"]["losses"])
+    today_mean_r = _rate(today_counts["mean"]["wins"], today_counts["mean"]["losses"])
+
+    tomorrow_sigma_r = _rate(tomorrow_counts["sigma"]["wins"], tomorrow_counts["sigma"]["losses"])
+    tomorrow_p5_r = _rate(tomorrow_counts["p5"]["wins"], tomorrow_counts["p5"]["losses"])
+    tomorrow_mean_r = _rate(tomorrow_counts["mean"]["wins"], tomorrow_counts["mean"]["losses"])
+
+    today_sigma_total = today_counts["sigma"]["wins"] + today_counts["sigma"]["losses"]
+    tomorrow_sigma_total = tomorrow_counts["sigma"]["wins"] + tomorrow_counts["sigma"]["losses"]
+    today_p5_total = today_counts["p5"]["wins"] + today_counts["p5"]["losses"]
+    tomorrow_p5_total = tomorrow_counts["p5"]["wins"] + tomorrow_counts["p5"]["losses"]
+    today_mean_total = today_counts["mean"]["wins"] + today_counts["mean"]["losses"]
+    tomorrow_mean_total = tomorrow_counts["mean"]["wins"] + tomorrow_counts["mean"]["losses"]
+
+    if today_sigma_total == 0 and tomorrow_sigma_total == 0:
+        return ""  # No resolved data yet
+
+    # Edge decay: how much less accurate is tomorrow vs today?
+    decay_sigma = round(today_sigma_r - tomorrow_sigma_r, 1) if tomorrow_sigma_total > 0 else 0
+    decay_p5 = round(today_p5_r - tomorrow_p5_r, 1) if tomorrow_p5_total > 0 else 0
+    decay_mean = round(today_mean_r - tomorrow_mean_r, 1) if tomorrow_mean_total > 0 else 0
+
+    decay_color = "#f85149" if decay_sigma > 5 else ("#d2991d" if decay_sigma > 0 else "#3fb950")
+
+    return f"""
+    <div class="section">
+      <h2>📊 Today vs Tomorrow Prediction Accuracy</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        Compares same-day predictions (lead_days=0) against next-day predictions (lead_days=1).
+        Higher edge decay = tomorrow predictions lose more accuracy.
+      </p>
+      <div class="grid-2">
+        <div>
+          <h3 style="color: var(--green); font-size: 1rem; margin-bottom: 8px;">📊 TODAY'S PREDICTIONS (lead_days=0)</h3>
+          <table>
+            <thead><tr><th>Strategy</th><th>Record</th><th>Win Rate</th></tr></thead>
+            <tbody>
+              <tr><td><strong>🎯 Sigma</strong></td><td>{today_counts['sigma']['wins']}W/{today_counts['sigma']['losses']}L</td><td style="font-weight:600;">{today_sigma_r}%</td></tr>
+              <tr><td><strong>🛡️ P5</strong></td><td>{today_counts['p5']['wins']}W/{today_counts['p5']['losses']}L</td><td style="font-weight:600;">{today_p5_r}%</td></tr>
+              <tr><td><strong>📊 Mean</strong></td><td>{today_counts['mean']['wins']}W/{today_counts['mean']['losses']}L</td><td style="font-weight:600;">{today_mean_r}%</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <h3 style="color: var(--orange); font-size: 1rem; margin-bottom: 8px;">📊 TOMORROW'S PREDICTIONS (lead_days=1)</h3>
+          <table>
+            <thead><tr><th>Strategy</th><th>Record</th><th>Win Rate</th></tr></thead>
+            <tbody>
+              <tr><td><strong>🎯 Sigma</strong></td><td>{tomorrow_counts['sigma']['wins']}W/{tomorrow_counts['sigma']['losses']}L</td><td style="font-weight:600;">{tomorrow_sigma_r}%</td></tr>
+              <tr><td><strong>🛡️ P5</strong></td><td>{tomorrow_counts['p5']['wins']}W/{tomorrow_counts['p5']['losses']}L</td><td style="font-weight:600;">{tomorrow_p5_r}%</td></tr>
+              <tr><td><strong>📊 Mean</strong></td><td>{tomorrow_counts['mean']['wins']}W/{tomorrow_counts['mean']['losses']}L</td><td style="font-weight:600;">{tomorrow_mean_r}%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div style="margin-top: 16px; padding: 12px; background: rgba({('248,81,73' if decay_sigma > 5 else ('210,153,29' if decay_sigma > 0 else '63,185,80'))}, 0.1); border-radius: 8px; text-align: center;">
+        <span style="font-size: 1.1rem; font-weight: 700; color: {decay_color};">
+          📊 EDGE DECAY: Tomorrow predictions are {abs(decay_sigma)}% {'less' if decay_sigma >= 0 else 'more'} accurate (Sigma)
+        </span>
+        <br/><span style="color: var(--text-dim); font-size: 0.8rem;">
+          P5 decay: {decay_p5}% | Mean decay: {decay_mean}%
+        </span>
+      </div>
+    </div>"""
+
+
+# =============================================================================
 # Edge-Maximizing Metric Helpers
 # =============================================================================
 
@@ -1241,6 +1360,9 @@ def _generate_html_report() -> str:
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     has_data = len(runs) > 0
 
+    # ── Today vs Tomorrow separation ──
+    today_tomorrow_section = _build_today_tomorrow_section(runs)
+
     # ── Edge-maximizing metric sections ──
     city_win_rate_section = _build_city_win_rate_section(runs)
     model_agreement_section = _build_model_agreement_section(runs)
@@ -1487,6 +1609,9 @@ function sortTable(colIdx) {{
   <!-- PER-STRATEGY PERFORMANCE CARDS -->
   {strategy_cards}
 
+  <!-- TODAY VS TOMORROW SEPARATION -->
+  {today_tomorrow_section}
+
   <!-- TOP 5 PREDICTIONS -->
   {predictions_html}
 
@@ -1657,6 +1782,81 @@ def _generate_all_cities_html() -> str:
             }
 
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+    # ---- Compute today vs tomorrow resolved win rates ----
+    def _compute_lead_rates(city_tbl: dict, ld: int):
+        """Compute resolved win rates for a given lead_days value."""
+        counts = {"sigma": {"wins": 0, "losses": 0}, "p5": {"wins": 0, "losses": 0}, "mean": {"wins": 0, "losses": 0}}
+        for city, leads in city_tbl.items():
+            d = leads.get(ld)
+            if d is None:
+                continue
+            for sn in ("sigma", "p5", "mean"):
+                r = d.get(f"{sn}_result", "")
+                if r == "WIN":
+                    counts[sn]["wins"] += 1
+                elif r == "LOSS":
+                    counts[sn]["losses"] += 1
+        return counts
+
+    def _rate_str(wins, losses):
+        total = wins + losses
+        return f"{round(wins / max(1, total) * 100, 1)}%" if total > 0 else "—"
+
+    today_rates = _compute_lead_rates(city_table, 0)
+    tomorrow_rates = _compute_lead_rates(city_table, 1)
+
+    today_sigma_wr = _rate_str(today_rates["sigma"]["wins"], today_rates["sigma"]["losses"])
+    today_p5_wr = _rate_str(today_rates["p5"]["wins"], today_rates["p5"]["losses"])
+    today_mean_wr = _rate_str(today_rates["mean"]["wins"], today_rates["mean"]["losses"])
+
+    tomorrow_sigma_wr = _rate_str(tomorrow_rates["sigma"]["wins"], tomorrow_rates["sigma"]["losses"])
+    tomorrow_p5_wr = _rate_str(tomorrow_rates["p5"]["wins"], tomorrow_rates["p5"]["losses"])
+    tomorrow_mean_wr = _rate_str(tomorrow_rates["mean"]["wins"], tomorrow_rates["mean"]["losses"])
+
+    # Edge decay
+    decay = 0
+    t_sigma_total = today_rates["sigma"]["wins"] + today_rates["sigma"]["losses"]
+    m_sigma_total = tomorrow_rates["sigma"]["wins"] + tomorrow_rates["sigma"]["losses"]
+    if t_sigma_total > 0 and m_sigma_total > 0:
+        t_sr = round(today_rates["sigma"]["wins"] / t_sigma_total * 100, 1)
+        m_sr = round(tomorrow_rates["sigma"]["wins"] / m_sigma_total * 100, 1)
+        decay = round(t_sr - m_sr, 1)
+        decay_text = f"📊 EDGE DECAY: Tomorrow predictions are {abs(decay)}% {'less' if decay >= 0 else 'more'} accurate (Sigma)"
+        decay_color = "#f85149" if decay > 5 else ("#d2991d" if decay > 0 else "#3fb950")
+    else:
+        decay_text = ""
+        decay_color = "#8b949e"
+
+    summary_bar_html = ""
+    if t_sigma_total > 0 or m_sigma_total > 0:
+        summary_bar_html = f"""
+  <div class="section" style="max-width: 900px; margin: 0 auto 20px;">
+    <h2>📊 Today vs Tomorrow Win Rates (Resolved)</h2>
+    <div class="grid-2">
+      <div>
+        <h3 style="color: var(--green); font-size: 0.9rem;">📊 TODAY (lead_days=0)</h3>
+        <table><thead><tr><th>Strategy</th><th>W/L</th><th>Rate</th></tr></thead>
+        <tbody>
+          <tr><td>Sigma</td><td>{today_rates['sigma']['wins']}W/{today_rates['sigma']['losses']}L</td><td>{today_sigma_wr}</td></tr>
+          <tr><td>P5</td><td>{today_rates['p5']['wins']}W/{today_rates['p5']['losses']}L</td><td>{today_p5_wr}</td></tr>
+          <tr><td>Mean</td><td>{today_rates['mean']['wins']}W/{today_rates['mean']['losses']}L</td><td>{today_mean_wr}</td></tr>
+        </tbody></table>
+      </div>
+      <div>
+        <h3 style="color: var(--orange); font-size: 0.9rem;">📊 TOMORROW (lead_days=1)</h3>
+        <table><thead><tr><th>Strategy</th><th>W/L</th><th>Rate</th></tr></thead>
+        <tbody>
+          <tr><td>Sigma</td><td>{tomorrow_rates['sigma']['wins']}W/{tomorrow_rates['sigma']['losses']}L</td><td>{tomorrow_sigma_wr}</td></tr>
+          <tr><td>P5</td><td>{tomorrow_rates['p5']['wins']}W/{tomorrow_rates['p5']['losses']}L</td><td>{tomorrow_p5_wr}</td></tr>
+          <tr><td>Mean</td><td>{tomorrow_rates['mean']['wins']}W/{tomorrow_rates['mean']['losses']}L</td><td>{tomorrow_mean_wr}</td></tr>
+        </tbody></table>
+      </div>
+    </div>""" + (f"""
+    <div style="margin-top: 12px; padding: 10px; background: rgba({('248,81,73' if decay > 5 else ('210,153,29' if decay > 0 else '63,185,80'))}, 0.1); border-radius: 8px; text-align: center;">
+      <span style="font-weight: 700; color: {decay_color};">{decay_text}</span>
+    </div>""" if decay_text else "") + """
+  </div>"""
 
     # ---- Build date button bar ----
     date_buttons_html = ""
@@ -1851,6 +2051,8 @@ def _generate_all_cities_html() -> str:
   <span class="live-updated" id="live-updated"></span>
 </div>
 <div class="container">
+
+  {summary_bar_html}
 
   <div class="date-bar" id="dateBar">
     {date_buttons_html}

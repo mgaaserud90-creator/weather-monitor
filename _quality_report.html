@@ -149,7 +149,7 @@
 // No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-08-10T08:32:52Z');
+    var deployTime = new Date('2026-08-10T08:47:25Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {
@@ -215,19 +215,19 @@ function sortTable(colIdx) {
 
   <div class="card-grid">
     <div class="card">
-      <div class="value" style="color: var(--blue);">3</div>
+      <div class="value" style="color: var(--blue);">1</div>
       <div class="label">Days Tracked</div>
     </div>
     <div class="card">
-      <div class="value" style="color: var(--purple);">102</div>
+      <div class="value" style="color: var(--purple);">51</div>
       <div class="label">Total Resolved (Sigma)</div>
     </div>
     <div class="card">
-      <div class="value" style="color: #FF9800;">49.0%</div>
+      <div class="value" style="color: #F44336;">21.6%</div>
       <div class="label">Overall Win Rate (Sigma)</div>
     </div>
     <div class="card">
-      <div class="value" style="color: var(--text);">0.536 / 0.527</div>
+      <div class="value" style="color: var(--text);">0.566 / 0.538</div>
       <div class="label">Avg Conf (Winners / Losers)</div>
     </div>
   </div>
@@ -236,22 +236,25 @@ function sortTable(colIdx) {
   
    <div class="card-grid">
      <div class="card" style="">
-       <div class="value" style="color: #f85149;">49.0%</div>
-       <div class="label">🎯 Sigma (μ−kσ)<br/>50W / 52L</div>
+       <div class="value" style="color: #f85149;">21.6%</div>
+       <div class="label">🎯 Sigma (μ−kσ)<br/>11W / 40L</div>
      </div>
      <div class="card" style="">
-       <div class="value" style="color: #f85149;">49.0%</div>
-       <div class="label">🛡️ P5-Basert<br/>50W / 52L</div>
+       <div class="value" style="color: #f85149;">3.9%</div>
+       <div class="label">🛡️ P5-Basert<br/>2W / 49L</div>
      </div>
      <div class="card" style="border: 2px solid #3fb950;">
-       <div class="value" style="color: #d2991d;">50.0%</div>
-       <div class="label">📊 Mean-Basert<br/>51W / 51L</div>
+       <div class="value" style="color: #f85149;">39.2%</div>
+       <div class="label">📊 Mean-Basert<br/>20W / 31L</div>
      </div>
      <div class="card">
        <div class="value" style="color: var(--purple);">🏆 Mean-Basert</div>
        <div class="label">Best Strategy</div>
      </div>
    </div>
+
+  <!-- TODAY VS TOMORROW SEPARATION -->
+  
 
   <!-- TOP 5 PREDICTIONS -->
   
@@ -277,7 +280,7 @@ function sortTable(colIdx) {
                 <td><span class="badge-win">✅ WIN</span></td>
                 <td><span class="badge-loss">❌ LOSS</span></td>
                 <td><span class="badge-win">✅ WIN</span></td>
-                <td style="color:#1b5e20;">✅ HOLD — bet vinner (round(23.0°C) == 23°C)</td>
+                <td style="color:#1b5e20;">âœ… HOLD â€” bet vinner (round(23.0Â°C) == 23Â°C)</td>
             </tr>
             <tr>
                 <td>2</td>
@@ -292,7 +295,7 @@ function sortTable(colIdx) {
                 <td><span class="badge-loss">❌ LOSS</span></td>
                 <td><span class="badge-loss">❌ LOSS</span></td>
                 <td><span class="badge-win">✅ WIN</span></td>
-                <td style="color:#b71c1c;">🔴 SELG med tap — gå SHORT 10°C (peak=11.3°C → round=11 ≠ 10) | Alt. ville vunnet: Mean@11°C</td>
+                <td style="color:#b71c1c;">ðŸ”´ SELG med tap â€” gÃ¥ SHORT 10Â°C (peak=11.3Â°C â†’ round=11 â‰  10) | Alt. ville vunnet: Mean@11Â°C</td>
             </tr>
             <tr>
                 <td>3</td>
@@ -307,7 +310,7 @@ function sortTable(colIdx) {
                 <td><span class="badge-loss">❌ LOSS</span></td>
                 <td><span class="badge-loss">❌ LOSS</span></td>
                 <td><span class="badge-loss">❌ LOSS</span></td>
-                <td style="color:#b71c1c;">🔴 SELG med tap — gå SHORT 36°C (peak=38.9°C → round=39 ≠ 36)</td>
+                <td style="color:#b71c1c;">ðŸ”´ SELG med tap â€” gÃ¥ SHORT 36Â°C (peak=38.9Â°C â†’ round=39 â‰  36)</td>
             </tr>
             <tr>
                 <td>4</td>
@@ -322,7 +325,7 @@ function sortTable(colIdx) {
                 <td><span class="badge-loss">❌ LOSS</span></td>
                 <td><span class="badge-loss">❌ LOSS</span></td>
                 <td><span class="badge-loss">❌ LOSS</span></td>
-                <td style="color:#b71c1c;">🔴 SELG med tap — gå SHORT 30°C (peak=33.3°C → round=33 ≠ 30)</td>
+                <td style="color:#b71c1c;">ðŸ”´ SELG med tap â€” gÃ¥ SHORT 30Â°C (peak=33.3Â°C â†’ round=33 â‰  30)</td>
             </tr>
             <tr>
                 <td>5</td>
@@ -337,7 +340,7 @@ function sortTable(colIdx) {
                 <td><span class="badge-win">✅ WIN</span></td>
                 <td><span class="badge-loss">❌ LOSS</span></td>
                 <td><span class="badge-win">✅ WIN</span></td>
-                <td style="color:#1b5e20;">✅ HOLD — bet vinner (round(34.8°C) == 35°C)</td>
+                <td style="color:#1b5e20;">âœ… HOLD â€” bet vinner (round(34.8Â°C) == 35Â°C)</td>
             </tr>
         </tbody>
       </table>
@@ -357,21 +360,21 @@ function sortTable(colIdx) {
                 <td><strong>Buenos Aires, AR</strong></td>
                 <td>BUY 10°C</td>
                 <td>11.3°C</td>
-                <td style="color:#f85149;">🔴 SELG med tap — gå SHORT 10°C (peak=11.3°C → round=11 ≠ 10) | Alt. ville vunnet: Mean@11°C</td>
+                <td style="color:#f85149;">ðŸ”´ SELG med tap â€” gÃ¥ SHORT 10Â°C (peak=11.3Â°C â†’ round=11 â‰  10) | Alt. ville vunnet: Mean@11Â°C</td>
                 <td>—</td>
             </tr>
             <tr>
                 <td><strong>Dallas, US</strong></td>
                 <td>BUY 36°C</td>
                 <td>38.9°C</td>
-                <td style="color:#f85149;">🔴 SELG med tap — gå SHORT 36°C (peak=38.9°C → round=39 ≠ 36)</td>
+                <td style="color:#f85149;">ðŸ”´ SELG med tap â€” gÃ¥ SHORT 36Â°C (peak=38.9Â°C â†’ round=39 â‰  36)</td>
                 <td>—</td>
             </tr>
             <tr>
                 <td><strong>Singapore, SG</strong></td>
                 <td>BUY 30°C</td>
                 <td>33.3°C</td>
-                <td style="color:#f85149;">🔴 SELG med tap — gå SHORT 30°C (peak=33.3°C → round=33 ≠ 30)</td>
+                <td style="color:#f85149;">ðŸ”´ SELG med tap â€” gÃ¥ SHORT 30Â°C (peak=33.3Â°C â†’ round=33 â‰  30)</td>
                 <td>—</td>
             </tr>
        </tbody>
@@ -1457,31 +1460,31 @@ function sortTable(colIdx) {
       <tbody>
             <tr>
                 <td>🟢 >80%</td>
-                <td>2</td>
-                <td>2</td>
+                <td>1</td>
+                <td>1</td>
                 <td>0</td>
                 <td>100.0%</td>
             </tr>
             <tr>
                 <td>🟠 70-80%</td>
-                <td>8</td>
-                <td>3</td>
                 <td>5</td>
-                <td>37.5%</td>
+                <td>1</td>
+                <td>4</td>
+                <td>20.0%</td>
             </tr>
             <tr>
                 <td>🔴 60-70%</td>
-                <td>21</td>
-                <td>10</td>
+                <td>14</td>
+                <td>3</td>
                 <td>11</td>
-                <td>47.6%</td>
+                <td>21.4%</td>
             </tr>
             <tr>
                 <td>🔴 <60%</td>
-                <td>71</td>
-                <td>35</td>
-                <td>36</td>
-                <td>49.3%</td>
+                <td>31</td>
+                <td>6</td>
+                <td>25</td>
+                <td>19.4%</td>
             </tr>
       </tbody>
     </table>
@@ -1494,8 +1497,6 @@ function sortTable(colIdx) {
       <thead><tr><th>Date</th><th>Phase</th><th>Sigma W/L</th><th>P5 W/L</th><th>Mean W/L</th><th>Rate (Sigma)</th></tr></thead>
       <tbody>
                 <tr><td>2026-08-10</td><td>🔒 closed</td><td>11/40</td><td>2/49</td><td>20/31</td><td>21.6%</td></tr>
-                <tr><td>2026-08-09</td><td>🔒 closed</td><td>39/12</td><td>48/3</td><td>31/20</td><td>76.5%</td></tr>
-                <tr><td>2026-08-08</td><td>🔒 closed</td><td>0/0</td><td>0/0</td><td>0/0</td><td>—</td></tr>
       </tbody>
     </table>
     </div>
@@ -1521,28 +1522,6 @@ function sortTable(colIdx) {
 
   <!-- EDGE-MAXIMIZING METRICS -->
   
-   <div class="section">
-     <h2>🏆 Win Rate Per City — Sigma Strategy</h2>
-     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
-       Sorted by sigma strategy win rate. Only cities with ≥2 resolved predictions shown.
-     </p>
-     <div class="grid-2">
-       <div>
-         <h3 style="color: var(--green); font-size: 1rem; margin-bottom: 8px;">🏆 BESTE BYER</h3>
-         <table>
-           <thead><tr><th>#</th><th>City</th><th>Record</th><th>Win Rate</th></tr></thead>
-           <tbody><tr><td>🥇</td><td><strong>Guangzhou, CN</strong></td><td>2W/0L</td><td style="color:#3fb950;font-weight:600;">100.0%</td></tr><tr><td>🥈</td><td><strong>Miami, US</strong></td><td>2W/0L</td><td style="color:#3fb950;font-weight:600;">100.0%</td></tr><tr><td>🥉</td><td><strong>Cape Town, ZA</strong></td><td>2W/0L</td><td style="color:#3fb950;font-weight:600;">100.0%</td></tr><tr><td>4.</td><td><strong>Mexico City, MX</strong></td><td>2W/0L</td><td style="color:#3fb950;font-weight:600;">100.0%</td></tr><tr><td>5.</td><td><strong>Toronto, CA</strong></td><td>2W/0L</td><td style="color:#3fb950;font-weight:600;">100.0%</td></tr><tr><td>6.</td><td><strong>Buenos Aires, AR</strong></td><td>1W/1L</td><td style="color:#d2991d;font-weight:600;">50.0%</td></tr><tr><td>7.</td><td><strong>Moscow, RU</strong></td><td>1W/1L</td><td style="color:#d2991d;font-weight:600;">50.0%</td></tr><tr><td>8.</td><td><strong>Houston, US</strong></td><td>1W/1L</td><td style="color:#d2991d;font-weight:600;">50.0%</td></tr><tr><td>9.</td><td><strong>Singapore, SG</strong></td><td>1W/1L</td><td style="color:#d2991d;font-weight:600;">50.0%</td></tr><tr><td>10.</td><td><strong>Wellington, NZ</strong></td><td>1W/1L</td><td style="color:#d2991d;font-weight:600;">50.0%</td></tr></tbody>
-         </table>
-       </div>
-       <div>
-         <h3 style="color: var(--red); font-size: 1rem; margin-bottom: 8px;">📉 SVESTE BYER</h3>
-         <table>
-           <thead><tr><th>#</th><th>City</th><th>Record</th><th>Win Rate</th></tr></thead>
-           <tbody><tr><td>42.</td><td><strong>Warsaw, PL</strong></td><td>0W/2L</td><td style="color:#f85149;font-weight:600;">0.0%</td></tr><tr><td>43.</td><td><strong>Taipei, TW</strong></td><td>0W/2L</td><td style="color:#f85149;font-weight:600;">0.0%</td></tr><tr><td>44.</td><td><strong>Jeddah, SA</strong></td><td>0W/2L</td><td style="color:#f85149;font-weight:600;">0.0%</td></tr><tr><td>45.</td><td><strong>Chengdu, CN</strong></td><td>0W/2L</td><td style="color:#f85149;font-weight:600;">0.0%</td></tr><tr><td>46.</td><td><strong>Beijing, CN</strong></td><td>0W/2L</td><td style="color:#f85149;font-weight:600;">0.0%</td></tr><tr><td>47.</td><td><strong>Chongqing, CN</strong></td><td>0W/2L</td><td style="color:#f85149;font-weight:600;">0.0%</td></tr><tr><td>48.</td><td><strong>Los Angeles, US</strong></td><td>1W/1L</td><td style="color:#d2991d;font-weight:600;">50.0%</td></tr><tr><td>49.</td><td><strong>San Francisco, US</strong></td><td>1W/1L</td><td style="color:#d2991d;font-weight:600;">50.0%</td></tr><tr><td>50.</td><td><strong>Jinan, CN</strong></td><td>1W/1L</td><td style="color:#d2991d;font-weight:600;">50.0%</td></tr><tr><td>51.</td><td><strong>Lucknow, IN</strong></td><td>1W/1L</td><td style="color:#d2991d;font-weight:600;">50.0%</td></tr></tbody>
-         </table>
-       </div>
-     </div>
-   </div>
   
    <div class="section">
      <h2>📊 Model Agreement & Win Rate</h2>
@@ -1551,7 +1530,7 @@ function sortTable(colIdx) {
      </p>
      <table>
        <thead><tr><th>Agreement</th><th>Positions</th><th>Record</th><th>Win Rate</th></tr></thead>
-       <tbody><tr><td><strong>8/8 enige</strong></td><td>15</td><td>5W/10L</td><td>33.3%</td></tr><tr><td><strong>7/8 enige</strong></td><td>87</td><td>45W/42L</td><td>51.7%</td></tr><tr><td><strong>6/8 enige</strong></td><td>0</td><td>0W/0L</td><td>0%</td></tr><tr><td><strong><6 enige</strong></td><td>0</td><td>0W/0L</td><td>0%</td></tr></tbody>
+       <tbody><tr><td><strong>8/8 enige</strong></td><td>12</td><td>3W/9L</td><td>25.0%</td></tr><tr><td><strong>7/8 enige</strong></td><td>39</td><td>8W/31L</td><td>20.5%</td></tr><tr><td><strong>6/8 enige</strong></td><td>0</td><td>0W/0L</td><td>0%</td></tr><tr><td><strong><6 enige</strong></td><td>0</td><td>0W/0L</td><td>0%</td></tr></tbody>
      </table>
    </div>
   
@@ -1562,7 +1541,7 @@ function sortTable(colIdx) {
      </p>
      <table>
        <thead><tr><th>Range Size</th><th>Positions</th><th>Record</th><th>Win Rate</th></tr></thead>
-       <tbody><tr><td><strong>Smal (<2°C)</strong></td><td>1</td><td>1W/0L</td><td>100.0%</td></tr><tr><td><strong>Medium (2-4°C)</strong></td><td>59</td><td>30W/29L</td><td>50.8%</td></tr><tr><td><strong>Bred (>4°C)</strong></td><td>42</td><td>19W/23L</td><td>45.2%</td></tr></tbody>
+       <tbody><tr><td><strong>Smal (<2°C)</strong></td><td>1</td><td>1W/0L</td><td>100.0%</td></tr><tr><td><strong>Medium (2-4°C)</strong></td><td>30</td><td>6W/24L</td><td>20.0%</td></tr><tr><td><strong>Bred (>4°C)</strong></td><td>20</td><td>4W/16L</td><td>20.0%</td></tr></tbody>
      </table>
    </div>
   
@@ -1573,7 +1552,7 @@ function sortTable(colIdx) {
      </p>
      <table>
        <thead><tr><th>Tier</th><th>🎯 Sigma</th><th>🛡️ P5</th><th>📊 Mean</th><th>🏆 Best</th></tr></thead>
-       <tbody><tr><td>🟢 >80%</td><td><span style="color:#3fb950;font-weight:600;">100.0%</span></td><td>50.0%</td><td>100.0%</td><td><span class="best-strategy">Sigma (100.0%)</span></td></tr><tr><td>🟠 70-80%</td><td>37.5%</td><td>37.5%</td><td><span style="color:#3fb950;font-weight:600;">62.5%</span></td><td><span class="best-strategy">Mean (62.5%)</span></td></tr><tr><td>🟡 60-70%</td><td>47.6%</td><td>38.1%</td><td><span style="color:#3fb950;font-weight:600;">52.4%</span></td><td><span class="best-strategy">Mean (52.4%)</span></td></tr><tr><td>🔴 50-60%</td><td><span style="color:#3fb950;font-weight:600;">60.0%</span></td><td>60.0%</td><td>60.0%</td><td><span class="best-strategy">Sigma (60.0%)</span></td></tr><tr><td>🔴 <50%</td><td>41.5%</td><td><span style="color:#3fb950;font-weight:600;">48.8%</span></td><td>36.6%</td><td><span class="best-strategy">P5 (48.8%)</span></td></tr></tbody>
+       <tbody><tr><td>🟢 >80%</td><td><span style="color:#3fb950;font-weight:600;">100.0%</span></td><td>0.0%</td><td>100.0%</td><td><span class="best-strategy">Sigma (100.0%)</span></td></tr><tr><td>🟠 70-80%</td><td>20.0%</td><td>0.0%</td><td><span style="color:#3fb950;font-weight:600;">60.0%</span></td><td><span class="best-strategy">Mean (60.0%)</span></td></tr><tr><td>🟡 60-70%</td><td>21.4%</td><td>7.1%</td><td><span style="color:#3fb950;font-weight:600;">35.7%</span></td><td><span class="best-strategy">Mean (35.7%)</span></td></tr><tr><td>🔴 50-60%</td><td>25.0%</td><td>8.3%</td><td><span style="color:#3fb950;font-weight:600;">50.0%</span></td><td><span class="best-strategy">Mean (50.0%)</span></td></tr><tr><td>🔴 <50%</td><td>15.8%</td><td>0.0%</td><td><span style="color:#3fb950;font-weight:600;">26.3%</span></td><td><span class="best-strategy">Mean (26.3%)</span></td></tr></tbody>
      </table>
    </div>
   
@@ -1585,7 +1564,7 @@ function sortTable(colIdx) {
      </p>
      <table>
        <thead><tr><th>Date</th><th>Sigma Record</th><th>Daily Edge</th><th>Cumulative</th></tr></thead>
-       <tbody><tr><td>2026-08-09</td><td>39W/12L</td><td style="color:#3fb950;font-weight:600;">+321 units</td><td style="color:#3fb950;font-weight:600;">+321 units</td></tr><tr><td>2026-08-10</td><td>11W/40L</td><td style="color:#f85149;font-weight:600;">-3571 units</td><td style="color:#f85149;font-weight:600;">-3250 units</td></tr></tbody>
+       <tbody><tr><td>2026-08-10</td><td>11W/40L</td><td style="color:#f85149;font-weight:600;">-3571 units</td><td style="color:#f85149;font-weight:600;">-3571 units</td></tr></tbody>
      </table>
    </div>
   
@@ -1596,7 +1575,7 @@ function sortTable(colIdx) {
      </p>
      <table>
        <thead><tr><th>Region</th><th>Positions</th><th>Record</th><th>Win Rate</th></tr></thead>
-       <tbody><tr><td><strong>Africa</strong></td><td>2</td><td>2W/0L</td><td style="color:#3fb950;font-weight:600;">100.0%</td></tr><tr><td><strong>Americas</strong></td><td>32</td><td>19W/13L</td><td style="color:#3fb950;font-weight:600;">59.4%</td></tr><tr><td><strong>Oceania</strong></td><td>2</td><td>1W/1L</td><td style="color:#3fb950;font-weight:600;">50.0%</td></tr><tr><td><strong>Europe</strong></td><td>22</td><td>10W/12L</td><td style="color:#d2991d;font-weight:600;">45.5%</td></tr><tr><td><strong>Asia</strong></td><td>44</td><td>18W/26L</td><td style="color:#d2991d;font-weight:600;">40.9%</td></tr></tbody>
+       <tbody><tr><td><strong>Africa</strong></td><td>1</td><td>1W/0L</td><td style="color:#3fb950;font-weight:600;">100.0%</td></tr><tr><td><strong>Europe</strong></td><td>11</td><td>3W/8L</td><td style="color:#f85149;font-weight:600;">27.3%</td></tr><tr><td><strong>Americas</strong></td><td>16</td><td>4W/12L</td><td style="color:#f85149;font-weight:600;">25.0%</td></tr><tr><td><strong>Asia</strong></td><td>22</td><td>3W/19L</td><td style="color:#f85149;font-weight:600;">13.6%</td></tr><tr><td><strong>Oceania</strong></td><td>1</td><td>0W/1L</td><td style="color:#f85149;font-weight:600;">0.0%</td></tr></tbody>
      </table>
    </div>
   
@@ -1608,8 +1587,8 @@ function sortTable(colIdx) {
      <table>
        <thead><tr><th>UHI Category</th><th>Count</th><th>Avg BMA Error</th></tr></thead>
        <tbody>
-         <tr><td><strong>High UHI cities (≥1.0°C)</strong></td><td>43</td><td>1.4°C</td></tr>
-         <tr><td><strong>Low UHI cities (≤0.5°C)</strong></td><td>41</td><td>1.41°C</td></tr>
+         <tr><td><strong>High UHI cities (≥1.0°C)</strong></td><td>28</td><td>0.91°C</td></tr>
+         <tr><td><strong>Low UHI cities (≤0.5°C)</strong></td><td>12</td><td>0.63°C</td></tr>
        </tbody>
      </table>
    </div>
