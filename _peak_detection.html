@@ -84,6 +84,20 @@
   .card-info .conf.high { color: var(--green); }
   .card-info .conf.medium { color: var(--orange); }
   .card-info .conf.low { color: var(--red); }
+  .actual-peak-bar {
+    font-size: 0.85rem; font-weight: 700; padding: 8px 12px; margin-bottom: 10px;
+    border-radius: 6px; display: flex; align-items: center; gap: 8px;
+    background: rgba(63, 185, 80, 0.12); color: var(--green);
+    border: 1px solid rgba(63, 185, 80, 0.3);
+  }
+  .actual-peak-bar.win { background: rgba(63, 185, 80, 0.12); color: var(--green); border-color: rgba(63, 185, 80, 0.3); }
+  .actual-peak-bar.loss { background: rgba(248, 81, 73, 0.12); color: var(--red); border-color: rgba(248, 81, 73, 0.3); }
+  .arb-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 0.7rem; font-weight: 800; margin-left: 6px;
+    background: rgba(210, 153, 29, 0.2); color: var(--orange);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
   .empty-state { text-align: center; padding: 60px 20px; color: var(--text-dim); }
   .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
   footer { text-align: center; padding: 16px; color: var(--text-dim); font-size: 0.75rem; border-top: 1px solid var(--border); margin-top: 20px; }
@@ -179,6 +193,8 @@ const ALL_CITIES = [
   {name: "Panama City, PA", lat: 8.9733, lon: -79.5556, tz: "America/Panama", peakStart: 14, peakEnd: 17},
   {name: "Jinan, CN", lat: 36.8572, lon: 117.2158, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16}
 ];
+const ACTUAL_PEAK_DATA = {};
+const MARKET_PRICES = {};
 
 // ---- State ----
 let monitoredCities = [];
@@ -434,6 +450,33 @@ function buildCardHTML(city) {
     const safeId = city.name.replace(/[^a-zA-Z0-9]/g, '_');
     const pwStatus = getPeakStatus(city.peakStart || 14, city.peakEnd || 17, city.tz);
     const tzShort = (city.tz || 'UTC').split('/')[1] || city.tz || 'UTC';
+
+    // Check for actual peak data from quality log
+    let actualPeakHTML = '';
+    const apData = ACTUAL_PEAK_DATA[city.name];
+    if (apData && apData.actual_peak != null) {
+        const hourMatch = (apData.peak_detected_at || '').match(/T(\d{2}):/);
+        const confirmedTime = hourMatch ? hourMatch[1] + ':00' : '';
+        const timeLabel = confirmedTime ? ' (bekreftet ' + confirmedTime + ')' : '';
+        const isWin = apData.actual_peak != null && apData.spill != null && Math.round(apData.actual_peak) === apData.spill;
+        const barClass = isWin ? 'win' : 'loss';
+        const winIcon = isWin ? '✅' : '❌';
+
+        // Check for arbitrage opportunity (market prices available)
+        let arbBadge = '';
+        if (apData.spill != null) {
+            const mktKey = city.name.split(',')[0].trim() + '_' + apData.spill;
+            if (MARKET_PRICES[mktKey] !== undefined) {
+                arbBadge = '<span class="arb-badge">💰 Arbitrasje-mulighet!</span>';
+            }
+        }
+
+        actualPeakHTML = '<div class="actual-peak-bar ' + barClass + '">' +
+          winIcon + ' FAKTISK PEAK: ' + apData.actual_peak.toFixed(1) + '°C' + timeLabel +
+          arbBadge +
+        '</div>';
+    }
+
     return '<div class="peak-card status-unknown ' + pwStatus.borderClass + '" id="card-' + safeId + '">' +
       '<div class="card-header">' +
         '<h3>' + pwStatus.icon + ' ' + city.name + '</h3>' +
@@ -442,6 +485,7 @@ function buildCardHTML(city) {
       '<div class="peak-window-bar ' + pwStatus.colorClass + '">' +
         pwStatus.icon + ' <span class="peak-window-time">⏰ Peak: ' + formatPeakWindow(city.peakStart || 14, city.peakEnd || 17) + ' ' + tzShort + '</span> | <span class="peak-window-label">' + pwStatus.label + '</span>' + (pwStatus.detail ? ' <span>(' + pwStatus.detail + ')</span>' : '') +
       '</div>' +
+      actualPeakHTML +
       '<div class="card-temp">—°C</div>' +
       '<div class="card-meta">' +
         '<span>' + city.lat.toFixed(2) + ', ' + city.lon.toFixed(2) + '</span>' +

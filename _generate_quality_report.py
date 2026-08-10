@@ -1518,6 +1518,87 @@ def _build_arbitrage_stats_html_section(runs: list) -> str:
     </div>"""
 
 
+def _build_madrid_arbitrage_highlight(runs: list) -> str:
+    """Build a prominent Madrid arbitrage callout if actual_peak≈36.7°C.
+
+    Checks the latest run for Madrid, ES with actual_peak data and highlights
+    the arbitrage opportunity relative to the market line.
+    """
+    if not runs:
+        return ""
+
+    latest = runs[-1]
+    preds = latest.get("predictions", {})
+    madrid = preds.get("Madrid, ES")
+    if not madrid:
+        return ""
+
+    strategies = madrid.get("strategies", {})
+    sigma = strategies.get("sigma", {})
+    actual_peak = sigma.get("actual_peak")
+    if actual_peak is None:
+        return ""
+
+    spill = sigma.get("spill", 0)
+    sigma_result = sigma.get("result", "")
+    peak_time = madrid.get("peak_detected_at", "")
+    bma_mean = madrid.get("bma_mean", "--")
+
+    # Parse confirmed time
+    confirmed_hour = ""
+    if peak_time:
+        try:
+            dt = datetime.fromisoformat(peak_time)
+            confirmed_hour = dt.strftime("%H:%M")
+        except (ValueError, TypeError):
+            pass
+
+    time_str = f" (bekreftet {confirmed_hour})" if confirmed_hour else ""
+
+    # Check if there's an arbitrage opportunity
+    actual_rounded = round(actual_peak)
+    if actual_rounded != spill:
+        # Sigma lost — SHORT opportunity
+        arb_action = "SHORT"
+        arb_color = "#f85149"
+        arb_icon = "🔴"
+        rec_text = f"SELG {spill}°C → SHORT! Peak ble {actual_peak:.1f}°C (round={actual_rounded} ≠ spill={spill})"
+    else:
+        arb_action = "WIN"
+        arb_color = "#3fb950"
+        arb_icon = "✅"
+        rec_text = f"✅ HOLD — Peak {actual_peak:.1f}°C traff spill {spill}°C"
+
+    return f"""
+    <div class="section" style="border-color: rgba(210,153,29,0.5); box-shadow: 0 0 20px rgba(210,153,29,0.1);">
+      <h2>💰 MADRID ARBITRASJE — Peak Detected!</h2>
+      <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 280px;">
+          <div style="font-size: 2.5rem; font-weight: 800; color: {arb_color};">
+            {arb_icon} {actual_peak:.1f}°C
+          </div>
+          <div style="font-size: 1.2rem; font-weight: 700; margin-bottom: 8px;">
+            Madrid, ES — FAKTISK PEAK{time_str}
+          </div>
+          <div style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 4px;">
+            BMA predikert: {bma_mean}°C | Spill (sigma): {spill}°C
+          </div>
+          <div style="font-size: 0.9rem; font-weight: 600; color: {arb_color}; margin-top: 8px;">
+            {rec_text}
+          </div>
+        </div>
+        <div style="flex: 0 0 auto; text-align: center; padding: 12px 20px; background: rgba(210,153,29,0.1); border-radius: 12px;">
+          <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Marked Linje</div>
+          <div style="font-size: 1.5rem; font-weight: 800; color: var(--orange);">37°C</div>
+          <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 4px;">Sjekk Polymarket!</div>
+        </div>
+      </div>
+      <p style="color: var(--text-dim); font-size: 0.8rem; margin-top: 12px;">
+        📡 Peak bekreftet via archive data. Arbitrasje-vindu: markedet kan fremdeles trade feil side av denne temperaturen.
+      </p>
+    </div>"""
+
+
 # =============================================================================
 # Resolution Arbitrage Section — Post-Peak Market Scanner
 # =============================================================================
@@ -2028,6 +2109,9 @@ def _generate_html_report() -> str:
     # ── Arbitrage Stats Section (Win/Loss Tracking) ──
     arbitrage_stats_section = _build_arbitrage_stats_html_section(runs)
 
+    # ── Madrid Arbitrage Highlight ──
+    madrid_arb_section = _build_madrid_arbitrage_highlight(runs)
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2270,6 +2354,9 @@ function sortTable(colIdx) {{
 
   <!-- RESOLUTION ARBITRAGE: Post-Peak -->
   {resolution_arb_section}
+
+  <!-- MADRID ARBITRAGE HIGHLIGHT -->
+  {madrid_arb_section}
 
   <!-- ARBITRAGE STATS: Win/Loss Tracking -->
   {arbitrage_stats_section}
@@ -2986,6 +3073,44 @@ def _generate_peak_detection_html() -> str:
             pass
     cities_js_array = "const ALL_CITIES = [\n" + ",\n".join(cities_js_entries) + "\n];"
 
+    # Load actual peak data from quality log for embedding
+    log_data = _load_log()
+    actual_peak_entries: list[str] = []
+    market_lookup_js: dict[str, float] = {}
+    if log_data.get("runs"):
+        latest_run = log_data["runs"][-1]
+        preds = latest_run.get("predictions", {})
+        for city, pdata in preds.items():
+            strategies = pdata.get("strategies", {})
+            sigma = strategies.get("sigma", {})
+            actual_peak = sigma.get("actual_peak")
+            peak_detected_at = pdata.get("peak_detected_at")
+            recommendation = pdata.get("recommendation", "")
+            if actual_peak is not None:
+                actual_peak_entries.append(
+                    f'  "{city}": {{actual_peak: {actual_peak}, '
+                    f'peak_detected_at: "{peak_detected_at or ""}", '
+                    f'recommendation: "{recommendation}", '
+                    f'spill: {sigma.get("spill", 0)}}}'
+                )
+    actual_peak_js = "const ACTUAL_PEAK_DATA = {\n" + ",\n".join(actual_peak_entries) + "\n};" if actual_peak_entries else "const ACTUAL_PEAK_DATA = {};"
+
+    # Load market prices for arbitrage badges
+    market_prices_entries: list[str] = []
+    try:
+        market_prices_path = Path(_SCRIPT_DIR) / "_market_prices.json"
+        if market_prices_path.exists():
+            mp_data = json.loads(market_prices_path.read_text(encoding="utf-8"))
+            for opp in mp_data if isinstance(mp_data, list) else mp_data.get("opportunities", []):
+                city = opp.get("city", "")
+                temp = opp.get("temperature")
+                price = opp.get("price")
+                if city and temp is not None and price is not None:
+                    market_prices_entries.append(f'  "{city}_{temp}": {price}')
+    except Exception:
+        pass
+    market_prices_js = "const MARKET_PRICES = {\n" + ",\n".join(market_prices_entries) + "\n};" if market_prices_entries else "const MARKET_PRICES = {};"
+
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
 
     return f"""<!DOCTYPE html>
@@ -3074,6 +3199,20 @@ def _generate_peak_detection_html() -> str:
   .card-info .conf.high {{ color: var(--green); }}
   .card-info .conf.medium {{ color: var(--orange); }}
   .card-info .conf.low {{ color: var(--red); }}
+  .actual-peak-bar {{
+    font-size: 0.85rem; font-weight: 700; padding: 8px 12px; margin-bottom: 10px;
+    border-radius: 6px; display: flex; align-items: center; gap: 8px;
+    background: rgba(63, 185, 80, 0.12); color: var(--green);
+    border: 1px solid rgba(63, 185, 80, 0.3);
+  }}
+  .actual-peak-bar.win {{ background: rgba(63, 185, 80, 0.12); color: var(--green); border-color: rgba(63, 185, 80, 0.3); }}
+  .actual-peak-bar.loss {{ background: rgba(248, 81, 73, 0.12); color: var(--red); border-color: rgba(248, 81, 73, 0.3); }}
+  .arb-badge {{
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 0.7rem; font-weight: 800; margin-left: 6px;
+    background: rgba(210, 153, 29, 0.2); color: var(--orange);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }}
   .empty-state {{ text-align: center; padding: 60px 20px; color: var(--text-dim); }}
   .empty-state .icon {{ font-size: 3rem; margin-bottom: 12px; }}
   footer {{ text-align: center; padding: 16px; color: var(--text-dim); font-size: 0.75rem; border-top: 1px solid var(--border); margin-top: 20px; }}
@@ -3117,6 +3256,8 @@ def _generate_peak_detection_html() -> str:
 
 <script>
 {cities_js_array}
+{actual_peak_js}
+{market_prices_js}
 
 // ---- State ----
 let monitoredCities = [];
@@ -3372,6 +3513,33 @@ function buildCardHTML(city) {{
     const safeId = city.name.replace(/[^a-zA-Z0-9]/g, '_');
     const pwStatus = getPeakStatus(city.peakStart || 14, city.peakEnd || 17, city.tz);
     const tzShort = (city.tz || 'UTC').split('/')[1] || city.tz || 'UTC';
+
+    // Check for actual peak data from quality log
+    let actualPeakHTML = '';
+    const apData = ACTUAL_PEAK_DATA[city.name];
+    if (apData && apData.actual_peak != null) {{
+        const hourMatch = (apData.peak_detected_at || '').match(/T(\\d{{2}}):/);
+        const confirmedTime = hourMatch ? hourMatch[1] + ':00' : '';
+        const timeLabel = confirmedTime ? ' (bekreftet ' + confirmedTime + ')' : '';
+        const isWin = apData.actual_peak != null && apData.spill != null && Math.round(apData.actual_peak) === apData.spill;
+        const barClass = isWin ? 'win' : 'loss';
+        const winIcon = isWin ? '✅' : '❌';
+
+        // Check for arbitrage opportunity (market prices available)
+        let arbBadge = '';
+        if (apData.spill != null) {{
+            const mktKey = city.name.split(',')[0].trim() + '_' + apData.spill;
+            if (MARKET_PRICES[mktKey] !== undefined) {{
+                arbBadge = '<span class="arb-badge">💰 Arbitrasje-mulighet!</span>';
+            }}
+        }}
+
+        actualPeakHTML = '<div class="actual-peak-bar ' + barClass + '">' +
+          winIcon + ' FAKTISK PEAK: ' + apData.actual_peak.toFixed(1) + '°C' + timeLabel +
+          arbBadge +
+        '</div>';
+    }}
+
     return '<div class="peak-card status-unknown ' + pwStatus.borderClass + '" id="card-' + safeId + '">' +
       '<div class="card-header">' +
         '<h3>' + pwStatus.icon + ' ' + city.name + '</h3>' +
@@ -3380,6 +3548,7 @@ function buildCardHTML(city) {{
       '<div class="peak-window-bar ' + pwStatus.colorClass + '">' +
         pwStatus.icon + ' <span class="peak-window-time">⏰ Peak: ' + formatPeakWindow(city.peakStart || 14, city.peakEnd || 17) + ' ' + tzShort + '</span> | <span class="peak-window-label">' + pwStatus.label + '</span>' + (pwStatus.detail ? ' <span>(' + pwStatus.detail + ')</span>' : '') +
       '</div>' +
+      actualPeakHTML +
       '<div class="card-temp">—°C</div>' +
       '<div class="card-meta">' +
         '<span>' + city.lat.toFixed(2) + ', ' + city.lon.toFixed(2) + '</span>' +
