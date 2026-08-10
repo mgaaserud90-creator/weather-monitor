@@ -149,7 +149,7 @@
 // No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-08-10T15:28:46Z');
+    var deployTime = new Date('2026-08-10T16:11:24Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {
@@ -264,6 +264,9 @@ function sortTable(colIdx) {
       </p>
     </div>
 
+  <!-- ARBITRAGE STATS: Win/Loss Tracking -->
+  
+
   <!-- MARKET EDGE: BMA vs Polymarket -->
   
    <div class="section">
@@ -284,14 +287,12 @@ function sortTable(colIdx) {
      </div>
      <div style="overflow-x: auto;">
      <table>
-       <thead><tr><th>#</th><th>By</th><th>Spill</th><th>Sigma</th><th>Mean</th><th>P5</th><th>Marked Pris</th><th>BMA μ</th><th>Volum</th></tr></thead>
+       <thead><tr><th>#</th><th>By</th><th>Spill</th><th>BMA Sanns.</th><th>Marked Pris</th><th>BMA μ</th><th>Volum</th></tr></thead>
        <tbody><tr>
                 <td>1</td>
                 <td><strong>Shanghai, CN</strong></td>
                 <td>28°C</td>
-                <td>28°C</td>
-                <td>29°C</td>
-                <td>28°C</td>
+                <td>30.3%</td>
                 <td>93.0%</td>
                 <td style="color: var(--text-dim);">28.8°C</td>
                 <td style="color: var(--text-dim);">$37K</td>
@@ -299,9 +300,7 @@ function sortTable(colIdx) {
                 <td>2</td>
                 <td><strong>Shanghai, CN</strong></td>
                 <td>29°C</td>
-                <td>28°C</td>
-                <td>29°C</td>
-                <td>28°C</td>
+                <td>47.5%</td>
                 <td>5.5%</td>
                 <td style="color: var(--text-dim);">28.8°C</td>
                 <td style="color: var(--text-dim);">$22K</td>
@@ -309,9 +308,7 @@ function sortTable(colIdx) {
                 <td>3</td>
                 <td><strong>Munich, DE</strong></td>
                 <td>34°C</td>
-                <td>28°C</td>
-                <td>29°C</td>
-                <td>27°C</td>
+                <td>0.0%</td>
                 <td>95.5%</td>
                 <td style="color: var(--text-dim);">28.8°C</td>
                 <td style="color: var(--text-dim);">$19K</td>
@@ -319,9 +316,7 @@ function sortTable(colIdx) {
                 <td>4</td>
                 <td><strong>London, UK</strong></td>
                 <td>26°C</td>
-                <td>25°C</td>
-                <td>27°C</td>
-                <td>25°C</td>
+                <td>32.5%</td>
                 <td>62.5%</td>
                 <td style="color: var(--text-dim);">26.6°C</td>
                 <td style="color: var(--text-dim);">$19K</td>
@@ -329,9 +324,7 @@ function sortTable(colIdx) {
                 <td>5</td>
                 <td><strong>London, UK</strong></td>
                 <td>25°C</td>
-                <td>25°C</td>
-                <td>27°C</td>
-                <td>25°C</td>
+                <td>11.8%</td>
                 <td>20.0%</td>
                 <td style="color: var(--text-dim);">26.6°C</td>
                 <td style="color: var(--text-dim);">$17K</td>
@@ -339,9 +332,7 @@ function sortTable(colIdx) {
                 <td>6</td>
                 <td><strong>London, UK</strong></td>
                 <td>24°C</td>
-                <td>25°C</td>
-                <td>27°C</td>
-                <td>25°C</td>
+                <td>1.7%</td>
                 <td>4.1%</td>
                 <td style="color: var(--text-dim);">26.6°C</td>
                 <td style="color: var(--text-dim);">$12K</td>
@@ -349,9 +340,7 @@ function sortTable(colIdx) {
                 <td>7</td>
                 <td><strong>London, UK</strong></td>
                 <td>27°C</td>
-                <td>25°C</td>
-                <td>27°C</td>
-                <td>25°C</td>
+                <td>35.6%</td>
                 <td>9.0%</td>
                 <td style="color: var(--text-dim);">26.6°C</td>
                 <td style="color: var(--text-dim);">$12K</td>
@@ -359,9 +348,7 @@ function sortTable(colIdx) {
                 <td>8</td>
                 <td><strong>Wellington, NZ</strong></td>
                 <td>12°C</td>
-                <td>11°C</td>
-                <td>12°C</td>
-                <td>11°C</td>
+                <td>52.5%</td>
                 <td>56.5%</td>
                 <td style="color: var(--text-dim);">11.8°C</td>
                 <td style="color: var(--text-dim);">$11K</td>
@@ -369,9 +356,7 @@ function sortTable(colIdx) {
                 <td>9</td>
                 <td><strong>Hong Kong, HK</strong></td>
                 <td>37°C</td>
-                <td>33°C</td>
-                <td>34°C</td>
-                <td>32°C</td>
+                <td>0.3%</td>
                 <td>2.5%</td>
                 <td style="color: var(--text-dim);">33.8°C</td>
                 <td style="color: var(--text-dim);">$10K</td>
@@ -379,9 +364,7 @@ function sortTable(colIdx) {
                 <td>10</td>
                 <td><strong>Hong Kong, HK</strong></td>
                 <td>30°C</td>
-                <td>33°C</td>
-                <td>34°C</td>
-                <td>32°C</td>
+                <td>0.0%</td>
                 <td>5.0%</td>
                 <td style="color: var(--text-dim);">33.8°C</td>
                 <td style="color: var(--text-dim);">$9K</td>
@@ -389,9 +372,7 @@ function sortTable(colIdx) {
                 <td>11</td>
                 <td><strong>Dallas, US</strong></td>
                 <td>37°C</td>
-                <td>37°C</td>
-                <td>38°C</td>
-                <td>37°C</td>
+                <td>21.3%</td>
                 <td>69.0%</td>
                 <td style="color: var(--text-dim);">38.1°C</td>
                 <td style="color: var(--text-dim);">$12K</td>
@@ -399,9 +380,7 @@ function sortTable(colIdx) {
                 <td>12</td>
                 <td><strong>Dallas, US</strong></td>
                 <td>38°C</td>
-                <td>37°C</td>
-                <td>38°C</td>
-                <td>37°C</td>
+                <td>42.8%</td>
                 <td>25.5%</td>
                 <td style="color: var(--text-dim);">38.1°C</td>
                 <td style="color: var(--text-dim);">$9K</td>
@@ -409,9 +388,7 @@ function sortTable(colIdx) {
                 <td>13</td>
                 <td><strong>Amsterdam, NL</strong></td>
                 <td>23°C</td>
-                <td>21°C</td>
-                <td>22°C</td>
-                <td>20°C</td>
+                <td>24.0%</td>
                 <td>94.0%</td>
                 <td style="color: var(--text-dim);">22.0°C</td>
                 <td style="color: var(--text-dim);">$10K</td>
@@ -419,9 +396,7 @@ function sortTable(colIdx) {
                 <td>14</td>
                 <td><strong>New York, US</strong></td>
                 <td>33°C</td>
-                <td>30°C</td>
-                <td>32°C</td>
-                <td>29°C</td>
+                <td>19.1%</td>
                 <td>16.0%</td>
                 <td style="color: var(--text-dim);">32.0°C</td>
                 <td style="color: var(--text-dim);">$10K</td>
@@ -429,9 +404,7 @@ function sortTable(colIdx) {
                 <td>15</td>
                 <td><strong>Milan, IT</strong></td>
                 <td>33°C</td>
-                <td>34°C</td>
-                <td>36°C</td>
-                <td>33°C</td>
+                <td>5.6%</td>
                 <td>22.5%</td>
                 <td style="color: var(--text-dim);">36.0°C</td>
                 <td style="color: var(--text-dim);">$11K</td>
@@ -439,9 +412,7 @@ function sortTable(colIdx) {
                 <td>16</td>
                 <td><strong>Milan, IT</strong></td>
                 <td>35°C</td>
-                <td>34°C</td>
-                <td>36°C</td>
-                <td>33°C</td>
+                <td>18.9%</td>
                 <td>14.0%</td>
                 <td style="color: var(--text-dim);">36.0°C</td>
                 <td style="color: var(--text-dim);">$10K</td>
@@ -449,9 +420,7 @@ function sortTable(colIdx) {
                 <td>17</td>
                 <td><strong>Los Angeles, US</strong></td>
                 <td>24°C</td>
-                <td>25°C</td>
-                <td>27°C</td>
-                <td>23°C</td>
+                <td>6.9%</td>
                 <td>14.5%</td>
                 <td style="color: var(--text-dim);">27.4°C</td>
                 <td style="color: var(--text-dim);">$11K</td>

@@ -1584,7 +1584,7 @@ def _build_market_edge_html_section() -> str:
      </div>
      <div style="overflow-x: auto;">
      <table>
-       <thead><tr><th>#</th><th>By</th><th>Spill</th><th>Sigma</th><th>Mean</th><th>P5</th><th>Marked Pris</th><th>BMA μ</th><th>Volum</th></tr></thead>
+       <thead><tr><th>#</th><th>By</th><th>Spill</th><th>BMA Sanns.</th><th>Marked Pris</th><th>BMA μ</th><th>Volum</th></tr></thead>
        <tbody>{rows_html}</tbody>
      </table>
      </div>

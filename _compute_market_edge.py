@@ -491,44 +491,46 @@ def compute_edges(
 # ---------------------------------------------------------------------------
 
 def format_edge_table(edges: list[dict]) -> str:
-    """Format edge results as a markdown table string — data-only, no signals."""
+    """Format edge results as a markdown table string — data-only, no signals.
+
+    Shows per-market BMA probability instead of city-level strategy spills,
+    since different temperature buckets for the same city have different
+    BMA probabilities but the same sigma/mean/p5 spills.
+    """
     if not edges:
         return "No trading opportunities found (no matching cities between BMA and market data)."
 
     lines = [
-        f"| By | Spill (°C) | Sigma | Mean | P5 | Marked % | BMA μ | BMA σ | Volum |",
-        f"|-----|-----------|-------|------|-----|----------|-------|-------|-------|",
+        f"| By | Spill | BMA Sanns. | Marked Pris | BMA μ | Volum |",
+        f"|-----|-------|-----------|-------------|-------|-------|",
     ]
 
     for e in edges:
         lines.append(
             f"| {e['city']} | {e['temp']}°C | "
-            f"{e.get('sigma_spill', '?')}°C | {e.get('mean_spill', '?')}°C | {e.get('p5_spill', '?')}°C | "
+            f"{e['bma_prob']:.1f}% | "
             f"{e['market_prob']:.1f}% | "
-            f"{e['bma_mean']:.1f}°C | σ={e['bma_std']:.1f} | {e['volume_display']} |"
+            f"{e['bma_mean']:.1f}°C | {e['volume_display']} |"
         )
 
     return "\n".join(lines)
 
 
 def format_edge_html_rows(edges: list[dict]) -> str:
-    """Format edge results as HTML table rows — pure data display, no trading signals."""
+    """Format edge results as HTML table rows — pure data display, no trading signals.
+
+    Shows per-market BMA probability instead of city-level strategy spills.
+    """
     if not edges:
-        return '<tr><td colspan="9" style="color: var(--text-dim);">Ingen matchende markeder funnet.</td></tr>'
+        return '<tr><td colspan="7" style="color: var(--text-dim);">Ingen matchende markeder funnet.</td></tr>'
 
     rows = ""
     for i, e in enumerate(edges[:20]):  # Top 20
-        sigma_spill = e.get('sigma_spill', '?')
-        mean_spill = e.get('mean_spill', '?')
-        p5_spill = e.get('p5_spill', '?')
-
         rows += f"""<tr>
                 <td>{i+1}</td>
                 <td><strong>{e['city']}</strong></td>
                 <td>{e['temp']}°C</td>
-                <td>{sigma_spill}°C</td>
-                <td>{mean_spill}°C</td>
-                <td>{p5_spill}°C</td>
+                <td>{e['bma_prob']:.1f}%</td>
                 <td>{e['market_prob']:.1f}%</td>
                 <td style="color: var(--text-dim);">{e['bma_mean']:.1f}°C</td>
                 <td style="color: var(--text-dim);">{e.get('volume_display', '')}</td>
