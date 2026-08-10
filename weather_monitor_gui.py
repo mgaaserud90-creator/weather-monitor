@@ -578,6 +578,12 @@ class WeatherMonitorGUI:
         )
         self._mon_stop_btn.pack(side=LEFT, padx=(0, 10))
 
+        self._peak_curve_btn = ttk.Button(
+            ctrl, text="📈 Peak Kurve",
+            command=self._open_peak_curve_window,
+        )
+        self._peak_curve_btn.pack(side=LEFT, padx=(0, 10))
+
         self._mon_status_label = ttk.Label(ctrl, text="Inaktiv — kjør Bulk Analyse først")
         self._mon_status_label.pack(side=LEFT, padx=(10, 0))
 
@@ -664,6 +670,9 @@ class WeatherMonitorGUI:
         # Clear monitoring canvas
         for widget in self._mon_text.winfo_children():
             widget.destroy()
+
+        # SMS alert state (dedup: one per city per day)
+        self._sms_sent_today: set[str] = set()
 
         # Start background thread
         self._monitoring_thread = threading.Thread(
@@ -966,6 +975,50 @@ class WeatherMonitorGUI:
                                         )
                     except Exception:
                         pass
+
+            # ---- SMS Alert Check (integrated into monitoring loop) ----
+            try:
+                from _sms_alert import send_sms, can_send_sms_for_city, mark_sms_sent
+                for city_info in self._monitored_cities[:5]:
+                    city_name = city_info["city"]
+                    peak_state = self._peak_state.get(city_name)
+                    if peak_state is None:
+                        continue
+                    live_conf = peak_state.live_confidence
+                    trend = peak_state.trend
+                    suggested_temp = self._suggested_temps.get(city_name)
+                    current_temp = None
+                    obs_list = self._obs_history.get(city_name, [])
+                    if obs_list:
+                        current_temp = obs_list[-1][1]
+
+                    # SMS trigger conditions: peak_confidence > 70%, live_conf > 60%, declining, strategy at risk
+                    bma_conf = 0.0
+                    bma_result = self._last_bma_result.get(city_name, {})
+                    if bma_result:
+                        bma_conf = bma_result.get("confidence", 0.0)
+
+                    if (bma_conf > 0.70 and live_conf > 60 and trend == "↓"
+                            and can_send_sms_for_city(city_name)):
+                        if current_temp is not None and suggested_temp is not None:
+                            if current_temp < suggested_temp - 0.5:
+                                conf_pct = int(bma_conf * 100)
+                                msg = (
+                                    f"VARSMONITOR: {city_name} peak sannsynlig ({conf_pct}%). "
+                                    f"KJOP {int(suggested_temp)}C star i fare. "
+                                    f"Na {current_temp:.1f}C synkende. Vurder SELG."
+                                )
+                                loop_sms = _asyncio.new_event_loop()
+                                _asyncio.set_event_loop(loop_sms)
+                                try:
+                                    loop_sms.run_until_complete(send_sms(msg))
+                                except Exception:
+                                    pass
+                                finally:
+                                    loop_sms.close()
+                                mark_sms_sent(city_name)
+            except Exception:
+                pass
 
             # Sleep until next check
             for _ in range(CHECK_INTERVAL):
@@ -1304,10 +1357,17 @@ class WeatherMonitorGUI:
             # Ensemble spread signal (copyable)
             spd_row_m = tk.Frame(inner, bg=card_bg)
             spd_row_m.pack(fill=X)
-            spread_txt = f"📊 Modell-spredning: {c['range_c']:.1f}°C"
-            if c['range_c'] <= 2.0:
+            range_c = c.get("range_c", 0)
+            spread_signal = "medium"
+            if range_c <= 2.0:
+                spread_signal = "narrow"
+            elif range_c > 5.0:
+                spread_signal = "wide"
+
+            spread_txt = f"📊 Modell-spredning: {range_c:.1f}°C"
+            if spread_signal == "narrow":
                 spread_txt += " (smal = høy konfidens)"
-            elif c['range_c'] > 5.0:
+            elif spread_signal == "wide":
                 spread_txt += " ⚠️ Høy spredning — mulig edge"
             spd_text_w = tk.Text(spd_row_m, height=1, width=60, font=("Consolas", 8),
                                  bg=card_bg, fg="#555", relief="flat",
@@ -1315,6 +1375,29 @@ class WeatherMonitorGUI:
             spd_text_w.insert("1.0", spread_txt)
             spd_text_w.configure(state=tk.DISABLED)
             spd_text_w.pack(anchor=W)
+
+            # Position sizing recommendation based on spread (PRI 3)
+            pos_row_m = tk.Frame(inner, bg=card_bg)
+            pos_row_m.pack(fill=X)
+            conf_pct_val = conf_pct
+            if spread_signal == "narrow" and conf_pct_val >= 70:
+                pos_rec = "💰 Posisjon: Stor (3-5%) — smal spredning + høy edge"
+                pos_color = "#2e7d32"
+            elif spread_signal == "wide":
+                pos_rec = "⚠️ Posisjon: Unngå — modeller uenige (høy spredning)"
+                pos_color = "#c62828"
+            elif spread_signal == "narrow":
+                pos_rec = "💰 Posisjon: Moderat (1-3%) — smal spredning"
+                pos_color = "#f57f17"
+            else:
+                pos_rec = "💰 Posisjon: Moderat (1-3%) — standard spredning"
+                pos_color = "#555"
+            pos_text_w = tk.Text(pos_row_m, height=1, width=60, font=("Consolas", 8, "bold"),
+                                 bg=card_bg, fg=pos_color, relief="flat",
+                                 borderwidth=0, wrap=tk.WORD, exportselection=True)
+            pos_text_w.insert("1.0", pos_rec)
+            pos_text_w.configure(state=tk.DISABLED)
+            pos_text_w.pack(anchor=W)
 
             # ══════ LIVE CONFIDENCE BAR ══════
             conf_row = tk.Frame(inner, bg=card_bg)
@@ -2883,6 +2966,229 @@ class WeatherMonitorGUI:
         except Exception:
             pass
         self.root.destroy()
+
+    # ===================================================================
+    # Peak Curve Window (PRI 4: 📈 Peak Kurve)
+    # ===================================================================
+
+    def _open_peak_curve_window(self) -> None:
+        """Open the Peak Curve Toplevel window for live temperature graphing.
+
+        Reuses data from the monitoring loop (``_obs_history``, ``_peak_state``,
+        ``_suggested_temps``, ``_last_bma_result``) — no extra API calls.
+        """
+        if not self._monitored_cities:
+            messagebox.showwarning(
+                "Ingen data",
+                "Kjor Bulk Analyse og start overvakning forst.",
+            )
+            return
+
+        win = Toplevel(self.root)
+        win.title("📈 Peak Kurve — Live Temperatur")
+        win.geometry("900x650")
+        win.minsize(700, 500)
+
+        win.update_idletasks()
+        sw = win.winfo_screenwidth()
+        sh = win.winfo_screenheight()
+        x = (sw - 900) // 2
+        y = (sh - 650) // 2
+        win.geometry(f"+{x}+{y}")
+
+        # City selection frame
+        sel_frame = ttk.LabelFrame(win, text="Velg byer (1-5)", padding=10)
+        sel_frame.pack(fill=X, padx=10, pady=(10, 5))
+
+        city_names = [c["city"] for c in self._monitored_cities[:5]]
+        city_vars: dict[str, BooleanVar] = {}
+
+        for i, name in enumerate(city_names):
+            var = BooleanVar(value=(i == 0))
+            city_vars[name] = var
+            cb = ttk.Checkbutton(sel_frame, text=name, variable=var)
+            cb.pack(side=LEFT, padx=8)
+
+        # Graph canvas
+        graph_frame = tk.Frame(win, bg="#1a1a2e")
+        graph_frame.pack(fill=BOTH, expand=YES, padx=10, pady=5)
+
+        canvas = tk.Canvas(graph_frame, bg="#1a1a2e", highlightthickness=0)
+        canvas.pack(fill=BOTH, expand=YES)
+
+        # Status bar
+        status_frame = tk.Frame(win, bg="#0d0d1a", height=40)
+        status_frame.pack(fill=X, side=BOTTOM)
+        status_label = tk.Label(
+            status_frame,
+            text="🔄 Oppdaterer hvert 60. sekund...",
+            font=("Consolas", 9),
+            bg="#0d0d1a",
+            fg="#888",
+        )
+        status_label.pack(side=LEFT, padx=10, pady=6)
+
+        def _draw_graph() -> None:
+            """Redraw the peak curve graph for selected cities."""
+            canvas.delete("all")
+            w = canvas.winfo_width()
+            h = canvas.winfo_height()
+            if w < 50 or h < 50:
+                return
+
+            selected = [n for n, v in city_vars.items() if v.get()]
+            if not selected:
+                canvas.create_text(
+                    w // 2, h // 2,
+                    text="Velg minst en by for a se grafen",
+                    fill="#666",
+                    font=("Segoe UI", 12),
+                )
+                return
+
+            n_cities = len(selected)
+            section_h = h // n_cities
+            colors = ["#4fc3f7", "#ff8a65", "#81c784", "#fff176", "#ce93d8"]
+
+            for idx, city_name in enumerate(selected):
+                y0 = idx * section_h
+                y1 = y0 + section_h
+
+                canvas.create_rectangle(0, y0, w, y1, fill="#16213e", outline="#0f3460", width=1)
+
+                obs_list = self._obs_history.get(city_name, [])
+                peak_state = self._peak_state.get(city_name)
+                suggested_temp = self._suggested_temps.get(city_name)
+                bma_result = self._last_bma_result.get(city_name, {})
+
+                if not obs_list:
+                    canvas.create_text(
+                        w // 2, y0 + section_h // 2,
+                        text=f"{city_name}: Ingen data enna...",
+                        fill="#666",
+                        font=("Segoe UI", 10),
+                    )
+                    continue
+
+                temps = [t[1] for t in obs_list]
+                if len(temps) < 2:
+                    continue
+
+                min_t = min(temps) - 2
+                max_t = max(temps) + 2
+                if suggested_temp is not None:
+                    max_t = max(max_t, suggested_temp + 1)
+                    min_t = min(min_t, suggested_temp - 1)
+
+                t_range = max(max_t - min_t, 1.0)
+
+                chart_x0 = 60
+                chart_x1 = w - 30
+                chart_y0 = y0 + 25
+                chart_y1 = y1 - 10
+                chart_w = chart_x1 - chart_x0
+                chart_h = chart_y1 - chart_y0
+
+                # Grid lines
+                for i in range(5):
+                    y_pos = chart_y0 + chart_h * i / 4
+                    t_val = max_t - t_range * i / 4
+                    canvas.create_line(chart_x0, y_pos, chart_x1, y_pos, fill="#2a2a4a", dash=(2, 4))
+                    canvas.create_text(
+                        chart_x0 - 5, y_pos,
+                        text=f"{t_val:.1f}",
+                        anchor="e",
+                        fill="#888",
+                        font=("Consolas", 7),
+                    )
+
+                # Temperature line
+                n_pts = len(temps)
+                points: list[float] = []
+                for i in range(n_pts):
+                    x = chart_x0 + chart_w * i / max(n_pts - 1, 1)
+                    y = chart_y0 + chart_h * (1 - (temps[i] - min_t) / t_range)
+                    points.extend([x, y])
+
+                color = colors[idx % len(colors)]
+                if len(points) >= 4:
+                    canvas.create_line(*points, fill=color, width=2, smooth=True)
+                    cx = chart_x0 + chart_w * (n_pts - 1) / max(n_pts - 1, 1)
+                    cy = chart_y0 + chart_h * (1 - (temps[-1] - min_t) / t_range)
+                    canvas.create_oval(cx - 4, cy - 4, cx + 4, cy + 4, fill=color, outline="white", width=2)
+
+                # BMA predicted peak line
+                if suggested_temp is not None:
+                    sy = chart_y0 + chart_h * (1 - (suggested_temp - min_t) / t_range)
+                    if chart_y0 <= sy <= chart_y1:
+                        canvas.create_line(chart_x0, sy, chart_x1, sy, fill="#ffeb3b", dash=(8, 4), width=1)
+                        canvas.create_text(
+                            chart_x1 + 5, sy,
+                            text=f"{suggested_temp:.0f}C",
+                            anchor="w",
+                            fill="#ffeb3b",
+                            font=("Consolas", 7, "bold"),
+                        )
+
+                # City label + indicator
+                if peak_state is not None:
+                    live_conf = peak_state.live_confidence
+                    trend = peak_state.trend
+                    state_label = peak_state.state_label
+                    peak_emoji = peak_state.emoji
+
+                    if peak_state.state in ("confirmed", "completed"):
+                        indicator = f"PEAK NADD ({state_label})"
+                        ind_color = "#ff5252"
+                    elif live_conf >= 60:
+                        indicator = f"PEAK NADD? ({state_label} {live_conf:.0f}%)"
+                        ind_color = "#ffab40"
+                    elif trend == "↑":
+                        indicator = "STIGER"
+                        ind_color = "#69f0ae"
+                    else:
+                        indicator = "VENT"
+                        ind_color = "#888"
+
+                    city_label = f"{peak_emoji} {city_name}: {indicator}"
+                else:
+                    city_label = f"  {city_name}: VENTER"
+                    ind_color = "#aaa"
+
+                canvas.create_text(
+                    chart_x0 + 5, y0 + 10,
+                    text=city_label,
+                    anchor="w",
+                    fill=ind_color,
+                    font=("Segoe UI", 9, "bold"),
+                )
+
+                cur_temp = temps[-1] if temps else 0
+                bma_conf = bma_result.get("confidence", 0)
+                info_text = f"{cur_temp:.1f}C | BMA: {bma_conf:.0%}"
+                canvas.create_text(
+                    w - 35, y0 + 10,
+                    text=info_text,
+                    anchor="e",
+                    fill="#888",
+                    font=("Consolas", 7),
+                )
+
+        def _refresh_loop() -> None:
+            try:
+                _draw_graph()
+            except Exception:
+                pass
+            if win.winfo_exists():
+                win.after(60000, _refresh_loop)
+
+        _draw_graph()
+        canvas.bind("<Configure>", lambda e: _draw_graph())
+        win.after(60000, _refresh_loop)
+
+        close_frame = tk.Frame(win, bg="#f5f5f5")
+        close_frame.pack(fill=X, padx=10, pady=(0, 10))
+        ttk.Button(close_frame, text="Lukk", command=win.destroy).pack(side=RIGHT)
 
 
 # =============================================================================

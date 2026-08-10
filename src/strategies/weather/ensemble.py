@@ -84,6 +84,7 @@ class BMAEnsemble:
     individual_models: dict[str, float] = field(default_factory=dict)  # model→mean_f
     weights_snapshot: dict[str, float] = field(default_factory=dict)  # model→weight
     confidence: float = 0.5
+    spread_signal: str = "medium"  # "narrow", "medium", "wide" — model agreement indicator
 
 
 @dataclass
@@ -211,6 +212,20 @@ class BMAEnsembleEngine:
     # Minimum std to prevent degenerate distributions
     MIN_STD_C: float = 0.5
 
+    # Model quality weights — higher = more trusted in BMA weighted mean.
+    # ECMWF IFS is the gold standard; UKMO slightly edges GFS; HRRR and AIFS
+    # are lower-weighted due to limited coverage / experimental status.
+    MODEL_WEIGHTS: dict[str, float] = {
+        'ecmwf_ifs': 2.0,
+        'ukmo': 1.5,
+        'gfs': 1.0,
+        'icon': 1.0,
+        'gem': 0.8,
+        'jma': 0.8,
+        'hrrr': 0.6,
+        'aifs': 0.6,
+    }
+
     def __init__(
         self,
         openmeteo: OpenMeteoClient | None = None,
@@ -228,6 +243,12 @@ class BMAEnsembleEngine:
                 model_name=defn["name"],
                 weight=defn["default_weight"],
             )
+
+        # Per-model accuracy tracking: {model_key: {"error_sum": float, "count": int}}
+        self._model_errors: dict[str, dict[str, float]] = {
+            key: {"error_sum": 0.0, "count": 0}
+            for key in MODEL_DEFINITIONS
+        }
 
         # Per-station seasonal bias cache
         self._seasonal_bias: dict[str, dict[int, float]] = {}  # station→{month→bias_c}
@@ -376,7 +397,7 @@ class BMAEnsembleEngine:
         lead_days: int,
         target_date: str,
     ) -> BMAEnsemble:
-        """Combine forecasts using BMA with current weights."""
+        """Combine forecasts using BMA with quality-weighted mean."""
         if len(forecasts) == 1:
             f = forecasts[0]
             std_f = max(
@@ -398,9 +419,10 @@ class BMAEnsembleEngine:
                 individual_models={f.model_name: f.mean_max_f},
                 weights_snapshot={f.model_name: 1.0},
                 confidence=min(1.0, f.member_count / 30.0),
+                spread_signal="medium",
             )
 
-        # Get active weights
+        # Get active weights (EM-derived)
         active_keys = {f.model_name for f in forecasts}
         raw_weights = {
             k: self._weights[k].weight
@@ -413,11 +435,27 @@ class BMAEnsembleEngine:
         else:
             raw_weights = {k: v / total_w for k, v in raw_weights.items()}
 
-        # BMA weighted mean (in °F)
-        weighted_mean = sum(
-            f.mean_max_f * raw_weights.get(f.model_name, 0)
-            for f in forecasts
-        )
+        # ---- MODEL_WEIGHTS: quality-weighted mean (PRI 1) ----
+        # Combine EM-learned weights with static quality weights.
+        models_dict: dict[str, float] = {f.model_name: f.mean_max_f for f in forecasts}
+        total_qw = sum(self.MODEL_WEIGHTS.get(m, 1.0) for m in models_dict)
+        if total_qw > 0:
+            weighted_sum = sum(
+                temp * self.MODEL_WEIGHTS.get(m, 1.0)
+                for m, temp in models_dict.items()
+            )
+            # Blend: 60% quality-weighted, 40% EM-weighted
+            quality_mean = weighted_sum / total_qw
+            em_mean = sum(
+                f.mean_max_f * raw_weights.get(f.model_name, 0)
+                for f in forecasts
+            )
+            weighted_mean = 0.6 * quality_mean + 0.4 * em_mean
+        else:
+            weighted_mean = sum(
+                f.mean_max_f * raw_weights.get(f.model_name, 0)
+                for f in forecasts
+            )
 
         # BMA weighted variance: Σ w_k * (σ_k² + (μ_k - μ_bma)²)
         weighted_var = sum(
@@ -440,6 +478,17 @@ class BMAEnsembleEngine:
         # Confidence: based on model agreement (inverse of weighted std)
         raw_confidence = 1.0 / (1.0 + weighted_std / 5.0)
         confidence = min(0.95, max(0.3, raw_confidence))
+
+        # ---- Spread signal (PRI 3) ----
+        p5_c_approx = (p05 - 32.0) * 5.0 / 9.0
+        p95_c_approx = (p95 - 32.0) * 5.0 / 9.0
+        spread_c = p95_c_approx - p5_c_approx
+        if spread_c <= 2.0:
+            spread_signal = "narrow"
+        elif spread_c > 5.0:
+            spread_signal = "wide"
+        else:
+            spread_signal = "medium"
 
         # Apply seasonal bias correction
         bias_c = self._get_seasonal_bias(location)
@@ -466,6 +515,7 @@ class BMAEnsembleEngine:
             individual_models={f.model_name: round(f.mean_max_f, 1) for f in forecasts},
             weights_snapshot={k: round(v, 3) for k, v in raw_weights.items()},
             confidence=round(confidence, 3),
+            spread_signal=spread_signal,
         )
 
     # =========================================================================
@@ -702,3 +752,50 @@ class BMAEnsembleEngine:
     def export_weights(self) -> dict[str, float]:
         """Export weights as simple dict for serialization."""
         return {k: round(v.weight, 4) for k, v in self._weights.items()}
+
+    # =========================================================================
+    # Per-Model Accuracy Tracking (PRI 1)
+    # =========================================================================
+
+    def record_model_error(
+        self,
+        model_key: str,
+        forecast_f: float,
+        actual_f: float,
+    ) -> None:
+        """Record a model's forecast error for auto-adjustment of MODEL_WEIGHTS.
+
+        Uses an exponential moving average of absolute errors.  After enough
+        samples (>= 5), the tracked mean error is used to nudge the static
+        MODEL_WEIGHTS up or down by a bounded amount.
+        """
+        if model_key not in self._model_errors:
+            return
+        error = abs(forecast_f - actual_f)
+        entry = self._model_errors[model_key]
+        entry["error_sum"] += error
+        entry["count"] += 1
+
+        # Auto-adjust MODEL_WEIGHTS after enough samples
+        if entry["count"] >= 5:
+            mean_error = entry["error_sum"] / entry["count"]
+            # Higher error → lower weight; bounded at ±30% adjustment
+            base = self.MODEL_WEIGHTS.get(model_key, 1.0)
+            if mean_error > 0:
+                # Scale: mean_error of 3°C → adjust by ~0.2
+                adjustment = min(0.3, mean_error * 0.07)
+                self.MODEL_WEIGHTS[model_key] = max(0.3, base - adjustment)
+            else:
+                self.MODEL_WEIGHTS[model_key] = min(3.0, base + 0.1)
+
+    def get_model_accuracy(self) -> dict[str, dict[str, float]]:
+        """Return per-model accuracy stats for external reporting."""
+        result: dict[str, dict[str, float]] = {}
+        for key, entry in self._model_errors.items():
+            if entry["count"] > 0:
+                result[key] = {
+                    "mean_abs_error_f": round(entry["error_sum"] / entry["count"], 2),
+                    "samples": int(entry["count"]),
+                    "current_weight": round(self.MODEL_WEIGHTS.get(key, 1.0), 3),
+                }
+        return result

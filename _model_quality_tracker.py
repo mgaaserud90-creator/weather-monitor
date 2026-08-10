@@ -157,10 +157,38 @@ def _parse_bucket_lo(label: str) -> int:
     return 0
 
 
+def _get_city_historical_winrate(city_name: str) -> float | None:
+    """Read the historical win-rate for a city from ``_model_quality_log.json``.
+
+    Looks at all resolved runs and counts sigma-strategy WINS / total resolved.
+    Returns None if fewer than 3 resolved days exist.
+    """
+    log_data = _load_log()
+    runs = log_data.get("runs", [])
+    wins = 0
+    total = 0
+    for run in runs:
+        preds = run.get("predictions", {})
+        pdata = preds.get(city_name)
+        if pdata is None:
+            continue
+        strategies = pdata.get("strategies", {})
+        sigma = strategies.get("sigma", {})
+        result = sigma.get("result")
+        if result in ("WIN", "LOSS"):
+            total += 1
+            if result == "WIN":
+                wins += 1
+    if total < 3:
+        return None
+    return wins / total
+
+
 def _compute_optimal_spill(
-    mean_c: float, std_c: float, confidence: float, p5_c: float
+    mean_c: float, std_c: float, confidence: float, p5_c: float,
+    city_name: str = "",
 ) -> dict[str, float | int]:
-    """Compute optimal bet levels using BMA statistics.
+    """Compute optimal bet levels using BMA statistics with dynamic k calibration.
 
     For Polymarket "Highest temp round(T) == spill?" markets:
       P(win) = 1 - Φ((T - μ)/σ)  assuming normal distribution.
@@ -168,7 +196,8 @@ def _compute_optimal_spill(
     Strategy: Sigma-Adjusted Bet Level
       suggested_spill = int(μ - k × σ)
 
-    Where k is the risk-adjustment factor, dynamically set by confidence:
+    Where k is the risk-adjustment factor, dynamically set by confidence
+    AND calibrated against historical city win-rate (PRI 2):
 
       | k   | Win Prob | Style                          |
       |-----|----------|--------------------------------|
@@ -179,6 +208,9 @@ def _compute_optimal_spill(
       | 0.84| 80%      | Safe — high confidence         |
       | 1.0 | 84%      | Very safe — 1σ below mean      |
 
+    Dynamic k calibration (PRI 2):
+      - If actual win-rate < predicted win-prob → overconfident → increase k
+      - If actual win-rate > predicted → underconfident → decrease k
     Also computes P5-based (ultra-conservative ~95%) and mean-based (50%) for comparison.
     """
     # Dynamic k based on confidence
@@ -199,13 +231,26 @@ def _compute_optimal_spill(
             return 0.5
         return round(0.5 * (1 + math.erf((mu - t) / (sigma * 1.4142135623730951))), 3)
 
+    predicted_wp = win_prob(sigma_spill, mean_c, std_c)
+
+    # ---- Dynamic k calibration (PRI 2) ----
+    if city_name:
+        historical_wr = _get_city_historical_winrate(city_name)
+        if historical_wr is not None and predicted_wp > 0:
+            calibration_factor = historical_wr / predicted_wp
+            k = k * (2.0 - calibration_factor)  # Adjust k
+            k = max(0.1, min(1.5, k))  # Clamp
+            # Recompute sigma_spill with calibrated k
+            sigma_spill = int(mean_c - k * std_c)
+            predicted_wp = win_prob(sigma_spill, mean_c, std_c)
+
     return {
         "recommended": sigma_spill,
         "k_used": round(k, 2),
         "sigma_spill": sigma_spill,
         "p5_spill": p5_spill,
         "mean_spill": mean_spill,
-        "sigma_win_prob": win_prob(sigma_spill, mean_c, std_c),
+        "sigma_win_prob": predicted_wp,
         "p5_win_prob": win_prob(p5_spill, mean_c, std_c),
         "mean_win_prob": win_prob(mean_spill, mean_c, std_c),
     }
@@ -535,7 +580,7 @@ async def run_bma_for_all(
         std_c = (p95_c - p5_c) / 3.29 if p95_c > p5_c else max(1.0, abs(mean_c) * 0.05)
 
         # Compute statistically optimal bet level (sigma-adjusted, replaces arbitrary floor/ceiling)
-        optimal = _compute_optimal_spill(mean_c, std_c, conf, p5_c)
+        optimal = _compute_optimal_spill(mean_c, std_c, conf, p5_c, city_name=city)
         spill = int(optimal["recommended"])
         k_used = float(optimal["k_used"])
 
