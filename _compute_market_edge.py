@@ -440,20 +440,28 @@ def compute_edges(
 
         bma_prob = compute_bma_prob(mean_c, std_c, temp, qtype)
         market_prob = opp["market_prob"]
-        edge = round(bma_prob - market_prob, 1)
 
-        # Determine signal
-        # edge = BMA_prob − market_price
-        #   edge > 0 → BMA thinks outcome is MORE likely than market is pricing
-        #             → market is undervaluing the outcome → BUY
-        #   edge < 0 → BMA thinks outcome is LESS likely than market is pricing
-        #             → market is overvaluing the outcome → SHORT
-        if edge > 0:
-            signal = "🟢 BUY"       # bma_prob > market_price → undervalued
-        elif edge < 0:
-            signal = "🔴 SHORT"     # bma_prob < market_price → overvalued
+        # Only compute trading edge for markets in 15-85% range.
+        # Markets outside this range are near-resolved and have terrible
+        # risk/reward (e.g., SHORT at 94% risks 94c to win 6c).
+        # These go to the resolution arbitrage section instead.
+        if 15 < market_prob < 85:
+            edge = round(bma_prob - market_prob, 1)
+
+            # edge = BMA_prob - market_price
+            #   edge > 0: BMA thinks MORE likely than market prices -> BUY
+            #   edge < 0: BMA thinks LESS likely than market prices -> SHORT
+            if edge > 0:
+                signal = "🟢 BUY"
+            elif edge < 0:
+                signal = "🔴 SHORT"
+            else:
+                signal = "⚪ FLAT"
         else:
-            signal = "⚪ FLAT"
+            # Near-resolved market: <=15% or >=85%
+            # Reclassify as resolution arbitrage, not a trading signal
+            edge = 0
+            signal = "⚖️ ARBITRAGE"
 
         # DEBUG: Show probability comparison for key cities
         if city.lower().startswith("dallas") and temp == 37:
@@ -539,6 +547,8 @@ def format_edge_html_rows(edges: list[dict]) -> str:
             signal_class = 'style="color: var(--green); font-weight: 600;"'
         elif "SHORT" in e["signal"]:
             signal_class = 'style="color: var(--red); font-weight: 600;"'
+        elif "ARBITRAGE" in e["signal"]:
+            signal_class = 'style="color: var(--orange); font-weight: 600;"'
 
         rows += f"""<tr>
                 <td>{i+1}</td>

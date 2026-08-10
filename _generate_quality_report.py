@@ -1475,7 +1475,12 @@ def _build_resolution_arbitrage_html_section() -> str:
 # =============================================================================
 
 def _build_market_edge_html_section() -> str:
-   """Build HTML section showing BMA vs Polymarket edge for trading opportunities."""
+   """Build HTML section showing BMA vs Polymarket edge for trading opportunities.
+
+   Splits into two sub-sections:
+     1. Active trading markets (15-85%): genuine BUY/SHORT signals
+     2. Near-resolved markets (<15% or >85%): reclassified as arbitrage
+   """
    if not HAS_MARKET_EDGE:
        return ""
 
@@ -1483,9 +1488,6 @@ def _build_market_edge_html_section() -> str:
        market_opps, _ = load_market_prices()
        bma_preds = load_bma_predictions()
        edges = compute_edges(market_opps, bma_preds, min_vol=0)
-
-       # Filter out resolved markets (safety check — should already be filtered upstream)
-       edges = [e for e in edges if 5 < e["market_prob"] < 95]
 
    except Exception:
        return ""
@@ -1496,16 +1498,23 @@ def _build_market_edge_html_section() -> str:
      <p style="color: var(--text-dim);">Ingen matchende markeder funnet. Kjør <code>python _fetch_market_prices.py</code> for å hente markedspriser.</p>
    </div>"""
 
-   buys = [e for e in edges if e["edge"] > 0]
-   shorts = [e for e in edges if e["edge"] < 0]
-   big_edges = [e for e in edges if abs(e["edge"]) > 10]
-   rows_html = format_edge_html_rows(edges)
+   # Split: active trading (15-85%) vs near-resolved arbitrage
+   trading_edges = [e for e in edges if "ARBITRAGE" not in e["signal"]]
+   arbitrage_edges = [e for e in edges if "ARBITRAGE" in e["signal"]]
 
-   return f"""
+   # ---- Active Trading Section (15-85%) ----
+   trading_html = ""
+   if trading_edges:
+       buys = [e for e in trading_edges if e["edge"] > 0]
+       shorts = [e for e in trading_edges if e["edge"] < 0]
+       big_edges = [e for e in trading_edges if abs(e["edge"]) > 10]
+       rows_html = format_edge_html_rows(trading_edges)
+
+       trading_html = f"""
    <div class="section">
-     <h2>💹 MARKED EDGE — BMA vs Polymarket</h2>
+     <h2>💹 AKTIVE MARKEDER (15–85%) — Tradingmuligheter</h2>
      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
-       Sammenligner BMA sannsynlighet med Polymarket markedspriser.
+       Markeder i 15–85% prisområde der BMA-modellen gir trading-signaler.
        🟢 BUY = BMA > Marked (undervurdert) | 🔴 SHORT = BMA < Marked (overvurdert) | Edge >10% = uthevet.
      </p>
      <div class="card-grid" style="margin-bottom: 20px;">
@@ -1522,7 +1531,7 @@ def _build_market_edge_html_section() -> str:
          <div class="label">⚡ Edge >10%</div>
        </div>
        <div class="card">
-         <div class="value" style="color: var(--blue);">{len(edges)}</div>
+         <div class="value" style="color: var(--blue);">{len(trading_edges)}</div>
          <div class="label">Totalt Matchet</div>
        </div>
      </div>
@@ -1533,6 +1542,43 @@ def _build_market_edge_html_section() -> str:
      </table>
      </div>
    </div>"""
+   else:
+       trading_html = ""
+
+   # ---- Near-Resolved Arbitrage Section (<15% or >85%) ----
+   arbitrage_html = ""
+   if arbitrage_edges:
+       arb_count = len(arbitrage_edges)
+       arb_rows = format_edge_html_rows(arbitrage_edges)
+
+       arbitrage_html = f"""
+   <div class="section" style="border-color: rgba(210,153,29,0.3);">
+     <h2>💰 NÆR-RESOLVED ({'<15%' if any(e['market_prob'] <= 15 for e in arbitrage_edges) else ''}{' & ' if any(e['market_prob'] <= 15 for e in arbitrage_edges) and any(e['market_prob'] >= 85 for e in arbitrage_edges) else ''}{'>85%' if any(e['market_prob'] >= 85 for e in arbitrage_edges) else ''}) — Arbitrasje</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       Markeder med ekstrem prising (<15% eller >85%) — disse er nær-resolverte og gir
+       ikke tradisjonelle trading-signaler. Viser prising for arbitrasje-vurdering.
+       ⚠️ SHORT ved 94% har forferdelig risk/reward (risikerer 94c for å vinne 6c).
+     </p>
+     <div class="card-grid" style="margin-bottom: 20px;">
+       <div class="card">
+         <div class="value" style="color: var(--orange);">{arb_count}</div>
+         <div class="label">⚖️ Nær-Resolved Markeder</div>
+       </div>
+     </div>
+     <div style="overflow-x: auto;">
+     <table>
+       <thead><tr><th>#</th><th>By</th><th>Spill</th><th>BMA %</th><th>Marked %</th><th>Edge</th><th>Signal</th><th>BMA μ / σ</th></tr></thead>
+       <tbody>{arb_rows}</tbody>
+     </table>
+     </div>
+   </div>"""
+   else:
+       arbitrage_html = ""
+
+   if not trading_html and not arbitrage_html:
+       return ""
+
+   return trading_html + arbitrage_html
 
 
 # =============================================================================
@@ -2614,19 +2660,22 @@ def _generate_all_cities_html() -> str:
                     edge = round(bma_p - mkt_prob, 1)
                     edge_cell = f"{edge:+.1f}%"
                     edge_data_attr = str(edge)
-                    # edge = BMA_prob − market_price
-                    #   edge > 0 → BMA thinks MORE likely → market undervalued → BUY
-                    #   edge < 0 → BMA thinks LESS likely → market overvalued → SHORT
-                    if edge > 10:
-                        signal_cell = '<span style="color: var(--green); font-weight: 600;">🟢 BUY</span>'
-                    elif edge > 0:
-                        signal_cell = '<span style="color: var(--green);">🟢 BUY</span>'
-                    elif edge < -10:
-                        signal_cell = '<span style="color: var(--red); font-weight: 600;">🔴 SHORT</span>'
-                    elif edge < 0:
-                        signal_cell = '<span style="color: var(--red);">🔴 SHORT</span>'
+                    # Only show BUY/SHORT signals for markets in 15-85% range.
+                    # Markets outside this range are near-resolved and get
+                    # reclassified as arbitrage (terrible risk/reward for SHORT at 94%).
+                    if 15 < mkt_prob < 85:
+                        if edge > 10:
+                            signal_cell = '<span style="color: var(--green); font-weight: 600;">🟢 BUY</span>'
+                        elif edge > 0:
+                            signal_cell = '<span style="color: var(--green);">🟢 BUY</span>'
+                        elif edge < -10:
+                            signal_cell = '<span style="color: var(--red); font-weight: 600;">🔴 SHORT</span>'
+                        elif edge < 0:
+                            signal_cell = '<span style="color: var(--red);">🔴 SHORT</span>'
+                        else:
+                            signal_cell = '⚪ FLAT'
                     else:
-                        signal_cell = '⚪ FLAT'
+                        signal_cell = '<span style="color: var(--orange); font-weight: 600;">⚖️ ARBITRAGE</span>'
 
         safe_city_id = re.sub(r'[^a-zA-Z0-9]', '_', city)
         table_rows += f"""<tr class="{row_class}" data-lead="{ld}" data-city="{city}" data-conf="{conf:.3f}" data-edge="{edge_data_attr}">
