@@ -161,7 +161,7 @@
 // No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-08-10T18:54:59Z');
+    var deployTime = new Date('2026-08-10T19:03:55Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {
@@ -320,13 +320,19 @@ function sortTable(colIdx) {
           <div class="label">MINOR</div>
         </div>
         <div class="card" style="border: 1px solid #f85149;">
-          <div class="value" style="color: #f85149;">1</div>
+          <div class="value" style="color: #f85149;">2</div>
           <div class="label">STASJONSFEIL</div>
         </div>
       </div>
       <table>
         <thead><tr><th>By</th><th>Var Peak</th><th>Marked</th><th>Gap</th><th>Status</th></tr></thead>
         <tbody><tr>
+            <td><strong>Hong Kong, HK</strong></td>
+            <td>None</td>
+            <td>None</td>
+            <td style="color:#f85149;font-weight:600;">None</td>
+            <td style="color:#f85149;font-weight:700;">STASJONSFEIL</td>
+        </tr><tr>
             <td><strong>London, UK</strong></td>
             <td>31.3C</td>
             <td>26C</td>
@@ -519,10 +525,10 @@ function sortTable(colIdx) {
                 <td>12</td>
                 <td><strong>Dallas, US</strong></td>
                 <td>2026-08-10</td>
-                <td>37°C</td>
+                <td>99°F</td>
                 <td>34.3%</td>
                 <td>70.0%</td>
-                <td style="color: var(--text-dim);">37.6°C</td>
+                <td style="color: var(--text-dim);">100°F</td>
                 <td style="color: var(--text-dim);">$12K</td>
                 <td class="col-peak" id="peak-dallas-us-37" data-spill="37" data-market="70.0">⏳</td>
                 <td class="col-trend" id="trend-dallas-us-37">—</td>
@@ -531,10 +537,10 @@ function sortTable(colIdx) {
                 <td>13</td>
                 <td><strong>Dallas, US</strong></td>
                 <td>2026-08-10</td>
-                <td>38°C</td>
+                <td>100°F</td>
                 <td>38.2%</td>
                 <td>25.5%</td>
-                <td style="color: var(--text-dim);">37.6°C</td>
+                <td style="color: var(--text-dim);">100°F</td>
                 <td style="color: var(--text-dim);">$10K</td>
                 <td class="col-peak" id="peak-dallas-us-38" data-spill="38" data-market="25.5">⏳</td>
                 <td class="col-trend" id="trend-dallas-us-38">—</td>
@@ -694,13 +700,13 @@ function sortTable(colIdx) {
             <td>0/2 resolved</td>
         </tr><tr class="mkt-bucket dallas">
             <td></td>
-            <td>37°C</td>
+            <td>99°F</td>
             <td>BMA: 34.3%</td>
             <td>Mkt: 70.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket dallas">
             <td></td>
-            <td>38°C</td>
+            <td>100°F</td>
             <td>BMA: 38.2%</td>
             <td>Mkt: 25.5%</td>
             <td></td>
@@ -802,7 +808,7 @@ function sortTable(colIdx) {
             <td>0/1 resolved</td>
         </tr><tr class="mkt-bucket los-angeles">
             <td></td>
-            <td>24°C</td>
+            <td>75°F</td>
             <td>BMA: 7.3%</td>
             <td>Mkt: 11.0%</td>
             <td></td>
@@ -922,19 +928,19 @@ function sortTable(colIdx) {
             <td>0/3 resolved</td>
         </tr><tr class="mkt-bucket new-york">
             <td></td>
-            <td>30°C</td>
+            <td>86°F</td>
             <td>BMA: 12.2%</td>
             <td>Mkt: 9.4%</td>
             <td></td>
         </tr><tr class="mkt-bucket new-york">
             <td></td>
-            <td>31°C</td>
+            <td>88°F</td>
             <td>BMA: 28.1%</td>
             <td>Mkt: 26.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket new-york">
             <td></td>
-            <td>33°C</td>
+            <td>91°F</td>
             <td>BMA: 18.5%</td>
             <td>Mkt: 26.0%</td>
             <td></td>
@@ -1727,7 +1733,7 @@ function sortTable(colIdx) {
 <script>
 const CITIES = [
   {name: "Taipei, TW", lat: 25.0378, lon: 121.5148, tz: "Asia/Taipei", peakStart: 14, peakEnd: 16, has_market: true, is_resolved: true},
-  {name: "Hong Kong, HK", lat: 22.302, lon: 114.1742, tz: "Asia/Hong_Kong", peakStart: 14, peakEnd: 16, has_market: true, is_resolved: true},
+  {name: "Hong Kong, HK", lat: 22.302, lon: 114.1743, tz: "Asia/Hong_Kong", peakStart: 14, peakEnd: 16, has_market: true, is_resolved: true},
   {name: "Shanghai, CN", lat: 31.1434, lon: 121.8053, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16, has_market: true, is_resolved: true},
   {name: "Madrid, ES", lat: 40.4719, lon: -3.5626, tz: "Europe/Madrid", peakStart: 15, peakEnd: 18, has_market: true, is_resolved: true},
   {name: "Paris, FR", lat: 48.9694, lon: 2.4414, tz: "Europe/Paris", peakStart: 15, peakEnd: 18, has_market: true, is_resolved: true},

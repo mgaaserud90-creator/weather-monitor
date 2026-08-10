@@ -51,6 +51,7 @@ try:
         format_edge_html_rows, build_market_lookup, compute_bma_prob,
         compute_resolution_arbitrage, format_resolution_arbitrage_summary_html,
         split_edges_by_type, build_market_type_section_html,
+        is_us_city, c_to_f, fmt_temp,
     )
     HAS_MARKET_EDGE = True
 except ImportError:
@@ -2168,7 +2169,7 @@ def _build_expandable_market_section_html() -> str:
         total_vol = sum(b["volume"] for b in buckets)
         vol_str = f"${total_vol/1000:.0f}K" if total_vol >= 1000 else (f"${total_vol}" if total_vol > 0 else "—")
         winners = [b for b in buckets if b["market_prob"] > 99]
-        win_info = f' <span style="color:#3fb950;font-size:0.7rem;">✅ → {winners[0]["temp"]}°C</span>' if winners else ""
+        win_info = f' <span style="color:#3fb950;font-size:0.7rem;">✅ → {fmt_temp(winners[0]["temp"], city)}</span>' if winners else ""
 
         rows += f"""<tr class="mkt-group" onclick="toggleMarketBuckets('{city_slug}')">
             <td><span class="expand-icon">▶</span></td>
@@ -2187,7 +2188,7 @@ def _build_expandable_market_section_html() -> str:
             )
             rows += f"""<tr class="mkt-bucket {city_slug}"{row_style}>
             <td></td>
-            <td>{b['temp']}°C{resolved_icon}</td>
+            <td>{fmt_temp(b['temp'], city)}{resolved_icon}</td>
             <td>BMA: {bma_str}</td>
             <td>Mkt: {mkt_str}</td>
             <td></td>

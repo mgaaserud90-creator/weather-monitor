@@ -70,6 +70,63 @@ CITY_ALIASES: dict[str, str] = {
     "los angeles": "Los Angeles",
 }
 
+# ---------------------------------------------------------------------------
+# US Cities — Fahrenheit display for Polymarket markets
+# ---------------------------------------------------------------------------
+US_CITIES: set[str] = {
+    "dallas", "houston", "atlanta", "new york", "new york city",
+    "chicago", "los angeles", "san francisco", "seattle", "miami",
+    "denver", "austin", "la", "nyc", "sf",
+}
+
+# US state-suffixed cities e.g. "Dallas, TX", "Houston, US"
+US_CITY_BASES: set[str] = {
+    "dallas", "houston", "atlanta", "new york", "new york city",
+    "chicago", "los angeles", "san francisco", "seattle", "miami",
+    "denver", "austin",
+}
+
+
+def c_to_f(c: float) -> float:
+    """Convert Celsius to Fahrenheit."""
+    return c * 9.0 / 5.0 + 32.0
+
+
+def is_us_city(city: str) -> bool:
+    """Check if a city name refers to a US market."""
+    c = city.lower().strip()
+    if c in US_CITIES:
+        return True
+    # Check base name (strip country code like ", US")
+    base = c.split(",")[0].strip()
+    if base in US_CITY_BASES:
+        return True
+    # Check parenthetical stripping e.g. "Seoul (Incheon)"
+    base_no_paren = re.sub(r"\s*\(.*?\)\s*", "", base).strip()
+    if base_no_paren in US_CITY_BASES:
+        return True
+    return False
+
+
+def fmt_temp(temp_c: float | int | str, city: str = "", unit: str = "°C") -> str:
+    """Format a temperature value for display, converting to °F if US city.
+    
+    Args:
+        temp_c: Temperature in Celsius (int, float, or string like "?")
+        city: City name to check if US
+        unit: Override unit (if "°F" is passed explicitly)
+    
+    Returns:
+        Formatted string like "95°F" or "35°C"
+    """
+    if isinstance(temp_c, str):
+        val = temp_c
+        return f"{val}{unit}" if unit else val
+    if unit == "°F" or (city and is_us_city(city)):
+        f = round(c_to_f(float(temp_c)))
+        return f"{f}°F"
+    return f"{temp_c}°C"
+
 
 def _norm_cdf(x: float) -> float:
     """Standard normal cumulative distribution function."""
@@ -556,11 +613,12 @@ def format_edge_table(edges: list[dict]) -> str:
         lines.append(sep)
         for e in highest:
             date_display = e.get("date", "?") or "?"
+            city = e["city"]
             lines.append(
-                f"| {e['city']} | {date_display} | {e['temp']}°C | "
+                f"| {city} | {date_display} | {fmt_temp(e['temp'], city)} | "
                 f"{e['bma_prob']:.1f}% | "
                 f"{e['market_prob']:.1f}% | "
-                f"{e['bma_mean']:.1f}°C | {e['volume_display']} |"
+                f"{fmt_temp(e['bma_mean'], city)} | {e['volume_display']} |"
             )
 
     if lowest:
@@ -571,11 +629,12 @@ def format_edge_table(edges: list[dict]) -> str:
         lines.append(sep)
         for e in lowest:
             date_display = e.get("date", "?") or "?"
+            city = e["city"]
             lines.append(
-                f"| {e['city']} | {date_display} | {e['temp']}°C | "
+                f"| {city} | {date_display} | {fmt_temp(e['temp'], city)} | "
                 f"{e['bma_prob']:.1f}% | "
                 f"{e['market_prob']:.1f}% | "
-                f"{e['bma_mean']:.1f}°C | {e['volume_display']} |"
+                f"{fmt_temp(e['bma_mean'], city)} | {e['volume_display']} |"
             )
 
     if other:
@@ -586,11 +645,12 @@ def format_edge_table(edges: list[dict]) -> str:
         lines.append(sep)
         for e in other:
             date_display = e.get("date", "?") or "?"
+            city = e["city"]
             lines.append(
-                f"| {e['city']} | {date_display} | {e['temp']}°C | "
+                f"| {city} | {date_display} | {fmt_temp(e['temp'], city)} | "
                 f"{e['bma_prob']:.1f}% | "
                 f"{e['market_prob']:.1f}% | "
-                f"{e['bma_mean']:.1f}°C | {e['volume_display']} |"
+                f"{fmt_temp(e['bma_mean'], city)} | {e['volume_display']} |"
             )
 
     return "\n".join(lines)
@@ -616,14 +676,15 @@ def format_edge_html_rows(edges: list[dict]) -> str:
                 market_prob_style = ' style="color: var(--green); font-weight: 600;"'
             elif e["market_prob"] < 0.01:
                 market_prob_style = ' style="color: var(--red); font-weight: 600;"'
+        city = e["city"]
         rows += f"""<tr>
                 <td>{i+1}</td>
-                <td><strong>{e['city']}</strong>{resolved_badge}</td>
+                <td><strong>{city}</strong>{resolved_badge}</td>
                 <td>{date_display}</td>
-                <td>{e['temp']}°C</td>
+                <td>{fmt_temp(e['temp'], city)}</td>
                 <td>{e['bma_prob']:.1f}%</td>
                 <td{market_prob_style}>{e['market_prob']:.1f}%</td>
-                <td style="color: var(--text-dim);">{e['bma_mean']:.1f}°C</td>
+                <td style="color: var(--text-dim);">{fmt_temp(e['bma_mean'], city)}</td>
                 <td style="color: var(--text-dim);">{e.get('volume_display', '')}</td>
             </tr>"""
 
@@ -661,17 +722,18 @@ def build_market_type_section_html(
             elif e["market_prob"] < 0.01:
                 market_prob_style = ' style="color: var(--red); font-weight: 600;"'
         # Compute city slug for peak detection IDs
-        city_slug = re.sub(r"[^a-zA-Z0-9]+", "-", e["city"]).lower().strip("-")
+        city = e["city"]
+        city_slug = re.sub(r"[^a-zA-Z0-9]+", "-", city).lower().strip("-")
         temp = e["temp"]
         market_prob = e.get("market_prob", 0)
         rows_html += f"""<tr>
                 <td>{i+1}</td>
-                <td><strong>{e['city']}</strong>{resolved_badge}</td>
+                <td><strong>{city}</strong>{resolved_badge}</td>
                 <td>{date_display}</td>
-                <td>{e['temp']}°C</td>
+                <td>{fmt_temp(temp, city)}</td>
                 <td>{e['bma_prob']:.1f}%</td>
                 <td{market_prob_style}>{e['market_prob']:.1f}%</td>
-                <td style="color: var(--text-dim);">{e['bma_mean']:.1f}°C</td>
+                <td style="color: var(--text-dim);">{fmt_temp(e['bma_mean'], city)}</td>
                 <td style="color: var(--text-dim);">{e.get('volume_display', '')}</td>
                 <td class="col-peak" id="peak-{city_slug}-{temp}" data-spill="{temp}" data-market="{market_prob}">⏳</td>
                 <td class="col-trend" id="trend-{city_slug}-{temp}">—</td>
@@ -884,12 +946,13 @@ def format_resolution_arbitrage_table(opportunities: list[dict]) -> str:
     for r in opportunities:
         action_emoji = "🔴" if r["action"] == "SHORT" else "🟢"
         res_prob = r.get("resolution_probability", "99% sannsynlig resolved")
+        city = r.get("city_display", r.get("city", ""))
         lines.append(
-            f"| {r['city_display']} | {r['winning_temp']}°C | "
-            f"{r['losing_temp']}°C @ {r['price_cents']:.1f}c | "
+            f"| {city} | {fmt_temp(r['winning_temp'], city)} | "
+            f"{fmt_temp(r['losing_temp'], city)} @ {r['price_cents']:.1f}c | "
             f"+{r['profit_cents']:.1f}c | "
             f"{res_prob} | "
-            f"{action_emoji} {r['action']} {r['losing_temp']}°C |"
+            f"{action_emoji} {r['action']} {fmt_temp(r['losing_temp'], city)} |"
         )
 
     return "\n".join(lines)
@@ -904,13 +967,14 @@ def format_resolution_arbitrage_html_rows(opportunities: list[dict]) -> str:
     for r in opportunities:
         action_color = "var(--red)" if r["action"] == "SHORT" else "var(--green)"
         action_emoji = "🔴" if r["action"] == "SHORT" else "🟢"
-        action_label = f"SHORT {r['losing_temp']}°C" if r["action"] == "SHORT" else f"BUY {r['winning_temp']}°C"
+        city = r.get("city_display", r.get("city", ""))
+        action_label = f"SHORT {fmt_temp(r['losing_temp'], city)}" if r["action"] == "SHORT" else f"BUY {fmt_temp(r['winning_temp'], city)}"
         res_prob = r.get("resolution_probability", "99% sannsynlig resolved")
 
         rows += f"""<tr>
-            <td><strong>{r['city_display']}</strong></td>
-            <td style="color: var(--green); font-weight: 600;">{r['winning_temp']}°C</td>
-            <td>{r['losing_temp']}°C @ <span style="font-family: monospace;">{r['price_cents']:.1f}c</span></td>
+            <td><strong>{city}</strong></td>
+            <td style="color: var(--green); font-weight: 600;">{fmt_temp(r['winning_temp'], city)}</td>
+            <td>{fmt_temp(r['losing_temp'], city)} @ <span style="font-family: monospace;">{r['price_cents']:.1f}c</span></td>
             <td style="color: var(--green); font-weight: 700; font-family: monospace;">+{r['profit_cents']:.1f}c</td>
             <td style="color: var(--green); font-weight: 600;">{res_prob}</td>
             <td style="color: {action_color}; font-weight: 600;">{action_emoji} {action_label}</td>
