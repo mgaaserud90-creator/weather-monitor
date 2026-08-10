@@ -1874,7 +1874,7 @@ async function fetchSparklineForCity(cityId, cityName) {
     if (!el) return;
 
     const today = new Date().toISOString().slice(0, 10);
-    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${data.lat}&longitude=${data.lon}&start_date=${today}&end_date=${today}&hourly=temperature_2m&timezone=UTC`;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${data.lat}&longitude=${data.lon}&hourly=temperature_2m&past_days=1&forecast_days=1&timezone=UTC`;
 
     try {
         const resp = await fetch(url, { headers: { 'User-Agent': 'WeatherMonitor/1.0' } });
@@ -2776,9 +2776,9 @@ async function fetchLivePeak() {{
         done++;
         if (statusEl) statusEl.textContent = '⏳ Henter peak ' + done + '/' + total + '...';
         try {{
-            const url = 'https://archive-api.open-meteo.com/v1/archive?latitude=' + city.lat +
-                '&longitude=' + city.lon + '&start_date=' + today + '&end_date=' + today +
-                '&hourly=temperature_2m&timezone=' + encodeURIComponent(city.tz);
+            const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + city.lat +
+                '&longitude=' + city.lon + '&hourly=temperature_2m&past_days=1&forecast_days=1' +
+                '&timezone=' + encodeURIComponent(city.tz);
             const resp = await fetch(url, {{ headers: {{ 'User-Agent': 'WeatherMonitor/1.0' }} }});
             const data = await resp.json();
             if (data.error) {{
@@ -3378,9 +3378,9 @@ async function fetchLivePeak() {{
         done++;
         if (statusEl) statusEl.textContent = '⏳ Henter peak ' + done + '/' + total + '...';
         try {{
-            const url = 'https://archive-api.open-meteo.com/v1/archive?latitude=' + city.lat +
-                '&longitude=' + city.lon + '&start_date=' + today + '&end_date=' + today +
-                '&hourly=temperature_2m&timezone=' + encodeURIComponent(city.tz);
+            const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + city.lat +
+                '&longitude=' + city.lon + '&hourly=temperature_2m&past_days=1&forecast_days=1' +
+                '&timezone=' + encodeURIComponent(city.tz);
             const resp = await fetch(url, {{ headers: {{ 'User-Agent': 'WeatherMonitor/1.0' }} }});
             const data = await resp.json();
             if (data.error) {{

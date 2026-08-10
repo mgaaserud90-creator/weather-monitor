@@ -161,7 +161,7 @@
 // No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-08-10T18:12:18Z');
+    var deployTime = new Date('2026-08-10T18:17:48Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {
@@ -1891,9 +1891,9 @@ async function fetchLivePeak() {
         done++;
         if (statusEl) statusEl.textContent = '⏳ Henter peak ' + done + '/' + total + '...';
         try {
-            const url = 'https://archive-api.open-meteo.com/v1/archive?latitude=' + city.lat +
-                '&longitude=' + city.lon + '&start_date=' + today + '&end_date=' + today +
-                '&hourly=temperature_2m&timezone=' + encodeURIComponent(city.tz);
+            const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + city.lat +
+                '&longitude=' + city.lon + '&hourly=temperature_2m&past_days=1&forecast_days=1' +
+                '&timezone=' + encodeURIComponent(city.tz);
             const resp = await fetch(url, { headers: { 'User-Agent': 'WeatherMonitor/1.0' } });
             const data = await resp.json();
             if (data.error) {
