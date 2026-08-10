@@ -1281,6 +1281,21 @@ async def daily_close_mode() -> None:
         city_target = pdata.get("_target_date", fallback_target)
         strategies = _get_strategies(pdata)
 
+        # ═══════════════════════════════════════════════════════════════
+        # TIME GUARD: Don't resolve today before 23:00 UTC.
+        # The archive API returns partial daily_max for the current date
+        # even early in the morning. Resolving before peak hours (14-16
+        # local) would use incomplete data. Only resolve today after 23:00.
+        # ═══════════════════════════════════════════════════════════════
+        now_utc_dt = datetime.now(timezone.utc)
+        if city_target >= today:
+            # Today (or future date — should not happen but guard anyway)
+            if now_utc_dt.hour < 23:
+                print(f"  ⏰ {city:<30s}: target={city_target} — too early "
+                      f"(UTC {now_utc_dt.hour:02d}:00), skip (wait for 23:00 UTC)")
+                unresolved += 1
+                continue
+
         # Skip if ALL strategies already resolved
         all_resolved = all(
             strategies.get(s, {}).get("result") in ("WIN", "LOSS")
