@@ -386,14 +386,15 @@ def compute_edges(
         edge = round(bma_prob - market_prob, 1)
 
         # Determine signal
-        if edge > 10:
-            signal = "🟢 BUY"       # BMA thinks it's much more likely
-        elif edge > 0:
-            signal = "🟢 BUY"       # BMA undervurdert
-        elif edge < -10:
-            signal = "🔴 SHORT"     # Market overvurdert
+        # edge = BMA_prob − market_price
+        #   edge > 0 → BMA thinks outcome is MORE likely than market is pricing
+        #             → market is undervaluing the outcome → BUY
+        #   edge < 0 → BMA thinks outcome is LESS likely than market is pricing
+        #             → market is overvaluing the outcome → SHORT
+        if edge > 0:
+            signal = "🟢 BUY"       # bma_prob > market_price → undervalued
         elif edge < 0:
-            signal = "🔴 SHORT"
+            signal = "🔴 SHORT"     # bma_prob < market_price → overvalued
         else:
             signal = "⚪ FLAT"
 
@@ -413,6 +414,16 @@ def compute_edges(
             "date": opp["date"],
             "question": opp["question"],
         })
+
+    # Deduplicate by (city, temp, qtype) — keep entry with highest volume.
+    # This prevents the same market appearing twice when both lead_days
+    # predictions produce similar edges for the same Polymarket question.
+    seen: dict[tuple[str, int, str], dict] = {}
+    for r in results:
+        key = (r["city"].lower(), r["temp"], r["qtype"])
+        if key not in seen or r.get("volume", 0) > seen[key].get("volume", 0):
+            seen[key] = r
+    results = list(seen.values())
 
     # Sort by absolute edge descending
     results.sort(key=lambda x: abs(x["edge"]), reverse=True)
