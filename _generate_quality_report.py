@@ -3229,7 +3229,7 @@ def _generate_all_cities_html() -> str:
   <div class="subtitle">Generert: {now_str} | Multi-Strategy: 🎯 Sigma · 🛡️ P5 · 📊 Mean</div>
 </header>
 <div class="live-bar">
-  <button class="live-btn" onclick="fetchLiveData()" id="fetch-btn">🔄 Hent Nåværende Temperatur & Døgnmaks</button>
+  <button class="live-btn" onclick="fetchLivePeak()" id="fetch-btn">🔄 Hent Nåværende Temperatur & Døgnmaks</button>
   <span class="live-status" id="fetch-status"></span>
   <span class="live-updated" id="live-updated"></span>
 </div>
