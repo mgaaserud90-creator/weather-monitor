@@ -2756,19 +2756,29 @@ function computeAllCitiesConfidence(city, temps, localHour) {{
 async function fetchLivePeak() {{
     const today = new Date().toISOString().slice(0, 10);
     const statusEl = document.getElementById('fetch-status');
-    if (statusEl) statusEl.textContent = '⏳ Henter peak-data...';
     const activeCities = CITIES.filter(c => c.has_market === true && !c.is_resolved);
     const fetchCities = activeCities.length > 0 ? activeCities : CITIES;
+    const total = fetchCities.length;
+    let done = 0;
     for (const city of fetchCities) {{
+        done++;
+        if (statusEl) statusEl.textContent = '⏳ Henter peak ' + done + '/' + total + '...';
         try {{
             const url = 'https://archive-api.open-meteo.com/v1/archive?latitude=' + city.lat +
                 '&longitude=' + city.lon + '&start_date=' + today + '&end_date=' + today +
                 '&hourly=temperature_2m&timezone=' + encodeURIComponent(city.tz);
             const resp = await fetch(url, {{ headers: {{ 'User-Agent': 'WeatherMonitor/1.0' }} }});
             const data = await resp.json();
-            if (data.error) continue;
+            if (data.error) {{
+                updateCityRow(city.name, 0, '—', '⚠️ Rate limit');
+                await new Promise(r => setTimeout(r, 500));
+                continue;
+            }}
             const temps = data.hourly.temperature_2m.filter(function(t) {{ return t !== null; }});
-            if (temps.length < 2) continue;
+            if (temps.length < 2) {{
+                await new Promise(r => setTimeout(r, 500));
+                continue;
+            }}
             const maxTemp = Math.max.apply(null, temps);
             const latestTemp = temps[temps.length - 1];
             const prevTemp = temps[temps.length - 2];
@@ -2816,9 +2826,12 @@ async function fetchLivePeak() {{
             const conf = computeAllCitiesConfidence(city, temps, hour);
             peakStatus += ' [' + conf + '%]';
             updateCityRow(city.name, maxTemp, trend, peakStatus);
-        }} catch (e) {{ /* skip */ }}
+        }} catch (e) {{
+            updateCityRow(city.name, 0, '—', '⚠️ Rate limit');
+        }}
+        if (done < total) await new Promise(r => setTimeout(r, 500));
     }}
-    if (statusEl) statusEl.textContent = '✅ Peak-data oppdatert';
+    if (statusEl) statusEl.textContent = '✅ Peak-data oppdatert (' + total + ' byer)';
     const updatedEl = document.getElementById('live-updated');
     if (updatedEl) updatedEl.textContent = new Date().toLocaleTimeString('no-NO');
     const anyInWindow = fetchCities.some(c => {{
@@ -3339,39 +3352,36 @@ function computeAllCitiesConfidence(city, temps, localHour) {{
     return Math.min(98, confidence);
 }}
 
-var peakBatchOffset = 0;
-var peakBatchSize = 5;
-var peakAllCities = [];
-
 async function fetchLivePeak() {{
     const today = new Date().toISOString().slice(0, 10);
     const statusEl = document.getElementById('fetch-status');
-    if (statusEl) statusEl.textContent = '⏳ Henter peak-data...';
 
     // Only fetch cities with active markets, or all if none filtered
     const activeCities = CITIES.filter(c => c.has_market === true && !c.is_resolved);
     const fetchCities = activeCities.length > 0 ? activeCities : CITIES;
+    const total = fetchCities.length;
+    let done = 0;
 
-    // Reset batch on first call or when called from button
-    if (peakBatchOffset === 0 || peakAllCities.length === 0) {{
-        peakAllCities = fetchCities;
-        peakBatchOffset = 0;
-    }}
-
-    const batch = peakAllCities.slice(peakBatchOffset, peakBatchOffset + peakBatchSize);
-    peakBatchOffset += peakBatchSize;
-
-    for (const city of batch) {{
+    for (const city of fetchCities) {{
+        done++;
+        if (statusEl) statusEl.textContent = '⏳ Henter peak ' + done + '/' + total + '...';
         try {{
             const url = 'https://archive-api.open-meteo.com/v1/archive?latitude=' + city.lat +
                 '&longitude=' + city.lon + '&start_date=' + today + '&end_date=' + today +
                 '&hourly=temperature_2m&timezone=' + encodeURIComponent(city.tz);
             const resp = await fetch(url, {{ headers: {{ 'User-Agent': 'WeatherMonitor/1.0' }} }});
             const data = await resp.json();
-            if (data.error) continue;
+            if (data.error) {{
+                updateCityRow(city.name, 0, '—', '⚠️ Rate limit');
+                await new Promise(r => setTimeout(r, 500));
+                continue;
+            }}
 
             const temps = data.hourly.temperature_2m.filter(function(t) {{ return t !== null; }});
-            if (temps.length < 2) continue;
+            if (temps.length < 2) {{
+                await new Promise(r => setTimeout(r, 500));
+                continue;
+            }}
 
             const maxTemp = Math.max.apply(null, temps);
             const latestTemp = temps[temps.length - 1];
@@ -3437,31 +3447,20 @@ async function fetchLivePeak() {{
 
             updateCityRow(city.name, maxTemp, trend, peakStatus);
         }} catch (e) {{
-            // Silently skip failed cities
+            updateCityRow(city.name, 0, '—', '⚠️ Rate limit');
         }}
+        if (done < total) await new Promise(r => setTimeout(r, 500));
     }}
 
-    const remaining = peakAllCities.length - peakBatchOffset;
-    if (remaining > 0) {{
-        if (statusEl) statusEl.textContent = '✅ ' + (peakAllCities.length - remaining) + '/' + peakAllCities.length + ' lastet | Hent neste ' + Math.min(peakBatchSize, remaining);
-        // Add "next batch" button
-        const btn = document.getElementById('fetch-btn');
-        if (btn) {{
+    if (statusEl) statusEl.textContent = '✅ Peak-data oppdatert (' + total + ' byer)';
+    const btn = document.getElementById('fetch-btn');
+    if (btn) {{
+        btn.disabled = true;
+        btn.textContent = '⏳ Vent 60s...';
+        setTimeout(() => {{
             btn.disabled = false;
-            btn.textContent = '🔄 Hent neste ' + Math.min(peakBatchSize, remaining);
-        }}
-    }} else {{
-        if (statusEl) statusEl.textContent = '✅ Peak-data oppdatert (' + peakAllCities.length + ' byer)';
-        peakBatchOffset = 0; // Reset for next full fetch
-        const btn = document.getElementById('fetch-btn');
-        if (btn) {{
-            btn.disabled = true;
-            btn.textContent = '⏳ Vent 60s...';
-            setTimeout(() => {{
-                btn.disabled = false;
-                btn.textContent = '🔄 Hent Nåværende Temperatur & Døgnmaks';
-            }}, 60000);
-        }}
+            btn.textContent = '🔄 Hent Nåværende Temperatur & Døgnmaks';
+        }}, 60000);
     }}
 
     const updatedEl = document.getElementById('live-updated');
@@ -3480,8 +3479,8 @@ async function fetchLivePeak() {{
     fetchLivePeak._timer = setTimeout(fetchLivePeak, nextInterval);
 }}
 
-// Auto-fetch first batch on page load
-setTimeout(function() {{ peakBatchOffset = 0; fetchLivePeak(); }}, 2000);
+// Auto-fetch on page load
+setTimeout(fetchLivePeak, 2000);
 
 var currentLead = {sorted_leads[0] if sorted_leads else 1};
 

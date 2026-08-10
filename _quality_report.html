@@ -161,7 +161,7 @@
 // No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-08-10T17:59:47Z');
+    var deployTime = new Date('2026-08-10T18:07:09Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {
@@ -1871,19 +1871,29 @@ function computeAllCitiesConfidence(city, temps, localHour) {
 async function fetchLivePeak() {
     const today = new Date().toISOString().slice(0, 10);
     const statusEl = document.getElementById('fetch-status');
-    if (statusEl) statusEl.textContent = '⏳ Henter peak-data...';
     const activeCities = CITIES.filter(c => c.has_market === true && !c.is_resolved);
     const fetchCities = activeCities.length > 0 ? activeCities : CITIES;
+    const total = fetchCities.length;
+    let done = 0;
     for (const city of fetchCities) {
+        done++;
+        if (statusEl) statusEl.textContent = '⏳ Henter peak ' + done + '/' + total + '...';
         try {
             const url = 'https://archive-api.open-meteo.com/v1/archive?latitude=' + city.lat +
                 '&longitude=' + city.lon + '&start_date=' + today + '&end_date=' + today +
                 '&hourly=temperature_2m&timezone=' + encodeURIComponent(city.tz);
             const resp = await fetch(url, { headers: { 'User-Agent': 'WeatherMonitor/1.0' } });
             const data = await resp.json();
-            if (data.error) continue;
+            if (data.error) {
+                updateCityRow(city.name, 0, '—', '⚠️ Rate limit');
+                await new Promise(r => setTimeout(r, 500));
+                continue;
+            }
             const temps = data.hourly.temperature_2m.filter(function(t) { return t !== null; });
-            if (temps.length < 2) continue;
+            if (temps.length < 2) {
+                await new Promise(r => setTimeout(r, 500));
+                continue;
+            }
             const maxTemp = Math.max.apply(null, temps);
             const latestTemp = temps[temps.length - 1];
             const prevTemp = temps[temps.length - 2];
@@ -1931,9 +1941,12 @@ async function fetchLivePeak() {
             const conf = computeAllCitiesConfidence(city, temps, hour);
             peakStatus += ' [' + conf + '%]';
             updateCityRow(city.name, maxTemp, trend, peakStatus);
-        } catch (e) { /* skip */ }
+        } catch (e) {
+            updateCityRow(city.name, 0, '—', '⚠️ Rate limit');
+        }
+        if (done < total) await new Promise(r => setTimeout(r, 500));
     }
-    if (statusEl) statusEl.textContent = '✅ Peak-data oppdatert';
+    if (statusEl) statusEl.textContent = '✅ Peak-data oppdatert (' + total + ' byer)';
     const updatedEl = document.getElementById('live-updated');
     if (updatedEl) updatedEl.textContent = new Date().toLocaleTimeString('no-NO');
     const anyInWindow = fetchCities.some(c => {
