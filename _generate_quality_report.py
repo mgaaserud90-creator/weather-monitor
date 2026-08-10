@@ -188,10 +188,244 @@ def _generate_report() -> str:
             lines.append(f"   {rd}  │  {npred:3d} byer  │  (ingen resultater)")
 
     lines.append("")
+
+    # ── Per-city strategy recommendation + Resultant Monitor ──
+    best_per_city = _get_best_strategy_per_city(runs)
+    resultant_lines = _build_resultant_monitor_lines(best_per_city)
+    lines.extend(resultant_lines)
+
     lines.append("═" * 60)
     lines.append("")
 
     return "\n".join(lines)
+
+
+# =============================================================================
+# Per-City Strategy Recommendation Engine
+# =============================================================================
+
+def _get_best_strategy_per_city(runs: list) -> dict:
+    """Compute per-city win rates for sigma, p5, mean across all historical runs.
+
+    Returns:
+        {city_name: {"best": "sigma", "sigma_rate": 42.0, "p5_rate": 10.0, "mean_rate": 25.0,
+                     "sigma_wl": "5W/7L", "p5_wl": "1W/11L", "mean_wl": "3W/9L", "total_resolved": 12}}
+    """
+    city_stats: dict[str, dict] = {}
+    for run in runs:
+        for city, pdata in run.get("predictions", {}).items():
+            if city not in city_stats:
+                city_stats[city] = {
+                    "sigma": {"wins": 0, "losses": 0},
+                    "p5": {"wins": 0, "losses": 0},
+                    "mean": {"wins": 0, "losses": 0},
+                }
+            strategies = pdata.get("strategies", {})
+            for sn in ("sigma", "p5", "mean"):
+                s = strategies.get(sn, {})
+                if s.get("result") == "WIN":
+                    city_stats[city][sn]["wins"] += 1
+                elif s.get("result") == "LOSS":
+                    city_stats[city][sn]["losses"] += 1
+
+    result: dict[str, dict] = {}
+    for city, stats in city_stats.items():
+        sigma_t = stats["sigma"]["wins"] + stats["sigma"]["losses"]
+        p5_t = stats["p5"]["wins"] + stats["p5"]["losses"]
+        mean_t = stats["mean"]["wins"] + stats["mean"]["losses"]
+        total_resolved = sigma_t
+
+        sigma_rate = round(stats["sigma"]["wins"] / max(1, sigma_t) * 100, 1)
+        p5_rate = round(stats["p5"]["wins"] / max(1, p5_t) * 100, 1)
+        mean_rate = round(stats["mean"]["wins"] / max(1, mean_t) * 100, 1)
+
+        sigma_wl = f"{stats['sigma']['wins']}W/{stats['sigma']['losses']}L"
+        p5_wl = f"{stats['p5']['wins']}W/{stats['p5']['losses']}L"
+        mean_wl = f"{stats['mean']['wins']}W/{stats['mean']['losses']}L"
+
+        rates = {"sigma": sigma_rate, "p5": p5_rate, "mean": mean_rate}
+        best = max(rates, key=lambda k: rates[k])
+
+        result[city] = {
+            "best": best,
+            "sigma_rate": sigma_rate,
+            "p5_rate": p5_rate,
+            "mean_rate": mean_rate,
+            "sigma_wl": sigma_wl,
+            "p5_wl": p5_wl,
+            "mean_wl": mean_wl,
+            "total_resolved": total_resolved,
+        }
+
+    return result
+
+
+def _build_resultant_monitor_lines(best_per_city: dict) -> list[str]:
+    """Build the Resultant Monitor summary lines for the markdown report."""
+    lines: list[str] = []
+
+    if not best_per_city:
+        return lines
+
+    sigma_cities = [c for c, d in best_per_city.items() if d["best"] == "sigma"]
+    mean_cities = [c for c, d in best_per_city.items() if d["best"] == "mean"]
+    p5_cities = [c for c, d in best_per_city.items() if d["best"] == "p5"]
+
+    total_with_data = len(best_per_city)
+
+    # Calculate samplet edge if all followed recommended
+    total_wins = 0
+    total_positions = 0
+    for city, d in best_per_city.items():
+        if d["total_resolved"] > 0:
+            best_key = d["best"]
+            # Parse W/L for the best strategy
+            wl_str = d.get(f"{best_key}_wl", "0W/0L")
+            parts = wl_str.split("W/")
+            wins = int(parts[0]) if parts else 0
+            total_wins += wins
+            total_positions += d["total_resolved"]
+    edge = round(total_wins / max(1, total_positions) * 100, 1) if total_positions > 0 else 0
+
+    lines.append("═" * 60)
+    lines.append("     🎯 RESULTANT MONITOR — Per-City Optimal Strategy")
+    lines.append("═" * 60)
+    lines.append("")
+
+    sigma_pct = round(len(sigma_cities) / max(1, total_with_data) * 100, 1)
+    mean_pct = round(len(mean_cities) / max(1, total_with_data) * 100, 1)
+    p5_pct = round(len(p5_cities) / max(1, total_with_data) * 100, 1)
+
+    lines.append(f"Byer med Sigma som best:   {len(sigma_cities):3d} ({sigma_pct}%)")
+    lines.append(f"Byer med Mean som best:    {len(mean_cities):3d} ({mean_pct}%)")
+    lines.append(f"Byer med P5 som best:      {len(p5_cities):3d} ({p5_pct}%)")
+    lines.append("")
+    lines.append(f"Samlet edge (hvis alle fulgte anbefalt): {edge}%")
+    lines.append("")
+
+    # Top 10 cities with their recommended strategy
+    sorted_cities = sorted(best_per_city.items(), key=lambda kv: kv[1][f"{kv[1]['best']}_rate"], reverse=True)
+    lines.append("🏆 TOP 10 PER CITY:")
+    for i, (city, d) in enumerate(sorted_cities[:10]):
+        best_name = {"sigma": "Sigma", "p5": "P5", "mean": "Mean"}.get(d["best"], d["best"])
+        rate = d[f"{d['best']}_rate"]
+        lines.append(f"   {i+1:2d}. {city:<30s} → {best_name} ({rate}%) [{d['total_resolved']} resolved]")
+    lines.append("")
+
+    # Per-city detailed breakdown
+    lines.append("─" * 60)
+    lines.append("📊 PER-CITY STRATEGI-ANALYSE:")
+    lines.append("─" * 60)
+    for city, d in sorted(best_per_city.items(), key=lambda kv: kv[1]["total_resolved"], reverse=True):
+        if d["total_resolved"] == 0:
+            continue
+        sigma_mark = " ← ANBEFALT" if d["best"] == "sigma" else ""
+        p5_mark = " ← ANBEFALT" if d["best"] == "p5" else ""
+        mean_mark = " ← ANBEFALT" if d["best"] == "mean" else ""
+        lines.append(f"   📊 {city} — Strategi-analyse ({d['total_resolved']} resolved trades)")
+        lines.append(f"      Sigma: {d['sigma_wl']} = {d['sigma_rate']}%{sigma_mark}")
+        lines.append(f"      P5:    {d['p5_wl']} = {d['p5_rate']}%{p5_mark}")
+        lines.append(f"      Mean:  {d['mean_wl']} = {d['mean_rate']}%{mean_mark}")
+        lines.append("")
+    return lines
+
+
+def _build_strat_rec_cell(city: str, best_per_city: dict) -> str:
+    """Build an HTML table cell showing the recommended strategy for a city."""
+    info = best_per_city.get(city)
+    if not info or info["total_resolved"] == 0:
+        return '<span style="color: var(--text-dim);">— (ingen data)</span>'
+
+    best_name = {"sigma": "Sigma", "p5": "P5", "mean": "Mean"}.get(info["best"], info["best"])
+    rate = info[f"{info['best']}_rate"]
+    emoji = {"sigma": "🎯", "p5": "🛡️", "mean": "📊"}.get(info["best"], "")
+
+    if best_name == "Sigma":
+        color = "#3fb950"
+    elif best_name == "P5":
+        color = "#58a6ff"
+    else:
+        color = "#d2991d"
+
+    return (
+        f'<span style="color:{color};font-weight:600;">'
+        f'{emoji} {best_name} ({rate}%)</span>'
+        f' <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span>'
+    )
+
+
+def _build_strat_rec_html_section(best_per_city: dict) -> str:
+    """Build an HTML section showing top cities with recommended strategies."""
+    if not best_per_city:
+        return ""
+
+    # Count how many cities have each best strategy
+    sigma_cities = [c for c, d in best_per_city.items() if d["best"] == "sigma"]
+    mean_cities = [c for c, d in best_per_city.items() if d["best"] == "mean"]
+    p5_cities = [c for c, d in best_per_city.items() if d["best"] == "p5"]
+    total_with_data = len(best_per_city)
+
+    # Calculate samplet edge
+    total_wins = 0
+    total_positions = 0
+    for city, d in best_per_city.items():
+        if d["total_resolved"] > 0:
+            best_key = d["best"]
+            wl_str = d.get(f"{best_key}_wl", "0W/0L")
+            parts = wl_str.split("W/")
+            wins = int(parts[0]) if parts else 0
+            total_wins += wins
+            total_positions += d["total_resolved"]
+    edge = round(total_wins / max(1, total_positions) * 100, 1) if total_positions > 0 else 0
+
+    sigma_pct = round(len(sigma_cities) / max(1, total_with_data) * 100, 1)
+    mean_pct = round(len(mean_cities) / max(1, total_with_data) * 100, 1)
+    p5_pct = round(len(p5_cities) / max(1, total_with_data) * 100, 1)
+
+    # Top 10 rows
+    sorted_cities = sorted(best_per_city.items(), key=lambda kv: kv[1][f"{kv[1]['best']}_rate"], reverse=True)
+    top10_rows = ""
+    for i, (city, d) in enumerate(sorted_cities[:10]):
+        best_name = {"sigma": "Sigma", "p5": "P5", "mean": "Mean"}.get(d["best"], d["best"])
+        rate = d[f"{d['best']}_rate"]
+        emoji = {"sigma": "🎯", "p5": "🛡️", "mean": "📊"}.get(d["best"], "")
+        top10_rows += (
+            f'<tr><td>{i+1}</td><td><strong>{city}</strong></td>'
+            f'<td>{emoji} {best_name}</td>'
+            f'<td style="font-weight:600;">{rate}%</td>'
+            f'<td style="color:var(--text-dim);">{d["total_resolved"]}</td></tr>'
+        )
+
+    return f"""
+    <div class="section">
+      <h2>🎯 ANBEFALT STRATEGI PER BY</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        Basert på historisk resolved data. Hver by får den strategien med høyest win rate.
+      </p>
+      <div class="card-grid" style="margin-bottom: 20px;">
+        <div class="card" style="{'border: 2px solid #3fb950;' if sigma_cities else ''}">
+          <div class="value" style="color: #3fb950;">{len(sigma_cities)}</div>
+          <div class="label">🎯 Sigma ({sigma_pct}%)</div>
+        </div>
+        <div class="card" style="{'border: 2px solid #d2991d;' if mean_cities else ''}">
+          <div class="value" style="color: #d2991d;">{len(mean_cities)}</div>
+          <div class="label">📊 Mean ({mean_pct}%)</div>
+        </div>
+        <div class="card" style="{'border: 2px solid #58a6ff;' if p5_cities else ''}">
+          <div class="value" style="color: #58a6ff;">{len(p5_cities)}</div>
+          <div class="label">🛡️ P5 ({p5_pct}%)</div>
+        </div>
+        <div class="card">
+          <div class="value" style="color: var(--purple);">{edge}%</div>
+          <div class="label">Samlet Edge (anbefalt)</div>
+        </div>
+      </div>
+      <h3 style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 8px;">🏆 TOP 10 — Høyest Forventet Win Rate</h3>
+      <table>
+        <thead><tr><th>#</th><th>By</th><th>Anbefalt Strategi</th><th>Win Rate</th><th>Resolved</th></tr></thead>
+        <tbody>{top10_rows}</tbody>
+      </table>
+    </div>"""
 
 
 # =============================================================================
@@ -1141,6 +1375,7 @@ def _generate_html_report() -> str:
     log_data = _load_log()
     runs = log_data.get("runs", [])
     cum = log_data.get("cumulative", {})
+    best_per_city = _get_best_strategy_per_city(runs)
 
     # Aggregate per-strategy stats
     sigma_wins = sum(r.get("summary", {}).get("sigma_wins", 0) for r in runs)
@@ -1371,6 +1606,7 @@ def _generate_html_report() -> str:
     cum_edge_section = _build_cumulative_edge_section(runs)
     region_section = _build_region_performance_section(runs)
     uhi_section = _build_uhi_accuracy_section(runs)
+    strat_rec_section = _build_strat_rec_html_section(best_per_city)
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -1661,6 +1897,7 @@ function sortTable(colIdx) {{
   {cum_edge_section}
   {region_section}
   {uhi_section}
+  {strat_rec_section}
 
 </div>
 <footer>
@@ -1683,6 +1920,9 @@ def _generate_all_cities_html() -> str:
     """
     log_data = _load_log()
     runs = log_data.get("runs", [])
+
+    # Compute per-city historical best strategy
+    best_per_city = _get_best_strategy_per_city(runs)
 
     # Load city defaults for timezone / station metadata
     defaults_path = Path(_SCRIPT_DIR) / "weather_monitor_defaults.json"
@@ -1949,6 +2189,7 @@ def _generate_all_cities_html() -> str:
                 <td class="col-peak">{actual_str}{" ✅ VUNNET" if peak_won else ""}</td>
                 <td class="col-live" id="live-{safe_city_id}">—</td>
                 <td class="col-rec {rec_class}">{rec}</td>
+                <td class="col-strat">{_build_strat_rec_cell(city, best_per_city)}</td>
                 <td class="col-local">{local_time_str}</td>
             </tr>
 """
@@ -2081,8 +2322,9 @@ def _generate_all_cities_html() -> str:
           <th onclick="sortTable(9)">Peak</th>
           <th onclick="sortTable(10)">🔴 Live</th>
           <th onclick="sortTable(11)">Anbefaling</th>
-          <th onclick="sortTable(12)">🕐 Lokal</th>
-        </tr>
+          <th onclick="sortTable(12)">🎯 Anbefalt Strategi</th>
+          <th onclick="sortTable(13)">🕐 Lokal</th>
+       </tr>
       </thead>
       <tbody>
         {table_rows}
