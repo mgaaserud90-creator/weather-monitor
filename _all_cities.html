@@ -84,7 +84,7 @@
 <body>
 <header>
   <h1>🌍 ALLE 51 BYER — BMA Ensemble</h1>
-  <div class="subtitle">Generert: 2026-08-10 09:01:49 UTC | Multi-Strategy: 🎯 Sigma · 🛡️ P5 · 📊 Mean</div>
+  <div class="subtitle">Generert: 2026-08-10 09:49:33 UTC | Multi-Strategy: 🎯 Sigma · 🛡️ P5 · 📊 Mean</div>
 </header>
 <div class="live-bar">
   <button class="live-btn" onclick="fetchLiveData()" id="fetch-btn">🔄 Hent Nåværende Temperatur & Døgnmaks</button>
@@ -123,29 +123,35 @@
           <th onclick="sortTable(8)">Modeller</th>
           <th onclick="sortTable(9)">Peak</th>
           <th onclick="sortTable(10)">🔴 Live</th>
-          <th onclick="sortTable(11)">Anbefaling</th>
-          <th onclick="sortTable(12)">🎯 Anbefalt Strategi</th>
-          <th onclick="sortTable(13)">🕐 Lokal</th>
+          <th onclick="sortTable(11)">Marked Pris</th>
+          <th onclick="sortTable(12)">Edge</th>
+          <th onclick="sortTable(13)">Signal</th>
+          <th onclick="sortTable(14)">Anbefaling</th>
+          <th onclick="sortTable(15)">🎯 Anbefalt Strategi</th>
+          <th onclick="sortTable(16)">🕐 Lokal</th>
        </tr>
       </thead>
       <tbody>
-        <tr class="city-row row-loss" data-lead="0" data-city="Amsterdam, NL" data-conf="0.510">
+        <tr class="city-row row-loss" data-lead="0" data-city="Amsterdam, NL" data-conf="0.524" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Amsterdam, NL</td>
-                <td class="col-bma">22.7 <span class="dim">σ=1.3</span></td>
-                <td class="col-range">21-21°C</td>
-                <td class="col-sigma">BUY 21°C ⏳</td>
+                <td class="col-bma">22.9 <span class="dim">σ=1.2</span></td>
+                <td class="col-range">21-22°C</td>
+                <td class="col-sigma">BUY 22°C ⏳</td>
                 <td class="col-p5">BUY 21°C ⏳</td>
                 <td class="col-mean">BUY 23°C ⏳</td>
-                <td class="col-conf conf-low">🔴 51%</td>
+                <td class="col-conf conf-low">🔴 52%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Amsterdam__NL">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">11:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">11:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Amsterdam, NL" data-conf="0.469">
+<tr class="city-row row-loss" data-lead="1" data-city="Amsterdam, NL" data-conf="0.474" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Amsterdam, NL</td>
                 <td class="col-bma">22.0 <span class="dim">σ=1.1</span></td>
@@ -157,11 +163,14 @@
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Amsterdam__NL">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">11:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">11:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Ankara, TR" data-conf="0.600">
+<tr class="city-row row-loss" data-lead="0" data-city="Ankara, TR" data-conf="0.589" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Ankara, TR</td>
                 <td class="col-bma">30.0 <span class="dim">σ=0.7</span></td>
@@ -169,15 +178,18 @@
                 <td class="col-sigma">BUY 29°C ⏳</td>
                 <td class="col-p5">BUY 29°C ⏳</td>
                 <td class="col-mean">BUY 30°C ⏳</td>
-                <td class="col-conf conf-low">🔴 60%</td>
+                <td class="col-conf conf-low">🔴 59%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Ankara__TR">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">12:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">12:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Ankara, TR" data-conf="0.783">
+<tr class="city-row row-loss" data-lead="1" data-city="Ankara, TR" data-conf="0.782" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Ankara, TR</td>
                 <td class="col-bma">30.8 <span class="dim">σ=0.8</span></td>
@@ -189,110 +201,131 @@
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Ankara__TR">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">12:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">12:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Atlanta, US" data-conf="0.444">
+<tr class="city-row row-loss" data-lead="0" data-city="Atlanta, US" data-conf="0.378" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Atlanta, US</td>
-                <td class="col-bma">32.7 <span class="dim">σ=1.6</span></td>
-                <td class="col-range">30-31°C</td>
+                <td class="col-bma">32.3 <span class="dim">σ=1.8</span></td>
+                <td class="col-range">29-31°C</td>
                 <td class="col-sigma">BUY 31°C ⏳</td>
-                <td class="col-p5">BUY 30°C ⏳</td>
-                <td class="col-mean">BUY 33°C ⏳</td>
-                <td class="col-conf conf-low">🔴 44%</td>
+                <td class="col-p5">BUY 29°C ⏳</td>
+                <td class="col-mean">BUY 32°C ⏳</td>
+                <td class="col-conf conf-low">🔴 38%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Atlanta__US">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">05:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">05:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Atlanta, US" data-conf="0.307">
+<tr class="city-row row-loss" data-lead="1" data-city="Atlanta, US" data-conf="0.528" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Atlanta, US</td>
-                <td class="col-bma">31.7 <span class="dim">σ=2.4</span></td>
-                <td class="col-range">28-30°C</td>
-                <td class="col-sigma">BUY 30°C ⏳</td>
-                <td class="col-p5">BUY 28°C ⏳</td>
+                <td class="col-bma">32.1 <span class="dim">σ=1.3</span></td>
+                <td class="col-range">30-31°C</td>
+                <td class="col-sigma">BUY 31°C ⏳</td>
+                <td class="col-p5">BUY 30°C ⏳</td>
                 <td class="col-mean">BUY 32°C ⏳</td>
-                <td class="col-conf conf-low">🔴 31%</td>
-                <td class="col-models">7/8</td>
+                <td class="col-conf conf-low">🔴 53%</td>
+                <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Atlanta__US">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">05:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">05:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Austin, US" data-conf="0.655">
+<tr class="city-row row-loss" data-lead="0" data-city="Austin, US" data-conf="0.577" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Austin, US</td>
-                <td class="col-bma">36.2 <span class="dim">σ=0.8</span></td>
+                <td class="col-bma">36.1 <span class="dim">σ=0.9</span></td>
                 <td class="col-range">35-35°C</td>
                 <td class="col-sigma">BUY 35°C ⏳</td>
                 <td class="col-p5">BUY 35°C ⏳</td>
                 <td class="col-mean">BUY 36°C ⏳</td>
-                <td class="col-conf conf-low">🔴 66%</td>
+                <td class="col-conf conf-low">🔴 58%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Austin__US">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">04:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">04:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Austin, US" data-conf="0.544">
+<tr class="city-row row-loss" data-lead="1" data-city="Austin, US" data-conf="0.709" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Austin, US</td>
-                <td class="col-bma">37.3 <span class="dim">σ=1.0</span></td>
-                <td class="col-range">36-36°C</td>
+                <td class="col-bma">36.8 <span class="dim">σ=0.8</span></td>
+                <td class="col-range">35-36°C</td>
                 <td class="col-sigma">BUY 36°C ⏳</td>
-                <td class="col-p5">BUY 36°C ⏳</td>
+                <td class="col-p5">BUY 35°C ⏳</td>
                 <td class="col-mean">BUY 37°C ⏳</td>
-                <td class="col-conf conf-low">🔴 54%</td>
-                <td class="col-models">7/8</td>
+                <td class="col-conf conf-mid">🟠 71%</td>
+                <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Austin__US">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">04:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">04:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Beijing, CN" data-conf="0.628">
+<tr class="city-row row-loss" data-lead="0" data-city="Beijing, CN" data-conf="0.530" data-edge="-77.9">
                 <td class="col-rank"></td>
                 <td class="col-city">Beijing, CN</td>
-                <td class="col-bma">33.0 <span class="dim">σ=0.9</span></td>
-                <td class="col-range">32-32°C</td>
+                <td class="col-bma">33.1 <span class="dim">σ=1.1</span></td>
+                <td class="col-range">31-32°C</td>
                 <td class="col-sigma">BUY 32°C ⏳</td>
-                <td class="col-p5">BUY 32°C ⏳</td>
+                <td class="col-p5">BUY 31°C ⏳</td>
                 <td class="col-mean">BUY 33°C ⏳</td>
-                <td class="col-conf conf-low">🔴 63%</td>
+                <td class="col-conf conf-low">🔴 53%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Beijing__CN">—</td>
+                <td class="col-market">99.9%</td>
+                <td class="col-edge">-77.9%</td>
+                <td class="col-signal"><span style="color: var(--red); font-weight: 600;">🔴 SHORT</span></td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Beijing, CN" data-conf="0.418">
+<tr class="city-row row-loss" data-lead="1" data-city="Beijing, CN" data-conf="0.446" data-edge="-82.6">
                 <td class="col-rank"></td>
                 <td class="col-city">Beijing, CN</td>
-                <td class="col-bma">32.8 <span class="dim">σ=2.1</span></td>
-                <td class="col-range">29-31°C</td>
-                <td class="col-sigma">BUY 31°C ⏳</td>
-                <td class="col-p5">BUY 29°C ⏳</td>
+                <td class="col-bma">33.4 <span class="dim">σ=1.3</span></td>
+                <td class="col-range">31-32°C</td>
+                <td class="col-sigma">BUY 32°C ⏳</td>
+                <td class="col-p5">BUY 31°C ⏳</td>
                 <td class="col-mean">BUY 33°C ⏳</td>
-                <td class="col-conf conf-low">🔴 42%</td>
+                <td class="col-conf conf-low">🔴 45%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Beijing__CN">—</td>
+                <td class="col-market">99.9%</td>
+                <td class="col-edge">-82.6%</td>
+                <td class="col-signal"><span style="color: var(--red); font-weight: 600;">🔴 SHORT</span></td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Buenos Aires, AR" data-conf="0.750">
+<tr class="city-row row-loss" data-lead="0" data-city="Buenos Aires, AR" data-conf="0.748" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Buenos Aires, AR</td>
-                <td class="col-bma">11.3 <span class="dim">σ=0.6</span></td>
+                <td class="col-bma">11.2 <span class="dim">σ=0.6</span></td>
                 <td class="col-range">10-10°C</td>
                 <td class="col-sigma">BUY 10°C ⏳</td>
                 <td class="col-p5">BUY 10°C ⏳</td>
@@ -301,11 +334,14 @@
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Buenos_Aires__AR">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">06:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">06:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Buenos Aires, AR" data-conf="0.624">
+<tr class="city-row row-loss" data-lead="1" data-city="Buenos Aires, AR" data-conf="0.562" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Buenos Aires, AR</td>
                 <td class="col-bma">11.3 <span class="dim">σ=0.9</span></td>
@@ -313,15 +349,18 @@
                 <td class="col-sigma">BUY 10°C ⏳</td>
                 <td class="col-p5">BUY 10°C ⏳</td>
                 <td class="col-mean">BUY 11°C ⏳</td>
-                <td class="col-conf conf-low">🔴 62%</td>
+                <td class="col-conf conf-low">🔴 56%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Buenos_Aires__AR">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">06:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">06:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Busan, KR" data-conf="0.621">
+<tr class="city-row row-loss" data-lead="0" data-city="Busan, KR" data-conf="0.621" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Busan, KR</td>
                 <td class="col-bma">29.7 <span class="dim">σ=0.9</span></td>
@@ -333,14 +372,17 @@
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Busan__KR">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">18:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">18:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Busan, KR" data-conf="0.601">
+<tr class="city-row row-loss" data-lead="1" data-city="Busan, KR" data-conf="0.599" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Busan, KR</td>
-                <td class="col-bma">29.3 <span class="dim">σ=1.0</span></td>
+                <td class="col-bma">29.3 <span class="dim">σ=1.1</span></td>
                 <td class="col-range">28-28°C</td>
                 <td class="col-sigma">BUY 28°C ⏳</td>
                 <td class="col-p5">BUY 28°C ⏳</td>
@@ -349,219 +391,261 @@
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Busan__KR">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">18:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">18:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Cape Town, ZA" data-conf="0.699">
+<tr class="city-row row-loss" data-lead="0" data-city="Cape Town, ZA" data-conf="0.628" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Cape Town, ZA</td>
-                <td class="col-bma">14.7 <span class="dim">σ=0.8</span></td>
+                <td class="col-bma">14.7 <span class="dim">σ=0.9</span></td>
                 <td class="col-range">13-14°C</td>
                 <td class="col-sigma">BUY 14°C ⏳</td>
                 <td class="col-p5">BUY 13°C ⏳</td>
                 <td class="col-mean">BUY 15°C ⏳</td>
-                <td class="col-conf conf-low">🔴 70%</td>
+                <td class="col-conf conf-low">🔴 63%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Cape_Town__ZA">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">11:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">11:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Cape Town, ZA" data-conf="0.440">
+<tr class="city-row row-loss" data-lead="1" data-city="Cape Town, ZA" data-conf="0.429" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Cape Town, ZA</td>
-                <td class="col-bma">18.6 <span class="dim">σ=1.4</span></td>
+                <td class="col-bma">18.6 <span class="dim">σ=1.5</span></td>
                 <td class="col-range">16-17°C</td>
                 <td class="col-sigma">BUY 17°C ⏳</td>
                 <td class="col-p5">BUY 16°C ⏳</td>
                 <td class="col-mean">BUY 19°C ⏳</td>
-                <td class="col-conf conf-low">🔴 44%</td>
+                <td class="col-conf conf-low">🔴 43%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Cape_Town__ZA">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">11:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">11:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Chengdu, CN" data-conf="0.449">
+<tr class="city-row row-loss" data-lead="0" data-city="Chengdu, CN" data-conf="0.440" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Chengdu, CN</td>
-                <td class="col-bma">34.4 <span class="dim">σ=1.3</span></td>
+                <td class="col-bma">34.4 <span class="dim">σ=1.4</span></td>
                 <td class="col-range">32-33°C</td>
                 <td class="col-sigma">BUY 33°C ⏳</td>
                 <td class="col-p5">BUY 32°C ⏳</td>
                 <td class="col-mean">BUY 34°C ⏳</td>
-                <td class="col-conf conf-low">🔴 45%</td>
+                <td class="col-conf conf-low">🔴 44%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Chengdu__CN">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Chengdu, CN" data-conf="0.531">
+<tr class="city-row row-loss" data-lead="1" data-city="Chengdu, CN" data-conf="0.431" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Chengdu, CN</td>
-                <td class="col-bma">34.7 <span class="dim">σ=1.1</span></td>
-                <td class="col-range">33-33°C</td>
+                <td class="col-bma">34.5 <span class="dim">σ=1.5</span></td>
+                <td class="col-range">32-33°C</td>
                 <td class="col-sigma">BUY 33°C ⏳</td>
-                <td class="col-p5">BUY 33°C ⏳</td>
-                <td class="col-mean">BUY 35°C ⏳</td>
-                <td class="col-conf conf-low">🔴 53%</td>
+                <td class="col-p5">BUY 32°C ⏳</td>
+                <td class="col-mean">BUY 34°C ⏳</td>
+                <td class="col-conf conf-low">🔴 43%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Chengdu__CN">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Chicago, US" data-conf="0.447">
+<tr class="city-row row-loss" data-lead="0" data-city="Chicago, US" data-conf="0.439" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Chicago, US</td>
-                <td class="col-bma">28.1 <span class="dim">σ=1.6</span></td>
-                <td class="col-range">26-26°C</td>
-                <td class="col-sigma">BUY 26°C ⏳</td>
+                <td class="col-bma">29.1 <span class="dim">σ=1.7</span></td>
+                <td class="col-range">26-27°C</td>
+                <td class="col-sigma">BUY 27°C ⏳</td>
                 <td class="col-p5">BUY 26°C ⏳</td>
-                <td class="col-mean">BUY 28°C ⏳</td>
-                <td class="col-conf conf-low">🔴 45%</td>
+                <td class="col-mean">BUY 29°C ⏳</td>
+                <td class="col-conf conf-low">🔴 44%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Chicago__US">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">04:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">04:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Chicago, US" data-conf="0.405">
+<tr class="city-row row-loss" data-lead="1" data-city="Chicago, US" data-conf="0.518" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Chicago, US</td>
-                <td class="col-bma">26.6 <span class="dim">σ=1.7</span></td>
+                <td class="col-bma">26.2 <span class="dim">σ=1.4</span></td>
                 <td class="col-range">24-25°C</td>
                 <td class="col-sigma">BUY 25°C ⏳</td>
                 <td class="col-p5">BUY 24°C ⏳</td>
-                <td class="col-mean">BUY 27°C ⏳</td>
-                <td class="col-conf conf-low">🔴 40%</td>
-                <td class="col-models">7/8</td>
+                <td class="col-mean">BUY 26°C ⏳</td>
+                <td class="col-conf conf-low">🔴 52%</td>
+                <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Chicago__US">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">04:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">04:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Chongqing, CN" data-conf="0.570">
+<tr class="city-row row-loss" data-lead="0" data-city="Chongqing, CN" data-conf="0.644" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Chongqing, CN</td>
-                <td class="col-bma">32.3 <span class="dim">σ=0.8</span></td>
-                <td class="col-range">31-31°C</td>
-                <td class="col-sigma">BUY 31°C ⏳</td>
+                <td class="col-bma">32.6 <span class="dim">σ=0.8</span></td>
+                <td class="col-range">31-32°C</td>
+                <td class="col-sigma">BUY 32°C ⏳</td>
                 <td class="col-p5">BUY 31°C ⏳</td>
-                <td class="col-mean">BUY 32°C ⏳</td>
-                <td class="col-conf conf-low">🔴 57%</td>
+                <td class="col-mean">BUY 33°C ⏳</td>
+                <td class="col-conf conf-low">🔴 64%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Chongqing__CN">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Chongqing, CN" data-conf="0.669">
+<tr class="city-row row-loss" data-lead="1" data-city="Chongqing, CN" data-conf="0.579" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Chongqing, CN</td>
-                <td class="col-bma">34.3 <span class="dim">σ=0.7</span></td>
+                <td class="col-bma">34.1 <span class="dim">σ=0.8</span></td>
                 <td class="col-range">33-33°C</td>
                 <td class="col-sigma">BUY 33°C ⏳</td>
                 <td class="col-p5">BUY 33°C ⏳</td>
                 <td class="col-mean">BUY 34°C ⏳</td>
-                <td class="col-conf conf-low">🔴 67%</td>
+                <td class="col-conf conf-low">🔴 58%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Chongqing__CN">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Dallas, US" data-conf="0.732">
+<tr class="city-row row-loss" data-lead="0" data-city="Dallas, US" data-conf="0.758" data-edge="-23.6">
                 <td class="col-rank"></td>
                 <td class="col-city">Dallas, US</td>
-                <td class="col-bma">37.2 <span class="dim">σ=0.7</span></td>
-                <td class="col-range">36-36°C</td>
-                <td class="col-sigma">BUY 36°C ⏳</td>
-                <td class="col-p5">BUY 36°C ⏳</td>
-                <td class="col-mean">BUY 37°C ⏳</td>
-                <td class="col-conf conf-mid">🟠 73%</td>
-                <td class="col-models">8/8</td>
-                <td class="col-peak">—</td>
-                <td class="col-live" id="live-Dallas__US">—</td>
-                <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">04:01</td>
-            </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Dallas, US" data-conf="0.599">
-                <td class="col-rank"></td>
-                <td class="col-city">Dallas, US</td>
-                <td class="col-bma">37.9 <span class="dim">σ=0.6</span></td>
+                <td class="col-bma">37.6 <span class="dim">σ=0.6</span></td>
                 <td class="col-range">37-37°C</td>
                 <td class="col-sigma">BUY 37°C ⏳</td>
                 <td class="col-p5">BUY 37°C ⏳</td>
                 <td class="col-mean">BUY 38°C ⏳</td>
-                <td class="col-conf conf-low">🔴 60%</td>
-                <td class="col-models">7/8</td>
+                <td class="col-conf conf-mid">🟠 76%</td>
+                <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Dallas__US">—</td>
+                <td class="col-market">63.5%</td>
+                <td class="col-edge">-23.6%</td>
+                <td class="col-signal"><span style="color: var(--red); font-weight: 600;">🔴 SHORT</span></td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">04:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">04:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Denver, US" data-conf="0.689">
+<tr class="city-row row-loss" data-lead="1" data-city="Dallas, US" data-conf="0.529" data-edge="-42.2">
+                <td class="col-rank"></td>
+                <td class="col-city">Dallas, US</td>
+                <td class="col-bma">38.1 <span class="dim">σ=0.9</span></td>
+                <td class="col-range">37-37°C</td>
+                <td class="col-sigma">BUY 37°C ⏳</td>
+                <td class="col-p5">BUY 37°C ⏳</td>
+                <td class="col-mean">BUY 38°C ⏳</td>
+                <td class="col-conf conf-low">🔴 53%</td>
+                <td class="col-models">8/8</td>
+                <td class="col-peak">—</td>
+                <td class="col-live" id="live-Dallas__US">—</td>
+                <td class="col-market">63.5%</td>
+                <td class="col-edge">-42.2%</td>
+                <td class="col-signal"><span style="color: var(--red); font-weight: 600;">🔴 SHORT</span></td>
+                <td class="col-rec ">—</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">04:49</td>
+            </tr>
+<tr class="city-row row-loss" data-lead="0" data-city="Denver, US" data-conf="0.754" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Denver, US</td>
                 <td class="col-bma">34.4 <span class="dim">σ=0.6</span></td>
+                <td class="col-range">33-34°C</td>
+                <td class="col-sigma">BUY 34°C ⏳</td>
+                <td class="col-p5">BUY 33°C ⏳</td>
+                <td class="col-mean">BUY 34°C ⏳</td>
+                <td class="col-conf conf-mid">🟠 75%</td>
+                <td class="col-models">8/8</td>
+                <td class="col-peak">—</td>
+                <td class="col-live" id="live-Denver__US">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
+                <td class="col-rec ">—</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">03:49</td>
+            </tr>
+<tr class="city-row row-loss" data-lead="1" data-city="Denver, US" data-conf="0.511" data-edge="0">
+                <td class="col-rank"></td>
+                <td class="col-city">Denver, US</td>
+                <td class="col-bma">34.5 <span class="dim">σ=1.0</span></td>
                 <td class="col-range">33-33°C</td>
                 <td class="col-sigma">BUY 33°C ⏳</td>
                 <td class="col-p5">BUY 33°C ⏳</td>
                 <td class="col-mean">BUY 34°C ⏳</td>
-                <td class="col-conf conf-low">🔴 69%</td>
+                <td class="col-conf conf-low">🔴 51%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Denver__US">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">03:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">03:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Denver, US" data-conf="0.713">
-                <td class="col-rank"></td>
-                <td class="col-city">Denver, US</td>
-                <td class="col-bma">34.7 <span class="dim">σ=0.8</span></td>
-                <td class="col-range">33-34°C</td>
-                <td class="col-sigma">BUY 34°C ⏳</td>
-                <td class="col-p5">BUY 33°C ⏳</td>
-                <td class="col-mean">BUY 35°C ⏳</td>
-                <td class="col-conf conf-mid">🟠 71%</td>
-                <td class="col-models">7/8</td>
-                <td class="col-peak">—</td>
-                <td class="col-live" id="live-Denver__US">—</td>
-                <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">03:01</td>
-            </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Guangzhou, CN" data-conf="0.721">
+<tr class="city-row row-loss" data-lead="0" data-city="Guangzhou, CN" data-conf="0.725" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Guangzhou, CN</td>
-                <td class="col-bma">35.4 <span class="dim">σ=0.7</span></td>
-                <td class="col-range">34-35°C</td>
-                <td class="col-sigma">BUY 35°C ⏳</td>
+                <td class="col-bma">35.3 <span class="dim">σ=0.7</span></td>
+                <td class="col-range">34-34°C</td>
+                <td class="col-sigma">BUY 34°C ⏳</td>
                 <td class="col-p5">BUY 34°C ⏳</td>
                 <td class="col-mean">BUY 35°C ⏳</td>
                 <td class="col-conf conf-mid">🟠 72%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Guangzhou__CN">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Guangzhou, CN" data-conf="0.659">
+<tr class="city-row row-loss" data-lead="1" data-city="Guangzhou, CN" data-conf="0.657" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Guangzhou, CN</td>
                 <td class="col-bma">35.5 <span class="dim">σ=0.7</span></td>
@@ -573,62 +657,74 @@
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Guangzhou__CN">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Helsinki, FI" data-conf="0.652">
+<tr class="city-row row-loss" data-lead="0" data-city="Helsinki, FI" data-conf="0.567" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Helsinki, FI</td>
-                <td class="col-bma">22.0 <span class="dim">σ=0.8</span></td>
-                <td class="col-range">21-21°C</td>
+                <td class="col-bma">21.9 <span class="dim">σ=0.8</span></td>
+                <td class="col-range">20-21°C</td>
                 <td class="col-sigma">BUY 21°C ⏳</td>
-                <td class="col-p5">BUY 21°C ⏳</td>
+                <td class="col-p5">BUY 20°C ⏳</td>
                 <td class="col-mean">BUY 22°C ⏳</td>
-                <td class="col-conf conf-low">🔴 65%</td>
+                <td class="col-conf conf-low">🔴 57%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Helsinki__FI">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">12:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">12:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Helsinki, FI" data-conf="0.533">
+<tr class="city-row row-loss" data-lead="1" data-city="Helsinki, FI" data-conf="0.547" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Helsinki, FI</td>
-                <td class="col-bma">18.6 <span class="dim">σ=1.1</span></td>
+                <td class="col-bma">18.7 <span class="dim">σ=1.0</span></td>
                 <td class="col-range">17-17°C</td>
                 <td class="col-sigma">BUY 17°C ⏳</td>
                 <td class="col-p5">BUY 17°C ⏳</td>
                 <td class="col-mean">BUY 19°C ⏳</td>
-                <td class="col-conf conf-low">🔴 53%</td>
+                <td class="col-conf conf-low">🔴 55%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Helsinki__FI">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">12:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">12:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Hong Kong, HK" data-conf="0.448">
+<tr class="city-row row-loss" data-lead="0" data-city="Hong Kong, HK" data-conf="0.531" data-edge="12.8">
                 <td class="col-rank"></td>
                 <td class="col-city">Hong Kong, HK</td>
-                <td class="col-bma">34.4 <span class="dim">σ=1.3</span></td>
-                <td class="col-range">32-33°C</td>
+                <td class="col-bma">34.6 <span class="dim">σ=1.1</span></td>
+                <td class="col-range">33-33°C</td>
                 <td class="col-sigma">BUY 33°C ⏳</td>
-                <td class="col-p5">BUY 32°C ⏳</td>
-                <td class="col-mean">BUY 34°C ⏳</td>
-                <td class="col-conf conf-low">🔴 45%</td>
+                <td class="col-p5">BUY 33°C ⏳</td>
+                <td class="col-mean">BUY 35°C ⏳</td>
+                <td class="col-conf conf-low">🔴 53%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Hong_Kong__HK">—</td>
+                <td class="col-market">0.1%</td>
+                <td class="col-edge">+12.8%</td>
+                <td class="col-signal"><span style="color: var(--green); font-weight: 600;">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Hong Kong, HK" data-conf="0.548">
+<tr class="city-row row-loss" data-lead="1" data-city="Hong Kong, HK" data-conf="0.548" data-edge="28.7">
                 <td class="col-rank"></td>
                 <td class="col-city">Hong Kong, HK</td>
-                <td class="col-bma">33.9 <span class="dim">σ=1.0</span></td>
+                <td class="col-bma">33.8 <span class="dim">σ=1.0</span></td>
                 <td class="col-range">32-33°C</td>
                 <td class="col-sigma">BUY 33°C ⏳</td>
                 <td class="col-p5">BUY 32°C ⏳</td>
@@ -637,46 +733,55 @@
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Hong_Kong__HK">—</td>
+                <td class="col-market">0.1%</td>
+                <td class="col-edge">+28.7%</td>
+                <td class="col-signal"><span style="color: var(--green); font-weight: 600;">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Houston, US" data-conf="0.606">
+<tr class="city-row row-loss" data-lead="0" data-city="Houston, US" data-conf="0.571" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Houston, US</td>
-                <td class="col-bma">32.1 <span class="dim">σ=0.8</span></td>
-                <td class="col-range">31-31°C</td>
-                <td class="col-sigma">BUY 31°C ⏳</td>
+                <td class="col-bma">32.9 <span class="dim">σ=1.0</span></td>
+                <td class="col-range">31-32°C</td>
+                <td class="col-sigma">BUY 32°C ⏳</td>
                 <td class="col-p5">BUY 31°C ⏳</td>
-                <td class="col-mean">BUY 32°C ⏳</td>
-                <td class="col-conf conf-low">🔴 61%</td>
+                <td class="col-mean">BUY 33°C ⏳</td>
+                <td class="col-conf conf-low">🔴 57%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Houston__US">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">04:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">04:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Houston, US" data-conf="0.620">
+<tr class="city-row row-loss" data-lead="1" data-city="Houston, US" data-conf="0.634" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Houston, US</td>
-                <td class="col-bma">34.5 <span class="dim">σ=1.0</span></td>
-                <td class="col-range">33-33°C</td>
-                <td class="col-sigma">BUY 33°C ⏳</td>
+                <td class="col-bma">34.7 <span class="dim">σ=0.9</span></td>
+                <td class="col-range">33-34°C</td>
+                <td class="col-sigma">BUY 34°C ⏳</td>
                 <td class="col-p5">BUY 33°C ⏳</td>
-                <td class="col-mean">BUY 34°C ⏳</td>
-                <td class="col-conf conf-low">🔴 62%</td>
-                <td class="col-models">7/8</td>
+                <td class="col-mean">BUY 35°C ⏳</td>
+                <td class="col-conf conf-low">🔴 63%</td>
+                <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Houston__US">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">04:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">04:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Istanbul, TR" data-conf="0.498">
+<tr class="city-row row-loss" data-lead="0" data-city="Istanbul, TR" data-conf="0.498" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Istanbul, TR</td>
-                <td class="col-bma">27.1 <span class="dim">σ=1.4</span></td>
+                <td class="col-bma">27.0 <span class="dim">σ=1.4</span></td>
                 <td class="col-range">25-26°C</td>
                 <td class="col-sigma">BUY 26°C ⏳</td>
                 <td class="col-p5">BUY 25°C ⏳</td>
@@ -685,11 +790,14 @@
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Istanbul__TR">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">12:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">12:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Istanbul, TR" data-conf="0.458">
+<tr class="city-row row-loss" data-lead="1" data-city="Istanbul, TR" data-conf="0.457" data-edge="11.8">
                 <td class="col-rank"></td>
                 <td class="col-city">Istanbul, TR</td>
                 <td class="col-bma">27.0 <span class="dim">σ=1.7</span></td>
@@ -701,30 +809,36 @@
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Istanbul__TR">—</td>
+                <td class="col-market">0.1%</td>
+                <td class="col-edge">+11.8%</td>
+                <td class="col-signal"><span style="color: var(--green); font-weight: 600;">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">12:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">12:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Jeddah, SA" data-conf="0.342">
+<tr class="city-row row-loss" data-lead="0" data-city="Jeddah, SA" data-conf="0.336" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Jeddah, SA</td>
-                <td class="col-bma">39.6 <span class="dim">σ=2.6</span></td>
-                <td class="col-range">35-37°C</td>
-                <td class="col-sigma">BUY 37°C ⏳</td>
-                <td class="col-p5">BUY 35°C ⏳</td>
+                <td class="col-bma">39.9 <span class="dim">σ=2.6</span></td>
+                <td class="col-range">36-38°C</td>
+                <td class="col-sigma">BUY 38°C ⏳</td>
+                <td class="col-p5">BUY 36°C ⏳</td>
                 <td class="col-mean">BUY 40°C ⏳</td>
                 <td class="col-conf conf-low">🔴 34%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Jeddah__SA">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">12:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">12:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Jeddah, SA" data-conf="0.340">
+<tr class="city-row row-loss" data-lead="1" data-city="Jeddah, SA" data-conf="0.336" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Jeddah, SA</td>
-                <td class="col-bma">38.9 <span class="dim">σ=2.6</span></td>
+                <td class="col-bma">39.0 <span class="dim">σ=2.6</span></td>
                 <td class="col-range">35-37°C</td>
                 <td class="col-sigma">BUY 37°C ⏳</td>
                 <td class="col-p5">BUY 35°C ⏳</td>
@@ -733,62 +847,74 @@
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Jeddah__SA">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">12:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">12:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Jinan, CN" data-conf="0.388">
+<tr class="city-row row-loss" data-lead="0" data-city="Jinan, CN" data-conf="0.394" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Jinan, CN</td>
-                <td class="col-bma">34.4 <span class="dim">σ=1.9</span></td>
-                <td class="col-range">31-33°C</td>
+                <td class="col-bma">34.6 <span class="dim">σ=1.9</span></td>
+                <td class="col-range">32-33°C</td>
                 <td class="col-sigma">BUY 33°C ⏳</td>
-                <td class="col-p5">BUY 31°C ⏳</td>
-                <td class="col-mean">BUY 34°C ⏳</td>
+                <td class="col-p5">BUY 32°C ⏳</td>
+                <td class="col-mean">BUY 35°C ⏳</td>
                 <td class="col-conf conf-low">🔴 39%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Jinan__CN">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Jinan, CN" data-conf="0.444">
+<tr class="city-row row-loss" data-lead="1" data-city="Jinan, CN" data-conf="0.359" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Jinan, CN</td>
-                <td class="col-bma">29.6 <span class="dim">σ=1.9</span></td>
-                <td class="col-range">27-28°C</td>
+                <td class="col-bma">30.1 <span class="dim">σ=2.3</span></td>
+                <td class="col-range">26-28°C</td>
                 <td class="col-sigma">BUY 28°C ⏳</td>
-                <td class="col-p5">BUY 27°C ⏳</td>
+                <td class="col-p5">BUY 26°C ⏳</td>
                 <td class="col-mean">BUY 30°C ⏳</td>
-                <td class="col-conf conf-low">🔴 44%</td>
+                <td class="col-conf conf-low">🔴 36%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Jinan__CN">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Karachi, PK" data-conf="0.448">
+<tr class="city-row row-loss" data-lead="0" data-city="Karachi, PK" data-conf="0.440" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Karachi, PK</td>
-                <td class="col-bma">32.9 <span class="dim">σ=1.3</span></td>
+                <td class="col-bma">32.9 <span class="dim">σ=1.4</span></td>
                 <td class="col-range">31-31°C</td>
                 <td class="col-sigma">BUY 31°C ⏳</td>
                 <td class="col-p5">BUY 31°C ⏳</td>
                 <td class="col-mean">BUY 33°C ⏳</td>
-                <td class="col-conf conf-low">🔴 45%</td>
+                <td class="col-conf conf-low">🔴 44%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Karachi__PK">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">14:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">14:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Karachi, PK" data-conf="0.413">
+<tr class="city-row row-loss" data-lead="1" data-city="Karachi, PK" data-conf="0.412" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Karachi, PK</td>
-                <td class="col-bma">32.5 <span class="dim">σ=1.6</span></td>
+                <td class="col-bma">32.5 <span class="dim">σ=1.7</span></td>
                 <td class="col-range">30-31°C</td>
                 <td class="col-sigma">BUY 31°C ⏳</td>
                 <td class="col-p5">BUY 30°C ⏳</td>
@@ -797,30 +923,36 @@
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Karachi__PK">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">14:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">14:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Kuala Lumpur, MY" data-conf="0.520">
+<tr class="city-row row-loss" data-lead="0" data-city="Kuala Lumpur, MY" data-conf="0.508" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Kuala Lumpur, MY</td>
-                <td class="col-bma">31.8 <span class="dim">σ=1.2</span></td>
+                <td class="col-bma">31.8 <span class="dim">σ=1.3</span></td>
                 <td class="col-range">30-30°C</td>
                 <td class="col-sigma">BUY 30°C ⏳</td>
                 <td class="col-p5">BUY 30°C ⏳</td>
                 <td class="col-mean">BUY 32°C ⏳</td>
-                <td class="col-conf conf-low">🔴 52%</td>
+                <td class="col-conf conf-low">🔴 51%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Kuala_Lumpur__MY">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Kuala Lumpur, MY" data-conf="0.445">
+<tr class="city-row row-loss" data-lead="1" data-city="Kuala Lumpur, MY" data-conf="0.440" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Kuala Lumpur, MY</td>
-                <td class="col-bma">31.2 <span class="dim">σ=1.3</span></td>
+                <td class="col-bma">31.2 <span class="dim">σ=1.4</span></td>
                 <td class="col-range">29-30°C</td>
                 <td class="col-sigma">BUY 30°C ⏳</td>
                 <td class="col-p5">BUY 29°C ⏳</td>
@@ -829,27 +961,33 @@
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Kuala_Lumpur__MY">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="London, UK" data-conf="0.530">
+<tr class="city-row row-loss" data-lead="0" data-city="London, UK" data-conf="0.462" data-edge="5.5">
                 <td class="col-rank"></td>
                 <td class="col-city">London, UK</td>
-                <td class="col-bma">26.4 <span class="dim">σ=1.1</span></td>
-                <td class="col-range">25-25°C</td>
+                <td class="col-bma">26.4 <span class="dim">σ=1.2</span></td>
+                <td class="col-range">24-25°C</td>
                 <td class="col-sigma">BUY 25°C ⏳</td>
-                <td class="col-p5">BUY 25°C ⏳</td>
+                <td class="col-p5">BUY 24°C ⏳</td>
                 <td class="col-mean">BUY 26°C ⏳</td>
-                <td class="col-conf conf-low">🔴 53%</td>
+                <td class="col-conf conf-low">🔴 46%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-London__UK">—</td>
+                <td class="col-market">11.5%</td>
+                <td class="col-edge">+5.5%</td>
+                <td class="col-signal"><span style="color: var(--green);">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">10:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">10:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="London, UK" data-conf="0.643">
+<tr class="city-row row-loss" data-lead="1" data-city="London, UK" data-conf="0.649" data-edge="33.2">
                 <td class="col-rank"></td>
                 <td class="col-city">London, UK</td>
                 <td class="col-bma">24.7 <span class="dim">σ=0.8</span></td>
@@ -857,79 +995,113 @@
                 <td class="col-sigma">BUY 24°C ⏳</td>
                 <td class="col-p5">BUY 23°C ⏳</td>
                 <td class="col-mean">BUY 25°C ⏳</td>
-                <td class="col-conf conf-low">🔴 64%</td>
+                <td class="col-conf conf-low">🔴 65%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-London__UK">—</td>
+                <td class="col-market">0.4%</td>
+                <td class="col-edge">+33.2%</td>
+                <td class="col-signal"><span style="color: var(--green); font-weight: 600;">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">10:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">10:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Los Angeles, US" data-conf="0.307">
+<tr class="city-row row-loss" data-lead="0" data-city="Los Angeles, US" data-conf="0.332" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Los Angeles, US</td>
-                <td class="col-bma">28.6 <span class="dim">σ=2.9</span></td>
+                <td class="col-bma">28.8 <span class="dim">σ=3.1</span></td>
                 <td class="col-range">24-26°C</td>
                 <td class="col-sigma">BUY 26°C ⏳</td>
                 <td class="col-p5">BUY 24°C ⏳</td>
                 <td class="col-mean">BUY 29°C ⏳</td>
-                <td class="col-conf conf-low">🔴 31%</td>
+                <td class="col-conf conf-low">🔴 33%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Los_Angeles__US">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">02:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">02:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Los Angeles, US" data-conf="0.332">
+<tr class="city-row row-loss" data-lead="1" data-city="Los Angeles, US" data-conf="0.342" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Los Angeles, US</td>
-                <td class="col-bma">27.5 <span class="dim">σ=2.7</span></td>
+                <td class="col-bma">27.4 <span class="dim">σ=2.9</span></td>
                 <td class="col-range">23-25°C</td>
                 <td class="col-sigma">BUY 25°C ⏳</td>
                 <td class="col-p5">BUY 23°C ⏳</td>
-                <td class="col-mean">BUY 28°C ⏳</td>
-                <td class="col-conf conf-low">🔴 33%</td>
-                <td class="col-models">7/8</td>
+                <td class="col-mean">BUY 27°C ⏳</td>
+                <td class="col-conf conf-low">🔴 34%</td>
+                <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Los_Angeles__US">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">02:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">02:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Lucknow, IN" data-conf="0.426">
+<tr class="city-row row-loss" data-lead="0" data-city="Lucknow, IN" data-conf="0.486" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Lucknow, IN</td>
-                <td class="col-bma">32.5 <span class="dim">σ=1.5</span></td>
+                <td class="col-bma">32.6 <span class="dim">σ=1.5</span></td>
                 <td class="col-range">30-31°C</td>
                 <td class="col-sigma">BUY 31°C ⏳</td>
                 <td class="col-p5">BUY 30°C ⏳</td>
-                <td class="col-mean">BUY 32°C ⏳</td>
-                <td class="col-conf conf-low">🔴 43%</td>
+                <td class="col-mean">BUY 33°C ⏳</td>
+                <td class="col-conf conf-low">🔴 49%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Lucknow__IN">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">14:31</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">15:19</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Lucknow, IN" data-conf="0.532">
+<tr class="city-row row-loss" data-lead="1" data-city="Lucknow, IN" data-conf="0.531" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Lucknow, IN</td>
-                <td class="col-bma">33.4 <span class="dim">σ=1.1</span></td>
+                <td class="col-bma">33.7 <span class="dim">σ=1.1</span></td>
                 <td class="col-range">32-32°C</td>
                 <td class="col-sigma">BUY 32°C ⏳</td>
                 <td class="col-p5">BUY 32°C ⏳</td>
-                <td class="col-mean">BUY 33°C ⏳</td>
+                <td class="col-mean">BUY 34°C ⏳</td>
                 <td class="col-conf conf-low">🔴 53%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Lucknow__IN">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">14:31</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">15:19</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Madrid, ES" data-conf="0.655">
+<tr class="city-row row-loss" data-lead="0" data-city="Madrid, ES" data-conf="0.583" data-edge="0">
+                <td class="col-rank"></td>
+                <td class="col-city">Madrid, ES</td>
+                <td class="col-bma">36.0 <span class="dim">σ=0.8</span></td>
+                <td class="col-range">35-35°C</td>
+                <td class="col-sigma">BUY 35°C ⏳</td>
+                <td class="col-p5">BUY 35°C ⏳</td>
+                <td class="col-mean">BUY 36°C ⏳</td>
+                <td class="col-conf conf-low">🔴 58%</td>
+                <td class="col-models">7/8</td>
+                <td class="col-peak">—</td>
+                <td class="col-live" id="live-Madrid__ES">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
+                <td class="col-rec ">—</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">11:49</td>
+            </tr>
+<tr class="city-row row-loss" data-lead="1" data-city="Madrid, ES" data-conf="0.585" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Madrid, ES</td>
                 <td class="col-bma">36.0 <span class="dim">σ=0.7</span></td>
@@ -937,98 +1109,97 @@
                 <td class="col-sigma">BUY 35°C ⏳</td>
                 <td class="col-p5">BUY 35°C ⏳</td>
                 <td class="col-mean">BUY 36°C ⏳</td>
-                <td class="col-conf conf-low">🔴 66%</td>
+                <td class="col-conf conf-low">🔴 58%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Madrid__ES">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">11:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">11:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Madrid, ES" data-conf="0.650">
-                <td class="col-rank"></td>
-                <td class="col-city">Madrid, ES</td>
-                <td class="col-bma">36.1 <span class="dim">σ=0.8</span></td>
-                <td class="col-range">35-35°C</td>
-                <td class="col-sigma">BUY 35°C ⏳</td>
-                <td class="col-p5">BUY 35°C ⏳</td>
-                <td class="col-mean">BUY 36°C ⏳</td>
-                <td class="col-conf conf-low">🔴 65%</td>
-                <td class="col-models">7/8</td>
-                <td class="col-peak">—</td>
-                <td class="col-live" id="live-Madrid__ES">—</td>
-                <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">11:01</td>
-            </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Manila, PH" data-conf="0.705">
+<tr class="city-row row-loss" data-lead="0" data-city="Manila, PH" data-conf="0.722" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Manila, PH</td>
-                <td class="col-bma">28.9 <span class="dim">σ=0.8</span></td>
+                <td class="col-bma">29.0 <span class="dim">σ=0.8</span></td>
                 <td class="col-range">28-28°C</td>
                 <td class="col-sigma">BUY 28°C ⏳</td>
                 <td class="col-p5">BUY 28°C ⏳</td>
                 <td class="col-mean">BUY 29°C ⏳</td>
-                <td class="col-conf conf-mid">🟠 70%</td>
+                <td class="col-conf conf-mid">🟠 72%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Manila__PH">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Manila, PH" data-conf="0.622">
+<tr class="city-row row-loss" data-lead="1" data-city="Manila, PH" data-conf="0.553" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Manila, PH</td>
-                <td class="col-bma">29.4 <span class="dim">σ=0.9</span></td>
+                <td class="col-bma">29.4 <span class="dim">σ=1.0</span></td>
                 <td class="col-range">28-28°C</td>
                 <td class="col-sigma">BUY 28°C ⏳</td>
                 <td class="col-p5">BUY 28°C ⏳</td>
                 <td class="col-mean">BUY 29°C ⏳</td>
-                <td class="col-conf conf-low">🔴 62%</td>
+                <td class="col-conf conf-low">🔴 55%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Manila__PH">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Mexico City, MX" data-conf="0.539">
+<tr class="city-row row-loss" data-lead="0" data-city="Mexico City, MX" data-conf="0.566" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Mexico City, MX</td>
-                <td class="col-bma">23.4 <span class="dim">σ=1.0</span></td>
+                <td class="col-bma">23.4 <span class="dim">σ=0.8</span></td>
                 <td class="col-range">22-22°C</td>
                 <td class="col-sigma">BUY 22°C ⏳</td>
                 <td class="col-p5">BUY 22°C ⏳</td>
                 <td class="col-mean">BUY 23°C ⏳</td>
-                <td class="col-conf conf-low">🔴 54%</td>
+                <td class="col-conf conf-low">🔴 57%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Mexico_City__MX">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">03:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">03:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Mexico City, MX" data-conf="0.583">
+<tr class="city-row row-loss" data-lead="1" data-city="Mexico City, MX" data-conf="0.579" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Mexico City, MX</td>
-                <td class="col-bma">24.3 <span class="dim">σ=1.2</span></td>
-                <td class="col-range">22-23°C</td>
+                <td class="col-bma">24.7 <span class="dim">σ=1.2</span></td>
+                <td class="col-range">23-23°C</td>
                 <td class="col-sigma">BUY 23°C ⏳</td>
-                <td class="col-p5">BUY 22°C ⏳</td>
-                <td class="col-mean">BUY 24°C ⏳</td>
+                <td class="col-p5">BUY 23°C ⏳</td>
+                <td class="col-mean">BUY 25°C ⏳</td>
                 <td class="col-conf conf-low">🔴 58%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Mexico_City__MX">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">03:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">03:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Miami, US" data-conf="0.651">
+<tr class="city-row row-loss" data-lead="0" data-city="Miami, US" data-conf="0.648" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Miami, US</td>
-                <td class="col-bma">32.7 <span class="dim">σ=0.8</span></td>
+                <td class="col-bma">32.7 <span class="dim">σ=0.9</span></td>
                 <td class="col-range">31-32°C</td>
                 <td class="col-sigma">BUY 32°C ⏳</td>
                 <td class="col-p5">BUY 31°C ⏳</td>
@@ -1037,59 +1208,71 @@
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Miami__US">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">05:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">05:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Miami, US" data-conf="0.588">
+<tr class="city-row row-loss" data-lead="1" data-city="Miami, US" data-conf="0.617" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Miami, US</td>
-                <td class="col-bma">32.7 <span class="dim">σ=1.2</span></td>
+                <td class="col-bma">32.6 <span class="dim">σ=1.0</span></td>
                 <td class="col-range">31-31°C</td>
                 <td class="col-sigma">BUY 31°C ⏳</td>
                 <td class="col-p5">BUY 31°C ⏳</td>
                 <td class="col-mean">BUY 33°C ⏳</td>
-                <td class="col-conf conf-low">🔴 59%</td>
-                <td class="col-models">7/8</td>
+                <td class="col-conf conf-low">🔴 62%</td>
+                <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Miami__US">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">05:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">05:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Milan, IT" data-conf="0.358">
+<tr class="city-row row-loss" data-lead="0" data-city="Milan, IT" data-conf="0.464" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Milan, IT</td>
-                <td class="col-bma">35.8 <span class="dim">σ=1.7</span></td>
+                <td class="col-bma">35.6 <span class="dim">σ=1.7</span></td>
                 <td class="col-range">33-34°C</td>
                 <td class="col-sigma">BUY 34°C ⏳</td>
                 <td class="col-p5">BUY 33°C ⏳</td>
                 <td class="col-mean">BUY 36°C ⏳</td>
-                <td class="col-conf conf-low">🔴 36%</td>
+                <td class="col-conf conf-low">🔴 46%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Milan__IT">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">11:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">11:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Milan, IT" data-conf="0.419">
+<tr class="city-row row-loss" data-lead="1" data-city="Milan, IT" data-conf="0.346" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Milan, IT</td>
-                <td class="col-bma">36.1 <span class="dim">σ=1.6</span></td>
-                <td class="col-range">34-35°C</td>
-                <td class="col-sigma">BUY 35°C ⏳</td>
-                <td class="col-p5">BUY 34°C ⏳</td>
+                <td class="col-bma">36.0 <span class="dim">σ=1.8</span></td>
+                <td class="col-range">33-34°C</td>
+                <td class="col-sigma">BUY 34°C ⏳</td>
+                <td class="col-p5">BUY 33°C ⏳</td>
                 <td class="col-mean">BUY 36°C ⏳</td>
-                <td class="col-conf conf-low">🔴 42%</td>
+                <td class="col-conf conf-low">🔴 35%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Milan__IT">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">11:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">11:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Moscow, RU" data-conf="0.829">
+<tr class="city-row row-loss" data-lead="0" data-city="Moscow, RU" data-conf="0.809" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Moscow, RU</td>
                 <td class="col-bma">23.3 <span class="dim">σ=0.6</span></td>
@@ -1097,50 +1280,59 @@
                 <td class="col-sigma">BUY 23°C ⏳</td>
                 <td class="col-p5">BUY 22°C ⏳</td>
                 <td class="col-mean">BUY 23°C ⏳</td>
-                <td class="col-conf conf-high">🟢 83%</td>
+                <td class="col-conf conf-high">🟢 81%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Moscow__RU">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">12:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">12:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Moscow, RU" data-conf="0.593">
+<tr class="city-row row-loss" data-lead="1" data-city="Moscow, RU" data-conf="0.655" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Moscow, RU</td>
-                <td class="col-bma">24.1 <span class="dim">σ=0.7</span></td>
+                <td class="col-bma">23.9 <span class="dim">σ=0.8</span></td>
                 <td class="col-range">23-23°C</td>
                 <td class="col-sigma">BUY 23°C ⏳</td>
                 <td class="col-p5">BUY 23°C ⏳</td>
                 <td class="col-mean">BUY 24°C ⏳</td>
-                <td class="col-conf conf-low">🔴 59%</td>
+                <td class="col-conf conf-low">🔴 66%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Moscow__RU">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">12:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">12:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Munich, DE" data-conf="0.557">
+<tr class="city-row row-loss" data-lead="0" data-city="Munich, DE" data-conf="0.551" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Munich, DE</td>
-                <td class="col-bma">31.8 <span class="dim">σ=0.9</span></td>
+                <td class="col-bma">31.8 <span class="dim">σ=1.0</span></td>
                 <td class="col-range">30-31°C</td>
                 <td class="col-sigma">BUY 31°C ⏳</td>
                 <td class="col-p5">BUY 30°C ⏳</td>
                 <td class="col-mean">BUY 32°C ⏳</td>
-                <td class="col-conf conf-low">🔴 56%</td>
+                <td class="col-conf conf-low">🔴 55%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Munich__DE">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">11:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">11:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Munich, DE" data-conf="0.668">
+<tr class="city-row row-loss" data-lead="1" data-city="Munich, DE" data-conf="0.674" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Munich, DE</td>
-                <td class="col-bma">28.9 <span class="dim">σ=1.0</span></td>
+                <td class="col-bma">28.8 <span class="dim">σ=1.0</span></td>
                 <td class="col-range">27-28°C</td>
                 <td class="col-sigma">BUY 28°C ⏳</td>
                 <td class="col-p5">BUY 27°C ⏳</td>
@@ -1149,107 +1341,128 @@
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Munich__DE">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">11:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">11:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="New York, US" data-conf="0.610">
+<tr class="city-row row-loss" data-lead="0" data-city="New York, US" data-conf="0.605" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">New York, US</td>
-                <td class="col-bma">32.2 <span class="dim">σ=1.1</span></td>
+                <td class="col-bma">32.3 <span class="dim">σ=1.1</span></td>
                 <td class="col-range">30-31°C</td>
                 <td class="col-sigma">BUY 31°C ⏳</td>
                 <td class="col-p5">BUY 30°C ⏳</td>
                 <td class="col-mean">BUY 32°C ⏳</td>
-                <td class="col-conf conf-low">🔴 61%</td>
+                <td class="col-conf conf-low">🔴 60%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-New_York__US">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">05:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">05:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="New York, US" data-conf="0.497">
+<tr class="city-row row-loss" data-lead="1" data-city="New York, US" data-conf="0.427" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">New York, US</td>
-                <td class="col-bma">32.2 <span class="dim">σ=1.4</span></td>
-                <td class="col-range">30-31°C</td>
-                <td class="col-sigma">BUY 31°C ⏳</td>
-                <td class="col-p5">BUY 30°C ⏳</td>
+                <td class="col-bma">32.0 <span class="dim">σ=1.8</span></td>
+                <td class="col-range">29-30°C</td>
+                <td class="col-sigma">BUY 30°C ⏳</td>
+                <td class="col-p5">BUY 29°C ⏳</td>
                 <td class="col-mean">BUY 32°C ⏳</td>
-                <td class="col-conf conf-low">🔴 50%</td>
-                <td class="col-models">7/8</td>
+                <td class="col-conf conf-low">🔴 43%</td>
+                <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-New_York__US">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">05:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">05:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Panama City, PA" data-conf="0.538">
+<tr class="city-row row-loss" data-lead="0" data-city="Panama City, PA" data-conf="0.539" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Panama City, PA</td>
-                <td class="col-bma">32.6 <span class="dim">σ=1.1</span></td>
+                <td class="col-bma">32.4 <span class="dim">σ=1.1</span></td>
                 <td class="col-range">31-31°C</td>
                 <td class="col-sigma">BUY 31°C ⏳</td>
                 <td class="col-p5">BUY 31°C ⏳</td>
-                <td class="col-mean">BUY 33°C ⏳</td>
+                <td class="col-mean">BUY 32°C ⏳</td>
                 <td class="col-conf conf-low">🔴 54%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Panama_City__PA">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">04:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">04:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Panama City, PA" data-conf="0.583">
+<tr class="city-row row-loss" data-lead="1" data-city="Panama City, PA" data-conf="0.607" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Panama City, PA</td>
-                <td class="col-bma">33.0 <span class="dim">σ=1.2</span></td>
-                <td class="col-range">31-32°C</td>
+                <td class="col-bma">33.3 <span class="dim">σ=1.0</span></td>
+                <td class="col-range">32-32°C</td>
                 <td class="col-sigma">BUY 32°C ⏳</td>
-                <td class="col-p5">BUY 31°C ⏳</td>
+                <td class="col-p5">BUY 32°C ⏳</td>
                 <td class="col-mean">BUY 33°C ⏳</td>
-                <td class="col-conf conf-low">🔴 58%</td>
+                <td class="col-conf conf-low">🔴 61%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Panama_City__PA">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">04:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">04:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Paris, FR" data-conf="0.603">
+<tr class="city-row row-loss" data-lead="0" data-city="Paris, FR" data-conf="0.599" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Paris, FR</td>
-                <td class="col-bma">31.3 <span class="dim">σ=1.0</span></td>
-                <td class="col-range">30-30°C</td>
+                <td class="col-bma">31.1 <span class="dim">σ=1.1</span></td>
+                <td class="col-range">29-30°C</td>
                 <td class="col-sigma">BUY 30°C ⏳</td>
-                <td class="col-p5">BUY 30°C ⏳</td>
+                <td class="col-p5">BUY 29°C ⏳</td>
                 <td class="col-mean">BUY 31°C ⏳</td>
                 <td class="col-conf conf-low">🔴 60%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Paris__FR">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">11:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">11:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Paris, FR" data-conf="0.426">
+<tr class="city-row row-loss" data-lead="1" data-city="Paris, FR" data-conf="0.503" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Paris, FR</td>
-                <td class="col-bma">31.1 <span class="dim">σ=1.5</span></td>
+                <td class="col-bma">31.3 <span class="dim">σ=1.3</span></td>
                 <td class="col-range">29-30°C</td>
                 <td class="col-sigma">BUY 30°C ⏳</td>
                 <td class="col-p5">BUY 29°C ⏳</td>
                 <td class="col-mean">BUY 31°C ⏳</td>
-                <td class="col-conf conf-low">🔴 43%</td>
+                <td class="col-conf conf-low">🔴 50%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Paris__FR">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">11:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">11:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Qingdao, CN" data-conf="0.430">
+<tr class="city-row row-loss" data-lead="0" data-city="Qingdao, CN" data-conf="0.430" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Qingdao, CN</td>
                 <td class="col-bma">31.5 <span class="dim">σ=1.5</span></td>
@@ -1261,158 +1474,188 @@
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Qingdao__CN">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Qingdao, CN" data-conf="0.464">
+<tr class="city-row row-loss" data-lead="1" data-city="Qingdao, CN" data-conf="0.608" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Qingdao, CN</td>
-                <td class="col-bma">31.3 <span class="dim">σ=1.2</span></td>
+                <td class="col-bma">31.1 <span class="dim">σ=1.0</span></td>
                 <td class="col-range">29-30°C</td>
                 <td class="col-sigma">BUY 30°C ⏳</td>
                 <td class="col-p5">BUY 29°C ⏳</td>
                 <td class="col-mean">BUY 31°C ⏳</td>
-                <td class="col-conf conf-low">🔴 46%</td>
+                <td class="col-conf conf-low">🔴 61%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Qingdao__CN">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="San Francisco, US" data-conf="0.281">
+<tr class="city-row row-loss" data-lead="0" data-city="San Francisco, US" data-conf="0.274" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">San Francisco, US</td>
-                <td class="col-bma">22.2 <span class="dim">σ=2.7</span></td>
+                <td class="col-bma">22.3 <span class="dim">σ=2.8</span></td>
                 <td class="col-range">18-20°C</td>
                 <td class="col-sigma">BUY 20°C ⏳</td>
                 <td class="col-p5">BUY 18°C ⏳</td>
                 <td class="col-mean">BUY 22°C ⏳</td>
-                <td class="col-conf conf-low">🔴 28%</td>
+                <td class="col-conf conf-low">🔴 27%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-San_Francisco__US">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">02:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">02:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="San Francisco, US" data-conf="0.415">
+<tr class="city-row row-loss" data-lead="1" data-city="San Francisco, US" data-conf="0.391" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">San Francisco, US</td>
-                <td class="col-bma">21.8 <span class="dim">σ=2.2</span></td>
+                <td class="col-bma">21.9 <span class="dim">σ=2.2</span></td>
                 <td class="col-range">18-20°C</td>
                 <td class="col-sigma">BUY 20°C ⏳</td>
                 <td class="col-p5">BUY 18°C ⏳</td>
                 <td class="col-mean">BUY 22°C ⏳</td>
-                <td class="col-conf conf-low">🔴 42%</td>
-                <td class="col-models">7/8</td>
+                <td class="col-conf conf-low">🔴 39%</td>
+                <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-San_Francisco__US">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">02:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">02:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Sao Paulo, BR" data-conf="0.467">
+<tr class="city-row row-loss" data-lead="0" data-city="Sao Paulo, BR" data-conf="0.462" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Sao Paulo, BR</td>
-                <td class="col-bma">17.2 <span class="dim">σ=1.2</span></td>
+                <td class="col-bma">17.1 <span class="dim">σ=1.2</span></td>
                 <td class="col-range">15-16°C</td>
                 <td class="col-sigma">BUY 16°C ⏳</td>
                 <td class="col-p5">BUY 15°C ⏳</td>
                 <td class="col-mean">BUY 17°C ⏳</td>
-                <td class="col-conf conf-low">🔴 47%</td>
+                <td class="col-conf conf-low">🔴 46%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Sao_Paulo__BR">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">06:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">06:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Sao Paulo, BR" data-conf="0.541">
+<tr class="city-row row-loss" data-lead="1" data-city="Sao Paulo, BR" data-conf="0.545" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Sao Paulo, BR</td>
-                <td class="col-bma">16.2 <span class="dim">σ=1.0</span></td>
-                <td class="col-range">14-15°C</td>
+                <td class="col-bma">16.3 <span class="dim">σ=1.0</span></td>
+                <td class="col-range">15-15°C</td>
                 <td class="col-sigma">BUY 15°C ⏳</td>
-                <td class="col-p5">BUY 14°C ⏳</td>
+                <td class="col-p5">BUY 15°C ⏳</td>
                 <td class="col-mean">BUY 16°C ⏳</td>
-                <td class="col-conf conf-low">🔴 54%</td>
+                <td class="col-conf conf-low">🔴 55%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Sao_Paulo__BR">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">06:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">06:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Seattle, US" data-conf="0.564">
+<tr class="city-row row-loss" data-lead="0" data-city="Seattle, US" data-conf="0.576" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Seattle, US</td>
-                <td class="col-bma">24.7 <span class="dim">σ=1.0</span></td>
+                <td class="col-bma">24.5 <span class="dim">σ=1.0</span></td>
                 <td class="col-range">23-23°C</td>
                 <td class="col-sigma">BUY 23°C ⏳</td>
+                <td class="col-p5">BUY 23°C ⏳</td>
+                <td class="col-mean">BUY 24°C ⏳</td>
+                <td class="col-conf conf-low">🔴 58%</td>
+                <td class="col-models">8/8</td>
+                <td class="col-peak">—</td>
+                <td class="col-live" id="live-Seattle__US">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
+                <td class="col-rec ">—</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">02:49</td>
+            </tr>
+<tr class="city-row row-loss" data-lead="1" data-city="Seattle, US" data-conf="0.563" data-edge="0">
+                <td class="col-rank"></td>
+                <td class="col-city">Seattle, US</td>
+                <td class="col-bma">25.0 <span class="dim">σ=1.0</span></td>
+                <td class="col-range">23-24°C</td>
+                <td class="col-sigma">BUY 24°C ⏳</td>
                 <td class="col-p5">BUY 23°C ⏳</td>
                 <td class="col-mean">BUY 25°C ⏳</td>
                 <td class="col-conf conf-low">🔴 56%</td>
                 <td class="col-models">8/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Seattle__US">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">02:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">02:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Seattle, US" data-conf="0.552">
-                <td class="col-rank"></td>
-                <td class="col-city">Seattle, US</td>
-                <td class="col-bma">25.5 <span class="dim">σ=1.4</span></td>
-                <td class="col-range">23-24°C</td>
-                <td class="col-sigma">BUY 24°C ⏳</td>
-                <td class="col-p5">BUY 23°C ⏳</td>
-                <td class="col-mean">BUY 26°C ⏳</td>
-                <td class="col-conf conf-low">🔴 55%</td>
-                <td class="col-models">7/8</td>
-                <td class="col-peak">—</td>
-                <td class="col-live" id="live-Seattle__US">—</td>
-                <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">02:01</td>
-            </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Seoul (Incheon), KR" data-conf="0.384">
+<tr class="city-row row-loss" data-lead="0" data-city="Seoul (Incheon), KR" data-conf="0.373" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Seoul (Incheon), KR</td>
-                <td class="col-bma">31.0 <span class="dim">σ=2.0</span></td>
+                <td class="col-bma">31.2 <span class="dim">σ=2.1</span></td>
                 <td class="col-range">28-29°C</td>
                 <td class="col-sigma">BUY 29°C ⏳</td>
                 <td class="col-p5">BUY 28°C ⏳</td>
                 <td class="col-mean">BUY 31°C ⏳</td>
-                <td class="col-conf conf-low">🔴 38%</td>
+                <td class="col-conf conf-low">🔴 37%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Seoul__Incheon___KR">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">18:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">18:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Seoul (Incheon), KR" data-conf="0.402">
+<tr class="city-row row-loss" data-lead="1" data-city="Seoul (Incheon), KR" data-conf="0.335" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Seoul (Incheon), KR</td>
-                <td class="col-bma">30.8 <span class="dim">σ=2.4</span></td>
+                <td class="col-bma">31.2 <span class="dim">σ=2.7</span></td>
                 <td class="col-range">27-29°C</td>
                 <td class="col-sigma">BUY 29°C ⏳</td>
                 <td class="col-p5">BUY 27°C ⏳</td>
                 <td class="col-mean">BUY 31°C ⏳</td>
-                <td class="col-conf conf-low">🔴 40%</td>
+                <td class="col-conf conf-low">🔴 34%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Seoul__Incheon___KR">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">18:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">18:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Shanghai, CN" data-conf="0.565">
+<tr class="city-row row-loss" data-lead="0" data-city="Shanghai, CN" data-conf="0.565" data-edge="18.1">
                 <td class="col-rank"></td>
                 <td class="col-city">Shanghai, CN</td>
-                <td class="col-bma">28.2 <span class="dim">σ=0.9</span></td>
+                <td class="col-bma">28.2 <span class="dim">σ=0.8</span></td>
                 <td class="col-range">27-27°C</td>
                 <td class="col-sigma">BUY 27°C ⏳</td>
                 <td class="col-p5">BUY 27°C ⏳</td>
@@ -1421,235 +1664,280 @@
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Shanghai__CN">—</td>
+                <td class="col-market">0.1%</td>
+                <td class="col-edge">+18.1%</td>
+                <td class="col-signal"><span style="color: var(--green); font-weight: 600;">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Shanghai, CN" data-conf="0.694">
+<tr class="city-row row-loss" data-lead="1" data-city="Shanghai, CN" data-conf="0.716" data-edge="19.8">
                 <td class="col-rank"></td>
                 <td class="col-city">Shanghai, CN</td>
-                <td class="col-bma">28.8 <span class="dim">σ=0.9</span></td>
-                <td class="col-range">27-28°C</td>
+                <td class="col-bma">28.8 <span class="dim">σ=0.8</span></td>
+                <td class="col-range">28-28°C</td>
                 <td class="col-sigma">BUY 28°C ⏳</td>
-                <td class="col-p5">BUY 27°C ⏳</td>
+                <td class="col-p5">BUY 28°C ⏳</td>
                 <td class="col-mean">BUY 29°C ⏳</td>
-                <td class="col-conf conf-low">🔴 69%</td>
+                <td class="col-conf conf-mid">🟠 72%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Shanghai__CN">—</td>
+                <td class="col-market">10.5%</td>
+                <td class="col-edge">+19.8%</td>
+                <td class="col-signal"><span style="color: var(--green); font-weight: 600;">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Shenzhen, CN" data-conf="0.423">
+<tr class="city-row row-loss" data-lead="0" data-city="Shenzhen, CN" data-conf="0.491" data-edge="16.0">
                 <td class="col-rank"></td>
                 <td class="col-city">Shenzhen, CN</td>
-                <td class="col-bma">35.5 <span class="dim">σ=1.6</span></td>
+                <td class="col-bma">35.5 <span class="dim">σ=1.4</span></td>
                 <td class="col-range">33-34°C</td>
                 <td class="col-sigma">BUY 34°C ⏳</td>
                 <td class="col-p5">BUY 33°C ⏳</td>
                 <td class="col-mean">BUY 36°C ⏳</td>
-                <td class="col-conf conf-low">🔴 42%</td>
+                <td class="col-conf conf-low">🔴 49%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Shenzhen__CN">—</td>
+                <td class="col-market">0.1%</td>
+                <td class="col-edge">+16.0%</td>
+                <td class="col-signal"><span style="color: var(--green); font-weight: 600;">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Shenzhen, CN" data-conf="0.561">
+<tr class="city-row row-loss" data-lead="1" data-city="Shenzhen, CN" data-conf="0.493" data-edge="11.4">
                 <td class="col-rank"></td>
                 <td class="col-city">Shenzhen, CN</td>
-                <td class="col-bma">35.0 <span class="dim">σ=1.3</span></td>
-                <td class="col-range">33-34°C</td>
-                <td class="col-sigma">BUY 34°C ⏳</td>
+                <td class="col-bma">34.9 <span class="dim">σ=1.4</span></td>
+                <td class="col-range">33-33°C</td>
+                <td class="col-sigma">BUY 33°C ⏳</td>
                 <td class="col-p5">BUY 33°C ⏳</td>
                 <td class="col-mean">BUY 35°C ⏳</td>
-                <td class="col-conf conf-low">🔴 56%</td>
+                <td class="col-conf conf-low">🔴 49%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Shenzhen__CN">—</td>
+                <td class="col-market">0.1%</td>
+                <td class="col-edge">+11.4%</td>
+                <td class="col-signal"><span style="color: var(--green); font-weight: 600;">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Singapore, SG" data-conf="0.725">
+<tr class="city-row row-loss" data-lead="0" data-city="Singapore, SG" data-conf="0.650" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Singapore, SG</td>
-                <td class="col-bma">31.3 <span class="dim">σ=0.7</span></td>
+                <td class="col-bma">31.4 <span class="dim">σ=0.8</span></td>
                 <td class="col-range">30-30°C</td>
                 <td class="col-sigma">BUY 30°C ⏳</td>
                 <td class="col-p5">BUY 30°C ⏳</td>
                 <td class="col-mean">BUY 31°C ⏳</td>
-                <td class="col-conf conf-mid">🟠 72%</td>
+                <td class="col-conf conf-low">🔴 65%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Singapore__SG">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Singapore, SG" data-conf="0.631">
+<tr class="city-row row-loss" data-lead="1" data-city="Singapore, SG" data-conf="0.632" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Singapore, SG</td>
-                <td class="col-bma">31.5 <span class="dim">σ=0.8</span></td>
-                <td class="col-range">30-30°C</td>
-                <td class="col-sigma">BUY 30°C ⏳</td>
+                <td class="col-bma">31.6 <span class="dim">σ=0.8</span></td>
+                <td class="col-range">30-31°C</td>
+                <td class="col-sigma">BUY 31°C ⏳</td>
                 <td class="col-p5">BUY 30°C ⏳</td>
                 <td class="col-mean">BUY 32°C ⏳</td>
                 <td class="col-conf conf-low">🔴 63%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Singapore__SG">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Taipei, TW" data-conf="0.543">
+<tr class="city-row row-loss" data-lead="0" data-city="Taipei, TW" data-conf="0.476" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Taipei, TW</td>
-                <td class="col-bma">32.7 <span class="dim">σ=1.5</span></td>
-                <td class="col-range">30-31°C</td>
-                <td class="col-sigma">BUY 31°C ⏳</td>
-                <td class="col-p5">BUY 30°C ⏳</td>
-                <td class="col-mean">BUY 33°C ⏳</td>
-                <td class="col-conf conf-low">🔴 54%</td>
-                <td class="col-models">7/8</td>
-                <td class="col-peak">—</td>
-                <td class="col-live" id="live-Taipei__TW">—</td>
-                <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
-            </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Taipei, TW" data-conf="0.474">
-                <td class="col-rank"></td>
-                <td class="col-city">Taipei, TW</td>
-                <td class="col-bma">33.1 <span class="dim">σ=1.6</span></td>
-                <td class="col-range">30-31°C</td>
-                <td class="col-sigma">BUY 31°C ⏳</td>
-                <td class="col-p5">BUY 30°C ⏳</td>
-                <td class="col-mean">BUY 33°C ⏳</td>
-                <td class="col-conf conf-low">🔴 47%</td>
-                <td class="col-models">7/8</td>
-                <td class="col-peak">—</td>
-                <td class="col-live" id="live-Taipei__TW">—</td>
-                <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
-            </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Tel Aviv, IL" data-conf="0.432">
-                <td class="col-rank"></td>
-                <td class="col-city">Tel Aviv, IL</td>
-                <td class="col-bma">35.5 <span class="dim">σ=1.4</span></td>
-                <td class="col-range">33-34°C</td>
-                <td class="col-sigma">BUY 34°C ⏳</td>
-                <td class="col-p5">BUY 33°C ⏳</td>
-                <td class="col-mean">BUY 36°C ⏳</td>
-                <td class="col-conf conf-low">🔴 43%</td>
-                <td class="col-models">7/8</td>
-                <td class="col-peak">—</td>
-                <td class="col-live" id="live-Tel_Aviv__IL">—</td>
-                <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">12:01</td>
-            </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Tel Aviv, IL" data-conf="0.535">
-                <td class="col-rank"></td>
-                <td class="col-city">Tel Aviv, IL</td>
-                <td class="col-bma">35.9 <span class="dim">σ=1.5</span></td>
-                <td class="col-range">33-34°C</td>
-                <td class="col-sigma">BUY 34°C ⏳</td>
-                <td class="col-p5">BUY 33°C ⏳</td>
-                <td class="col-mean">BUY 36°C ⏳</td>
-                <td class="col-conf conf-low">🔴 54%</td>
-                <td class="col-models">7/8</td>
-                <td class="col-peak">—</td>
-                <td class="col-live" id="live-Tel_Aviv__IL">—</td>
-                <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">12:01</td>
-            </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Tokyo, JP" data-conf="0.460">
-                <td class="col-rank"></td>
-                <td class="col-city">Tokyo, JP</td>
-                <td class="col-bma">31.6 <span class="dim">σ=1.2</span></td>
-                <td class="col-range">30-30°C</td>
-                <td class="col-sigma">BUY 30°C ⏳</td>
-                <td class="col-p5">BUY 30°C ⏳</td>
-                <td class="col-mean">BUY 32°C ⏳</td>
-                <td class="col-conf conf-low">🔴 46%</td>
-                <td class="col-models">7/8</td>
-                <td class="col-peak">—</td>
-                <td class="col-live" id="live-Tokyo__JP">—</td>
-                <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">18:01</td>
-            </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Tokyo, JP" data-conf="0.447">
-                <td class="col-rank"></td>
-                <td class="col-city">Tokyo, JP</td>
-                <td class="col-bma">28.9 <span class="dim">σ=1.3</span></td>
-                <td class="col-range">27-27°C</td>
-                <td class="col-sigma">BUY 27°C ⏳</td>
-                <td class="col-p5">BUY 27°C ⏳</td>
-                <td class="col-mean">BUY 29°C ⏳</td>
-                <td class="col-conf conf-low">🔴 45%</td>
-                <td class="col-models">7/8</td>
-                <td class="col-peak">—</td>
-                <td class="col-live" id="live-Tokyo__JP">—</td>
-                <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">18:01</td>
-            </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Toronto, CA" data-conf="0.527">
-                <td class="col-rank"></td>
-                <td class="col-city">Toronto, CA</td>
-                <td class="col-bma">27.5 <span class="dim">σ=1.3</span></td>
-                <td class="col-range">25-26°C</td>
-                <td class="col-sigma">BUY 26°C ⏳</td>
-                <td class="col-p5">BUY 25°C ⏳</td>
-                <td class="col-mean">BUY 28°C ⏳</td>
-                <td class="col-conf conf-low">🔴 53%</td>
-                <td class="col-models">8/8</td>
-                <td class="col-peak">—</td>
-                <td class="col-live" id="live-Toronto__CA">—</td>
-                <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">05:01</td>
-            </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Toronto, CA" data-conf="0.427">
-                <td class="col-rank"></td>
-                <td class="col-city">Toronto, CA</td>
-                <td class="col-bma">27.2 <span class="dim">σ=1.5</span></td>
-                <td class="col-range">25-26°C</td>
-                <td class="col-sigma">BUY 26°C ⏳</td>
-                <td class="col-p5">BUY 25°C ⏳</td>
-                <td class="col-mean">BUY 27°C ⏳</td>
-                <td class="col-conf conf-low">🔴 43%</td>
-                <td class="col-models">7/8</td>
-                <td class="col-peak">—</td>
-                <td class="col-live" id="live-Toronto__CA">—</td>
-                <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">05:01</td>
-            </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Warsaw, PL" data-conf="0.411">
-                <td class="col-rank"></td>
-                <td class="col-city">Warsaw, PL</td>
-                <td class="col-bma">31.7 <span class="dim">σ=1.7</span></td>
+                <td class="col-bma">31.9 <span class="dim">σ=1.6</span></td>
                 <td class="col-range">29-30°C</td>
                 <td class="col-sigma">BUY 30°C ⏳</td>
                 <td class="col-p5">BUY 29°C ⏳</td>
                 <td class="col-mean">BUY 32°C ⏳</td>
+                <td class="col-conf conf-low">🔴 48%</td>
+                <td class="col-models">7/8</td>
+                <td class="col-peak">—</td>
+                <td class="col-live" id="live-Taipei__TW">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
+                <td class="col-rec ">—</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
+            </tr>
+<tr class="city-row row-loss" data-lead="1" data-city="Taipei, TW" data-conf="0.518" data-edge="0">
+                <td class="col-rank"></td>
+                <td class="col-city">Taipei, TW</td>
+                <td class="col-bma">33.2 <span class="dim">σ=1.2</span></td>
+                <td class="col-range">31-32°C</td>
+                <td class="col-sigma">BUY 32°C ⏳</td>
+                <td class="col-p5">BUY 31°C ⏳</td>
+                <td class="col-mean">BUY 33°C ⏳</td>
+                <td class="col-conf conf-low">🔴 52%</td>
+                <td class="col-models">7/8</td>
+                <td class="col-peak">—</td>
+                <td class="col-live" id="live-Taipei__TW">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
+                <td class="col-rec ">—</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
+            </tr>
+<tr class="city-row row-loss" data-lead="0" data-city="Tel Aviv, IL" data-conf="0.443" data-edge="0">
+                <td class="col-rank"></td>
+                <td class="col-city">Tel Aviv, IL</td>
+                <td class="col-bma">35.4 <span class="dim">σ=1.3</span></td>
+                <td class="col-range">33-34°C</td>
+                <td class="col-sigma">BUY 34°C ⏳</td>
+                <td class="col-p5">BUY 33°C ⏳</td>
+                <td class="col-mean">BUY 35°C ⏳</td>
+                <td class="col-conf conf-low">🔴 44%</td>
+                <td class="col-models">7/8</td>
+                <td class="col-peak">—</td>
+                <td class="col-live" id="live-Tel_Aviv__IL">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
+                <td class="col-rec ">—</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">12:49</td>
+            </tr>
+<tr class="city-row row-loss" data-lead="1" data-city="Tel Aviv, IL" data-conf="0.539" data-edge="0">
+                <td class="col-rank"></td>
+                <td class="col-city">Tel Aviv, IL</td>
+                <td class="col-bma">36.0 <span class="dim">σ=1.5</span></td>
+                <td class="col-range">34-34°C</td>
+                <td class="col-sigma">BUY 34°C ⏳</td>
+                <td class="col-p5">BUY 34°C ⏳</td>
+                <td class="col-mean">BUY 36°C ⏳</td>
+                <td class="col-conf conf-low">🔴 54%</td>
+                <td class="col-models">7/8</td>
+                <td class="col-peak">—</td>
+                <td class="col-live" id="live-Tel_Aviv__IL">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
+                <td class="col-rec ">—</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">12:49</td>
+            </tr>
+<tr class="city-row row-loss" data-lead="0" data-city="Tokyo, JP" data-conf="0.539" data-edge="-80.1">
+                <td class="col-rank"></td>
+                <td class="col-city">Tokyo, JP</td>
+                <td class="col-bma">31.2 <span class="dim">σ=1.0</span></td>
+                <td class="col-range">30-30°C</td>
+                <td class="col-sigma">BUY 30°C ⏳</td>
+                <td class="col-p5">BUY 30°C ⏳</td>
+                <td class="col-mean">BUY 31°C ⏳</td>
+                <td class="col-conf conf-low">🔴 54%</td>
+                <td class="col-models">7/8</td>
+                <td class="col-peak">—</td>
+                <td class="col-live" id="live-Tokyo__JP">—</td>
+                <td class="col-market">100.0%</td>
+                <td class="col-edge">-80.1%</td>
+                <td class="col-signal"><span style="color: var(--red); font-weight: 600;">🔴 SHORT</span></td>
+                <td class="col-rec ">—</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">18:49</td>
+            </tr>
+<tr class="city-row row-loss" data-lead="1" data-city="Tokyo, JP" data-conf="0.602" data-edge="10.5">
+                <td class="col-rank"></td>
+                <td class="col-city">Tokyo, JP</td>
+                <td class="col-bma">28.7 <span class="dim">σ=1.0</span></td>
+                <td class="col-range">27-27°C</td>
+                <td class="col-sigma">BUY 27°C ⏳</td>
+                <td class="col-p5">BUY 27°C ⏳</td>
+                <td class="col-mean">BUY 29°C ⏳</td>
+                <td class="col-conf conf-low">🔴 60%</td>
+                <td class="col-models">7/8</td>
+                <td class="col-peak">—</td>
+                <td class="col-live" id="live-Tokyo__JP">—</td>
+                <td class="col-market">0.1%</td>
+                <td class="col-edge">+10.5%</td>
+                <td class="col-signal"><span style="color: var(--green); font-weight: 600;">🟢 BUY</span></td>
+                <td class="col-rec ">—</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">18:49</td>
+            </tr>
+<tr class="city-row row-loss" data-lead="0" data-city="Toronto, CA" data-conf="0.410" data-edge="0">
+                <td class="col-rank"></td>
+                <td class="col-city">Toronto, CA</td>
+                <td class="col-bma">27.6 <span class="dim">σ=2.0</span></td>
+                <td class="col-range">24-26°C</td>
+                <td class="col-sigma">BUY 26°C ⏳</td>
+                <td class="col-p5">BUY 24°C ⏳</td>
+                <td class="col-mean">BUY 28°C ⏳</td>
                 <td class="col-conf conf-low">🔴 41%</td>
+                <td class="col-models">8/8</td>
+                <td class="col-peak">—</td>
+                <td class="col-live" id="live-Toronto__CA">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
+                <td class="col-rec ">—</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">05:49</td>
+            </tr>
+<tr class="city-row row-loss" data-lead="1" data-city="Toronto, CA" data-conf="0.493" data-edge="0">
+                <td class="col-rank"></td>
+                <td class="col-city">Toronto, CA</td>
+                <td class="col-bma">27.4 <span class="dim">σ=1.2</span></td>
+                <td class="col-range">26-26°C</td>
+                <td class="col-sigma">BUY 26°C ⏳</td>
+                <td class="col-p5">BUY 26°C ⏳</td>
+                <td class="col-mean">BUY 27°C ⏳</td>
+                <td class="col-conf conf-low">🔴 49%</td>
+                <td class="col-models">8/8</td>
+                <td class="col-peak">—</td>
+                <td class="col-live" id="live-Toronto__CA">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
+                <td class="col-rec ">—</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">05:49</td>
+            </tr>
+<tr class="city-row row-loss" data-lead="0" data-city="Warsaw, PL" data-conf="0.429" data-edge="0">
+                <td class="col-rank"></td>
+                <td class="col-city">Warsaw, PL</td>
+                <td class="col-bma">31.2 <span class="dim">σ=2.0</span></td>
+                <td class="col-range">28-29°C</td>
+                <td class="col-sigma">BUY 29°C ⏳</td>
+                <td class="col-p5">BUY 28°C ⏳</td>
+                <td class="col-mean">BUY 31°C ⏳</td>
+                <td class="col-conf conf-low">🔴 43%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Warsaw__PL">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">11:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">11:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Warsaw, PL" data-conf="0.513">
+<tr class="city-row row-loss" data-lead="1" data-city="Warsaw, PL" data-conf="0.513" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Warsaw, PL</td>
                 <td class="col-bma">22.4 <span class="dim">σ=1.2</span></td>
@@ -1661,11 +1949,14 @@
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Warsaw__PL">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">11:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">11:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Wellington, NZ" data-conf="0.584">
+<tr class="city-row row-loss" data-lead="0" data-city="Wellington, NZ" data-conf="0.578" data-edge="30.1">
                 <td class="col-rank"></td>
                 <td class="col-city">Wellington, NZ</td>
                 <td class="col-bma">13.8 <span class="dim">σ=0.8</span></td>
@@ -1677,89 +1968,107 @@
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Wellington__NZ">—</td>
+                <td class="col-market">0.1%</td>
+                <td class="col-edge">+30.1%</td>
+                <td class="col-signal"><span style="color: var(--green); font-weight: 600;">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">21:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">21:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Wellington, NZ" data-conf="0.664">
+<tr class="city-row row-loss" data-lead="1" data-city="Wellington, NZ" data-conf="0.594" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Wellington, NZ</td>
-                <td class="col-bma">11.7 <span class="dim">σ=0.7</span></td>
+                <td class="col-bma">11.8 <span class="dim">σ=0.7</span></td>
                 <td class="col-range">11-11°C</td>
                 <td class="col-sigma">BUY 11°C ⏳</td>
                 <td class="col-p5">BUY 11°C ⏳</td>
                 <td class="col-mean">BUY 12°C ⏳</td>
-                <td class="col-conf conf-low">🔴 66%</td>
+                <td class="col-conf conf-low">🔴 59%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Wellington__NZ">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">21:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">21:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Wuhan, CN" data-conf="0.620">
+<tr class="city-row row-loss" data-lead="0" data-city="Wuhan, CN" data-conf="0.614" data-edge="13.1">
                 <td class="col-rank"></td>
                 <td class="col-city">Wuhan, CN</td>
-                <td class="col-bma">28.5 <span class="dim">σ=0.9</span></td>
+                <td class="col-bma">28.5 <span class="dim">σ=1.0</span></td>
                 <td class="col-range">27-27°C</td>
                 <td class="col-sigma">BUY 27°C ⏳</td>
                 <td class="col-p5">BUY 27°C ⏳</td>
                 <td class="col-mean">BUY 28°C ⏳</td>
-                <td class="col-conf conf-low">🔴 62%</td>
+                <td class="col-conf conf-low">🔴 61%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Wuhan__CN">—</td>
+                <td class="col-market">0.1%</td>
+                <td class="col-edge">+13.1%</td>
+                <td class="col-signal"><span style="color: var(--green); font-weight: 600;">🟢 BUY</span></td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Wuhan, CN" data-conf="0.435">
+<tr class="city-row row-loss" data-lead="1" data-city="Wuhan, CN" data-conf="0.412" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Wuhan, CN</td>
-                <td class="col-bma">27.6 <span class="dim">σ=2.0</span></td>
+                <td class="col-bma">27.7 <span class="dim">σ=2.2</span></td>
                 <td class="col-range">24-26°C</td>
                 <td class="col-sigma">BUY 26°C ⏳</td>
                 <td class="col-p5">BUY 24°C ⏳</td>
                 <td class="col-mean">BUY 28°C ⏳</td>
-                <td class="col-conf conf-low">🔴 44%</td>
+                <td class="col-conf conf-low">🔴 41%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Wuhan__CN">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Zhengzhou, CN" data-conf="0.610">
+<tr class="city-row row-loss" data-lead="0" data-city="Zhengzhou, CN" data-conf="0.615" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Zhengzhou, CN</td>
-                <td class="col-bma">30.3 <span class="dim">σ=1.0</span></td>
+                <td class="col-bma">30.4 <span class="dim">σ=1.0</span></td>
                 <td class="col-range">29-29°C</td>
                 <td class="col-sigma">BUY 29°C ⏳</td>
                 <td class="col-p5">BUY 29°C ⏳</td>
                 <td class="col-mean">BUY 30°C ⏳</td>
-                <td class="col-conf conf-low">🔴 61%</td>
+                <td class="col-conf conf-low">🔴 62%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Zhengzhou__CN">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
-<tr class="city-row row-loss" data-lead="1" data-city="Zhengzhou, CN" data-conf="0.614">
+<tr class="city-row row-loss" data-lead="1" data-city="Zhengzhou, CN" data-conf="0.622" data-edge="0">
                 <td class="col-rank"></td>
                 <td class="col-city">Zhengzhou, CN</td>
-                <td class="col-bma">25.4 <span class="dim">σ=0.9</span></td>
-                <td class="col-range">24-24°C</td>
+                <td class="col-bma">25.5 <span class="dim">σ=1.3</span></td>
+                <td class="col-range">23-24°C</td>
                 <td class="col-sigma">BUY 24°C ⏳</td>
-                <td class="col-p5">BUY 24°C ⏳</td>
-                <td class="col-mean">BUY 25°C ⏳</td>
-                <td class="col-conf conf-low">🔴 61%</td>
+                <td class="col-p5">BUY 23°C ⏳</td>
+                <td class="col-mean">BUY 26°C ⏳</td>
+                <td class="col-conf conf-low">🔴 62%</td>
                 <td class="col-models">7/8</td>
                 <td class="col-peak">—</td>
                 <td class="col-live" id="live-Zhengzhou__CN">—</td>
+                <td class="col-market">—</td>
+                <td class="col-edge">—</td>
+                <td class="col-signal">—</td>
                 <td class="col-rec ">—</td>
-                <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-                <td class="col-local">17:01</td>
+                <td class="col-strat"><span style="color: var(--text-dim);">— (ingen data)</span></td>
+                <td class="col-local">17:49</td>
             </tr>
 
       </tbody>

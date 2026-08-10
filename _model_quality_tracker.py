@@ -465,6 +465,11 @@ def _is_in_peak_window(local_dt: datetime, peak_start: int, peak_end: int) -> bo
 # --mode daily_bma
 # =============================================================================
 
+def _norm_cdf(x: float) -> float:
+    """Standard normal cumulative distribution function."""
+    return 0.5 * (1.0 + math.erf(x / 1.4142135623730951))
+
+
 def _preds_to_dict(predictions: list[CityPrediction], locations: list[SavedLocation], lead_days: int = 0) -> dict[str, dict]:
     """Convert CityPrediction list to log-ready dict with 3 strategies per city.
 
@@ -473,6 +478,7 @@ def _preds_to_dict(predictions: list[CityPrediction], locations: list[SavedLocat
       "Madrid, ES": {
         "bma_mean": 35.4, "bma_std": 0.6, "p5": 34.4, "p95": 36.4,
         "confidence": 0.82, "models": 8,
+        "bma_probs": {"30": 0.1, "31": 1.2, ..., "38": 0.3},
         "strategies": {
           "sigma": {"spill": 35, "k": 0.3, "win_prob": 0.74, "result": null, "actual_peak": null},
           "p5":    {"spill": 34, "k": null, "win_prob": 0.99, "result": null, "actual_peak": null},
@@ -490,6 +496,17 @@ def _preds_to_dict(predictions: list[CityPrediction], locations: list[SavedLocat
     for p in predictions:
         loc = loc_map.get(p.city)
         uhi = getattr(loc, "uhi_adjustment", 0.0) if loc else 0.0
+
+        # Compute BMA probability for each temperature bucket in the P5-P95 range
+        bma_probs: dict[str, float] = {}
+        mean_c = p.bma_mean
+        std_c = max(p.bma_std, 0.01)  # Guard against zero std
+        lo = max(0, int(p.p5) - 3)
+        hi = int(p.p95) + 3
+        for temp in range(lo, hi + 1):
+            prob = _norm_cdf((temp + 0.5 - mean_c) / std_c) - _norm_cdf((temp - 0.5 - mean_c) / std_c)
+            bma_probs[str(temp)] = round(prob * 100, 1)
+
         preds_dict[p.city] = {
             "bma_mean": p.bma_mean,
             "bma_std": p.bma_std,
@@ -497,6 +514,7 @@ def _preds_to_dict(predictions: list[CityPrediction], locations: list[SavedLocat
             "p95": p.p95,
             "confidence": p.confidence,
             "models": p.model_count,
+            "bma_probs": bma_probs,
             "strategies": {
                 "sigma": {
                     "spill": p.suggested_spill,

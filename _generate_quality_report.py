@@ -41,6 +41,16 @@ LOG_FILE = Path(_SCRIPT_DIR) / "_model_quality_log.json"
 REPORT_FILE = Path(_SCRIPT_DIR) / "_quality_report.md"
 HTML_REPORT_FILE = Path(_SCRIPT_DIR) / "_quality_report.html"
 
+# Market edge computation (BMA vs Polymarket)
+try:
+    from _compute_market_edge import (  # type: ignore[import-not-found]
+        compute_edges, load_market_prices, load_bma_predictions,
+        format_edge_html_rows, build_market_lookup, compute_bma_prob,
+    )
+    HAS_MARKET_EDGE = True
+except ImportError:
+    HAS_MARKET_EDGE = False
+
 
 def _load_log() -> dict:
     """Load existing quality log or return empty structure."""
@@ -1267,6 +1277,67 @@ def _build_uhi_accuracy_section(runs: list) -> str:
 
 
 # =============================================================================
+# Market Edge Section — BMA vs Polymarket
+# =============================================================================
+
+def _build_market_edge_html_section() -> str:
+   """Build HTML section showing BMA vs Polymarket edge for trading opportunities."""
+   if not HAS_MARKET_EDGE:
+       return ""
+
+   try:
+       market_opps, _ = load_market_prices()
+       bma_preds = load_bma_predictions()
+       edges = compute_edges(market_opps, bma_preds, min_vol=0)
+   except Exception:
+       return ""
+
+   if not edges:
+       return """<div class="section">
+     <h2>💹 MARKED EDGE — BMA vs Polymarket</h2>
+     <p style="color: var(--text-dim);">Ingen matchende markeder funnet. Kjør <code>python _fetch_market_prices.py</code> for å hente markedspriser.</p>
+   </div>"""
+
+   buys = [e for e in edges if e["edge"] > 0]
+   shorts = [e for e in edges if e["edge"] < 0]
+   big_edges = [e for e in edges if abs(e["edge"]) > 10]
+   rows_html = format_edge_html_rows(edges)
+
+   return f"""
+   <div class="section">
+     <h2>💹 MARKED EDGE — BMA vs Polymarket</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       Sammenligner BMA sannsynlighet med Polymarket markedspriser.
+       🟢 BUY = BMA > Marked (undervurdert) | 🔴 SHORT = BMA < Marked (overvurdert) | Edge >10% = uthevet.
+     </p>
+     <div class="card-grid" style="margin-bottom: 20px;">
+       <div class="card">
+         <div class="value" style="color: var(--green);">{len(buys)}</div>
+         <div class="label">🟢 BUY Signals</div>
+       </div>
+       <div class="card">
+         <div class="value" style="color: var(--red);">{len(shorts)}</div>
+         <div class="label">🔴 SHORT Signals</div>
+       </div>
+       <div class="card">
+         <div class="value" style="color: var(--purple);">{len(big_edges)}</div>
+         <div class="label">⚡ Edge >10%</div>
+       </div>
+       <div class="card">
+         <div class="value" style="color: var(--blue);">{len(edges)}</div>
+         <div class="label">Totalt Matchet</div>
+       </div>
+     </div>
+     <div style="overflow-x: auto;">
+     <table>
+       <thead><tr><th>#</th><th>By</th><th>Spill</th><th>BMA %</th><th>Marked %</th><th>Edge</th><th>Signal</th><th>BMA μ / σ</th></tr></thead>
+       <tbody>{rows_html}</tbody>
+     </table>
+     </div>
+   </div>"""
+
+
+# =============================================================================
 # Live Temperature Fetch — Shared JavaScript helpers
 # =============================================================================
 
@@ -1608,6 +1679,9 @@ def _generate_html_report() -> str:
     uhi_section = _build_uhi_accuracy_section(runs)
     strat_rec_section = _build_strat_rec_html_section(best_per_city)
 
+    # ── Market Edge Section (BMA vs Polymarket) ──
+    market_edge_section = _build_market_edge_html_section()
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1848,6 +1922,9 @@ function sortTable(colIdx) {{
   <!-- TODAY VS TOMORROW SEPARATION -->
   {today_tomorrow_section}
 
+  <!-- MARKET EDGE: BMA vs Polymarket -->
+  {market_edge_section}
+
   <!-- TOP 5 PREDICTIONS -->
   {predictions_html}
 
@@ -2023,6 +2100,14 @@ def _generate_all_cities_html() -> str:
 
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
 
+    # ---- Load market price lookup for edge computation ----
+    market_lookup: dict[tuple[str, int], float] = {}
+    if HAS_MARKET_EDGE:
+        try:
+            market_lookup = build_market_lookup()
+        except Exception:
+            pass
+
     # ---- Compute today vs tomorrow resolved win rates ----
     def _compute_lead_rates(city_tbl: dict, ld: int):
         """Compute resolved win rates for a given lead_days value."""
@@ -2175,8 +2260,42 @@ def _generate_all_cities_html() -> str:
                     peak_won = True
             row_class = "city-row row-win" if row_win else "city-row row-loss"
 
+            # Compute market edge for this city's sigma spill temperature
+            market_cell = "—"
+            edge_cell = "—"
+            signal_cell = "—"
+            edge_data_attr = "0"
+            if HAS_MARKET_EDGE and isinstance(sigma_spill, (int, float)) and market_lookup:
+                city_lower = city.lower()
+                # Try "CityName, CC" format first, then base name without country
+                mkt_prob = market_lookup.get((city_lower, int(sigma_spill)))
+                if mkt_prob is None:
+                    city_base = city_lower.split(",")[0].strip()
+                    mkt_prob = market_lookup.get((city_base, int(sigma_spill)))
+                    # Also try removing parenthetical (e.g., "Seoul (Incheon)")
+                    if mkt_prob is None:
+                        city_no_paren = re.sub(r'\s*\(.*?\)\s*', '', city_base).strip()
+                        mkt_prob = market_lookup.get((city_no_paren, int(sigma_spill)))
+                if mkt_prob is not None:
+                    market_cell = f"{mkt_prob:.1f}%"
+                    if isinstance(d.get('bma_mean'), (int, float)) and isinstance(d.get('bma_std'), (int, float)):
+                        bma_p = compute_bma_prob(d['bma_mean'], d['bma_std'], int(sigma_spill), "exact")
+                        edge = round(bma_p - mkt_prob, 1)
+                        edge_cell = f"{edge:+.1f}%"
+                        edge_data_attr = str(edge)
+                        if edge > 10:
+                            signal_cell = '<span style="color: var(--green); font-weight: 600;">🟢 BUY</span>'
+                        elif edge > 0:
+                            signal_cell = '<span style="color: var(--green);">🟢 BUY</span>'
+                        elif edge < -10:
+                            signal_cell = '<span style="color: var(--red); font-weight: 600;">🔴 SHORT</span>'
+                        elif edge < 0:
+                            signal_cell = '<span style="color: var(--red);">🔴 SHORT</span>'
+                        else:
+                            signal_cell = '⚪ FLAT'
+
             safe_city_id = re.sub(r'[^a-zA-Z0-9]', '_', city)
-            table_rows += f"""<tr class="{row_class}" data-lead="{ld}" data-city="{city}" data-conf="{conf:.3f}">
+            table_rows += f"""<tr class="{row_class}" data-lead="{ld}" data-city="{city}" data-conf="{conf:.3f}" data-edge="{edge_data_attr}">
                 <td class="col-rank"></td>
                 <td class="col-city">{city}</td>
                 <td class="col-bma">{bma_str} <span class="dim">σ={std_str}</span></td>
@@ -2188,6 +2307,9 @@ def _generate_all_cities_html() -> str:
                 <td class="col-models">{d['model_ct']}/8</td>
                 <td class="col-peak">{actual_str}{" ✅ VUNNET" if peak_won else ""}</td>
                 <td class="col-live" id="live-{safe_city_id}">—</td>
+                <td class="col-market">{market_cell}</td>
+                <td class="col-edge">{edge_cell}</td>
+                <td class="col-signal">{signal_cell}</td>
                 <td class="col-rec {rec_class}">{rec}</td>
                 <td class="col-strat">{_build_strat_rec_cell(city, best_per_city)}</td>
                 <td class="col-local">{local_time_str}</td>
@@ -2321,9 +2443,12 @@ def _generate_all_cities_html() -> str:
           <th onclick="sortTable(8)">Modeller</th>
           <th onclick="sortTable(9)">Peak</th>
           <th onclick="sortTable(10)">🔴 Live</th>
-          <th onclick="sortTable(11)">Anbefaling</th>
-          <th onclick="sortTable(12)">🎯 Anbefalt Strategi</th>
-          <th onclick="sortTable(13)">🕐 Lokal</th>
+          <th onclick="sortTable(11)">Marked Pris</th>
+          <th onclick="sortTable(12)">Edge</th>
+          <th onclick="sortTable(13)">Signal</th>
+          <th onclick="sortTable(14)">Anbefaling</th>
+          <th onclick="sortTable(15)">🎯 Anbefalt Strategi</th>
+          <th onclick="sortTable(16)">🕐 Lokal</th>
        </tr>
       </thead>
       <tbody>

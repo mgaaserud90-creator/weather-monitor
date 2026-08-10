@@ -77,6 +77,9 @@ jobs:
           echo "mode=$MODE" >> $GITHUB_OUTPUT
           echo "Running mode: $MODE"
 
+      - name: Fetch market prices
+        run: python _fetch_market_prices.py
+
       - name: Run tracker
         run: |
           set -x
@@ -108,4 +111,4 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Auto: ${{ steps.mode.outputs.mode }} $(date -Iminutes)"
-          file_pattern: '_model_quality_log.json _quality_report.md _quality_report.html _all_cities.html _rapid_peak_log.json'
+          file_pattern: '_model_quality_log.json _quality_report.md _quality_report.html _all_cities.html _rapid_peak_log.json _market_prices.json'
