@@ -546,6 +546,254 @@ def format_edge_html_rows(edges: list[dict]) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Resolution Arbitrage: Post-Peak Market Scanner
+# ---------------------------------------------------------------------------
+
+def compute_resolution_arbitrage(
+    quality_log_runs: list[dict] | None = None,
+) -> list[dict]:
+    """Scan for markets still open AFTER peak window has passed and actual temp is known.
+
+    For each city where:
+      1. Market date is today AND peak window has passed (>1 hour ago)
+      2. We have actual_peak from the quality log
+      3. A market bucket (losing or winning) is still mispriced
+
+    Returns a list of arbitrage opportunities.
+    """
+    results: list[dict] = []
+
+    # Load quality log if not provided
+    if quality_log_runs is None:
+        if not QUALITY_LOG_FILE.exists():
+            return results
+        raw = json.loads(QUALITY_LOG_FILE.read_text(encoding="utf-8"))
+        quality_log_runs = raw.get("runs", [])
+
+    if not quality_log_runs:
+        return results
+
+    # Load market prices
+    market_opps, _ = load_market_prices()
+    if not market_opps:
+        return results
+
+    # Get latest run's predictions for city metadata (tz, peak window, actual_peak)
+    latest = quality_log_runs[-1]
+    predictions = latest.get("predictions", {})
+    today = date.today()
+
+    # Group markets by city for quick lookup
+    markets_by_city: dict[str, list[dict]] = {}
+    for opp in market_opps:
+        city_lower = opp["city"].lower().strip()
+        markets_by_city.setdefault(city_lower, []).append(opp)
+
+    for bma_city, pdata in predictions.items():
+        # Extract metadata
+        tz_str = pdata.get("_tz", "UTC")
+        peak_start = pdata.get("_peak_hour_start", 14)
+        peak_end = pdata.get("_peak_hour_end", 17)
+        target_date_str = pdata.get("_target_date", "")
+
+        # Check if market date is today
+        try:
+            target_date = date.fromisoformat(target_date_str) if target_date_str else None
+        except ValueError:
+            target_date = None
+
+        if target_date is None or target_date != today:
+            continue
+
+        # Check if peak window has passed (>1 hour ago in local timezone)
+        try:
+            from zoneinfo import ZoneInfo
+        except ImportError:
+            from backports.zoneinfo import ZoneInfo  # type: ignore[no-redef]
+
+        try:
+            local_now = datetime.now(ZoneInfo(tz_str))
+        except Exception:
+            continue
+
+        # Peak window: local hour range [peak_start, peak_end]
+        # "Passed" means current local hour > peak_end (peak ended)
+        # We require >1 hour after peak_end for certainty
+        if local_now.hour <= peak_end:
+            continue
+
+        # Peak window has passed — check if we have actual_peak
+        strategies = pdata.get("strategies", {})
+        sigma = strategies.get("sigma", {})
+        actual_peak = sigma.get("actual_peak")
+
+        if actual_peak is None:
+            continue
+
+        try:
+            actual_val = float(actual_peak)
+        except (TypeError, ValueError):
+            continue
+
+        # Determine which bucket WON
+        winning_temp = round(actual_val)
+
+        # Find markets for this city
+        city_base = bma_city.split(",")[0].strip().lower()
+        market_opps_for_city = markets_by_city.get(city_base, [])
+        if not market_opps_for_city:
+            # Try with parenthetical removed
+            city_no_paren = re.sub(r'\s*\(.*?\)\s*', '', city_base).strip()
+            market_opps_for_city = markets_by_city.get(city_no_paren, [])
+        if not market_opps_for_city:
+            # Try exact BMA city name (lowercase)
+            market_opps_for_city = markets_by_city.get(bma_city.lower(), [])
+
+        for opp in market_opps_for_city:
+            temp = opp["temp"]
+            qtype = opp["type"]
+            price = opp["market_prob"]  # in percentage points (0-100)
+            price_cents = price  # already in cents (0-100)
+
+            # Only consider "exact" type buckets for resolution arbitrage
+            if qtype != "exact":
+                continue
+
+            is_winner = (temp == winning_temp)
+            is_loser = not is_winner
+
+            action = None
+            profit_cents = 0.0
+
+            if is_loser and 1 <= price_cents <= 50:
+                # SHORT: sell at price_cents, collect 100c at resolution
+                action = "SHORT"
+                profit_cents = round(100 - price_cents, 1)
+            elif is_winner and 50 <= price_cents <= 95:
+                # BUY: buy at price_cents, collect 100c at resolution
+                action = "BUY"
+                profit_cents = round(100 - price_cents, 1)
+            else:
+                continue
+
+            results.append({
+                "city": bma_city,
+                "city_display": bma_city.split(",")[0].strip(),
+                "actual_peak": actual_val,
+                "winning_temp": winning_temp,
+                "losing_temp": temp,
+                "temp": temp,
+                "price_cents": price_cents,
+                "action": action,
+                "profit_cents": profit_cents,
+                "volume": opp.get("volume", 0),
+                "volume_display": opp.get("volume_display", ""),
+                "question": opp.get("question", ""),
+                "tz": tz_str,
+                "local_hour": local_now.hour,
+                "peak_end": peak_end,
+                "is_winner": is_winner,
+            })
+
+    # Deduplicate by (city, temp, action)
+    seen: dict[tuple[str, int, str], dict] = {}
+    for r in results:
+        key = (r["city"], r["temp"], r["action"])
+        if key not in seen or r.get("volume", 0) > seen[key].get("volume", 0):
+            seen[key] = r
+    results = list(seen.values())
+
+    # Sort: SHORT first (sell overpriced losers), then BUY (buy underpriced winners),
+    # then by profit descending
+    results.sort(key=lambda x: (0 if x["action"] == "SHORT" else 1, -x["profit_cents"]))
+    return results
+
+
+def format_resolution_arbitrage_table(opportunities: list[dict]) -> str:
+    """Format resolution arbitrage results as markdown table."""
+    if not opportunities:
+        return ""
+
+    lines = [
+        "| By | Vinner | Taper | Taper Pris | Profitt | Handling |",
+        "|----|--------|-------|-----------|---------|----------|",
+    ]
+
+    for r in opportunities:
+        action_emoji = "🔴" if r["action"] == "SHORT" else "🟢"
+        lines.append(
+            f"| {r['city_display']} | {r['winning_temp']}°C | "
+            f"{r['losing_temp']}°C @ {r['price_cents']:.1f}c | "
+            f"+{r['profit_cents']:.1f}c | "
+            f"{action_emoji} {r['action']} {r['losing_temp']}°C |"
+        )
+
+    return "\n".join(lines)
+
+
+def format_resolution_arbitrage_html_rows(opportunities: list[dict]) -> str:
+    """Format resolution arbitrage results as HTML table rows."""
+    if not opportunities:
+        return '<tr><td colspan="6" style="color: var(--text-dim);">Ingen resolusjonsarbitrasje funnet — peak windows har ikke passert enda.</td></tr>'
+
+    rows = ""
+    for r in opportunities:
+        action_color = "var(--red)" if r["action"] == "SHORT" else "var(--green)"
+        action_emoji = "🔴" if r["action"] == "SHORT" else "🟢"
+        action_label = f"SHORT {r['losing_temp']}°C" if r["action"] == "SHORT" else f"BUY {r['winning_temp']}°C"
+
+        rows += f"""<tr>
+            <td><strong>{r['city_display']}</strong></td>
+            <td style="color: var(--green); font-weight: 600;">{r['winning_temp']}°C</td>
+            <td>{r['losing_temp']}°C @ <span style="font-family: monospace;">{r['price_cents']:.1f}c</span></td>
+            <td style="color: var(--green); font-weight: 700; font-family: monospace;">+{r['profit_cents']:.1f}c</td>
+            <td style="color: {action_color}; font-weight: 600;">{action_emoji} {action_label}</td>
+        </tr>"""
+
+    return rows
+
+
+def format_resolution_arbitrage_summary_html(opportunities: list[dict]) -> str:
+    """Build a full HTML section for resolution arbitrage."""
+    if not opportunities:
+        return """<div class="section">
+      <h2>💰 RESOLUTION ARBITRAGE — Gratis Penger</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        Ingen resolusjonsarbitrasje funnet. Peak-vinduer har ikke passert, eller ingen faktiske temperaturer er bekreftet enda.
+      </p>
+    </div>"""
+
+    shorts = [r for r in opportunities if r["action"] == "SHORT"]
+    buys = [r for r in opportunities if r["action"] == "BUY"]
+    total_profit = sum(r["profit_cents"] for r in opportunities)
+
+    rows_html = format_resolution_arbitrage_html_rows(opportunities)
+
+    return f"""<div class="section" style="border-color: rgba(210,153,29,0.3);">
+      <h2>💰 RESOLUTION ARBITRAGE — Gratis Penger</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 8px;">
+        Markeder der peak-vinduet har passert og faktisk temperatur er kjent,
+        men markedet handler fortsatt som om utfallet er usikkert.
+      </p>
+      <div style="display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap;">
+        <span style="color: var(--green); font-weight: 600;">🟢 {len(buys)} BUY</span>
+        <span style="color: var(--red); font-weight: 600;">🔴 {len(shorts)} SHORT</span>
+        <span style="color: var(--orange); font-weight: 700;">💰 Total profitt: +{total_profit:.1f}c per 100c</span>
+      </div>
+      <div style="overflow-x: auto;">
+      <table>
+        <thead><tr>
+          <th>By</th><th>Vinner</th><th>Taper</th><th>Profitt</th><th>Handling</th>
+        </tr></thead>
+        <tbody>
+          {rows_html}
+        </tbody>
+      </table>
+      </div>
+    </div>"""
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -559,12 +807,29 @@ def main() -> int:
                         help="Minimum volume to include (default: 0)")
     parser.add_argument("--json", action="store_true",
                         help="Output as JSON instead of table")
+    parser.add_argument("--resolution-arb", action="store_true",
+                        help="Show resolution arbitrage opportunities (post-peak)")
     args = parser.parse_args()
 
     print("╔══════════════════════════════════════════════════╗")
     print("║   MARKED EDGE — BMA vs Polymarket Arbitrage     ║")
     print("╚══════════════════════════════════════════════════╝")
     print()
+
+    if args.resolution_arb:
+        # Resolution arbitrage mode
+        print("💰 RESOLUTION ARBITRAGE — Post-Peak Market Scanner")
+        print()
+        opportunities = compute_resolution_arbitrage()
+        if not opportunities:
+            print("  No resolution arbitrage opportunities found.")
+            print("  (Peak windows have not passed, or no actual temps confirmed yet.)")
+            return 0
+        print(f"  Opportunities found: {len(opportunities)}")
+        print()
+        print(format_resolution_arbitrage_table(opportunities))
+        print()
+        return 0
 
     # Load data
     market_opps, fetched_at = load_market_prices()

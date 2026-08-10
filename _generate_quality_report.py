@@ -48,6 +48,7 @@ try:
     from _compute_market_edge import (  # type: ignore[import-not-found]
         compute_edges, load_market_prices, load_bma_predictions,
         format_edge_html_rows, build_market_lookup, compute_bma_prob,
+        compute_resolution_arbitrage, format_resolution_arbitrage_summary_html,
     )
     HAS_MARKET_EDGE = True
 except ImportError:
@@ -1453,6 +1454,23 @@ def _build_edge_validation_html_section(runs: list) -> str:
 
 
 # =============================================================================
+# Resolution Arbitrage Section — Post-Peak Market Scanner
+# =============================================================================
+
+def _build_resolution_arbitrage_html_section() -> str:
+    """Build HTML section showing resolution arbitrage opportunities."""
+    if not HAS_MARKET_EDGE:
+        return ""
+
+    try:
+        opportunities = compute_resolution_arbitrage()
+    except Exception:
+        return ""
+
+    return format_resolution_arbitrage_summary_html(opportunities)
+
+
+# =============================================================================
 # Market Edge Section — BMA vs Polymarket
 # =============================================================================
 
@@ -1980,6 +1998,9 @@ def _generate_html_report() -> str:
     # ── Edge Validation Section (Real vs Imagined) ──
     edge_validation_section = _build_edge_validation_html_section(runs)
 
+    # ── Resolution Arbitrage Section (Post-Peak) ──
+    resolution_arb_section = _build_resolution_arbitrage_html_section()
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2220,6 +2241,9 @@ function sortTable(colIdx) {{
   <!-- TODAY VS TOMORROW SEPARATION -->
   {today_tomorrow_section}
 
+  <!-- RESOLUTION ARBITRAGE: Post-Peak -->
+  {resolution_arb_section}
+
   <!-- MARKET EDGE: BMA vs Polymarket -->
   {market_edge_section}
 
@@ -2451,6 +2475,9 @@ def _generate_all_cities_html() -> str:
     else:
         decay_text = ""
         decay_color = "#8b949e"
+
+    # ── Resolution Arbitrage Section (Post-Peak) ──
+    resolution_arb_section = _build_resolution_arbitrage_html_section()
 
     summary_bar_html = ""
     if t_sigma_total > 0 or m_sigma_total > 0:
@@ -2719,6 +2746,8 @@ def _generate_all_cities_html() -> str:
   <span class="live-updated" id="live-updated"></span>
 </div>
 <div class="container">
+
+  {resolution_arb_section}
 
   {summary_bar_html}
 
