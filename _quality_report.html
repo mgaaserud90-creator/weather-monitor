@@ -161,7 +161,7 @@
 // No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-08-10T19:09:09Z');
+    var deployTime = new Date('2026-08-10T19:10:36Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {
@@ -1755,8 +1755,14 @@ const CITIES = [
   {name: "Moscow, RU", lat: 55.9725, lon: 37.4122, tz: "Europe/Moscow", peakStart: 15, peakEnd: 18, has_market: true, is_resolved: true}
 ];
 
+const US_CITIES_JS = ['Dallas', 'Houston', 'Atlanta', 'New York', 'Chicago', 'Los Angeles', 'San Francisco', 'Seattle', 'Miami', 'Denver', 'Austin'];
+function isUSCity(name) { return US_CITIES_JS.some(c => name.includes(c)); }
+function cToF(c) { return c * 9/5 + 32; }
+
 function updateCityRow(cityName, maxTemp, trend, peakStatus) {
     const slug = cityName.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase().replace(/-+$/g, '');
+    const isUS = isUSCity(cityName);
+    const displayTemp = isUS ? cToF(maxTemp).toFixed(1) + '°F' : maxTemp.toFixed(1) + '°C';
     // Use querySelectorAll to match all temp-bucket rows (e.g., peak-Dallas_US-37, peak-Dallas_US-38)
     const peakEls = document.querySelectorAll('[id^="peak-' + slug + '-"]');
     const trendEls = document.querySelectorAll('[id^="trend-' + slug + '-"]');

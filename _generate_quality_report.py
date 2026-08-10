@@ -2814,8 +2814,14 @@ function sortTable(colIdx) {{
 <script>
 {cities_js}
 
+const US_CITIES_JS = ['Dallas', 'Houston', 'Atlanta', 'New York', 'Chicago', 'Los Angeles', 'San Francisco', 'Seattle', 'Miami', 'Denver', 'Austin'];
+function isUSCity(name) {{ return US_CITIES_JS.some(c => name.includes(c)); }}
+function cToF(c) {{ return c * 9/5 + 32; }}
+
 function updateCityRow(cityName, maxTemp, trend, peakStatus) {{
     const slug = cityName.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase().replace(/-+$/g, '');
+    const isUS = isUSCity(cityName);
+    const displayTemp = isUS ? cToF(maxTemp).toFixed(1) + '°F' : maxTemp.toFixed(1) + '°C';
     // Use querySelectorAll to match all temp-bucket rows (e.g., peak-Dallas_US-37, peak-Dallas_US-38)
     const peakEls = document.querySelectorAll('[id^="peak-' + slug + '-"]');
     const trendEls = document.querySelectorAll('[id^="trend-' + slug + '-"]');
