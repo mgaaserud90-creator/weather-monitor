@@ -1263,9 +1263,10 @@ async def daily_close_mode() -> None:
         return
 
     predictions = entry.get("predictions", {})
-    target_date = today
+    # Fallback target_date; each city uses its own _target_date from prediction data
+    fallback_target = today
 
-    print(f"  Finaliserer {len(predictions)} byer for {target_date}\n")
+    print(f"  Finaliserer {len(predictions)} byer for {fallback_target}\n")
 
     sigma_wins = sigma_losses = 0
     p5_wins = p5_losses = 0
@@ -1276,8 +1277,8 @@ async def daily_close_mode() -> None:
         lat = pdata.get("_lat", 0)
         lon = pdata.get("_lon", 0)
         tz = pdata.get("_tz", "UTC")
-        # Always use today's date for resolution (same-day model)
-        city_target = target_date
+        # Date-matched resolution: use each city's _target_date from prediction data
+        city_target = pdata.get("_target_date", fallback_target)
         strategies = _get_strategies(pdata)
 
         # Skip if ALL strategies already resolved
@@ -1570,10 +1571,11 @@ def _generate_markdown_report(log_data: dict, today_entry: dict | None) -> None:
     lines.append(f"| 📊 Mean-Basert | {mean_wins} | {mean_losses} | {round(mean_wins/max(1,mean_total)*100,1)}% |")
     lines.append("")
 
-    # -- Confidence tier analysis (sigma only for now)
-    high_conf = {"pos": 0, "wins": 0}
-    mid_conf = {"pos": 0, "wins": 0}
-    low_conf = {"pos": 0, "wins": 0}
+    # -- Confidence tier analysis (sigma only, 4 tiers)
+    tier_80p = {"pos": 0, "wins": 0}
+    tier_70_80 = {"pos": 0, "wins": 0}
+    tier_60_70 = {"pos": 0, "wins": 0}
+    tier_lt60 = {"pos": 0, "wins": 0}
 
     for run in runs:
         for city, pdata in run.get("predictions", {}).items():
@@ -1582,26 +1584,36 @@ def _generate_markdown_report(log_data: dict, today_entry: dict | None) -> None:
             conf = pdata.get("confidence", 0)
             if result in ("WIN", "LOSS"):
                 if conf >= 0.8:
-                    high_conf["pos"] += 1
+                    tier_80p["pos"] += 1
                     if result == "WIN":
-                        high_conf["wins"] += 1
+                        tier_80p["wins"] += 1
                 elif conf >= 0.7:
-                    mid_conf["pos"] += 1
+                    tier_70_80["pos"] += 1
                     if result == "WIN":
-                        mid_conf["wins"] += 1
+                        tier_70_80["wins"] += 1
+                elif conf >= 0.6:
+                    tier_60_70["pos"] += 1
+                    if result == "WIN":
+                        tier_60_70["wins"] += 1
                 else:
-                    low_conf["pos"] += 1
+                    tier_lt60["pos"] += 1
                     if result == "WIN":
-                        low_conf["wins"] += 1
+                        tier_lt60["wins"] += 1
 
     lines.append("## Sigma Strategy by Confidence Tier")
     lines.append("")
-    lines.append(f"| Tier | Positions | Wins | Win Rate |")
-    lines.append(f"|------|-----------|------|----------|")
-    for label, stats in [("🟢 >80%", high_conf), ("🟠 70-80%", mid_conf), ("🔴 <70%", low_conf)]:
+    lines.append(f"| Tier | Positions | Wins | Losses | Win Rate |")
+    lines.append(f"|------|-----------|------|--------|----------|")
+    for label, stats in [
+        ("🟢 >80%", tier_80p),
+        ("🟠 70-80%", tier_70_80),
+        ("🔴 60-70%", tier_60_70),
+        ("🔴 <60%", tier_lt60),
+    ]:
+        losses = stats["pos"] - stats["wins"]
         wr = round(stats["wins"] / max(1, stats["pos"]) * 100, 1) if stats["pos"] > 0 else "N/A"
         wr_str = f"{wr}%" if isinstance(wr, (int, float)) else wr
-        lines.append(f"| {label} | {stats['pos']} | {stats['wins']} | {wr_str} |")
+        lines.append(f"| {label} | {stats['pos']} | {stats['wins']} | {losses} | {wr_str} |")
     lines.append("")
 
     # -- Recent daily entries

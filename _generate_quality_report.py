@@ -652,10 +652,13 @@ def _generate_html_report() -> str:
     avg_conf_w = round(sum(all_conf_w) / max(1, len(all_conf_w)), 3)
     avg_conf_l = round(sum(all_conf_l) / max(1, len(all_conf_l)), 3)
 
-    # Per confidence tier (sigma strategy)
-    tiers = {"high": {"pos": 0, "wins": 0, "label": ">80%", "icon": "🟢"},
-             "mid": {"pos": 0, "wins": 0, "label": "70-80%", "icon": "🟠"},
-             "low": {"pos": 0, "wins": 0, "label": "<70%", "icon": "🔴"}}
+    # Per confidence tier (sigma strategy, 4 tiers)
+    tiers = [
+        {"pos": 0, "wins": 0, "label": ">80%", "icon": "🟢", "lo": 0.8, "hi": 1.0},
+        {"pos": 0, "wins": 0, "label": "70-80%", "icon": "🟠", "lo": 0.7, "hi": 0.8},
+        {"pos": 0, "wins": 0, "label": "60-70%", "icon": "🔴", "lo": 0.6, "hi": 0.7},
+        {"pos": 0, "wins": 0, "label": "<60%", "icon": "🔴", "lo": 0.0, "hi": 0.6},
+    ]
 
     for run in runs:
         for pdata in run.get("predictions", {}).values():
@@ -663,28 +666,23 @@ def _generate_html_report() -> str:
             result = sigma.get("result", "")
             conf = pdata.get("confidence", 0)
             if result in ("WIN", "LOSS"):
-                if conf >= 0.8:
-                    tiers["high"]["pos"] += 1
-                    if result == "WIN":
-                        tiers["high"]["wins"] += 1
-                elif conf >= 0.7:
-                    tiers["mid"]["pos"] += 1
-                    if result == "WIN":
-                        tiers["mid"]["wins"] += 1
-                else:
-                    tiers["low"]["pos"] += 1
-                    if result == "WIN":
-                        tiers["low"]["wins"] += 1
+                for t in tiers:
+                    if t["lo"] <= conf < t["hi"] or (t["hi"] == 1.0 and conf >= 0.8):
+                        t["pos"] += 1
+                        if result == "WIN":
+                            t["wins"] += 1
+                        break
 
     tier_rows = ""
-    for key in ("high", "mid", "low"):
-        t = tiers[key]
+    for t in tiers:
+        losses = t["pos"] - t["wins"]
         wr = round(t["wins"] / max(1, t["pos"]) * 100, 1) if t["pos"] > 0 else 0
         tier_rows += f"""
             <tr>
                 <td>{t['icon']} {t['label']}</td>
                 <td>{t['pos']}</td>
                 <td>{t['wins']}</td>
+                <td>{losses}</td>
                 <td>{wr}%</td>
             </tr>"""
 
@@ -1079,10 +1077,10 @@ function sortTable(colIdx) {{
   {predictions_html}
 
   <div class="section">
-    <h2>📈 Sigma Strategy by Confidence Tier</h2>
+    <h2>📊 WIN RATE BY CONFIDENCE (resolved markets only)</h2>
     <table>
-      <thead><tr><th>Tier</th><th>Positions</th><th>Wins</th><th>Win Rate</th></tr></thead>
-      <tbody>{tier_rows if tier_rows.strip() else '<tr><td colspan="4" style="color: var(--text-dim);">No resolved results yet — predictions pending</td></tr>'}
+      <thead><tr><th>Tier</th><th>Positions</th><th>Wins</th><th>Losses</th><th>Win Rate</th></tr></thead>
+      <tbody>{tier_rows if tier_rows.strip() else '<tr><td colspan="5" style="color: var(--text-dim);">No resolved results yet — predictions pending</td></tr>'}
       </tbody>
     </table>
   </div>
@@ -1527,9 +1525,15 @@ function sortTable(colIdx) {{
         if (i === colIdx) th.classList.add(sortAsc ? 'sorted-asc' : 'sorted-desc');
     }});
     rows.sort(function(a, b) {{
+        // Confidence column (7): use data-conf attribute for numeric sorting
+        if (colIdx === 7) {{
+            var aNum = parseFloat(a.getAttribute('data-conf')) || 0;
+            var bNum = parseFloat(b.getAttribute('data-conf')) || 0;
+            return sortAsc ? aNum - bNum : bNum - aNum;
+        }}
         var aVal = (a.cells[colIdx] ? a.cells[colIdx].textContent.trim() : '');
         var bVal = (b.cells[colIdx] ? b.cells[colIdx].textContent.trim() : '');
-        if (colIdx === 0 || colIdx === 2 || colIdx === 3 || colIdx === 7 || colIdx === 8 || colIdx === 9) {{
+        if (colIdx === 0 || colIdx === 2 || colIdx === 3 || colIdx === 8 || colIdx === 9) {{
             var aNum = parseFloat(aVal) || 0;
             var bNum = parseFloat(bVal) || 0;
             return sortAsc ? aNum - bNum : bNum - aNum;
@@ -1550,6 +1554,10 @@ function sortTable(colIdx) {{
         }}
     }} else {{ switchDate(currentLead); }}
     applyFilters();
+    // Default sort: confidence descending (col 7)
+    sortCol = 7;
+    sortAsc = false;
+    sortTable(7);
 }})();
 </script>
 </body>

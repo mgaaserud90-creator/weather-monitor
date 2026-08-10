@@ -149,7 +149,7 @@
 // No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-08-10T07:49:39Z');
+    var deployTime = new Date('2026-08-10T08:00:55Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {
@@ -1451,27 +1451,37 @@ function sortTable(colIdx) {
    </div>
 
   <div class="section">
-    <h2>📈 Sigma Strategy by Confidence Tier</h2>
+    <h2>📊 WIN RATE BY CONFIDENCE (resolved markets only)</h2>
     <table>
-      <thead><tr><th>Tier</th><th>Positions</th><th>Wins</th><th>Win Rate</th></tr></thead>
+      <thead><tr><th>Tier</th><th>Positions</th><th>Wins</th><th>Losses</th><th>Win Rate</th></tr></thead>
       <tbody>
             <tr>
                 <td>🟢 >80%</td>
                 <td>2</td>
                 <td>2</td>
+                <td>0</td>
                 <td>100.0%</td>
             </tr>
             <tr>
                 <td>🟠 70-80%</td>
                 <td>8</td>
                 <td>3</td>
+                <td>5</td>
                 <td>37.5%</td>
             </tr>
             <tr>
-                <td>🔴 <70%</td>
-                <td>92</td>
-                <td>45</td>
-                <td>48.9%</td>
+                <td>🔴 60-70%</td>
+                <td>21</td>
+                <td>10</td>
+                <td>11</td>
+                <td>47.6%</td>
+            </tr>
+            <tr>
+                <td>🔴 <60%</td>
+                <td>71</td>
+                <td>35</td>
+                <td>36</td>
+                <td>49.3%</td>
             </tr>
       </tbody>
     </table>

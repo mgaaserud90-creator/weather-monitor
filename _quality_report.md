@@ -1,6 +1,6 @@
 # Model Quality Report
 
-**Generated:** 2026-08-10T07:49:34.464456+00:00
+**Generated:** 2026-08-10T08:00:50.718408+00:00
 **Days tracked:** 3
 
 ## Today's Results — All 3 Strategies
@@ -25,11 +25,12 @@
 
 ## Sigma Strategy by Confidence Tier
 
-| Tier | Positions | Wins | Win Rate |
-|------|-----------|------|----------|
-| 🟢 >80% | 2 | 2 | 100.0% |
-| 🟠 70-80% | 8 | 3 | 37.5% |
-| 🔴 <70% | 92 | 45 | 48.9% |
+| Tier | Positions | Wins | Losses | Win Rate |
+|------|-----------|------|--------|----------|
+| 🟢 >80% | 2 | 2 | 0 | 100.0% |
+| 🟠 70-80% | 8 | 3 | 5 | 37.5% |
+| 🔴 60-70% | 21 | 10 | 11 | 47.6% |
+| 🔴 <60% | 71 | 35 | 36 | 49.3% |
 
 ## Recent Daily Results
 
