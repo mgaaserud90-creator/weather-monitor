@@ -31,6 +31,7 @@ import argparse
 import asyncio
 import json
 import os
+import sys
 from datetime import date
 from pathlib import Path
 
@@ -96,7 +97,7 @@ def mark_sms_sent(city_name: str) -> None:
     _save_sms_log(log)
 
 
-async def send_sms(message: str) -> bool:
+async def send_sms(message: str) -> bool | None:
     """Send an SMS alert via Twilio.
 
     If ``TWILIO_SID`` is not set, prints the message to stdout instead.
@@ -104,8 +105,10 @@ async def send_sms(message: str) -> bool:
     Returns True if sent (or dry-run printed), False on error.
     """
     if not TWILIO_SID:
-        print(f"[SMS would send] {message}")
-        return True
+        print("[SMS] TWILIO_SID not set — skipping")
+        if "--test" in sys.argv:
+            print("[SMS] ERROR: Cannot send test SMS without credentials!")
+        return
 
     if httpx is None:
         print(f"[SMS requires httpx] {message}")

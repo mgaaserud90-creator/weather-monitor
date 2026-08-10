@@ -40,6 +40,16 @@ jobs:
         run: |
           python -u _model_quality_tracker.py --mode daily_bma
 
+      - name: Verify secrets
+        run: |
+          if [ -z "$TWILIO_SID" ]; then echo "TWILIO_SID is EMPTY"; else echo "TWILIO_SID is SET (length: ${#TWILIO_SID})"; fi
+          if [ -z "$TWILIO_TOKEN" ]; then echo "TWILIO_TOKEN is EMPTY"; else echo "TWILIO_TOKEN is SET (length: ${#TWILIO_TOKEN})"; fi
+          if [ -z "$TWILIO_FROM" ]; then echo "TWILIO_FROM is EMPTY"; else echo "TWILIO_FROM is SET: $TWILIO_FROM"; fi
+        env:
+          TWILIO_SID: ${{ secrets.TWILIO_SID }}
+          TWILIO_TOKEN: ${{ secrets.TWILIO_TOKEN }}
+          TWILIO_FROM: ${{ secrets.TWILIO_FROM }}
+
       - name: Send Test SMS
         env:
           TWILIO_SID: ${{ secrets.TWILIO_SID }}
