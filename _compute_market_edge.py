@@ -213,6 +213,10 @@ def load_market_prices() -> tuple[list[dict], str]:
 
         market_prob = round(float(yes_price) * 100, 1)
 
+        # Skip resolved/settled markets (price at extremes)
+        if yes_price > 0.99 or yes_price < 0.01:
+            continue
+
         opportunities.append({
             "city": city,
             "city_raw": parsed["city_raw"],

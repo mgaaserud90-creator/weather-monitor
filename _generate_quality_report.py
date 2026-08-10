@@ -1465,6 +1465,10 @@ def _build_market_edge_html_section() -> str:
        market_opps, _ = load_market_prices()
        bma_preds = load_bma_predictions()
        edges = compute_edges(market_opps, bma_preds, min_vol=0)
+
+       # Filter out resolved markets (safety check — should already be filtered upstream)
+       edges = [e for e in edges if 5 < e["market_prob"] < 95]
+
    except Exception:
        return ""
 
