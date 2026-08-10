@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-10T18:42:00+00:00",
+  "last_updated": "2026-08-10T18:56:00+00:00",
   "verifications": {
     "London, UK": {
       "date": "2026-08-10",
@@ -14,6 +14,20 @@
       "verdict": "STATION_MISMATCH",
       "note": "Heathrow recorded ~31.3C but Polymarket resolved at 26C. Polymarket explicitly states resolution source is London City Airport (EGLC) via Weather Underground. Our coordinates were EGLL (Heathrow).",
       "action": "FIXED: Switched London coordinates from EGLL (51.4775, -0.4614) to EGLC (51.505, 0.054) in weather_monitor_defaults.json. UHI reduced from 1.0 to 0.5 (EGLC is riverside, less urban heat island)."
+    },
+    "Hong Kong, HK": {
+      "date": "2026-08-10",
+      "our_peak": null,
+      "our_station": "VHHH (Hong Kong Int'l Airport)",
+      "our_lat": 22.3089,
+      "our_lon": 113.9147,
+      "market_resolved": null,
+      "market_suspected_station": "Hong Kong Observatory (HKO)",
+      "market_confirmed_station": "HKO - Tsim Sha Tsui urban station",
+      "gap": null,
+      "verdict": "STATION_MISMATCH",
+      "note": "Hong Kong entry was labeled 'HKO' but coordinates pointed to VHHH airport (Chek Lap Kok island). HKO is in Tsim Sha Tsui, a dense urban area with stronger urban heat island effect. Airport readings are typically cooler than urban HKO.",
+      "action": "FIXED: Corrected Hong Kong coordinates from VHHH (22.3089, 113.9147) to HKO (22.3020, 114.1743) in weather_monitor_defaults.json. UHI increased from 1.5 to 2.0 (dense urban Tsim Sha Tsui)."
     }
   }
 }
