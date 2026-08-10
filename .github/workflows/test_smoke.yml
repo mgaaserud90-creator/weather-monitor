@@ -39,3 +39,10 @@ jobs:
       - name: Test full run
         run: |
           python -u _model_quality_tracker.py --mode daily_bma
+
+      - name: Send Test SMS
+        env:
+          TWILIO_SID: ${{ secrets.TWILIO_SID }}
+          TWILIO_TOKEN: ${{ secrets.TWILIO_TOKEN }}
+          TWILIO_FROM: ${{ secrets.TWILIO_FROM }}
+        run: python _sms_alert.py --test
