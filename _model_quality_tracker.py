@@ -529,6 +529,7 @@ def _find_or_create_today_entry(log_data: dict) -> dict:
         "top_5_confidence": [],
         "predictions": {},
         "observations": {},
+        "arbitrage_results": {},
         "summary": {
             "sigma_wins": 0,
             "sigma_losses": 0,
@@ -951,7 +952,25 @@ async def _hourly_check_active(
 
                     _update_recommendation(pdata)
 
+                    # Record arbitrage result if sigma lost (SHORT opportunity)
                     sigma_result2 = strategies.get("sigma", {}).get("result", "?")
+                    if sigma_result2 == "LOSS":
+                        _record_arbitrage_result(
+                            entry, city,
+                            f"SHORT_{suggested_spill}",
+                            confirmed_temp,
+                            float(suggested_spill),
+                            sigma_result2,
+                        )
+                    elif sigma_result2 == "WIN":
+                        _record_arbitrage_result(
+                            entry, city,
+                            f"BUY_{suggested_spill}",
+                            confirmed_temp,
+                            float(suggested_spill),
+                            sigma_result2,
+                        )
+
                     result_icon = "✅ WIN" if sigma_result2 == "WIN" else "❌ LOSS"
                     print(f"\n  ╔{'═'*58}╗")
                     print(f"  ║  {result_icon}: {city}")
@@ -1016,6 +1035,12 @@ async def _hourly_check_active(
         _save_log(log_data)
     else:
         print(f"\n  ✅ timesone-aktiv sjekk fullført — {_now_utc()}\n")
+
+    # ── Post-Peak Archive Fetch & Arbitrage Tracking ──
+    # For cities past their active window but unresolved, fetch daily max
+    # from archive API. This enables arbitrage detection when the peak has
+    # already passed and we know the actual temperature.
+    await _post_peak_arbitrage_check(entry, predictions, active_locations, log_data)
 
 
 # =============================================================================
@@ -1718,6 +1743,23 @@ async def _rapid_peak_monitor(
                     _update_recommendation(pdata)
 
                     sigma_result = strategies.get("sigma", {}).get("result", "?")
+                    if sigma_result == "LOSS":
+                        _record_arbitrage_result(
+                            entry, city,
+                            f"SHORT_{suggested_spill}",
+                            confirmed_temp,
+                            float(suggested_spill),
+                            sigma_result,
+                        )
+                    elif sigma_result == "WIN":
+                        _record_arbitrage_result(
+                            entry, city,
+                            f"BUY_{suggested_spill}",
+                            confirmed_temp,
+                            float(suggested_spill),
+                            sigma_result,
+                        )
+
                     result_icon = "✅ WIN" if sigma_result == "WIN" else "❌ LOSS"
                     print(f"\n  ╔{'═'*64}╗")
                     print(f"  ║  🎯 RAPID PEAK CONFIRMED: {result_icon} — {city}")
@@ -1811,6 +1853,214 @@ def _update_recommendation(pdata: dict) -> None:
                 pdata["recommendation"] = f"⏳ AVVENT — temp nærmer seg spill (gap={gap:.1f}°C)"
             else:
                 pdata["recommendation"] = f"⏳ AVVENT — peak={actual_peak}°C, spill={sigma_spill}°C (gap={gap:.1f}°C)"
+
+
+def _record_arbitrage_result(
+    entry: dict,
+    city: str,
+    action: str,
+    actual_peak: float,
+    sigma_spill: float,
+    sigma_result: str,
+) -> None:
+    """Record an arbitrage result for a city in the log entry.
+
+    Populates entry["arbitrage_results"][city] with the arbitrage action,
+    actual peak, and result (WIN/LOSS).
+    """
+    arb_results = entry.setdefault("arbitrage_results", {})
+    today = _today_iso()
+
+    # Determine if the arbitrage action would have been profitable
+    # SHORT: we bet AGAINST the spill bucket → WIN if sigma_result == LOSS (our bet was correct)
+    # BUY: we bet ON a different bucket → WIN depends on which bucket
+    if action.startswith("SHORT"):
+        # SHORT_XX means we bet temperature would NOT round to sigma_spill
+        # WIN if sigma_result is LOSS (we correctly bet against the spill)
+        arb_result = "WIN" if sigma_result == "LOSS" else "LOSS"
+    else:
+        # BUY_XX means we bet temperature WOULD round to a specific bucket
+        # WIN if actual_peak rounds to that bucket
+        target_temp = int(action.split("_")[1]) if "_" in action else 0
+        arb_result = "WIN" if round(actual_peak) == target_temp else "LOSS"
+
+    # Compute profit: winning arbitrage nets the price difference
+    profit_pct = 0.0
+    if arb_result == "WIN":
+        # Conservative estimate: ~5% profit on resolution arbitrage
+        # (buy at ~95c, collect 100c at resolution = 5.3% return)
+        profit_pct = round((100.0 - 95.0) / 95.0 * 100, 1)  # ~5.3%
+        if action.startswith("SHORT"):
+            # SHORT: sell at ~5c, collect 0c at resolution
+            profit_pct = round((5.0 / 95.0) * 100, 1)  # ~5.3% on margin
+
+    arb_results[city] = {
+        "date": today,
+        "action": action,
+        "actual_peak": round(actual_peak, 1),
+        "result": arb_result,
+        "profit_pct": profit_pct,
+    }
+
+    action_icon = "🔴" if action.startswith("SHORT") else "🟢"
+    result_icon = "✅" if arb_result == "WIN" else "❌"
+    print(f"  💰 ARBITRAGE: {action_icon} {city} {action} "
+          f"peak={actual_peak:.1f}°C → {result_icon} {arb_result} ({profit_pct:.1f}%)")
+
+
+async def _post_peak_arbitrage_check(
+    entry: dict,
+    predictions: list["CityPrediction"],
+    active_locations: list["SavedLocation"],
+    log_data: dict,
+) -> None:
+    """Fetch daily max from archive API for cities past their peak window.
+
+    For cities where:
+      1. Active window has ended (peak_end + 2h has passed)
+      2. Not yet resolved (no WIN/LOSS)
+      3. BMA confidence > 80%
+
+    Fetch archive max, resolve strategies, and record arbitrage results.
+    This enables near-real-time arbitrage detection without waiting for daily_close.
+    """
+    now_utc_dt = datetime.now(timezone.utc)
+    preds_dict = entry.get("predictions", {})
+    today = _today_iso()
+
+    print(f"\n  {'─'*60}")
+    print(f"  💰 POST-PEAK ARBITRAGE CHECK — Archive Fetch")
+    print(f"  {'─'*60}")
+
+    arbitrage_count = 0
+    for city, pdata in preds_dict.items():
+        strategies = _get_strategies(pdata)
+        sigma_result = strategies.get("sigma", {}).get("result")
+
+        # Skip already resolved
+        if sigma_result in ("WIN", "LOSS"):
+            continue
+
+        # Only process high-confidence cities for arbitrage
+        confidence = pdata.get("confidence", 0)
+        if confidence < 0.80:
+            continue
+
+        lat = pdata.get("_lat", 0)
+        lon = pdata.get("_lon", 0)
+        tz = pdata.get("_tz", "UTC")
+        ph_end = pdata.get("_peak_hour_end", 16)
+
+        # Check if active window has ended
+        offset = _get_utc_offset_for_city(city, tz)
+        local_hour = _compute_city_local_hour(offset, now_utc_dt.hour)
+        active_until = ph_end + 2
+
+        if local_hour <= active_until:
+            # Still in active window — skip (will be handled by peak detection)
+            continue
+
+        # Active window passed — fetch archive max
+        city_target = pdata.get("_target_date", today)
+        archive_max = await _fetch_daily_max(lat, lon, tz, city_target)
+
+        if archive_max is None:
+            continue
+
+        sigma_spill = _get_sigma_spill(pdata)
+        print(f"  📡 {city:<30s}: archive max={archive_max:.1f}°C "
+              f"(local {local_hour:02d}:00, window ended at {active_until:02d}:00)")
+
+        # Resolve strategies
+        pdata["peak_detected_at"] = _now_utc()
+        for strat_name in ("sigma", "p5", "mean"):
+            strat = strategies.get(strat_name, {})
+            spill = strat.get("spill", 0)
+            is_win = round(archive_max) == spill
+            strat["result"] = "WIN" if is_win else "LOSS"
+            strat["actual_peak"] = round(archive_max, 1)
+
+        _update_recommendation(pdata)
+
+        # Record arbitrage result
+        sigma_res = strategies.get("sigma", {}).get("result", "")
+        if sigma_res == "LOSS":
+            action = f"SHORT_{sigma_spill}"
+        elif sigma_res == "WIN":
+            action = f"BUY_{sigma_spill}"
+        else:
+            continue
+
+        _record_arbitrage_result(
+            entry, city, action,
+            archive_max, float(sigma_spill), sigma_res,
+        )
+        arbitrage_count += 1
+
+    if arbitrage_count > 0:
+        print(f"\n  💰 {arbitrage_count} arbitrage opportunities recorded.")
+    else:
+        print(f"  📊 No post-peak arbitrage opportunities found.\n")
+
+    entry["last_updated"] = _now_utc()
+    _save_log(log_data)
+
+
+def _summarize_arbitrage(runs: list[dict]) -> dict:
+    """Compute arbitrage win/loss statistics across all runs.
+
+    Returns:
+        {
+            "short": {"wins": 5, "losses": 2, "rate": 71.4},
+            "buy": {"wins": 3, "losses": 1, "rate": 75.0},
+            "total": {"wins": 8, "losses": 3, "rate": 72.7},
+            "by_city": {...}
+        }
+    """
+    short_wins = short_losses = 0
+    buy_wins = buy_losses = 0
+
+    for run in runs:
+        arb_results = run.get("arbitrage_results", {})
+        for city, arb in arb_results.items():
+            action = arb.get("action", "")
+            result = arb.get("result", "")
+            if result not in ("WIN", "LOSS"):
+                continue
+            if action.startswith("SHORT"):
+                if result == "WIN":
+                    short_wins += 1
+                else:
+                    short_losses += 1
+            elif action.startswith("BUY"):
+                if result == "WIN":
+                    buy_wins += 1
+                else:
+                    buy_losses += 1
+
+    short_total = short_wins + short_losses
+    buy_total = buy_wins + buy_losses
+    total_wins = short_wins + buy_wins
+    total_losses = short_losses + buy_losses
+    total_all = total_wins + total_losses
+
+    return {
+        "short": {
+            "wins": short_wins,
+            "losses": short_losses,
+            "rate": round(short_wins / max(1, short_total) * 100, 1),
+        },
+        "buy": {
+            "wins": buy_wins,
+            "losses": buy_losses,
+            "rate": round(buy_wins / max(1, buy_total) * 100, 1),
+        },
+        "total": {
+            "wins": total_wins,
+            "losses": total_losses,
+            "rate": round(total_wins / max(1, total_all) * 100, 1),
+        },
+    }
 
 
 # =============================================================================
@@ -2035,6 +2285,17 @@ def full_report_mode() -> None:
     }
     best = max(rates, key=lambda k: rates[k])
     print(f"\n  🏆 BESTE STRATEGI: {best} ({rates[best]}%)")
+
+    # ── Arbitrage Stats ──
+    arb_summary = _summarize_arbitrage(runs)
+    short = arb_summary["short"]
+    buy = arb_summary["buy"]
+    total_arb = arb_summary["total"]
+    if total_arb["wins"] + total_arb["losses"] > 0:
+        print(f"\n  💰 ARBITRAGE STATS")
+        print(f"     SHORT opportunities: {short['wins']}W/{short['losses']}L = {short['rate']}%")
+        print(f"     BUY opportunities: {buy['wins']}W/{buy['losses']}L = {buy['rate']}%")
+        print(f"     Total: {total_arb['wins']}W/{total_arb['losses']}L = {total_arb['rate']}%")
 
     # Per-city stats across all strategies
     city_stats: dict[str, dict] = {}
@@ -2335,6 +2596,27 @@ def _add_region_performance_section(lines: list[str], runs: list) -> None:
         wr = round(data["wins"] / max(1, data["pos"]) * 100, 1) if data["pos"] > 0 else "N/A"
         wr_str = f"{wr}%" if isinstance(wr, (int, float)) else wr
         lines.append(f"| {region} | {data['pos']} | {data['wins']}W/{data['pos'] - data['wins']}L | {wr_str} |")
+    lines.append("")
+
+
+def _add_arbitrage_stats_section(lines: list[str], runs: list) -> None:
+    """Add arbitrage win/loss stats (SHORT vs BUY opportunities)."""
+    arb_summary = _summarize_arbitrage(runs)
+
+    short = arb_summary["short"]
+    buy = arb_summary["buy"]
+    total_arb = arb_summary["total"]
+
+    if total_arb["wins"] + total_arb["losses"] == 0:
+        return
+
+    lines.append("## 💰 Arbitrage Stats")
+    lines.append("")
+    lines.append(f"| Action | Wins | Losses | Win Rate |")
+    lines.append(f"|--------|------|--------|----------|")
+    lines.append(f"| 🔴 SHORT | {short['wins']} | {short['losses']} | {short['rate']}% |")
+    lines.append(f"| 🟢 BUY   | {buy['wins']} | {buy['losses']} | {buy['rate']}% |")
+    lines.append(f"| **Total** | **{total_arb['wins']}** | **{total_arb['losses']}** | **{total_arb['rate']}%** |")
     lines.append("")
 
 
@@ -2708,6 +2990,9 @@ def _generate_markdown_report(log_data: dict, today_entry: dict | None) -> None:
 
     # ── 5. Cumulative Edge Tracker ──
     _add_cumulative_edge_section(lines, runs)
+
+    # ── 5b. Arbitrage Stats ──
+    _add_arbitrage_stats_section(lines, runs)
 
     # ── 6. Timezone/Region Performance ──
     _add_region_performance_section(lines, runs)

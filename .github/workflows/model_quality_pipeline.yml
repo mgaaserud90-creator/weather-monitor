@@ -2,12 +2,16 @@ name: Model Quality Pipeline
 
 # Timezone-aware pipeline — process cities only in their active window.
 #
-# Two cron triggers:
-#   0 * * * *  → hourly_active — Run BMA + peak check for cities in active
-#                                 window (04:00 local → peak_end+2 local).
-#                                 Different regions are active at different UTC hours.
-#   0 23 * * * → daily_close  — Finalize ALL 51 cities at 23:00 UTC (end of UTC day).
-#                                 Resolves today's predictions against archive data.
+# Three cron triggers:
+#   */10 6-22 * * * → hourly_active (10-min) — Near-real-time SMS alerts during
+#                                              peak hours. Quick BMA + peak check
+#                                              for cities in active window.
+#   0 * * * *       → hourly_active (hourly)  — Full BMA + peak check + rapid
+#                                              monitoring for cities in active
+#                                              window (04:00 local → peak_end+2).
+#                                              Different regions active at different UTC hours.
+#   0 23 * * *      → daily_close  — Finalize ALL 51 cities at 23:00 UTC (end of UTC day).
+#                                    Resolves today's predictions against archive data.
 #
 # Push to main → trigger deploy_dashboard.yml for GitHub Pages
 
@@ -15,8 +19,9 @@ on:
   push:
     branches: ["main", "master"]
   schedule:
-    - cron: '0 * * * *'      # Hourly: timezone-aware active-city processing
-    - cron: '0 23 * * *'     # Daily close at 23:00 UTC (ALL cities)
+    - cron: '*/10 6-22 * * *' # Every 10 min, 06:00-22:00 UTC — near-real-time SMS alerts
+    - cron: '0 * * * *'       # Hourly: timezone-aware active-city processing + rapid monitor
+    - cron: '0 23 * * *'      # Daily close at 23:00 UTC (ALL cities)
   workflow_dispatch:
     inputs:
       mode:
@@ -36,10 +41,11 @@ jobs:
   run:
     runs-on: ubuntu-latest
     # Dynamic timeout:
-    #   hourly_active → 300 min (5h, fits GH 6h limit for rapid 3-min polling)
+    #   10-min cron   → 10 min (quick SMS check, no rapid monitoring)
+    #   hourly cron   → 300 min (5h, fits GH 6h limit for rapid 3-min polling)
     #   daily_close   → 10 min (processes ALL cities with archive API)
     #   other modes   → 5 min (simple one-shot operations)
-    timeout-minutes: ${{ (github.event.schedule == '0 * * * *' && github.event.schedule != '0 23 * * *') && 300 || (github.event.schedule == '0 23 * * *' && 10 || 5) }}
+    timeout-minutes: ${{ (github.event.schedule == '*/10 6-22 * * *') && 10 || (github.event.schedule == '0 23 * * *') && 10 || (github.event.schedule == '0 * * * *') && 300 || 5 }}
 
     steps:
       - uses: actions/checkout@v4
@@ -70,7 +76,8 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
             HOUR=$(date +%H)
-            if [ "$HOUR" = "06" ]; then
+            SCHEDULE="${{ github.event.schedule }}"
+            if [ "$HOUR" = "06" ] && [ "$SCHEDULE" != "*/10 6-22 * * *" ]; then
               MODE="daily_bma"
             elif [ "$HOUR" = "23" ]; then
               MODE="daily_close"
@@ -81,7 +88,7 @@ jobs:
             MODE="${{ inputs.mode }}"
           fi
           echo "mode=$MODE" >> $GITHUB_OUTPUT
-          echo "Running mode: $MODE at UTC $(date -u +%H:%M)"
+          echo "Running mode: $MODE at UTC $(date -u +%H:%M) (schedule: ${SCHEDULE:-manual})"
 
       - name: Fetch market prices
         run: python _fetch_market_prices.py

@@ -1454,6 +1454,71 @@ def _build_edge_validation_html_section(runs: list) -> str:
 
 
 # =============================================================================
+# Arbitrage Stats Section — Win/Loss Tracking
+# =============================================================================
+
+def _build_arbitrage_stats_html_section(runs: list) -> str:
+    """Build HTML section showing arbitrage win/loss stats (SHORT vs BUY)."""
+    # Aggregate arbitrage stats from all runs
+    short_wins = short_losses = 0
+    buy_wins = buy_losses = 0
+
+    for run in runs:
+        arb_results = run.get("arbitrage_results", {})
+        for city, arb in arb_results.items():
+            action = arb.get("action", "")
+            result = arb.get("result", "")
+            if result not in ("WIN", "LOSS"):
+                continue
+            if action.startswith("SHORT"):
+                if result == "WIN":
+                    short_wins += 1
+                else:
+                    short_losses += 1
+            elif action.startswith("BUY"):
+                if result == "WIN":
+                    buy_wins += 1
+                else:
+                    buy_losses += 1
+
+    short_total = short_wins + short_losses
+    buy_total = buy_wins + buy_losses
+    total_wins = short_wins + buy_wins
+    total_losses = short_losses + buy_losses
+    total_all = total_wins + total_losses
+
+    if total_all == 0:
+        return ""
+
+    short_rate = round(short_wins / max(1, short_total) * 100, 1)
+    buy_rate = round(buy_wins / max(1, buy_total) * 100, 1)
+    total_rate = round(total_wins / max(1, total_all) * 100, 1)
+
+    return f"""
+    <div class="section" style="border-color: rgba(210,153,29,0.3);">
+      <h2>💰 ARBITRAGE STATS — Win/Loss Tracking</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        Separate tracking of arbitrage-flip outcomes. SHORT = bet against losing sigma position.
+        BUY = bet on winning bucket after peak confirmed.
+      </p>
+      <div class="card-grid" style="margin-bottom: 20px;">
+        <div class="card" style="border: 2px solid var(--red);">
+          <div class="value" style="color: var(--red);">{short_rate}%</div>
+          <div class="label">🔴 SHORT<br/>{short_wins}W/{short_losses}L</div>
+        </div>
+        <div class="card" style="border: 2px solid var(--green);">
+          <div class="value" style="color: var(--green);">{buy_rate}%</div>
+          <div class="label">🟢 BUY<br/>{buy_wins}W/{buy_losses}L</div>
+        </div>
+        <div class="card">
+          <div class="value" style="color: var(--orange);">{total_rate}%</div>
+          <div class="label">💰 Total Arbitrage<br/>{total_wins}W/{total_losses}L</div>
+        </div>
+      </div>
+    </div>"""
+
+
+# =============================================================================
 # Resolution Arbitrage Section — Post-Peak Market Scanner
 # =============================================================================
 
@@ -1960,6 +2025,9 @@ def _generate_html_report() -> str:
     # ── Resolution Arbitrage Section (Post-Peak) ──
     resolution_arb_section = _build_resolution_arbitrage_html_section()
 
+    # ── Arbitrage Stats Section (Win/Loss Tracking) ──
+    arbitrage_stats_section = _build_arbitrage_stats_html_section(runs)
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2202,6 +2270,9 @@ function sortTable(colIdx) {{
 
   <!-- RESOLUTION ARBITRAGE: Post-Peak -->
   {resolution_arb_section}
+
+  <!-- ARBITRAGE STATS: Win/Loss Tracking -->
+  {arbitrage_stats_section}
 
   <!-- MARKET EDGE: BMA vs Polymarket -->
   {market_edge_section}
