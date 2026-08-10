@@ -509,6 +509,411 @@ def _build_city_divergence_section(predictions: dict) -> str:
 
 
 # =============================================================================
+# Edge-Maximizing Metric Helpers
+# =============================================================================
+
+def _tz_to_region(tz: str) -> str:
+   """Map timezone string to geographic region."""
+   if not tz:
+       return "Unknown"
+   parts = tz.split("/")
+   if len(parts) >= 1:
+       continent = parts[0]
+       mapping = {
+           "Asia": "Asia", "Europe": "Europe", "America": "Americas",
+           "Africa": "Africa", "Pacific": "Oceania", "Australia": "Oceania",
+           "Indian": "Asia", "Atlantic": "Americas",
+       }
+       return mapping.get(continent, "Other")
+   return "Unknown"
+
+
+def _build_city_win_rate_section(runs: list) -> str:
+   """Section 1: Win Rate Per City sorted by win rate (sigma strategy)."""
+   city_wl: dict[str, dict] = {}
+   for run in runs:
+       for city, pdata in run.get("predictions", {}).items():
+           sigma = pdata.get("strategies", {}).get("sigma", {})
+           result = sigma.get("result", "")
+           if result not in ("WIN", "LOSS"):
+               continue
+           if city not in city_wl:
+               city_wl[city] = {"wins": 0, "losses": 0}
+           if result == "WIN":
+               city_wl[city]["wins"] += 1
+           else:
+               city_wl[city]["losses"] += 1
+
+   city_rates: list[tuple] = []
+   for city, wl in city_wl.items():
+       total = wl["wins"] + wl["losses"]
+       if total >= 2:
+           rate = round(wl["wins"] / total * 100, 1)
+           city_rates.append((city, wl["wins"], wl["losses"], rate, total))
+
+   city_rates.sort(key=lambda x: x[3], reverse=True)
+   if not city_rates:
+       return ""
+
+   best_rows = ""
+   for i, (city, w, l, rate, total) in enumerate(city_rates[:10]):
+       icon = "🥇" if i == 0 else ("🥈" if i == 1 else ("🥉" if i == 2 else f"{i+1}."))
+       rate_color = "#3fb950" if rate >= 60 else ("#d2991d" if rate >= 40 else "#f85149")
+       best_rows += (
+           f'<tr><td>{icon}</td><td><strong>{city}</strong></td>'
+           f'<td>{w}W/{l}L</td>'
+           f'<td style="color:{rate_color};font-weight:600;">{rate}%</td></tr>'
+       )
+
+   worst = city_rates[-10:] if len(city_rates) >= 10 else []
+   worst_rows = ""
+   for i, (city, w, l, rate, total) in enumerate(reversed(worst)):
+       rank = len(city_rates) - len(worst) + i + 1
+       rate_color = "#f85149" if rate < 40 else "#d2991d"
+       worst_rows += (
+           f'<tr><td>{rank}.</td><td><strong>{city}</strong></td>'
+           f'<td>{w}W/{l}L</td>'
+           f'<td style="color:{rate_color};font-weight:600;">{rate}%</td></tr>'
+       )
+
+   return f"""
+   <div class="section">
+     <h2>🏆 Win Rate Per City — Sigma Strategy</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       Sorted by sigma strategy win rate. Only cities with ≥2 resolved predictions shown.
+     </p>
+     <div class="grid-2">
+       <div>
+         <h3 style="color: var(--green); font-size: 1rem; margin-bottom: 8px;">🏆 BESTE BYER</h3>
+         <table>
+           <thead><tr><th>#</th><th>City</th><th>Record</th><th>Win Rate</th></tr></thead>
+           <tbody>{best_rows}</tbody>
+         </table>
+       </div>
+       <div>
+         <h3 style="color: var(--red); font-size: 1rem; margin-bottom: 8px;">📉 SVESTE BYER</h3>
+         <table>
+           <thead><tr><th>#</th><th>City</th><th>Record</th><th>Win Rate</th></tr></thead>
+           <tbody>{worst_rows}</tbody>
+         </table>
+       </div>
+     </div>
+   </div>"""
+
+
+def _build_model_agreement_section(runs: list) -> str:
+   """Section 4: Model Agreement vs Win Rate."""
+   tiers: dict[str, dict] = {
+       "8/8 enige": {"lo": 8, "hi": 9, "pos": 0, "wins": 0},
+       "7/8 enige": {"lo": 7, "hi": 8, "pos": 0, "wins": 0},
+       "6/8 enige": {"lo": 6, "hi": 7, "pos": 0, "wins": 0},
+       "<6 enige":   {"lo": 0, "hi": 6, "pos": 0, "wins": 0},
+   }
+   for run in runs:
+       for pdata in run.get("predictions", {}).values():
+           sigma = pdata.get("strategies", {}).get("sigma", {})
+           result = sigma.get("result", "")
+           if result not in ("WIN", "LOSS"):
+               continue
+           mc = pdata.get("models", 0)
+           for label, t in tiers.items():
+               if t["lo"] <= mc < t["hi"]:
+                   t["pos"] += 1
+                   if result == "WIN":
+                       t["wins"] += 1
+                   break
+
+   rows = ""
+   for label, t in tiers.items():
+       losses = t["pos"] - t["wins"]
+       wr = round(t["wins"] / max(1, t["pos"]) * 100, 1) if t["pos"] > 0 else 0
+       rows += (
+           f'<tr><td><strong>{label}</strong></td>'
+           f'<td>{t["pos"]}</td><td>{t["wins"]}W/{losses}L</td>'
+           f'<td>{wr}%</td></tr>'
+       )
+
+   if not rows:
+       return ""
+
+   return f"""
+   <div class="section">
+     <h2>📊 Model Agreement & Win Rate</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       Does higher model consensus lead to better predictions?
+     </p>
+     <table>
+       <thead><tr><th>Agreement</th><th>Positions</th><th>Record</th><th>Win Rate</th></tr></thead>
+       <tbody>{rows}</tbody>
+     </table>
+   </div>"""
+
+
+def _build_range_accuracy_section(runs: list) -> str:
+   """Section 5: P5-P95 Range Size vs Accuracy."""
+   tier_defs = [
+       ("Smal (<2°C)", 0, 2),
+       ("Medium (2-4°C)", 2, 4),
+       ("Bred (>4°C)", 4, 999),
+   ]
+   tier_data: list[dict] = []
+   for label, lo, hi in tier_defs:
+       tier_data.append({"label": label, "pos": 0, "wins": 0})
+
+   for run in runs:
+       for pdata in run.get("predictions", {}).values():
+           sigma = pdata.get("strategies", {}).get("sigma", {})
+           result = sigma.get("result", "")
+           if result not in ("WIN", "LOSS"):
+               continue
+           p5 = pdata.get("p5", 0)
+           p95 = pdata.get("p95", 0)
+           rng = abs(p95 - p5) if p95 and p5 else 2.0
+           for i, (label, lo, hi) in enumerate(tier_defs):
+               if lo <= rng < hi:
+                   tier_data[i]["pos"] += 1
+                   if result == "WIN":
+                       tier_data[i]["wins"] += 1
+                   break
+
+   rows = ""
+   for td in tier_data:
+       losses = td["pos"] - td["wins"]
+       wr = round(td["wins"] / max(1, td["pos"]) * 100, 1) if td["pos"] > 0 else 0
+       rows += (
+           f'<tr><td><strong>{td["label"]}</strong></td>'
+           f'<td>{td["pos"]}</td><td>{td["wins"]}W/{losses}L</td>'
+           f'<td>{wr}%</td></tr>'
+       )
+
+   if not rows:
+       return ""
+
+   return f"""
+   <div class="section">
+     <h2>📏 P5-P95 Range & Accuracy</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       Does ensemble spread predict accuracy? Smaller range = higher model agreement.
+     </p>
+     <table>
+       <thead><tr><th>Range Size</th><th>Positions</th><th>Record</th><th>Win Rate</th></tr></thead>
+       <tbody>{rows}</tbody>
+     </table>
+   </div>"""
+
+
+def _build_optimal_strategy_by_confidence_section(runs: list) -> str:
+   """Section 6: Best Strategy PER Confidence Level."""
+   conf_tiers = [
+       (">80%", 0.8, 1.0, "🟢"),
+       ("70-80%", 0.7, 0.8, "🟠"),
+       ("60-70%", 0.6, 0.7, "🟡"),
+       ("50-60%", 0.5, 0.6, "🔴"),
+       ("<50%", 0.0, 0.5, "🔴"),
+   ]
+
+   results: list[dict] = []
+   for label, lo, hi, icon in conf_tiers:
+       results.append({
+           "label": label, "icon": icon,
+           "sigma_pos": 0, "sigma_wins": 0,
+           "p5_pos": 0, "p5_wins": 0,
+           "mean_pos": 0, "mean_wins": 0,
+       })
+
+   for run in runs:
+       for pdata in run.get("predictions", {}).values():
+           conf = pdata.get("confidence", 0)
+           strategies = pdata.get("strategies", {})
+           for i, (label, lo, hi, icon) in enumerate(conf_tiers):
+               if lo <= conf < hi or (hi == 1.0 and conf >= 0.8):
+                   for sn in ("sigma", "p5", "mean"):
+                       s = strategies.get(sn, {})
+                       r = s.get("result", "")
+                       if r in ("WIN", "LOSS"):
+                           results[i][f"{sn}_pos"] += 1
+                           if r == "WIN":
+                               results[i][f"{sn}_wins"] += 1
+                   break
+
+   rows = ""
+   for r in results:
+       sigma_wr = round(r["sigma_wins"] / max(1, r["sigma_pos"]) * 100, 1) if r["sigma_pos"] > 0 else 0
+       p5_wr = round(r["p5_wins"] / max(1, r["p5_pos"]) * 100, 1) if r["p5_pos"] > 0 else 0
+       mean_wr = round(r["mean_wins"] / max(1, r["mean_pos"]) * 100, 1) if r["mean_pos"] > 0 else 0
+
+       best_name = "Sigma"
+       best_rate = sigma_wr
+       if p5_wr > best_rate:
+           best_name = "P5"
+           best_rate = p5_wr
+       if mean_wr > best_rate:
+           best_name = "Mean"
+           best_rate = mean_wr
+
+       def _hl(val, is_best):
+           if is_best:
+               return f'<span style="color:#3fb950;font-weight:600;">{val}%</span>'
+           return f'{val}%'
+
+       rows += (
+           f'<tr><td>{r["icon"]} {r["label"]}</td>'
+           f'<td>{_hl(sigma_wr, best_name == "Sigma")}</td>'
+           f'<td>{_hl(p5_wr, best_name == "P5")}</td>'
+           f'<td>{_hl(mean_wr, best_name == "Mean")}</td>'
+           f'<td><span class="best-strategy">{best_name} ({best_rate}%)</span></td></tr>'
+       )
+
+   if not rows:
+       return ""
+
+   return f"""
+   <div class="section">
+     <h2>📊 Optimal Strategy by Confidence Level</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       Which strategy performs best at each confidence tier? Green = best.
+     </p>
+     <table>
+       <thead><tr><th>Tier</th><th>🎯 Sigma</th><th>🛡️ P5</th><th>📊 Mean</th><th>🏆 Best</th></tr></thead>
+       <tbody>{rows}</tbody>
+     </table>
+   </div>"""
+
+
+def _build_cumulative_edge_section(runs: list) -> str:
+   """Section 7: Cumulative Edge Tracker — betting $100 per sigma recommendation."""
+   days_data: list[dict] = []
+   for run in runs:
+       rd = run.get("run_date", "?")
+       s = run.get("summary", {})
+       sw = s.get("sigma_wins", 0)
+       sl = s.get("sigma_losses", 0)
+       if sw + sl == 0:
+           continue
+       day_edge = sw * 39 - sl * 100
+       days_data.append({"date": rd, "wins": sw, "losses": sl, "edge": day_edge})
+
+   if not days_data:
+       return ""
+
+   cum = 0
+   rows = ""
+   for d in days_data[-14:]:
+       cum += d["edge"]
+       color = "#3fb950" if d["edge"] >= 0 else "#f85149"
+       cum_color = "#3fb950" if cum >= 0 else "#f85149"
+       rows += (
+           f'<tr><td>{d["date"]}</td>'
+           f'<td>{d["wins"]}W/{d["losses"]}L</td>'
+           f'<td style="color:{color};font-weight:600;">{d["edge"]:+d} units</td>'
+           f'<td style="color:{cum_color};font-weight:600;">{cum:+d} units</td></tr>'
+       )
+
+   return f"""
+   <div class="section">
+     <h2>📈 Cumulative Edge Tracker</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       Simulates betting $100 on each sigma-recommended position.
+       Wins return $139 (odds ~1.39). Last 14 days shown.
+     </p>
+     <table>
+       <thead><tr><th>Date</th><th>Sigma Record</th><th>Daily Edge</th><th>Cumulative</th></tr></thead>
+       <tbody>{rows}</tbody>
+     </table>
+   </div>"""
+
+
+def _build_region_performance_section(runs: list) -> str:
+   """Section 8: Timezone/Region Performance."""
+   region_data: dict[str, dict] = {}
+   for run in runs:
+       for city, pdata in run.get("predictions", {}).items():
+           sigma = pdata.get("strategies", {}).get("sigma", {})
+           result = sigma.get("result", "")
+           if result not in ("WIN", "LOSS"):
+               continue
+           tz = pdata.get("_tz", "UTC")
+           region = _tz_to_region(tz)
+           if region not in region_data:
+               region_data[region] = {"pos": 0, "wins": 0}
+           region_data[region]["pos"] += 1
+           if result == "WIN":
+               region_data[region]["wins"] += 1
+
+   sorted_regions = sorted(
+       region_data.items(),
+       key=lambda kv: kv[1]["wins"] / max(1, kv[1]["pos"]),
+       reverse=True,
+   )
+
+   rows = ""
+   for region, data in sorted_regions:
+       wr = round(data["wins"] / max(1, data["pos"]) * 100, 1) if data["pos"] > 0 else 0
+       color = "#3fb950" if wr >= 50 else ("#d2991d" if wr >= 40 else "#f85149")
+       rows += (
+           f'<tr><td><strong>{region}</strong></td>'
+           f'<td>{data["pos"]}</td><td>{data["wins"]}W/{data["pos"] - data["wins"]}L</td>'
+           f'<td style="color:{color};font-weight:600;">{wr}%</td></tr>'
+       )
+
+   if not rows:
+       return ""
+
+   return f"""
+   <div class="section">
+     <h2>🌍 Region Performance</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       Sigma strategy win rate by geographic region (derived from timezone).
+     </p>
+     <table>
+       <thead><tr><th>Region</th><th>Positions</th><th>Record</th><th>Win Rate</th></tr></thead>
+       <tbody>{rows}</tbody>
+     </table>
+   </div>"""
+
+
+def _build_uhi_accuracy_section(runs: list) -> str:
+   """Section 9: UHI Adjustment Accuracy."""
+   high_uhi_errors: list[float] = []
+   low_uhi_errors: list[float] = []
+
+   for run in runs:
+       for pdata in run.get("predictions", {}).values():
+           sigma = pdata.get("strategies", {}).get("sigma", {})
+           result = sigma.get("result", "")
+           if result not in ("WIN", "LOSS"):
+               continue
+           actual = sigma.get("actual_peak")
+           bma_mean = pdata.get("bma_mean")
+           if actual is None or bma_mean is None:
+               continue
+           error = abs(float(actual) - float(bma_mean))
+           uhi = pdata.get("_uhi_adjustment", 0)
+           if uhi >= 1.0:
+               high_uhi_errors.append(error)
+           elif uhi <= 0.5:
+               low_uhi_errors.append(error)
+
+   avg_high = round(sum(high_uhi_errors) / max(1, len(high_uhi_errors)), 2) if high_uhi_errors else "—"
+   avg_low = round(sum(low_uhi_errors) / max(1, len(low_uhi_errors)), 2) if low_uhi_errors else "—"
+
+   return f"""
+   <div class="section">
+     <h2>🏙️ UHI Adjustment Accuracy</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       Average |BMA mean − actual peak| error by Urban Heat Island severity.
+     </p>
+     <table>
+       <thead><tr><th>UHI Category</th><th>Count</th><th>Avg BMA Error</th></tr></thead>
+       <tbody>
+         <tr><td><strong>High UHI cities (≥1.0°C)</strong></td><td>{len(high_uhi_errors)}</td><td>{avg_high}°C</td></tr>
+         <tr><td><strong>Low UHI cities (≤0.5°C)</strong></td><td>{len(low_uhi_errors)}</td><td>{avg_low}°C</td></tr>
+       </tbody>
+     </table>
+   </div>"""
+
+
+# =============================================================================
 # Live Temperature Fetch — Shared JavaScript helpers
 # =============================================================================
 
@@ -836,6 +1241,15 @@ def _generate_html_report() -> str:
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     has_data = len(runs) > 0
 
+    # ── Edge-maximizing metric sections ──
+    city_win_rate_section = _build_city_win_rate_section(runs)
+    model_agreement_section = _build_model_agreement_section(runs)
+    range_accuracy_section = _build_range_accuracy_section(runs)
+    optimal_strat_section = _build_optimal_strategy_by_confidence_section(runs)
+    cum_edge_section = _build_cumulative_edge_section(runs)
+    region_section = _build_region_performance_section(runs)
+    uhi_section = _build_uhi_accuracy_section(runs)
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1113,6 +1527,15 @@ function sortTable(colIdx) {{
       </tbody>
     </table>
   </div>
+
+  <!-- EDGE-MAXIMIZING METRICS -->
+  {city_win_rate_section}
+  {model_agreement_section}
+  {range_accuracy_section}
+  {optimal_strat_section}
+  {cum_edge_section}
+  {region_section}
+  {uhi_section}
 
 </div>
 <footer>

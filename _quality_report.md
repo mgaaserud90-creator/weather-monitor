@@ -1,43 +1,55 @@
-# Model Quality Report
+════════════════════════════════════════════════════════════
+     MODELLKVALITET — KUMULATIV RAPPORT (3 STRATEGIER)
+════════════════════════════════════════════════════════════
 
-**Generated:** 2026-08-10T08:00:50.718408+00:00
-**Days tracked:** 3
+Generert: 2026-08-10
 
-## Today's Results — All 3 Strategies
+Dager kjørt: 3
+Totalt by-prediksjoner: 153
 
-| # | City | Sigma Spill | P5 Spill | Mean Spill | Actual Peak | Sigma | P5 | Mean | Rec |
-|---|------|------------|---------|-----------|-------------|-------|----|------|-----|
-| 1 | Moscow, RU | 23°C | 22°C | 23°C | 23.0°C | ✅ | ❌ | ✅ | ✅ HOLD — bet vinner (round(23.0°C) ==... |
-| 2 | Buenos Aires, AR | 10°C | 10°C | 11°C | 11.3°C | ❌ | ❌ | ✅ | 🔴 SELG med tap — gå SHORT 10°C (peak=... |
-| 3 | Dallas, US | 36°C | 36°C | 37°C | 38.9°C | ❌ | ❌ | ❌ | 🔴 SELG med tap — gå SHORT 36°C (peak=... |
-| 4 | Singapore, SG | 30°C | 30°C | 31°C | 33.3°C | ❌ | ❌ | ❌ | 🔴 SELG med tap — gå SHORT 30°C (peak=... |
-| 5 | Guangzhou, CN | 35°C | 34°C | 35°C | 34.8°C | ✅ | ❌ | ✅ | ✅ HOLD — bet vinner (round(34.8°C) ==... |
+📊 PER-STRATEGI RESULTATER:
+   🎯 Sigma (μ−kσ):  V:50 T:52  (49.0%)
+   🛡️ P5-basert:      V:50 T:52  (49.0%)
+   📊 Mean-basert:    V:51 T:51  (50.0%)
 
-**Today — Sigma:** 11W/40L (21.6%) | **P5:** 2W/49L (3.9%) | **Mean:** 20W/31L (39.2%)
+🏆 BESTE STRATEGI: Mean-basert (50.0%)
 
-## Cumulative Strategy Performance
+🔍 BYER MED STRATEGI-FORSKJELLER (>20pp):
+   Amsterdam, NL                  sigma=50% p5=50% mean=100% → Mean best
+   Austin, US                     sigma=50% p5=50% mean=100% → Mean best
+   Buenos Aires, AR               sigma=50% p5=50% mean=100% → Mean best
+   Busan, KR                      sigma=50% p5=50% mean=100% → Mean best
+   Cape Town, ZA                  sigma=100% p5=50% mean=0% → Sigma best
+   Chengdu, CN                    sigma=0% p5=50% mean=50% → P5 best
+   Chongqing, CN                  sigma=0% p5=50% mean=0% → P5 best
+   Guangzhou, CN                  sigma=100% p5=50% mean=100% → Sigma best
+   Helsinki, FI                   sigma=50% p5=50% mean=100% → Mean best
+   Jeddah, SA                     sigma=0% p5=50% mean=50% → P5 best
+   Jinan, CN                      sigma=50% p5=50% mean=0% → Sigma best
+   Kuala Lumpur, MY               sigma=50% p5=50% mean=100% → Mean best
+   London, UK                     sigma=50% p5=50% mean=100% → Mean best
+   Los Angeles, US                sigma=50% p5=50% mean=0% → Sigma best
+   Manila, PH                     sigma=50% p5=50% mean=100% → Mean best
+   Mexico City, MX                sigma=100% p5=100% mean=0% → Sigma best
+   Miami, US                      sigma=100% p5=50% mean=0% → Sigma best
+   Milan, IT                      sigma=50% p5=50% mean=0% → Sigma best
+   Munich, DE                     sigma=50% p5=50% mean=0% → Sigma best
+   Paris, FR                      sigma=50% p5=50% mean=100% → Mean best
+   Qingdao, CN                    sigma=50% p5=50% mean=100% → Mean best
+   Seattle, US                    sigma=50% p5=50% mean=100% → Mean best
+   Tel Aviv, IL                   sigma=50% p5=50% mean=0% → Sigma best
+   Toronto, CA                    sigma=100% p5=50% mean=0% → Sigma best
+   Wellington, NZ                 sigma=50% p5=50% mean=100% → Mean best
+   Wuhan, CN                      sigma=50% p5=50% mean=100% → Mean best
+   Zhengzhou, CN                  sigma=50% p5=100% mean=0% → P5 best
 
-| Strategy | Wins | Losses | Win Rate |
-|----------|------|--------|----------|
-| 🎯 Sigma (μ−kσ) | 50 | 52 | 49.0% |
-| 🛡️ P5-Basert | 50 | 52 | 49.0% |
-| 📊 Mean-Basert | 51 | 51 | 50.0% |
+🔄 FLIP-ANBEFALINGER: 52 totalt (9 ville vært profitable via P5)
 
-## Sigma Strategy by Confidence Tier
+────────────────────────────────────────────────────────────
+📋 PER DAG:
+────────────────────────────────────────────────────────────
+   2026-08-08  │   51 byer  │  (ingen resultater)
+   2026-08-09  │   51 byer  │  sigma=39/12 (76.5%)  p5=48/3  mean=31/20
+   2026-08-10  │   51 byer  │  sigma=11/40 (21.6%)  p5=2/49  mean=20/31
 
-| Tier | Positions | Wins | Losses | Win Rate |
-|------|-----------|------|--------|----------|
-| 🟢 >80% | 2 | 2 | 0 | 100.0% |
-| 🟠 70-80% | 8 | 3 | 5 | 37.5% |
-| 🔴 60-70% | 21 | 10 | 11 | 47.6% |
-| 🔴 <60% | 71 | 35 | 36 | 49.3% |
-
-## Recent Daily Results
-
-| Date | Sigma W/L | P5 W/L | Mean W/L |
-|------|-----------|--------|----------|
-| 2026-08-08 | 0/0 | 0/0 | 0/0 |
-| 2026-08-09 | 39/12 | 48/3 | 31/20 |
-| 2026-08-10 | 11/40 | 2/49 | 20/31 |
-
-**Total flip recommendations (SHORT):** 52
+════════════════════════════════════════════════════════════

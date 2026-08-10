@@ -1497,6 +1497,294 @@ def full_report_mode() -> None:
     print(f"\n  📄 Full rapport skrevet til _quality_report.md\n")
 
 
+def _tz_to_region(tz: str) -> str:
+    """Map timezone string to geographic region."""
+    if not tz:
+        return "Unknown"
+    parts = tz.split("/")
+    if len(parts) >= 1:
+        continent = parts[0]
+        mapping = {
+            "Asia": "Asia", "Europe": "Europe", "America": "Americas",
+            "Africa": "Africa", "Pacific": "Oceania", "Australia": "Oceania",
+            "Indian": "Asia", "Atlantic": "Americas",
+        }
+        return mapping.get(continent, "Other")
+    return "Unknown"
+
+
+def _add_city_win_rate_section(lines: list[str], runs: list) -> None:
+    """Add per-city win rate table (sigma strategy) sorted by win rate."""
+    city_wl: dict[str, dict] = {}
+    for run in runs:
+        for city, pdata in run.get("predictions", {}).items():
+            sigma = pdata.get("strategies", {}).get("sigma", {})
+            result = sigma.get("result", "")
+            if result not in ("WIN", "LOSS"):
+                continue
+            if city not in city_wl:
+                city_wl[city] = {"wins": 0, "losses": 0}
+            if result == "WIN":
+                city_wl[city]["wins"] += 1
+            else:
+                city_wl[city]["losses"] += 1
+
+    city_rates = []
+    for city, wl in city_wl.items():
+        total = wl["wins"] + wl["losses"]
+        if total >= 2:
+            rate = round(wl["wins"] / total * 100, 1)
+            city_rates.append((city, wl["wins"], wl["losses"], rate, total))
+    city_rates.sort(key=lambda x: x[3], reverse=True)
+
+    if not city_rates:
+        return
+
+    lines.append("## 🏆 Win Rate Per City — Sigma Strategy")
+    lines.append("")
+    lines.append("### 🏆 BESTE BYER")
+    lines.append("")
+    lines.append("| # | City | Record | Win Rate |")
+    lines.append("|---|---|---|---|")
+    for i, (city, w, l, rate, _) in enumerate(city_rates[:10]):
+        lines.append(f"| {i+1} | {city} | {w}W/{l}L | {rate}% |")
+    lines.append("")
+
+    lines.append("### 📉 SVESTE BYER")
+    lines.append("")
+    lines.append("| # | City | Record | Win Rate |")
+    lines.append("|---|---|---|---|")
+    worst = city_rates[-10:] if len(city_rates) >= 10 else []
+    for i, (city, w, l, rate, _) in enumerate(reversed(worst)):
+        rank = len(city_rates) - len(worst) + i + 1
+        lines.append(f"| {rank} | {city} | {w}W/{l}L | {rate}% |")
+    lines.append("")
+
+
+def _add_model_agreement_section(lines: list[str], runs: list) -> None:
+    """Add model agreement vs win rate section."""
+    tiers: dict[str, dict] = {
+        "8/8 enige": {"lo": 8, "hi": 9, "pos": 0, "wins": 0},
+        "7/8 enige": {"lo": 7, "hi": 8, "pos": 0, "wins": 0},
+        "6/8 enige": {"lo": 6, "hi": 7, "pos": 0, "wins": 0},
+        "<6 enige":   {"lo": 0, "hi": 6, "pos": 0, "wins": 0},
+    }
+    for run in runs:
+        for pdata in run.get("predictions", {}).values():
+            sigma = pdata.get("strategies", {}).get("sigma", {})
+            result = sigma.get("result", "")
+            if result not in ("WIN", "LOSS"):
+                continue
+            mc = pdata.get("models", 0)
+            for label, t in tiers.items():
+                if t["lo"] <= mc < t["hi"]:
+                    t["pos"] += 1
+                    if result == "WIN":
+                        t["wins"] += 1
+                    break
+
+    lines.append("## 📊 Model Agreement & Win Rate")
+    lines.append("")
+    lines.append("| Agreement | Positions | Record | Win Rate |")
+    lines.append("|---|---|---|---|")
+    for label, t in tiers.items():
+        losses = t["pos"] - t["wins"]
+        wr = round(t["wins"] / max(1, t["pos"]) * 100, 1) if t["pos"] > 0 else "N/A"
+        wr_str = f"{wr}%" if isinstance(wr, (int, float)) else wr
+        lines.append(f"| {label} | {t['pos']} | {t['wins']}W/{losses}L | {wr_str} |")
+    lines.append("")
+
+
+def _add_range_accuracy_section(lines: list[str], runs: list) -> None:
+    """Add P5-P95 range size vs accuracy section."""
+    tiers = [
+        ("Smal (<2°C)", 0, 2),
+        ("Medium (2-4°C)", 2, 4),
+        ("Bred (>4°C)", 4, 999),
+    ]
+    tier_data = [{"label": label, "pos": 0, "wins": 0} for label, _, _ in tiers]
+
+    for run in runs:
+        for pdata in run.get("predictions", {}).values():
+            sigma = pdata.get("strategies", {}).get("sigma", {})
+            result = sigma.get("result", "")
+            if result not in ("WIN", "LOSS"):
+                continue
+            p5 = pdata.get("p5", 0)
+            p95 = pdata.get("p95", 0)
+            rng = abs(p95 - p5) if p95 and p5 else 2.0
+            for i, (_, lo, hi) in enumerate(tiers):
+                if lo <= rng < hi:
+                    tier_data[i]["pos"] += 1
+                    if result == "WIN":
+                        tier_data[i]["wins"] += 1
+                    break
+
+    lines.append("## 📏 P5-P95 Range & Accuracy")
+    lines.append("")
+    lines.append("| Range Size | Positions | Record | Win Rate |")
+    lines.append("|---|---|---|---|")
+    for td in tier_data:
+        losses = td["pos"] - td["wins"]
+        wr = round(td["wins"] / max(1, td["pos"]) * 100, 1) if td["pos"] > 0 else "N/A"
+        wr_str = f"{wr}%" if isinstance(wr, (int, float)) else wr
+        lines.append(f"| {td['label']} | {td['pos']} | {td['wins']}W/{losses}L | {wr_str} |")
+    lines.append("")
+
+
+def _add_optimal_strategy_section(lines: list[str], runs: list) -> None:
+    """Add best strategy per confidence level section."""
+    conf_tiers = [
+        (">80%", 0.8, 1.0, "🟢"),
+        ("70-80%", 0.7, 0.8, "🟠"),
+        ("60-70%", 0.6, 0.7, "🟡"),
+        ("50-60%", 0.5, 0.6, "🔴"),
+        ("<50%", 0.0, 0.5, "🔴"),
+    ]
+
+    results = []
+    for label, lo, hi, icon in conf_tiers:
+        results.append({
+            "label": label, "icon": icon,
+            "sigma_pos": 0, "sigma_wins": 0,
+            "p5_pos": 0, "p5_wins": 0,
+            "mean_pos": 0, "mean_wins": 0,
+        })
+
+    for run in runs:
+        for pdata in run.get("predictions", {}).values():
+            conf = pdata.get("confidence", 0)
+            strategies = pdata.get("strategies", {})
+            for i, (_, lo, hi, _) in enumerate(conf_tiers):
+                if lo <= conf < hi or (hi == 1.0 and conf >= 0.8):
+                    for sn in ("sigma", "p5", "mean"):
+                        s = strategies.get(sn, {})
+                        r = s.get("result", "")
+                        if r in ("WIN", "LOSS"):
+                            results[i][f"{sn}_pos"] += 1
+                            if r == "WIN":
+                                results[i][f"{sn}_wins"] += 1
+                    break
+
+    lines.append("## 📊 Optimal Strategy by Confidence Level")
+    lines.append("")
+    lines.append("| Tier | 🎯 Sigma | 🛡️ P5 | 📊 Mean | 🏆 Best |")
+    lines.append("|---|---|---|---|---|")
+    for r in results:
+        s_wr = round(r["sigma_wins"] / max(1, r["sigma_pos"]) * 100, 1) if r["sigma_pos"] > 0 else 0
+        p_wr = round(r["p5_wins"] / max(1, r["p5_pos"]) * 100, 1) if r["p5_pos"] > 0 else 0
+        m_wr = round(r["mean_wins"] / max(1, r["mean_pos"]) * 100, 1) if r["mean_pos"] > 0 else 0
+        best_name = "Sigma"
+        best_rate = s_wr
+        if p_wr > best_rate:
+            best_name = "P5"
+            best_rate = p_wr
+        if m_wr > best_rate:
+            best_name = "Mean"
+            best_rate = m_wr
+        lines.append(
+            f"| {r['icon']} {r['label']} | {s_wr}% | {p_wr}% | {m_wr}% | **{best_name} ({best_rate}%)** |"
+        )
+    lines.append("")
+
+
+def _add_cumulative_edge_section(lines: list[str], runs: list) -> None:
+    """Add cumulative edge tracker — betting $100 per sigma rec."""
+    days_data = []
+    for run in runs:
+        rd = run.get("run_date", "?")
+        s = run.get("summary", {})
+        sw = s.get("sigma_wins", 0)
+        sl = s.get("sigma_losses", 0)
+        if sw + sl == 0:
+            continue
+        day_edge = sw * 39 - sl * 100
+        days_data.append({"date": rd, "wins": sw, "losses": sl, "edge": day_edge})
+
+    if not days_data:
+        return
+
+    lines.append("## 📈 Cumulative Edge Tracker")
+    lines.append("")
+    lines.append("*Simulates betting $100 on each sigma-recommended position. Wins return $139 (odds ~1.39).*")
+    lines.append("")
+    lines.append("| Date | Sigma Record | Daily Edge | Cumulative |")
+    lines.append("|---|---|---|---|")
+
+    cum = 0
+    for d in days_data[-14:]:
+        cum += d["edge"]
+        lines.append(f"| {d['date']} | {d['wins']}W/{d['losses']}L | {d['edge']:+d} units | {cum:+d} units |")
+    lines.append("")
+
+
+def _add_region_performance_section(lines: list[str], runs: list) -> None:
+    """Add timezone/region performance section."""
+    region_data: dict[str, dict] = {}
+    for run in runs:
+        for city, pdata in run.get("predictions", {}).items():
+            sigma = pdata.get("strategies", {}).get("sigma", {})
+            result = sigma.get("result", "")
+            if result not in ("WIN", "LOSS"):
+                continue
+            tz = pdata.get("_tz", "UTC")
+            region = _tz_to_region(tz)
+            if region not in region_data:
+                region_data[region] = {"pos": 0, "wins": 0}
+            region_data[region]["pos"] += 1
+            if result == "WIN":
+                region_data[region]["wins"] += 1
+
+    sorted_regions = sorted(
+        region_data.items(),
+        key=lambda kv: kv[1]["wins"] / max(1, kv[1]["pos"]),
+        reverse=True,
+    )
+
+    lines.append("## 🌍 Region Performance")
+    lines.append("")
+    lines.append("| Region | Positions | Record | Win Rate |")
+    lines.append("|---|---|---|---|")
+    for region, data in sorted_regions:
+        wr = round(data["wins"] / max(1, data["pos"]) * 100, 1) if data["pos"] > 0 else "N/A"
+        wr_str = f"{wr}%" if isinstance(wr, (int, float)) else wr
+        lines.append(f"| {region} | {data['pos']} | {data['wins']}W/{data['pos'] - data['wins']}L | {wr_str} |")
+    lines.append("")
+
+
+def _add_uhi_accuracy_section(lines: list[str], runs: list) -> None:
+    """Add UHI adjustment accuracy section."""
+    high_uhi_errors = []
+    low_uhi_errors = []
+    for run in runs:
+        for pdata in run.get("predictions", {}).values():
+            sigma = pdata.get("strategies", {}).get("sigma", {})
+            result = sigma.get("result", "")
+            if result not in ("WIN", "LOSS"):
+                continue
+            actual = sigma.get("actual_peak")
+            bma_mean = pdata.get("bma_mean")
+            if actual is None or bma_mean is None:
+                continue
+            error = abs(float(actual) - float(bma_mean))
+            uhi = pdata.get("_uhi_adjustment", 0)
+            if uhi >= 1.0:
+                high_uhi_errors.append(error)
+            elif uhi <= 0.5:
+                low_uhi_errors.append(error)
+
+    avg_high = round(sum(high_uhi_errors) / max(1, len(high_uhi_errors)), 2) if high_uhi_errors else "—"
+    avg_low = round(sum(low_uhi_errors) / max(1, len(low_uhi_errors)), 2) if low_uhi_errors else "—"
+
+    lines.append("## 🏙️ UHI Adjustment Accuracy")
+    lines.append("")
+    lines.append("| UHI Category | Count | Avg BMA Error |")
+    lines.append("|---|---|---|")
+    lines.append(f"| High UHI cities (≥1.0°C) | {len(high_uhi_errors)} | {avg_high}°C |")
+    lines.append(f"| Low UHI cities (≤0.5°C) | {len(low_uhi_errors)} | {avg_low}°C |")
+    lines.append("")
+
+
 # =============================================================================
 # Markdown Report Generator
 # =============================================================================
@@ -1659,6 +1947,27 @@ def _generate_markdown_report(log_data: dict, today_entry: dict | None) -> None:
     if flip_count > 0:
         lines.append(f"**Total flip recommendations (SHORT):** {flip_count}")
         lines.append("")
+
+    # ── 1. Win Rate Per City (Sigma strategy) ──
+    _add_city_win_rate_section(lines, runs)
+
+    # ── 2. Model Agreement vs Win Rate ──
+    _add_model_agreement_section(lines, runs)
+
+    # ── 3. P5-P95 Range Size vs Accuracy ──
+    _add_range_accuracy_section(lines, runs)
+
+    # ── 4. Best Strategy PER Confidence Level ──
+    _add_optimal_strategy_section(lines, runs)
+
+    # ── 5. Cumulative Edge Tracker ──
+    _add_cumulative_edge_section(lines, runs)
+
+    # ── 6. Timezone/Region Performance ──
+    _add_region_performance_section(lines, runs)
+
+    # ── 7. UHI Adjustment Accuracy ──
+    _add_uhi_accuracy_section(lines, runs)
 
     # Write
     REPORT_FILE.write_text("\n".join(lines), encoding="utf-8")
