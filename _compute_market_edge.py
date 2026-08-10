@@ -645,6 +645,7 @@ def build_market_type_section_html(
     """Build an HTML section for a specific market type (highest or lowest).
 
     Includes the full HTML table with header, not just rows.
+    Now includes live peak detection columns: 📡 Foreløpig Peak, 📈 Trend, ⚡ Peak Status.
     """
     if not edges:
         return ""
@@ -660,6 +661,8 @@ def build_market_type_section_html(
                 market_prob_style = ' style="color: var(--green); font-weight: 600;"'
             elif e["market_prob"] < 0.01:
                 market_prob_style = ' style="color: var(--red); font-weight: 600;"'
+        # Compute city slug for peak detection IDs
+        city_slug = re.sub(r"[^a-zA-Z0-9]+", "-", e["city"]).lower().strip("-")
         rows_html += f"""<tr>
                 <td>{i+1}</td>
                 <td><strong>{e['city']}</strong>{resolved_badge}</td>
@@ -669,6 +672,9 @@ def build_market_type_section_html(
                 <td{market_prob_style}>{e['market_prob']:.1f}%</td>
                 <td style="color: var(--text-dim);">{e['bma_mean']:.1f}°C</td>
                 <td style="color: var(--text-dim);">{e.get('volume_display', '')}</td>
+                <td class="col-peak" id="peak-{city_slug}">⏳</td>
+                <td class="col-trend" id="trend-{city_slug}">—</td>
+                <td class="col-spark">⚡ —</td>
             </tr>"""
 
     return f"""
@@ -677,10 +683,16 @@ def build_market_type_section_html(
       <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
         Sammenligner BMA-ensemblets prediksjoner mot Polymarket-priser.
         Sortert etter BMA-konfidens (høyest først). Ingen trading-signaler — ren data.
+        Trykk <strong>🔄 Hent Live Peak</strong> for sanntids temperatur-data.
       </p>
+      <div style="text-align: center; margin-bottom: 12px;">
+        <button class="live-btn" onclick="fetchLivePeak()" id="fetch-btn">🔄 Hent Live Peak</button>
+        <span class="live-status" id="fetch-status"></span>
+        <span class="live-updated" id="live-updated"></span>
+      </div>
       <div style="overflow-x: auto;">
       <table>
-        <thead><tr><th>#</th><th>By</th><th>Dato</th><th>Spill</th><th>BMA Sanns.</th><th>Marked</th><th>BMA μ</th><th>Volum</th></tr></thead>
+        <thead><tr><th>#</th><th>By</th><th>Dato</th><th>Spill</th><th>BMA Sanns.</th><th>Marked</th><th>BMA μ</th><th>Volum</th><th>📡 Foreløpig Peak</th><th>📈 Trend</th><th>⚡ Peak Status</th></tr></thead>
         <tbody>{rows_html}</tbody>
       </table>
       </div>

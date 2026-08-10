@@ -2185,6 +2185,9 @@ def _generate_html_report() -> str:
     # ── Madrid Arbitrage Highlight ──
     madrid_arb_section = _build_madrid_arbitrage_highlight(runs)
 
+    # ── Live Peak Detection: CITIES JS array ──
+    cities_js = _build_cities_js_array()
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2331,6 +2334,9 @@ def _generate_html_report() -> str:
   .live-btn:disabled {{ opacity: 0.5; cursor: not-allowed; }}
   .live-status {{ color: var(--text-dim); font-size: 0.85rem; margin-left: 12px; }}
   .live-updated {{ color: var(--text-dim); font-size: 0.8rem; margin-left: 8px; }}
+  .col-peak {{ font-weight: 600; font-size: 0.8rem; }}
+  .col-trend {{ font-weight: 700; font-size: 1rem; text-align: center; }}
+  .col-spark {{ font-family: monospace; font-size: 0.85rem; white-space: nowrap; text-align: center; min-width: 90px; }}
 </style>
 <script>
 // No auto-refresh — manual refresh only
@@ -2493,6 +2499,130 @@ function sortTable(colIdx) {{
 <footer>
   Model Quality Dashboard · 3-Strategy Comparison · Sigma (μ−kσ) vs P5 vs Mean · GitHub Pages Deploy
 </footer>
+
+<script>
+{cities_js}
+
+// ---- Live Peak Detection (Hourly Archive API) ----
+function updateCityRow(cityName, maxTemp, trend, peakStatus) {{
+    const slug = cityName.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase().replace(/-+$/g, '');
+    const peakEl = document.getElementById('peak-' + slug);
+    const trendEl = document.getElementById('trend-' + slug);
+    if (peakEl) {{
+        peakEl.innerHTML = '📡 ' + maxTemp.toFixed(1) + '°C ' + peakStatus;
+    }}
+    if (trendEl) {{
+        trendEl.textContent = trend;
+        trendEl.style.color = trend === '↑' ? 'var(--red)' : (trend === '↓' ? 'var(--blue)' : 'var(--text-dim)');
+    }}
+}}
+
+const cityPeakState = {{}};
+
+function computeAllCitiesConfidence(city, temps, localHour) {{
+    const peakStart = city.peakStart || 14;
+    const peakEnd = city.peakEnd || 17;
+    const maxTemp = Math.max.apply(null, temps);
+    const latestTemp = temps[temps.length - 1];
+    let consecutiveDeclines = 0;
+    for (let i = temps.length - 1; i >= 1; i--) {{
+        if (temps[i] < temps[i-1] - 0.1) {{ consecutiveDeclines++; }}
+        else {{ break; }}
+    }}
+    let confidence = 0;
+    if (localHour > peakEnd) confidence += 60;
+    else if (localHour >= peakStart) confidence += 30;
+    if (consecutiveDeclines >= 3) confidence += 25;
+    else if (consecutiveDeclines >= 1) confidence += 10;
+    const gap = maxTemp - latestTemp;
+    if (gap > 1.0) confidence += 15;
+    else if (gap > 0.3) confidence += 5;
+    return Math.min(98, confidence);
+}}
+
+async function fetchLivePeak() {{
+    const today = new Date().toISOString().slice(0, 10);
+    const statusEl = document.getElementById('fetch-status');
+    if (statusEl) statusEl.textContent = '⏳ Henter peak-data...';
+    const activeCities = CITIES.filter(c => c.has_market === true && !c.is_resolved);
+    const fetchCities = activeCities.length > 0 ? activeCities : CITIES;
+    for (const city of fetchCities) {{
+        try {{
+            const url = 'https://archive-api.open-meteo.com/v1/archive?latitude=' + city.lat +
+                '&longitude=' + city.lon + '&start_date=' + today + '&end_date=' + today +
+                '&hourly=temperature_2m&timezone=' + encodeURIComponent(city.tz);
+            const resp = await fetch(url, {{ headers: {{ 'User-Agent': 'WeatherMonitor/1.0' }} }});
+            const data = await resp.json();
+            if (data.error) continue;
+            const temps = data.hourly.temperature_2m.filter(function(t) {{ return t !== null; }});
+            if (temps.length < 2) continue;
+            const maxTemp = Math.max.apply(null, temps);
+            const latestTemp = temps[temps.length - 1];
+            const prevTemp = temps[temps.length - 2];
+            const trend = latestTemp > prevTemp ? '↑' : (latestTemp < prevTemp ? '↓' : '→');
+            const times = data.hourly.time;
+            const lastTime = times[times.length - 1];
+            const hour = parseInt(lastTime.split('T')[1].split(':')[0]);
+            const peakStart = city.peakStart || 14;
+            const peakEnd = city.peakEnd || 17;
+            const coastalTzs = ['Asia/Taipei', 'Asia/Hong_Kong', 'Asia/Manila', 'Asia/Singapore',
+                'Pacific/Auckland', 'America/New_York', 'America/Los_Angeles',
+                'America/Miami', 'Europe/London', 'America/Panama'];
+            const adjustedPeakEnd = coastalTzs.includes(city.tz) ? peakEnd - 1 : peakEnd;
+            const inPeakWindow = (hour >= peakStart && hour <= adjustedPeakEnd);
+            const pastPeakWindow = (hour > adjustedPeakEnd);
+            const isLateDay = hour > 18;
+            if (!cityPeakState[city.name]) cityPeakState[city.name] = {{ lastNewMax: 0 }};
+            const st = cityPeakState[city.name];
+            const maxIdx = temps.lastIndexOf(maxTemp);
+            const maxHour = parseInt(times[maxIdx].split('T')[1].split(':')[0]);
+            if (maxHour >= peakStart && maxHour <= adjustedPeakEnd) {{
+                st.lastNewMax = Date.now();
+            }}
+            const noNewMax2h = st.lastNewMax > 0 && (Date.now() - st.lastNewMax) > 2 * 3600 * 1000;
+            let consecDec = 0;
+            for (let i = temps.length - 1; i >= 1; i--) {{
+                if (temps[i] < temps[i-1] - 0.1) consecDec++;
+                else break;
+            }}
+            const declineConfirmed = consecDec >= 3 && latestTemp < maxTemp - 0.3;
+            var peakStatus;
+            if (isLateDay || pastPeakWindow) {{
+                peakStatus = '🔴 PEAK NÅDD';
+            }} else if (declineConfirmed && inPeakWindow) {{
+                peakStatus = '✅ PEAK BEKREFTET';
+            }} else if (noNewMax2h && hour >= peakStart && temps.length >= 8) {{
+                peakStatus = '🟡 PEAK SANSYNLIG';
+            }} else if (inPeakWindow && trend === '↑') {{
+                peakStatus = '🟢 STIGER';
+            }} else if (inPeakWindow) {{
+                peakStatus = '🟠 NÆR PEAK';
+            }} else {{
+                peakStatus = '⏳ VENTER';
+            }}
+            const conf = computeAllCitiesConfidence(city, temps, hour);
+            peakStatus += ' [' + conf + '%]';
+            updateCityRow(city.name, maxTemp, trend, peakStatus);
+        }} catch (e) {{ /* skip */ }}
+    }}
+    if (statusEl) statusEl.textContent = '✅ Peak-data oppdatert';
+    const updatedEl = document.getElementById('live-updated');
+    if (updatedEl) updatedEl.textContent = new Date().toLocaleTimeString('no-NO');
+    const anyInWindow = fetchCities.some(c => {{
+        try {{
+            const opts = {{ timeZone: c.tz || 'UTC', hour: '2-digit', hour12: false }};
+            const h = parseInt(new Date().toLocaleString('en-US', opts).replace(/^0/, ''), 10);
+            return h >= (c.peakStart || 14) && h <= (c.peakEnd || 17);
+        }} catch(e) {{ return false; }}
+    }});
+    const nextInterval = anyInWindow ? 180000 : 3600000;
+    if (fetchLivePeak._timer) clearTimeout(fetchLivePeak._timer);
+    fetchLivePeak._timer = setTimeout(fetchLivePeak, nextInterval);
+}}
+
+// Auto-fetch on page load
+setTimeout(fetchLivePeak, 2000);
+</script>
 </body>
 </html>"""
     return html
