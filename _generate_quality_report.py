@@ -42,6 +42,7 @@ REPORT_FILE = Path(_SCRIPT_DIR) / "_quality_report.md"
 HTML_REPORT_FILE = Path(_SCRIPT_DIR) / "_quality_report.html"
 INDEX_FILE = Path(_SCRIPT_DIR) / "index.html"
 PEAK_DETECTION_FILE = Path(_SCRIPT_DIR) / "_peak_detection.html"
+PEAK_VERIFICATION_LOG = Path(_SCRIPT_DIR) / "_peak_verification_log.json"
 
 # Market edge computation (BMA vs Polymarket)
 try:
@@ -1770,6 +1771,84 @@ def _load_resolved_market_outcomes() -> dict[str, int]:
     return resolved
 
 
+def _load_peak_verification_data() -> dict:
+    """Load peak verification log data. Returns {city_name: entry, ...}."""
+    if PEAK_VERIFICATION_LOG.exists():
+        try:
+            pv = json.loads(PEAK_VERIFICATION_LOG.read_text(encoding="utf-8"))
+            return pv.get("verifications", {})
+        except (json.JSONDecodeError, KeyError):
+            pass
+    return {}
+
+
+def _build_peak_verification_html_section() -> str:
+    """Build HTML section: PEAK VERIFICATION - Var vs Polymarket."""
+    verifications = _load_peak_verification_data()
+    if not verifications:
+        return ""
+
+    rows = ""
+    for city, v in sorted(verifications.items()):
+        our_peak = v.get("our_peak", "?")
+        market = v.get("market_resolved", "?")
+        gap = v.get("gap", 0)
+        verdict = v.get("verdict", "?")
+
+        if verdict == "OK":
+            status_icon = "OK"
+            status_color = "#3fb950"
+        elif verdict == "MINOR":
+            status_icon = "MINOR"
+            status_color = "#d2991d"
+        else:
+            status_icon = "STASJONSFEIL"
+            status_color = "#f85149"
+
+        our_str = f"{our_peak}C" if isinstance(our_peak, (int, float)) else str(our_peak)
+        market_str = f"{market}C" if isinstance(market, (int, float)) else str(market)
+        gap_str = f"{gap:+.1f}C" if isinstance(gap, (int, float)) else str(gap)
+
+        rows += f"""<tr>
+            <td><strong>{city}</strong></td>
+            <td>{our_str}</td>
+            <td>{market_str}</td>
+            <td style="color:{status_color};font-weight:600;">{gap_str}</td>
+            <td style="color:{status_color};font-weight:700;">{status_icon}</td>
+        </tr>"""
+
+    ok_count = sum(1 for v in verifications.values() if v.get("verdict") == "OK")
+    minor_count = sum(1 for v in verifications.values() if v.get("verdict") == "MINOR")
+    mismatch_count = sum(1 for v in verifications.values() if v.get("verdict") == "STATION_MISMATCH")
+
+    return f"""
+    <div class="section" style="border-color: rgba(188, 140, 255, 0.3);">
+      <h2>PEAK VERIFICATION - Var vs Polymarket</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        Cross-referencing our archive peak (Open-Meteo) against Polymarket resolved outcomes.
+        STASJONSFEIL = likely different weather stations used. OK = within 1C tolerance.
+      </p>
+      <div class="card-grid" style="margin-bottom: 16px;">
+        <div class="card" style="border: 1px solid #3fb950;">
+          <div class="value" style="color: #3fb950;">{ok_count}</div>
+          <div class="label">OK</div>
+        </div>
+        <div class="card" style="border: 1px solid #d2991d;">
+          <div class="value" style="color: #d2991d;">{minor_count}</div>
+          <div class="label">MINOR</div>
+        </div>
+        <div class="card" style="border: 1px solid #f85149;">
+          <div class="value" style="color: #f85149;">{mismatch_count}</div>
+          <div class="label">STASJONSFEIL</div>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>By</th><th>Var Peak</th><th>Marked</th><th>Gap</th><th>Status</th></tr></thead>
+        <tbody>{rows}</tbody>
+      </table>
+    </div>"""
+
+
 def _load_market_city_set() -> tuple[set[str], set[str], set[str]]:
     """Return (active_cities, resolved_cities, today_market_cities) from _market_prices.json."""
     active: set[str] = set()
@@ -2375,6 +2454,9 @@ def _generate_html_report() -> str:
     # ── Madrid Arbitrage Highlight ──
     madrid_arb_section = _build_madrid_arbitrage_highlight(runs)
 
+    # ── Peak Verification: Var vs Polymarket ──
+    peak_verification_section = _build_peak_verification_html_section()
+
     # ── Live Peak Detection: CITIES JS array ──
     cities_js = _build_cities_js_array()
 
@@ -2658,6 +2740,9 @@ function sortTable(colIdx) {{
 
   <!-- MADRID ARBITRAGE HIGHLIGHT -->
   {madrid_arb_section}
+
+  <!-- PEAK VERIFICATION: Var vs Polymarket -->
+  {peak_verification_section}
 
   <!-- ARBITRAGE STATS: Win/Loss Tracking -->
   {arbitrage_stats_section}

@@ -1,0 +1,19 @@
+{
+  "last_updated": "2026-08-10T18:42:00+00:00",
+  "verifications": {
+    "London, UK": {
+      "date": "2026-08-10",
+      "our_peak": 31.3,
+      "our_station": "Heathrow (EGLL)",
+      "our_lat": 51.4775,
+      "our_lon": -0.4614,
+      "market_resolved": 26,
+      "market_suspected_station": "London City Airport (EGLC)",
+      "market_confirmed_station": "EGLC - CONFIRMED via Polymarket resolution source",
+      "gap": 5.3,
+      "verdict": "STATION_MISMATCH",
+      "note": "Heathrow recorded ~31.3C but Polymarket resolved at 26C. Polymarket explicitly states resolution source is London City Airport (EGLC) via Weather Underground. Our coordinates were EGLL (Heathrow).",
+      "action": "FIXED: Switched London coordinates from EGLL (51.4775, -0.4614) to EGLC (51.505, 0.054) in weather_monitor_defaults.json. UHI reduced from 1.0 to 0.5 (EGLC is riverside, less urban heat island)."
+    }
+  }
+}

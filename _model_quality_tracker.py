@@ -82,6 +82,7 @@ except ImportError:
 LOG_FILE = Path(_SCRIPT_DIR) / "_model_quality_log.json"
 REPORT_FILE = Path(_SCRIPT_DIR) / "_quality_report.md"
 RAPID_PEAK_LOG = Path(_SCRIPT_DIR) / "_rapid_peak_log.json"
+PEAK_VERIFICATION_LOG = Path(_SCRIPT_DIR) / "_peak_verification_log.json"
 MAX_LOG_DAYS = 90  # Keep last 90 days in log
 MAX_OBS_HISTORY = 144  # Max observations per city (~12 hours at 5-min, ample for GH)
 MAX_RAPID_RUNTIME_HOURS = 4  # Max runtime for rapid polling (fits GH 6h limit)
@@ -2005,6 +2006,9 @@ async def _post_peak_arbitrage_check(
     entry["last_updated"] = _now_utc()
     _save_log(log_data)
 
+    # Cross-reference our peaks with Polymarket resolved outcomes
+    await _verify_peaks_vs_market(entry, predictions, log_data)
+
 
 def _summarize_arbitrage(runs: list[dict]) -> dict:
     """Compute arbitrage win/loss statistics across all runs.
@@ -2225,6 +2229,9 @@ async def daily_close_mode() -> None:
     cum["mean_losses"] = cum.get("mean_losses", 0) + mean_losses
 
     _save_log(log_data)
+
+    # Cross-reference our peaks with Polymarket resolved outcomes
+    await _verify_peaks_vs_market(entry, predictions, log_data)
 
     # Generate daily markdown report
     _generate_markdown_report(log_data, entry)
@@ -3026,6 +3033,144 @@ def _generate_markdown_report(log_data: dict, today_entry: dict | None) -> None:
 # =============================================================================
 # CLI Entry Point
 # =============================================================================
+
+def _load_market_resolved_temps() -> dict[str, int]:
+    """Extract resolved market outcomes from _market_prices.json.
+    Returns: {city_name: resolved_temperature_celsius}
+    Uses price > 0.95 as resolution threshold.
+    """
+    import re as _re
+    resolved: dict[str, int] = {}
+    market_path = Path(_SCRIPT_DIR) / "_market_prices.json"
+    if market_path.exists():
+        try:
+            mp = json.loads(market_path.read_text(encoding="utf-8"))
+            markets = mp if isinstance(mp, list) else mp.get("markets", [])
+        except Exception:
+            markets = []
+        for m in markets:
+            city = m.get("city", "")
+            if not city or city == "Unknown":
+                continue
+            if m.get("question_type") != "highest":
+                continue
+            for o in m.get("outcomes", []):
+                if o.get("price", 0) > 0.95 and o.get("label", "").lower() == "yes":
+                    match = _re.search(r'(\d+)°C', m.get("question", ""))
+                    if match:
+                        resolved_temp = int(match.group(1))
+                        if city not in resolved:
+                            resolved[city] = resolved_temp
+                    break
+    # Also merge manual entries from peak verification log
+    if PEAK_VERIFICATION_LOG.exists():
+        try:
+            pv = json.loads(PEAK_VERIFICATION_LOG.read_text(encoding="utf-8"))
+            for city_key, entry in pv.get("verifications", {}).items():
+                mr = entry.get("market_resolved")
+                if mr is not None:
+                    city_base = city_key.split(",")[0].strip()
+                    if city_base not in resolved:
+                        resolved[city_base] = int(mr)
+                    resolved[city_key] = int(mr)
+        except Exception:
+            pass
+    return resolved
+
+
+def _log_peak_verification(
+    city: str, date_str: str, our_peak: float,
+    our_lat: float, our_lon: float,
+    market_resolved: int | None, our_station: str = "",
+) -> None:
+    """Log peak verification: our archive peak vs Polymarket resolved outcome."""
+    pv_data = {"last_updated": _now_utc(), "verifications": {}}
+    if PEAK_VERIFICATION_LOG.exists():
+        try:
+            pv_data = json.loads(PEAK_VERIFICATION_LOG.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, KeyError):
+            pass
+    verifications = pv_data.setdefault("verifications", {})
+    gap = round(our_peak - market_resolved, 1) if market_resolved is not None else 0.0
+    abs_gap = abs(gap)
+    if abs_gap <= 1.0:
+        verdict = "OK"
+    elif abs_gap <= 2.0:
+        verdict = "MINOR"
+    else:
+        verdict = "STATION_MISMATCH"
+    note = ""
+    if verdict == "STATION_MISMATCH":
+        note = (
+            f"Gap {gap:+.1f}C suggests different weather stations. "
+            f"Our API (lat={our_lat}, lon={our_lon}) may differ from Polymarket. "
+            f"Investigate which station Polymarket uses for {city}."
+        )
+    elif verdict == "MINOR":
+        note = f"Small gap of {gap:+.1f}C - likely calibration or timing difference."
+    else:
+        note = "Within 1C tolerance - station match confirmed."
+    entry = {
+        "date": date_str, "our_peak": round(our_peak, 1),
+        "our_station": our_station or f"lat={our_lat},lon={our_lon}",
+        "our_lat": our_lat, "our_lon": our_lon,
+        "market_resolved": market_resolved, "gap": gap,
+        "verdict": verdict, "note": note, "logged_at": _now_utc(),
+    }
+    existing = verifications.get(city, {})
+    if not (existing.get("date") == date_str and existing.get("our_peak") == round(our_peak, 1)):
+        verifications[city] = entry
+        pv_data["last_updated"] = _now_utc()
+        PEAK_VERIFICATION_LOG.write_text(
+            json.dumps(pv_data, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
+        verdict_icon = {"OK": "OK", "MINOR": "MINOR", "STATION_MISMATCH": "STASJONSFEIL"}.get(verdict, "?")
+        print(f"  PEAK VERIFY: {verdict_icon} {city}: var={our_peak:.1f}C vs "
+              f"marked={market_resolved}C gap={gap:+.1f}C [{verdict}]")
+    # Inject market_resolved into quality log for dashboard
+    log_data = _load_log()
+    target_date = date_str if date_str else _today_iso()
+    for run in log_data.get("runs", []):
+        if run.get("run_date") == target_date or run.get("target_date") == target_date:
+            pdata = run.get("predictions", {}).get(city)
+            if pdata is not None:
+                pdata["_market_resolved"] = market_resolved
+                pdata["_peak_gap"] = gap
+                pdata["_verdict"] = verdict
+                _save_log(log_data)
+                break
+
+
+async def _verify_peaks_vs_market(
+    entry: dict, predictions: list, log_data: dict,
+) -> None:
+    """Cross-reference our resolved peaks with Polymarket outcomes.
+    Called after archive max is fetched in daily_close / post-peak.
+    """
+    resolved_markets = _load_market_resolved_temps()
+    if not resolved_markets:
+        return
+    today = _today_iso()
+    preds_dict = entry.get("predictions", {})
+    for city, pdata in preds_dict.items():
+        strategies = pdata.get("strategies", {})
+        sigma = strategies.get("sigma", {})
+        actual_peak = sigma.get("actual_peak")
+        if actual_peak is None:
+            continue
+        # Try exact city name then base name
+        city_base = city.split(",")[0].strip()
+        market_temp = resolved_markets.get(city) or resolved_markets.get(city_base)
+        if market_temp is None:
+            continue
+        lat = pdata.get("_lat", 0)
+        lon = pdata.get("_lon", 0)
+        _log_peak_verification(
+            city=city, date_str=today,
+            our_peak=float(actual_peak), our_lat=float(lat), our_lon=float(lon),
+            market_resolved=market_temp,
+        )
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
