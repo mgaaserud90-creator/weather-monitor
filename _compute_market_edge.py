@@ -309,28 +309,38 @@ def compute_edges(
     def _match_city(market_city: str, bma_cities: dict[str, dict]) -> tuple[str | None, dict | None]:
         """Match market city name to BMA city name, handling country codes.
         
-        BMA uses "CityName, CC" format. Market uses "CityName".
+        BMA uses "CityName, CC" or "CityName (SubLocation), CC" format.
+        Market uses "CityName" or "CityName (SubLocation)".
         """
         mc = market_city.lower().strip()
         
-        # Exact match
-        if mc in {k.lower() for k in bma_cities}:
-            for k in bma_cities:
-                if k.lower() == mc:
-                    return k, bma_cities[k]
+        # Exact match (case-insensitive)
+        for bma_city, bma_data in bma_cities.items():
+            if bma_city.lower() == mc:
+                return bma_city, bma_data
         
         # Try matching without country code: "Moscow, RU" matches "Moscow"
         for bma_city, bma_data in bma_cities.items():
-            # Strip country code from BMA name
             bma_base = bma_city.split(",")[0].strip().lower()
             if bma_base == mc:
                 return bma_city, bma_data
         
-        # Special case: "Seoul (Incheon)" in market, "Seoul, KR" in BMA
-        if mc == "seoul (incheon)" or mc == "seoul":
-            for bma_city in bma_cities:
-                if bma_city.lower().startswith("seoul"):
-                    return bma_city, bma_cities[bma_city]
+        # Try matching with parenthetical stripped from market city
+        # e.g., market "Seoul (Incheon)" → BMA "Seoul (Incheon), KR"
+        mc_no_paren = re.sub(r'\s*\(.*?\)\s*', '', mc).strip()
+        if mc_no_paren and mc_no_paren != mc:
+            for bma_city, bma_data in bma_cities.items():
+                bma_base = bma_city.split(",")[0].strip().lower()
+                if bma_base == mc_no_paren:
+                    return bma_city, bma_data
+        
+        # Try matching with parenthetical stripped from BMA base
+        # e.g., BMA "Seoul (Incheon), KR" → base "seoul (incheon)" but market "seoul"
+        for bma_city, bma_data in bma_cities.items():
+            bma_base = bma_city.split(",")[0].strip().lower()
+            bma_base_no_paren = re.sub(r'\s*\(.*?\)\s*', '', bma_base).strip()
+            if bma_base_no_paren == mc:
+                return bma_city, bma_data
         
         return None, None
 
