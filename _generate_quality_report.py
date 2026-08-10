@@ -2521,7 +2521,7 @@ def _generate_all_cities_html() -> str:
             f'{label}<br/><small>{target}</small></button>\n        '
         )
 
-    # ---- Build table rows ----
+    # ---- Build table rows (deduplicated: ONE row per city, prefer lead_days=1) ----
     table_rows = ""
     for city in all_cities:
         meta = city_meta.get(city, {})
@@ -2533,120 +2533,124 @@ def _generate_all_cities_html() -> str:
         except Exception:
             local_time_str = "—"
 
-        for ld in sorted_leads:
-            d = city_table[city].get(ld)
-            if d is None:
-                continue
-            conf = d["conf"]
-            if conf >= 0.8:
-                conf_icon = "🟢"
-                conf_class = "conf-high"
-            elif conf >= 0.7:
-                conf_icon = "🟠"
-                conf_class = "conf-mid"
-            else:
-                conf_icon = "🔴"
-                conf_class = "conf-low"
+        # Deduplicate: pick best lead day per city (prefer 1 for active markets, 0 fallback)
+        available_leads = [ld for ld in sorted_leads if city_table[city].get(ld) is not None]
+        if not available_leads:
+            continue
+        ld = 1 if 1 in available_leads else 0
 
-            bma_str = f"{d['bma_mean']:.1f}" if isinstance(d['bma_mean'], (int, float)) else "—"
-            std_str = f"{d['bma_std']:.1f}" if isinstance(d['bma_std'], (int, float)) else "—"
+        d = city_table[city].get(ld)
+        if d is None:
+            continue
+        conf = d["conf"]
+        if conf >= 0.8:
+            conf_icon = "🟢"
+            conf_class = "conf-high"
+        elif conf >= 0.7:
+            conf_icon = "🟠"
+            conf_class = "conf-mid"
+        else:
+            conf_icon = "🔴"
+            conf_class = "conf-low"
 
-            p5_p95 = f"{d['p5_spill']}-{d['sigma_spill']}" if d['p5_spill'] != "?" and d['sigma_spill'] != "?" else "—"
+        bma_str = f"{d['bma_mean']:.1f}" if isinstance(d['bma_mean'], (int, float)) else "—"
+        std_str = f"{d['bma_std']:.1f}" if isinstance(d['bma_std'], (int, float)) else "—"
 
-            def _ri(r: str) -> str:
-                if r == "WIN":
-                    return "✅"
-                elif r == "LOSS":
-                    return "❌"
-                return "⏳"
+        p5_p95 = f"{d['p5_spill']}-{d['sigma_spill']}" if d['p5_spill'] != "?" and d['sigma_spill'] != "?" else "—"
 
-            sigma_cell = f'BUY {d["sigma_spill"]}°C {_ri(d["sigma_result"])}'
-            p5_cell = f'BUY {d["p5_spill"]}°C {_ri(d["p5_result"])}'
-            mean_cell = f'BUY {d["mean_spill"]}°C {_ri(d["mean_result"])}'
+        def _ri(r: str) -> str:
+            if r == "WIN":
+                return "✅"
+            elif r == "LOSS":
+                return "❌"
+            return "⏳"
 
-            actual_str = f"{d['actual_peak']:.1f}°C" if isinstance(d['actual_peak'], (int, float)) else "—"
+        sigma_cell = f'BUY {d["sigma_spill"]}°C {_ri(d["sigma_result"])}'
+        p5_cell = f'BUY {d["p5_spill"]}°C {_ri(d["p5_result"])}'
+        mean_cell = f'BUY {d["mean_spill"]}°C {_ri(d["mean_result"])}'
 
-            rec = d.get("rec", "—")
-            rec_class = ""
-            if rec and "HOLD" in str(rec):
-                rec_class = "rec-hold"
-            elif rec and "SELG" in str(rec):
-                rec_class = "rec-sell"
-            elif rec and "AVVENT" in str(rec):
-                rec_class = "rec-wait"
+        actual_str = f"{d['actual_peak']:.1f}°C" if isinstance(d['actual_peak'], (int, float)) else "—"
 
-            # Check if today's observed max resolves to the spill bucket (rounding rule)
-            actual_peak = d.get("actual_peak")
-            sigma_spill = d["sigma_spill"]
-            row_win = False
-            peak_won = False
-            if isinstance(actual_peak, (int, float)) and isinstance(sigma_spill, (int, float)):
-                if round(actual_peak) == sigma_spill:
-                    row_win = True
-                    peak_won = True
-            row_class = "city-row row-win" if row_win else "city-row row-loss"
+        rec = d.get("rec", "—")
+        rec_class = ""
+        if rec and "HOLD" in str(rec):
+            rec_class = "rec-hold"
+        elif rec and "SELG" in str(rec):
+            rec_class = "rec-sell"
+        elif rec and "AVVENT" in str(rec):
+            rec_class = "rec-wait"
 
-            # Compute market edge for this city's sigma spill temperature
-            market_cell = "—"
-            edge_cell = "—"
-            signal_cell = "—"
-            edge_data_attr = "0"
-            if HAS_MARKET_EDGE and isinstance(sigma_spill, (int, float)) and market_lookup:
-                city_lower = city.lower()
-                # Try "CityName, CC" format first, then base name without country
-                mkt_prob = market_lookup.get((city_lower, int(sigma_spill)))
+        # Check if today's observed max resolves to the spill bucket (rounding rule)
+        actual_peak = d.get("actual_peak")
+        sigma_spill = d["sigma_spill"]
+        row_win = False
+        peak_won = False
+        if isinstance(actual_peak, (int, float)) and isinstance(sigma_spill, (int, float)):
+            if round(actual_peak) == sigma_spill:
+                row_win = True
+                peak_won = True
+        row_class = "city-row row-win" if row_win else "city-row row-loss"
+
+        # Compute market edge for this city's sigma spill temperature
+        market_cell = "—"
+        edge_cell = "—"
+        signal_cell = "—"
+        edge_data_attr = "0"
+        if HAS_MARKET_EDGE and isinstance(sigma_spill, (int, float)) and market_lookup:
+            city_lower = city.lower()
+            # Try "CityName, CC" format first, then base name without country
+            mkt_prob = market_lookup.get((city_lower, int(sigma_spill)))
+            if mkt_prob is None:
+                city_base = city_lower.split(",")[0].strip()
+                mkt_prob = market_lookup.get((city_base, int(sigma_spill)))
+                # Also try removing parenthetical (e.g., "Seoul (Incheon)")
                 if mkt_prob is None:
-                    city_base = city_lower.split(",")[0].strip()
-                    mkt_prob = market_lookup.get((city_base, int(sigma_spill)))
-                    # Also try removing parenthetical (e.g., "Seoul (Incheon)")
-                    if mkt_prob is None:
-                        city_no_paren = re.sub(r'\s*\(.*?\)\s*', '', city_base).strip()
-                        mkt_prob = market_lookup.get((city_no_paren, int(sigma_spill)))
-                if mkt_prob is not None:
-                    market_cell = f"{mkt_prob:.1f}%"
-                    if isinstance(d.get('bma_mean'), (int, float)) and isinstance(d.get('bma_std'), (int, float)):
-                        bma_p = compute_bma_prob(d['bma_mean'], d['bma_std'], int(sigma_spill), "exact")
-                        edge = round(bma_p - mkt_prob, 1)
-                        edge_cell = f"{edge:+.1f}%"
-                        edge_data_attr = str(edge)
-                        if edge > 10:
-                            signal_cell = '<span style="color: var(--green); font-weight: 600;">🟢 BUY</span>'
-                        elif edge > 0:
-                            signal_cell = '<span style="color: var(--green);">🟢 BUY</span>'
-                        elif edge < -10:
-                            signal_cell = '<span style="color: var(--red); font-weight: 600;">🔴 SHORT</span>'
-                        elif edge < 0:
-                            signal_cell = '<span style="color: var(--red);">🔴 SHORT</span>'
-                        else:
-                            signal_cell = '⚪ FLAT'
+                    city_no_paren = re.sub(r'\s*\(.*?\)\s*', '', city_base).strip()
+                    mkt_prob = market_lookup.get((city_no_paren, int(sigma_spill)))
+            if mkt_prob is not None:
+                market_cell = f"{mkt_prob:.1f}%"
+                if isinstance(d.get('bma_mean'), (int, float)) and isinstance(d.get('bma_std'), (int, float)):
+                    bma_p = compute_bma_prob(d['bma_mean'], d['bma_std'], int(sigma_spill), "exact")
+                    edge = round(bma_p - mkt_prob, 1)
+                    edge_cell = f"{edge:+.1f}%"
+                    edge_data_attr = str(edge)
+                    # edge = BMA_prob − market_price
+                    #   edge > 0 → BMA thinks MORE likely → market undervalued → BUY
+                    #   edge < 0 → BMA thinks LESS likely → market overvalued → SHORT
+                    if edge > 10:
+                        signal_cell = '<span style="color: var(--green); font-weight: 600;">🟢 BUY</span>'
+                    elif edge > 0:
+                        signal_cell = '<span style="color: var(--green);">🟢 BUY</span>'
+                    elif edge < -10:
+                        signal_cell = '<span style="color: var(--red); font-weight: 600;">🔴 SHORT</span>'
+                    elif edge < 0:
+                        signal_cell = '<span style="color: var(--red);">🔴 SHORT</span>'
+                    else:
+                        signal_cell = '⚪ FLAT'
 
-            safe_city_id = re.sub(r'[^a-zA-Z0-9]', '_', city)
-            table_rows += f"""<tr class="{row_class}" data-lead="{ld}" data-city="{city}" data-conf="{conf:.3f}" data-edge="{edge_data_attr}">
-                <td class="col-rank"></td>
-                <td class="col-city">{city}</td>
-                <td class="col-bma">{bma_str} <span class="dim">σ={std_str}</span></td>
-                <td class="col-range">{p5_p95}°C</td>
-                <td class="col-sigma">{sigma_cell}</td>
-                <td class="col-p5">{p5_cell}</td>
-                <td class="col-mean">{mean_cell}</td>
-                <td class="col-conf {conf_class}">{conf_icon} {(conf*100):.0f}%</td>
-                <td class="col-models">{d['model_ct']}/8</td>
-                <td class="col-peak">{actual_str}{" ✅ VUNNET" if peak_won else ""}</td>
-                <td class="col-spark" id="spark-{safe_city_id}">—</td>
-                <td class="col-live" id="live-{safe_city_id}">—</td>
-                <td class="col-market">{market_cell}</td>
-                <td class="col-edge">{edge_cell}</td>
-                <td class="col-signal">{signal_cell}</td>
-                <td class="col-rec {rec_class}">{rec}</td>
-                <td class="col-strat">{_build_strat_rec_cell(city, best_per_city)}</td>
-                <td class="col-local">{local_time_str}</td>
-            </tr>
+        safe_city_id = re.sub(r'[^a-zA-Z0-9]', '_', city)
+        table_rows += f"""<tr class="{row_class}" data-lead="{ld}" data-city="{city}" data-conf="{conf:.3f}" data-edge="{edge_data_attr}">
+            <td class="col-rank"></td>
+            <td class="col-city">{city}</td>
+            <td class="col-bma">{bma_str} <span class="dim">σ={std_str}</span></td>
+            <td class="col-range">{p5_p95}°C</td>
+            <td class="col-sigma">{sigma_cell}</td>
+            <td class="col-p5">{p5_cell}</td>
+            <td class="col-mean">{mean_cell}</td>
+            <td class="col-conf {conf_class}">{conf_icon} {(conf*100):.0f}%</td>
+            <td class="col-models">{d['model_ct']}/8</td>
+            <td class="col-peak">{actual_str}{" ✅ VUNNET" if peak_won else ""}</td>
+            <td class="col-live" id="live-{safe_city_id}">—</td>
+            <td class="col-market">{market_cell}</td>
+            <td class="col-edge">{edge_cell}</td>
+            <td class="col-signal">{signal_cell}</td>
+            <td class="col-rec {rec_class}">{rec}</td>
+            <td class="col-strat">{_build_strat_rec_cell(city, best_per_city)}</td>
+            <td class="col-local">{local_time_str}</td>
+        </tr>
 """
 
     cities_js = _build_cities_js_array()
-    live_fetch_js = _build_sparkline_fetch_js()
-    sparkline_data_js = _build_sparkline_data_js(city_table, 0)
-    sparkline_fetch_js = _build_sparkline_fetch_js()
 
     # ---- Build full HTML (no auto-refresh) ----
     html = f"""<!DOCTYPE html>
@@ -2776,14 +2780,13 @@ def _generate_all_cities_html() -> str:
           <th onclick="sortTable(7)">Konf</th>
           <th onclick="sortTable(8)">Modeller</th>
           <th onclick="sortTable(9)">Peak</th>
-          <th onclick="sortTable(10)">📈 Peak Trend</th>
-          <th onclick="sortTable(11)">🔴 Live</th>
-          <th onclick="sortTable(12)">Marked Pris</th>
-          <th onclick="sortTable(13)">Edge</th>
-          <th onclick="sortTable(14)">Signal</th>
-          <th onclick="sortTable(15)">Anbefaling</th>
-          <th onclick="sortTable(16)">🎯 Anbefalt Strategi</th>
-          <th onclick="sortTable(17)">🕐 Lokal</th>
+          <th onclick="sortTable(10)">🔴 Live</th>
+          <th onclick="sortTable(11)">Marked Pris</th>
+          <th onclick="sortTable(12)">Edge</th>
+          <th onclick="sortTable(13)">Signal</th>
+          <th onclick="sortTable(14)">Anbefaling</th>
+          <th onclick="sortTable(15)">🎯 Anbefalt Strategi</th>
+          <th onclick="sortTable(16)">🕐 Lokal</th>
        </tr>
       </thead>
       <tbody>
@@ -2800,12 +2803,6 @@ def _generate_all_cities_html() -> str:
 
 <script>
 {cities_js}
-
-{sparkline_data_js}
-
-{live_fetch_js}
-
-{sparkline_fetch_js}
 
 var currentLead = {sorted_leads[0] if sorted_leads else 1};
 
@@ -2889,8 +2886,6 @@ function sortTable(colIdx) {{
     sortCol = 7;
     sortAsc = false;
     sortTable(7);
-    // Fetch peak trend sparklines (async, does not block)
-    fetchAllSparklines();
 }})();
 </script>
 </body>

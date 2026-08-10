@@ -455,6 +455,15 @@ def compute_edges(
         else:
             signal = "⚪ FLAT"
 
+        # DEBUG: Show probability comparison for key cities
+        if city.lower().startswith("dallas") and temp == 37:
+            print(f"[DEBUG EDGE] {city} {temp}°C: "
+                  f"BMA μ={mean_c:.1f}°C σ={std_c:.2f}°C → "
+                  f"P(round={temp}) = {bma_prob:.1f}% vs "
+                  f"Market = {market_prob:.1f}% → "
+                  f"Edge = {edge:+.1f}% → Signal = {signal}",
+                  file=sys.stderr)
+
         results.append({
             "city": city,
             "temp": temp,
