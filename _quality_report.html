@@ -161,7 +161,7 @@
 // No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-08-10T19:10:36Z');
+    var deployTime = new Date('2026-08-10T19:12:37Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {
@@ -1792,7 +1792,8 @@ const cityPeakState = {};
 function computeAllCitiesConfidence(city, temps, localHour) {
     const peakStart = city.peakStart || 14;
     const peakEnd = city.peakEnd || 17;
-    const maxTemp = Math.max.apply(null, temps);
+    const dailyMax = data.daily?.temperature_2m_max?.[1];
+    const maxTemp = (dailyMax != null) ? dailyMax : Math.max.apply(null, temps);
     const latestTemp = temps[temps.length - 1];
     let consecutiveDeclines = 0;
     for (let i = temps.length - 1; i >= 1; i--) {

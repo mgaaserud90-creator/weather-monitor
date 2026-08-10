@@ -2851,7 +2851,8 @@ const cityPeakState = {{}};
 function computeAllCitiesConfidence(city, temps, localHour) {{
     const peakStart = city.peakStart || 14;
     const peakEnd = city.peakEnd || 17;
-    const maxTemp = Math.max.apply(null, temps);
+    const dailyMax = data.daily?.temperature_2m_max?.[1];
+    const maxTemp = (dailyMax != null) ? dailyMax : Math.max.apply(null, temps);
     const latestTemp = temps[temps.length - 1];
     let consecutiveDeclines = 0;
     for (let i = temps.length - 1; i >= 1; i--) {{
@@ -3446,7 +3447,8 @@ const cityPeakState = {{}};
 function computeAllCitiesConfidence(city, temps, localHour) {{
     const peakStart = city.peakStart || 14;
     const peakEnd = city.peakEnd || 17;
-    const maxTemp = Math.max.apply(null, temps);
+    const dailyMax = data.daily?.temperature_2m_max?.[1];
+    const maxTemp = (dailyMax != null) ? dailyMax : Math.max.apply(null, temps);
     const latestTemp = temps[temps.length - 1];
 
     // Count consecutive declines
