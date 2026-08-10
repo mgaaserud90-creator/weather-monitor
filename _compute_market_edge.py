@@ -663,6 +663,8 @@ def build_market_type_section_html(
                 market_prob_style = ' style="color: var(--red); font-weight: 600;"'
         # Compute city slug for peak detection IDs
         city_slug = re.sub(r"[^a-zA-Z0-9]+", "-", e["city"]).lower().strip("-")
+        temp = e["temp"]
+        market_prob = e.get("market_prob", 0)
         rows_html += f"""<tr>
                 <td>{i+1}</td>
                 <td><strong>{e['city']}</strong>{resolved_badge}</td>
@@ -672,8 +674,8 @@ def build_market_type_section_html(
                 <td{market_prob_style}>{e['market_prob']:.1f}%</td>
                 <td style="color: var(--text-dim);">{e['bma_mean']:.1f}°C</td>
                 <td style="color: var(--text-dim);">{e.get('volume_display', '')}</td>
-                <td class="col-peak" id="peak-{city_slug}">⏳</td>
-                <td class="col-trend" id="trend-{city_slug}">—</td>
+                <td class="col-peak" id="peak-{city_slug}-{temp}" data-spill="{temp}" data-market="{market_prob}">⏳</td>
+                <td class="col-trend" id="trend-{city_slug}-{temp}">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr>"""
 

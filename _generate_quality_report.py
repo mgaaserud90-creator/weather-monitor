@@ -2716,15 +2716,27 @@ function sortTable(colIdx) {{
 <script>
 {cities_js}
 
-// ---- Live Peak Detection (Hourly Archive API) ----
 function updateCityRow(cityName, maxTemp, trend, peakStatus) {{
     const slug = cityName.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase().replace(/-+$/g, '');
-    const peakEl = document.getElementById('peak-' + slug);
-    const trendEl = document.getElementById('trend-' + slug);
-    if (peakEl) {{
-        peakEl.innerHTML = '📡 ' + maxTemp.toFixed(1) + '°C ' + peakStatus;
+    // Use querySelectorAll to match all temp-bucket rows (e.g., peak-Dallas_US-37, peak-Dallas_US-38)
+    const peakEls = document.querySelectorAll('[id^="peak-' + slug + '-"]');
+    const trendEls = document.querySelectorAll('[id^="trend-' + slug + '-"]');
+    for (const peakEl of peakEls) {{
+        var html = '📡 ' + maxTemp.toFixed(1) + '°C ' + peakStatus;
+        // 🔥 ARBITRAGE: measured peak exceeds spill AND market still below 50c
+        const spillStr = peakEl.getAttribute('data-spill');
+        const marketStr = peakEl.getAttribute('data-market');
+        if (spillStr !== null && marketStr !== null) {{
+            const spill = parseInt(spillStr, 10);
+            const market = parseFloat(marketStr);
+            const measuredRounded = Math.round(maxTemp);
+            if (measuredRounded >= spill && market > 0 && market < 50) {{
+                html += ' <span style="background:linear-gradient(135deg,#ff6b35,#ff2d55);color:#fff;padding:2px 6px;border-radius:4px;font-size:0.75rem;font-weight:700;margin-left:4px;">🔥 ARBITRAGE</span>';
+            }}
+        }}
+        peakEl.innerHTML = html;
     }}
-    if (trendEl) {{
+    for (const trendEl of trendEls) {{
         trendEl.textContent = trend;
         trendEl.style.color = trend === '↑' ? 'var(--red)' : (trend === '↓' ? 'var(--blue)' : 'var(--text-dim)');
     }}
