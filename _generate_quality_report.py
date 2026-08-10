@@ -1277,6 +1277,180 @@ def _build_uhi_accuracy_section(runs: list) -> str:
 
 
 # =============================================================================
+# Edge Validation Section — A/B test each feature improvement
+# =============================================================================
+
+def _impact_label_html(impact: float) -> str:
+    """Return HTML badge for an edge impact percentage."""
+    if impact > 3:
+        return '<span style="color:#3fb950;font-weight:700;">✅ REAL EDGE</span>'
+    elif impact >= 1:
+        return '<span style="color:#d2991d;font-weight:700;">🟡 MARGINAL</span>'
+    else:
+        return '<span style="color:#f85149;font-weight:700;">🔴 IMAGINED / NOISE</span>'
+
+
+def _build_edge_validation_html_section(runs: list) -> str:
+    """Build HTML section showing edge impact analysis — Real vs Imagined.
+
+    Compares feature-on vs feature-off win rates across all resolved predictions.
+    """
+    # Collect all resolved predictions
+    all_preds: list[dict] = []
+    for run in runs:
+        for city, pdata in run.get("predictions", {}).items():
+            sigma = pdata.get("strategies", {}).get("sigma", {})
+            result = sigma.get("result", "")
+            if result in ("WIN", "LOSS"):
+                all_preds.append({
+                    "city": city,
+                    "result": result,
+                    "models": pdata.get("models", 0),
+                    "spread": abs(pdata.get("p95", 0) - pdata.get("p5", 0)),
+                    "k": pdata.get("strategies", {}).get("sigma", {}).get("k", 0.5),
+                    "uhi": pdata.get("_uhi_adjustment", 0),
+                    "confidence": pdata.get("confidence", 0),
+                })
+
+    if len(all_preds) < 5:
+        return """<div class="section">
+      <h2>📊 EDGE VALIDATION — Real vs Imagined</h2>
+      <p style="color: var(--text-dim);">Too few resolved predictions (<5) for edge impact analysis.</p>
+    </div>"""
+
+    def _rate(group: list[dict]) -> tuple[int, int, float]:
+        wins = sum(1 for p in group if p["result"] == "WIN")
+        losses = len(group) - wins
+        rate = round(wins / max(1, len(group)) * 100, 1)
+        return wins, losses, rate
+
+    sections: list[str] = []
+
+    # ── 1. MODEL WEIGHTING ──
+    high_weight = [p for p in all_preds if p["models"] >= 8]
+    low_weight = [p for p in all_preds if p["models"] <= 4]
+    if high_weight and low_weight:
+        hw_w, hw_l, hw_rate = _rate(high_weight)
+        lw_w, lw_l, lw_rate = _rate(low_weight)
+        impact = round(hw_rate - lw_rate, 1)
+        sections.append(f"""<tr>
+            <td><strong>🔬 Model Weighting</strong></td>
+            <td>{hw_w}W/{hw_l}L = {hw_rate}%</td>
+            <td>{lw_w}W/{lw_l}L = {lw_rate}%</td>
+            <td>≥8 models vs ≤4</td>
+            <td style="text-align:right;">{impact:+.1f}%</td>
+            <td>{_impact_label_html(impact)}</td>
+        </tr>""")
+
+    # ── 2. SPREAD FILTERING ──
+    narrow = [p for p in all_preds if p["spread"] < 2.0]
+    if narrow:
+        nw_w, nw_l, nw_rate = _rate(narrow)
+        all_w, all_l, all_rate = _rate(all_preds)
+        impact = round(nw_rate - all_rate, 1)
+        sections.append(f"""<tr>
+            <td><strong>📏 Spread Filtering</strong></td>
+            <td>{nw_w}W/{nw_l}L = {nw_rate}%</td>
+            <td>{all_w}W/{all_l}L = {all_rate}%</td>
+            <td>Narrow (<2°C) vs All</td>
+            <td style="text-align:right;">{impact:+.1f}%</td>
+            <td>{_impact_label_html(impact)}</td>
+        </tr>""")
+
+    # ── 3. DYNAMIC k ──
+    high_k = [p for p in all_preds if p["k"] > 0.5]
+    low_k = [p for p in all_preds if p["k"] <= 0.5]
+    if high_k and low_k:
+        hk_w, hk_l, hk_rate = _rate(high_k)
+        lk_w, lk_l, lk_rate = _rate(low_k)
+        impact = round(hk_rate - lk_rate, 1)
+        sections.append(f"""<tr>
+            <td><strong>🎯 Dynamic k</strong></td>
+            <td>{hk_w}W/{hk_l}L = {hk_rate}%</td>
+            <td>{lk_w}W/{lk_l}L = {lk_rate}%</td>
+            <td>k>0.5 vs k≤0.5</td>
+            <td style="text-align:right;">{impact:+.1f}%</td>
+            <td>{_impact_label_html(impact)}</td>
+        </tr>""")
+
+    # ── 4. UHI ADJUSTMENT ──
+    uhi_yes = [p for p in all_preds if p["uhi"] > 0.5]
+    uhi_no = [p for p in all_preds if p["uhi"] <= 0.5]
+    if uhi_yes and uhi_no:
+        uy_w, uy_l, uy_rate = _rate(uhi_yes)
+        un_w, un_l, un_rate = _rate(uhi_no)
+        impact = round(uy_rate - un_rate, 1)
+        sections.append(f"""<tr>
+            <td><strong>🏙️ UHI Adjustment</strong></td>
+            <td>{uy_w}W/{uy_l}L = {uy_rate}%</td>
+            <td>{un_w}W/{un_l}L = {un_rate}%</td>
+            <td>UHI≥0.5°C vs <0.5°C</td>
+            <td style="text-align:right;">{impact:+.1f}%</td>
+            <td>{_impact_label_html(impact)}</td>
+        </tr>""")
+
+    # ── 5. BEST FEATURE COMBOS ──
+    combos: dict[str, dict[str, int]] = {}
+    for p in all_preds:
+        has_weights = p["models"] >= 7
+        is_narrow = p["spread"] < 2.0
+        has_dyn_k = p["k"] > 0.5
+        has_uhi = p["uhi"] > 0.5
+        parts: list[str] = []
+        if has_weights:
+            parts.append("Weights")
+        if is_narrow:
+            parts.append("Narrow")
+        if has_dyn_k:
+            parts.append("Dyn k")
+        if has_uhi:
+            parts.append("UHI")
+        combo_key = " + ".join(parts) if parts else "Baseline"
+        if combo_key not in combos:
+            combos[combo_key] = {"wins": 0, "total": 0}
+        combos[combo_key]["total"] += 1
+        if p["result"] == "WIN":
+            combos[combo_key]["wins"] += 1
+
+    combo_rows = ""
+    sorted_combos = sorted(combos.items(),
+                           key=lambda x: x[1]["wins"] / max(1, x[1]["total"]),
+                           reverse=True)
+    for label, stats in sorted_combos:
+        rate = round(stats["wins"] / max(1, stats["total"]) * 100, 1)
+        rate_color = "#3fb950" if rate >= 50 else ("#d2991d" if rate >= 40 else "#f85149")
+        combo_rows += (
+            f'<tr><td><strong>{label}</strong></td>'
+            f'<td>{stats["wins"]}W/{stats["total"] - stats["wins"]}L</td>'
+            f'<td style="color:{rate_color};font-weight:600;">{rate}%</td></tr>'
+        )
+
+    impact_rows = "\n".join(sections)
+
+    return f"""
+    <div class="section">
+      <h2>📊 EDGE VALIDATION — Real vs Imagined</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        A/B-testing each feature improvement against resolved predictions.
+        🟢 Impact >3% = REAL EDGE | 🟡 1–3% = MARGINAL | 🔴 <1% = IMAGINED / NOISE.
+      </p>
+      <table>
+        <thead><tr>
+          <th>Feature</th><th>Feature ON</th><th>Feature OFF</th><th>Comparison</th><th style="text-align:right;">Δ Impact</th><th>Verdict</th>
+        </tr></thead>
+        <tbody>
+        {impact_rows if impact_rows else '<tr><td colspan="6" style="color: var(--text-dim);">No feature comparisons available yet.</td></tr>'}
+        </tbody>
+      </table>
+      <h3 style="color: var(--purple); margin-top: 20px; font-size: 1rem;">🏆 BEST FEATURE COMBOS</h3>
+      <table>
+        <thead><tr><th>Combo</th><th>Record</th><th>Win Rate</th></tr></thead>
+        <tbody>{combo_rows if combo_rows else '<tr><td colspan="3" style="color: var(--text-dim);">—</td></tr>'}</tbody>
+      </table>
+    </div>"""
+
+
+# =============================================================================
 # Market Edge Section — BMA vs Polymarket
 # =============================================================================
 
@@ -1797,6 +1971,9 @@ def _generate_html_report() -> str:
     # ── Market Edge Section (BMA vs Polymarket) ──
     market_edge_section = _build_market_edge_html_section()
 
+    # ── Edge Validation Section (Real vs Imagined) ──
+    edge_validation_section = _build_edge_validation_html_section(runs)
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2090,6 +2267,7 @@ function sortTable(colIdx) {{
   {region_section}
   {uhi_section}
   {strat_rec_section}
+  {edge_validation_section}
 
 </div>
 <footer>

@@ -1106,6 +1106,12 @@ def _preds_to_dict(predictions: list[CityPrediction], locations: list[SavedLocat
             "_target_date": p.target_date,
             "_uhi_adjustment": round(uhi, 1),
             "_lead_days": lead_days,
+            "_features": {
+                "model_weighting": p.model_count >= 6,
+                "dynamic_k": p.optimal_k != 0.5,
+                "spread_filter": "narrow" if (p.p95 - p.p5) < 2.0 else ("medium" if (p.p95 - p.p5) < 4.0 else "wide"),
+                "uhi_adjusted": (uhi if uhi else 0.0) > 0.5,
+            },
         }
     return preds_dict
 
@@ -2067,6 +2073,10 @@ def full_report_mode() -> None:
     if not strategy_diff_found:
         print(f"     Ingen signifikante forskjeller funnet.")
 
+    # ── Edge Impact Analysis ──
+    edge_analysis = _analyze_edge_impact()
+    print(edge_analysis)
+
     # Generate full report file
     _generate_markdown_report(log_data, None)
 
@@ -2362,6 +2372,166 @@ def _add_uhi_accuracy_section(lines: list[str], runs: list) -> None:
 
 
 # =============================================================================
+# Edge Impact Analysis — A/B test each feature
+# =============================================================================
+
+def _impact_label(impact: float) -> str:
+    """Label an edge impact percentage."""
+    if impact > 3:
+        return "✅ REAL EDGE"
+    elif impact >= 1:
+        return "🟡 MARGINAL"
+    else:
+        return "🔴 IMAGINED / NOISE"
+
+
+def _analyze_edge_impact() -> str:
+    """Read all historical runs and compute edge impact analysis.
+
+    Compares feature-on vs feature-off win rates to determine
+    whether each edge improvement actually works.
+
+    Returns formatted multiline string.
+    """
+    log_data = _load_log()
+    runs = log_data.get("runs", [])
+
+    # Collect all resolved predictions with their feature flags
+    all_preds: list[dict[str, Any]] = []
+    for run in runs:
+        for city, pdata in run.get("predictions", {}).items():
+            sigma = pdata.get("strategies", {}).get("sigma", {})
+            result = sigma.get("result", "")
+            if result in ("WIN", "LOSS"):
+                features = pdata.get("_features", {})
+                all_preds.append({
+                    "city": city,
+                    "result": result,
+                    "models": pdata.get("models", 0),
+                    "spread": abs(pdata.get("p95", 0) - pdata.get("p5", 0)),
+                    "k": pdata.get("strategies", {}).get("sigma", {}).get("k", 0.5),
+                    "uhi": pdata.get("_uhi_adjustment", 0),
+                    "features": features,
+                    "confidence": pdata.get("confidence", 0),
+                })
+
+    if len(all_preds) < 5:
+        return "  ⚠️ For få resolved prediksjoner til edge impact analyse (<5).\n"
+
+    lines: list[str] = []
+    lines.append("")
+    lines.append("═" * 60)
+    lines.append("📊 EDGE IMPACT ANALYSIS — Real vs Imagined")
+    lines.append("═" * 60)
+    lines.append("")
+
+    def _rate(group: list[dict]) -> tuple[int, int, float]:
+        wins = sum(1 for p in group if p["result"] == "WIN")
+        losses = len(group) - wins
+        rate = round(wins / max(1, len(group)) * 100, 1)
+        return wins, losses, rate
+
+    # ── 1. MODEL WEIGHTING: high model agreement vs low ──
+    high_weight = [p for p in all_preds if p["models"] >= 8]
+    low_weight = [p for p in all_preds if p["models"] <= 4]
+
+    if high_weight and low_weight:
+        hw_w, hw_l, hw_rate = _rate(high_weight)
+        lw_w, lw_l, lw_rate = _rate(low_weight)
+        impact = round(hw_rate - lw_rate, 1)
+        lines.append("🔬 MODEL WEIGHTING:")
+        lines.append(f"   With weights (≥8 models):    {hw_w}W/{hw_l}L = {hw_rate}%")
+        lines.append(f"   Without (≤4 models):         {lw_w}W/{lw_l}L = {lw_rate}%")
+        lines.append(f"   Impact: {impact:+.1f}% → " + _impact_label(impact))
+        lines.append("")
+
+    # ── 2. SPREAD FILTERING ──
+    narrow = [p for p in all_preds if p["spread"] < 2.0]
+    medium = [p for p in all_preds if 2.0 <= p["spread"] < 4.0]
+    wide = [p for p in all_preds if p["spread"] >= 4.0]
+
+    lines.append("📏 SPREAD FILTERING:")
+    for label, group in [("Narrow (<2°C)", narrow), ("Medium (2-4°C)", medium),
+                          ("Wide (>4°C)", wide)]:
+        if group:
+            w, l, rate = _rate(group)
+            lines.append(f"   {label:<20s} {w}W/{l}L = {rate}%")
+
+    all_w, all_l, all_rate = _rate(all_preds)
+    if narrow:
+        nw_w, nw_l, nw_rate = _rate(narrow)
+        impact = round(nw_rate - all_rate, 1)
+        lines.append(f"   All spreads:                 {all_w}W/{all_l}L = {all_rate}%")
+        lines.append(f"   Narrow Impact: {impact:+.1f}% → " + _impact_label(impact))
+    lines.append("")
+
+    # ── 3. DYNAMIC k ──
+    high_k = [p for p in all_preds if p["k"] > 0.5]
+    low_k = [p for p in all_preds if p["k"] <= 0.5]
+
+    if high_k and low_k:
+        hk_w, hk_l, hk_rate = _rate(high_k)
+        lk_w, lk_l, lk_rate = _rate(low_k)
+        impact = round(hk_rate - lk_rate, 1)
+        lines.append("🎯 DYNAMIC k:")
+        lines.append(f"   With dynamic k (k>0.5):      {hk_w}W/{hk_l}L = {hk_rate}%")
+        lines.append(f"   Conservative k (≤0.5):       {lk_w}W/{lk_l}L = {lk_rate}%")
+        lines.append(f"   Impact: {impact:+.1f}% → " + _impact_label(impact))
+    lines.append("")
+
+    # ── 4. UHI ADJUSTMENT ──
+    uhi_yes = [p for p in all_preds if p["uhi"] > 0.5]
+    uhi_no = [p for p in all_preds if p["uhi"] <= 0.5]
+
+    if uhi_yes and uhi_no:
+        uy_w, uy_l, uy_rate = _rate(uhi_yes)
+        un_w, un_l, un_rate = _rate(uhi_no)
+        impact = round(uy_rate - un_rate, 1)
+        lines.append("🏙️ UHI ADJUSTMENT:")
+        lines.append(f"   UHI adjusted (≥0.5°C):       {uy_w}W/{uy_l}L = {uy_rate}%")
+        lines.append(f"   No UHI (<0.5°C):             {un_w}W/{un_l}L = {un_rate}%")
+        lines.append(f"   Impact: {impact:+.1f}% → " + _impact_label(impact))
+    lines.append("")
+
+    # ── 5. BEST FEATURE COMBOS ──
+    lines.append("🏆 BEST FEATURE COMBOS")
+    lines.append("─" * 40)
+    combos: dict[str, dict[str, int]] = {}
+    for p in all_preds:
+        has_weights = p["models"] >= 7
+        is_narrow = p["spread"] < 2.0
+        has_dyn_k = p["k"] > 0.5
+        has_uhi = p["uhi"] > 0.5
+
+        parts: list[str] = []
+        if has_weights:
+            parts.append("Weights")
+        if is_narrow:
+            parts.append("Narrow spread")
+        if has_dyn_k:
+            parts.append("Dynamic k")
+        if has_uhi:
+            parts.append("UHI")
+
+        combo_key = " + ".join(parts) if parts else "Baseline (none)"
+        if combo_key not in combos:
+            combos[combo_key] = {"wins": 0, "total": 0}
+        combos[combo_key]["total"] += 1
+        if p["result"] == "WIN":
+            combos[combo_key]["wins"] += 1
+
+    sorted_combos = sorted(combos.items(),
+                           key=lambda x: x[1]["wins"] / max(1, x[1]["total"]),
+                           reverse=True)
+    for label, stats in sorted_combos:
+        rate = round(stats["wins"] / max(1, stats["total"]) * 100, 1)
+        lines.append(f"   {label:<35s} {rate}% ({stats['wins']}W/{stats['total'] - stats['wins']}L)")
+
+    lines.append("")
+    return "\n".join(lines)
+
+
+# =============================================================================
 # Markdown Report Generator
 # =============================================================================
 
@@ -2544,6 +2714,11 @@ def _generate_markdown_report(log_data: dict, today_entry: dict | None) -> None:
 
     # ── 7. UHI Adjustment Accuracy ──
     _add_uhi_accuracy_section(lines, runs)
+
+    # ── 8. Edge Impact Analysis ──
+    edge_analysis = _analyze_edge_impact()
+    # Strip surrounding newlines and add to lines
+    lines.append(edge_analysis.strip() if edge_analysis else "  No edge impact data yet.")
 
     # Write
     REPORT_FILE.write_text("\n".join(lines), encoding="utf-8")
