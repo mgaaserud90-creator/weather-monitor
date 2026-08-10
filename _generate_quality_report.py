@@ -1770,11 +1770,13 @@ def _load_resolved_market_outcomes() -> dict[str, int]:
     return resolved
 
 
-def _load_market_city_set() -> tuple[set[str], set[str]]:
-    """Return (active_cities, resolved_cities) from _market_prices.json."""
+def _load_market_city_set() -> tuple[set[str], set[str], set[str]]:
+    """Return (active_cities, resolved_cities, today_market_cities) from _market_prices.json."""
     active: set[str] = set()
     resolved: set[str] = set()
+    today_market_cities: set[str] = set()
     market_path = Path(_SCRIPT_DIR) / "_market_prices.json"
+    today_str = str(date.today())
     if market_path.exists():
         try:
             mp = json.loads(market_path.read_text(encoding="utf-8"))
@@ -1791,9 +1793,12 @@ def _load_market_city_set() -> tuple[set[str], set[str]]:
                     active.add(city)
                 if is_resolved:
                     resolved.add(city)
+                # Track cities with today's markets
+                if m.get('date') == today_str:
+                    today_market_cities.add(city)
         except Exception:
             pass
-    return active, resolved
+    return active, resolved, today_market_cities
 
 
 def _build_cities_js_array() -> str:
@@ -1802,7 +1807,7 @@ def _build_cities_js_array() -> str:
     Includes has_market and is_resolved flags derived from _market_prices.json.
     """
     defaults_path = Path(_SCRIPT_DIR) / "weather_monitor_defaults.json"
-    active_markets, resolved_markets = _load_market_city_set()
+    active_markets, resolved_markets, today_market_cities = _load_market_city_set()
     entries: list[str] = []
     if defaults_path.exists():
         try:
@@ -1813,8 +1818,15 @@ def _build_cities_js_array() -> str:
                 lon = loc.get("lon", 0)
                 tz = loc.get("tz", "UTC")
                 if name:
-                    pw = PEAK_WINDOWS.get(name, (14, 17))
                     city_base = name.split(",")[0].strip()
+                    # Only include cities with today's active markets
+                    is_today = (
+                        name in today_market_cities
+                        or city_base in today_market_cities
+                    )
+                    if not is_today:
+                        continue
+                    pw = PEAK_WINDOWS.get(name, (14, 17))
                     has_mkt = (
                         name in active_markets
                         or city_base in active_markets
