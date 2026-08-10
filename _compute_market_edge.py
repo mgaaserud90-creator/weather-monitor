@@ -271,14 +271,15 @@ def load_market_prices() -> tuple[list[dict], str]:
 
         market_prob = round(float(yes_price) * 100, 1)
 
-        # Skip resolved/settled markets (price at extremes)
-        if yes_price > 0.99 or yes_price < 0.01:
-            continue
+        # Mark resolved markets (price at extremes) but still include them for display.
+        # Markets at 99%+ or <1% are effectively resolved — the peak window has passed
+        # and the actual temperature is known. Show them so users can see results.
+        is_resolved = (yes_price > 0.99 or yes_price < 0.01)
 
-        # Stronger resolved filter: very low price (<2%) with negligible volume
-        # → likely a losing bucket in an already-resolved market
+        # Very low price (<2%) with negligible volume → likely a losing bucket
+        # in an already-resolved market. Still include but mark as resolved.
         if yes_price < 0.02 and m.get("volume", 0) < 10:
-            continue
+            is_resolved = True
 
         # Extract question type (highest/lowest) — from parsed question or raw market data
         question_type = parsed.get("question_type", m.get("question_type", "unknown"))
@@ -289,16 +290,15 @@ def load_market_prices() -> tuple[list[dict], str]:
         if market_date is not None:
             if market_date < today:
                 continue  # Skip past markets
-            if market_date > today:
-                continue  # Skip tomorrow markets
+            # Allow today AND future markets (not just today)
         else:
             # If we can't parse the date from the question, use the market date field
             raw_date_str = parsed.get("date") or m.get("date", "")
             if raw_date_str and raw_date_str not in ("", "Unknown"):
                 try:
                     raw_date = date.fromisoformat(raw_date_str[:10])
-                    if raw_date != today:
-                        continue  # Only today
+                    if raw_date < today:
+                        continue  # Skip past markets only
                 except (ValueError, TypeError):
                     pass  # Can't parse, include anyway
             # If no date at all is available, include it (best effort)
@@ -314,6 +314,7 @@ def load_market_prices() -> tuple[list[dict], str]:
             "volume_display": m.get("volume_display", ""),
             "date": parsed["date"] or m.get("date", ""),
             "question": question,
+            "is_resolved": is_resolved,
         })
 
     return opportunities, fetched_at
@@ -510,6 +511,7 @@ def compute_edges(
             "volume_display": opp["volume_display"],
             "date": opp["date"],
             "question": opp["question"],
+            "is_resolved": opp.get("is_resolved", False),
         })
 
     # Deduplicate by (city, temp, qtype) — keep entry with highest volume.
@@ -599,6 +601,7 @@ def format_edge_html_rows(edges: list[dict]) -> str:
     """Format edge results as HTML table rows — pure data display, no trading signals.
 
     Shows per-market BMA probability instead of city-level strategy spills.
+    Resolved markets (price > 99% or < 1%) are marked with a checkmark badge.
     """
     if not edges:
         return '<tr><td colspan="8" style="color: var(--text-dim);">Ingen matchende markeder funnet.</td></tr>'
@@ -606,13 +609,21 @@ def format_edge_html_rows(edges: list[dict]) -> str:
     rows = ""
     for i, e in enumerate(edges[:20]):  # Top 20
         date_display = e.get("date", "?") or "?"
+        resolved_badge = ""
+        market_prob_style = ""
+        if e.get("is_resolved"):
+            resolved_badge = ' <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span>'
+            if e["market_prob"] > 99:
+                market_prob_style = ' style="color: var(--green); font-weight: 600;"'
+            elif e["market_prob"] < 0.01:
+                market_prob_style = ' style="color: var(--red); font-weight: 600;"'
         rows += f"""<tr>
                 <td>{i+1}</td>
-                <td><strong>{e['city']}</strong></td>
+                <td><strong>{e['city']}</strong>{resolved_badge}</td>
                 <td>{date_display}</td>
                 <td>{e['temp']}°C</td>
                 <td>{e['bma_prob']:.1f}%</td>
-                <td>{e['market_prob']:.1f}%</td>
+                <td{market_prob_style}>{e['market_prob']:.1f}%</td>
                 <td style="color: var(--text-dim);">{e['bma_mean']:.1f}°C</td>
                 <td style="color: var(--text-dim);">{e.get('volume_display', '')}</td>
             </tr>"""
@@ -641,13 +652,21 @@ def build_market_type_section_html(
     rows_html = ""
     for i, e in enumerate(edges[:n_show]):
         date_display = e.get("date", "?") or "?"
+        resolved_badge = ""
+        market_prob_style = ""
+        if e.get("is_resolved"):
+            resolved_badge = ' <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span>'
+            if e["market_prob"] > 99:
+                market_prob_style = ' style="color: var(--green); font-weight: 600;"'
+            elif e["market_prob"] < 0.01:
+                market_prob_style = ' style="color: var(--red); font-weight: 600;"'
         rows_html += f"""<tr>
                 <td>{i+1}</td>
-                <td><strong>{e['city']}</strong></td>
+                <td><strong>{e['city']}</strong>{resolved_badge}</td>
                 <td>{date_display}</td>
                 <td>{e['temp']}°C</td>
                 <td>{e['bma_prob']:.1f}%</td>
-                <td>{e['market_prob']:.1f}%</td>
+                <td{market_prob_style}>{e['market_prob']:.1f}%</td>
                 <td style="color: var(--text-dim);">{e['bma_mean']:.1f}°C</td>
                 <td style="color: var(--text-dim);">{e.get('volume_display', '')}</td>
             </tr>"""
