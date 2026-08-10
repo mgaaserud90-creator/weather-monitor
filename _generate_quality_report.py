@@ -2934,6 +2934,29 @@ def _generate_index_html() -> str:
 </html>"""
 
 
+# Peak windows (local hour ranges) for each city
+PEAK_WINDOWS: dict[str, tuple[int, int]] = {
+    "Taipei, TW": (14, 16), "Hong Kong, HK": (14, 16), "Shanghai, CN": (14, 16),
+    "Seoul (Incheon), KR": (14, 16), "Kuala Lumpur, MY": (14, 16), "Madrid, ES": (15, 18),
+    "Paris, FR": (15, 18), "Munich, DE": (15, 18), "Wellington, NZ": (14, 17),
+    "Shenzhen, CN": (14, 16), "Singapore, SG": (14, 16), "Guangzhou, CN": (14, 16),
+    "New York, US": (14, 17), "London, UK": (15, 18), "Milan, IT": (15, 18),
+    "Los Angeles, US": (14, 17), "Tokyo, JP": (14, 16), "Helsinki, FI": (15, 18),
+    "Chongqing, CN": (14, 16), "Chengdu, CN": (14, 16), "Wuhan, CN": (14, 16),
+    "Qingdao, CN": (14, 16), "Jeddah, SA": (14, 17), "Istanbul, TR": (14, 17),
+    "Ankara, TR": (14, 17), "Busan, KR": (14, 16), "Dallas, US": (14, 17),
+    "Houston, US": (14, 17), "Atlanta, US": (14, 17), "Lucknow, IN": (14, 17),
+    "Manila, PH": (14, 16), "Karachi, PK": (14, 17), "Beijing, CN": (14, 16),
+    "Chicago, US": (14, 17), "Toronto, CA": (14, 17), "Austin, US": (14, 17),
+    "Amsterdam, NL": (15, 18), "Warsaw, PL": (15, 18), "Miami, US": (14, 17),
+    "Cape Town, ZA": (14, 17), "Tel Aviv, IL": (14, 17),
+    "Buenos Aires, AR": (14, 17), "Denver, US": (14, 17),
+    "San Francisco, US": (14, 17), "Mexico City, MX": (14, 17),
+    "Seattle, US": (14, 17), "Sao Paulo, BR": (14, 17), "Zhengzhou, CN": (14, 16),
+    "Moscow, RU": (15, 18), "Panama City, PA": (14, 17), "Jinan, CN": (14, 16),
+}
+
+
 def _generate_peak_detection_html() -> str:
     """Generate a live-updating peak detection page with city toggle cards."""
     defaults_path = Path(_SCRIPT_DIR) / "weather_monitor_defaults.json"
@@ -2947,8 +2970,9 @@ def _generate_peak_detection_html() -> str:
                 lon = loc.get("lon", 0)
                 tz = loc.get("tz", "UTC")
                 if name:
+                    pw = PEAK_WINDOWS.get(name, (14, 17))
                     cities_js_entries.append(
-                        f'  {{name: "{name}", lat: {lat}, lon: {lon}, tz: "{tz}"}}'
+                        f'  {{name: "{name}", lat: {lat}, lon: {lon}, tz: "{tz}", peakStart: {pw[0]}, peakEnd: {pw[1]}}}'
                     )
         except Exception:
             pass
@@ -3007,6 +3031,22 @@ def _generate_peak_detection_html() -> str:
   .peak-card.status-rising {{ border-color: var(--orange); }}
   .peak-card.status-waiting {{ border-color: var(--border); }}
   .peak-card.status-unknown {{ border-color: var(--border); opacity: 0.6; }}
+  /* Peak window border colors */
+  .peak-card.peak-window-wait {{ border-color: #9e9e9e; }}
+  .peak-card.peak-window-near {{ border-color: #2e7d32; box-shadow: 0 0 12px rgba(46, 125, 50, 0.2); }}
+  .peak-card.peak-window-in {{ border-color: #f57f17; box-shadow: 0 0 14px rgba(245, 127, 23, 0.25); }}
+  .peak-card.peak-window-past {{ border-color: #c62828; }}
+  /* Peak window status bar */
+  .peak-window-bar {{
+    font-size: 0.8rem; font-weight: 600; padding: 6px 10px; margin-bottom: 10px;
+    border-radius: 6px; display: flex; align-items: center; gap: 6px;
+  }}
+  .peak-window-bar.wait {{ background: rgba(158, 158, 158, 0.12); color: #9e9e9e; }}
+  .peak-window-bar.near {{ background: rgba(46, 125, 50, 0.1); color: #2e7d32; }}
+  .peak-window-bar.in {{ background: rgba(245, 127, 23, 0.15); color: #e65100; }}
+  .peak-window-bar.past {{ background: rgba(198, 40, 40, 0.1); color: #c62828; }}
+  .peak-window-time {{ font-weight: 800; }}
+  .peak-window-label {{ font-weight: 800; }}
   .card-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }}
   .card-header h3 {{ font-size: 1.05rem; font-weight: 700; }}
   .card-status {{
@@ -3234,6 +3274,43 @@ function computePeakStatus(cityName, currentTemp) {{
     }}
 }}
 
+// ---- Peak Window Status ----
+function getPeakStatus(peakStart, peakEnd, tz) {{
+    try {{
+        const now = new Date();
+        const opts = {{ timeZone: tz, hour: '2-digit', hour12: false }};
+        const localHourStr = now.toLocaleString('en-US', opts);
+        const currentHour = parseInt(localHourStr.replace(/^0/, ''));
+
+        if (isNaN(currentHour)) return {{ status: 'WAIT', colorClass: 'wait', label: 'VENTER', icon: '⚪', borderClass: 'peak-window-wait' }};
+
+        if (currentHour >= peakStart && currentHour < peakEnd) {{
+            const remainingMin = (peakEnd - currentHour) * 60 - now.toLocaleString('en-US', {{ timeZone: tz, minute: '2-digit', hour12: false }}).split(':')[1];
+            const remaining = peakEnd - currentHour;
+            return {{ status: 'IN', colorClass: 'in', label: 'I PEAK-VINDU', icon: '🟡', borderClass: 'peak-window-in', detail: remaining + 't igjen' }};
+        }}
+        if (currentHour >= peakStart - 3 && currentHour < peakStart) {{
+            const until = peakStart - currentHour;
+            const untilMin = until * 60 - parseInt(now.toLocaleString('en-US', {{ timeZone: tz, minute: '2-digit', hour12: false }}).split(':')[1]) || 0;
+            const detail = until === 1 ? 'om ' + Math.max(0, (60 - parseInt(now.toLocaleString('en-US', {{ timeZone: tz, minute: '2-digit', hour12: false }}).split(':')[1]) || 0)) + 'min' : 'om ' + until + 't';
+            return {{ status: 'NEAR', colorClass: 'near', label: 'NÆRMER SEG', icon: '🟢', borderClass: 'peak-window-near', detail: detail }};
+        }}
+        if (currentHour >= peakEnd) {{
+            const ago = currentHour - peakEnd;
+            return {{ status: 'PAST', colorClass: 'past', label: 'PASSERT', icon: '🔴', borderClass: 'peak-window-past', detail: ago + 't siden' }};
+        }}
+        return {{ status: 'WAIT', colorClass: 'wait', label: 'VENTER', icon: '⚪', borderClass: 'peak-window-wait', detail: 'om ' + (peakStart - currentHour) + 't' }};
+    }} catch(e) {{
+        return {{ status: 'WAIT', colorClass: 'wait', label: 'VENTER', icon: '⚪', borderClass: 'peak-window-wait' }};
+    }}
+}}
+
+function formatPeakWindow(peakStart, peakEnd) {{
+    const s = String(peakStart).padStart(2, '0');
+    const e = String(peakEnd).padStart(2, '0');
+    return s + ':00-' + e + ':00';
+}}
+
 function updateCard(cityName, result) {{
     const card = document.getElementById('card-' + cityName.replace(/[^a-zA-Z0-9]/g, '_'));
     if (!card) return;
@@ -3243,6 +3320,7 @@ function updateCard(cityName, result) {{
     const updatedEl = card.querySelector('.card-updated');
     const confEl = card.querySelector('.card-info .conf');
     const dataInfoEl = card.querySelector('.card-info span:last-child');
+    const peakWindowEl = card.querySelector('.peak-window-bar');
 
     if (result && result.temp !== null && result.temp !== undefined) {{
         const data = cityData[cityName];
@@ -3267,6 +3345,16 @@ function updateCard(cityName, result) {{
         updatedEl.textContent = 'Oppdatert: ' + new Date().toLocaleTimeString('no-NO');
         if (dataInfoEl) dataInfoEl.textContent = 'Data: ' + data.temps.length + ' pkt';
         drawSparkline(cityName, 'spark-' + cityName.replace(/[^a-zA-Z0-9]/g, '_'));
+
+        // Update peak window status
+        if (peakWindowEl && result._city) {{
+            const city = result._city;
+            const pwStatus = getPeakStatus(city.peakStart || 14, city.peakEnd || 17, city.tz);
+            peakWindowEl.className = 'peak-window-bar ' + pwStatus.colorClass;
+            peakWindowEl.innerHTML = pwStatus.icon + ' <span class="peak-window-time">Peak: ' + formatPeakWindow(city.peakStart || 14, city.peakEnd || 17) + ' ' + (city.tz.split('/')[1] || city.tz) + '</span> | <span class="peak-window-label">' + pwStatus.label + '</span>' + (pwStatus.detail ? ' <span>(' + pwStatus.detail + ')</span>' : '');
+            // Also set card border class for peak window
+            card.classList.add(pwStatus.borderClass);
+        }}
     }} else {{
         updatedEl.textContent = 'Kunne ikke hente';
     }}
@@ -3274,10 +3362,15 @@ function updateCard(cityName, result) {{
 
 function buildCardHTML(city) {{
     const safeId = city.name.replace(/[^a-zA-Z0-9]/g, '_');
-    return '<div class="peak-card status-unknown" id="card-' + safeId + '">' +
+    const pwStatus = getPeakStatus(city.peakStart || 14, city.peakEnd || 17, city.tz);
+    const tzShort = (city.tz || 'UTC').split('/')[1] || city.tz || 'UTC';
+    return '<div class="peak-card status-unknown ' + pwStatus.borderClass + '" id="card-' + safeId + '">' +
       '<div class="card-header">' +
-        '<h3>' + city.name + '</h3>' +
+        '<h3>' + pwStatus.icon + ' ' + city.name + '</h3>' +
         '<span class="card-status unknown">VENTER</span>' +
+      '</div>' +
+      '<div class="peak-window-bar ' + pwStatus.colorClass + '">' +
+        pwStatus.icon + ' <span class="peak-window-time">⏰ Peak: ' + formatPeakWindow(city.peakStart || 14, city.peakEnd || 17) + ' ' + tzShort + '</span> | <span class="peak-window-label">' + pwStatus.label + '</span>' + (pwStatus.detail ? ' <span>(' + pwStatus.detail + ')</span>' : '') +
       '</div>' +
       '<div class="card-temp">—°C</div>' +
       '<div class="card-meta">' +
@@ -3369,6 +3462,7 @@ async function fetchAllMonitored() {{
         if (idx > 0) await new Promise(r => setTimeout(r, 300));
         const result = await fetchCurrentTemp(city);
         if (result) {{
+            result._city = city;
             updateCard(city.name, result);
         }} else {{
             updateCard(city.name, null);
