@@ -16,7 +16,7 @@ import json
 import os
 import re
 import sys
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 try:
     from zoneinfo import ZoneInfo
 except ImportError:
@@ -707,15 +707,17 @@ def _generate_html_report() -> str:
         daily_rows += f"""
                 <tr><td>{r['run_date']}</td><td>{phase_badge}</td><td>{sw}/{sl}</td><td>{pw}/{pl}</td><td>{mw}/{ml}</td><td>{sigma_rate_str}</td></tr>"""
 
-    # ── Top 5 predictions section (single day) ──
+    # ── Top 5 predictions section (multi-day: I DAG + I MORGEN) ──
     predictions_html = ""
     latest_run = runs[-1] if runs else {}
 
     if latest_run:
         top5_cities = latest_run.get("top_5_confidence", [])
         preds = latest_run.get("predictions", {})
+        multi_day = latest_run.get("predictions_multi_day", {})
         target_date = latest_run.get("target_date", latest_run.get("run_date", ""))
 
+        # ── Day 1: I DAG ──
         if top5_cities:
             top5_rows = _build_top5_rows_html(preds, top5_cities[:5])
             flip_section = _build_flip_recommendations_section(preds, top5_cities[:5])
@@ -723,22 +725,54 @@ def _generate_html_report() -> str:
             divergence_section = _build_city_divergence_section(preds)
 
             predictions_html += f"""
-   <div class="section">
-     <h2>📅 TOP 5 — PREDICTIONS ({target_date})</h2>
-     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
-       All 3 strategies shown: 🎯 Sigma (μ−kσ, dynamic k), 🛡️ P5-Basert (ultra-conservative), 📊 Mean-Basert (50/50)
-     </p>
-     <div style="overflow-x: auto;">
-     <table>
-       <thead><tr><th>#</th><th>City</th><th>BMA μ</th><th>Sigma Pos</th><th>P5 Pos</th><th>Mean Pos</th><th>Conf</th><th>Models</th><th>Peak</th><th>Sigma</th><th>P5</th><th>Mean</th><th>Rec</th></tr></thead>
-       <tbody>{top5_rows}
-       </tbody>
-     </table>
-     </div>
-   </div>
-   {flip_section}
-   {divergence_section}
-   {strategy_comparison}"""
+    <div class="section">
+      <h2>📅 TOP 5 — I DAG ({target_date})</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        All 3 strategies shown: 🎯 Sigma (μ−kσ, dynamic k), 🛡️ P5-Basert (ultra-conservative), 📊 Mean-Basert (50/50)
+      </p>
+      <div style="overflow-x: auto;">
+      <table>
+        <thead><tr><th>#</th><th>City</th><th>BMA μ</th><th>Sigma Pos</th><th>P5 Pos</th><th>Mean Pos</th><th>Conf</th><th>Models</th><th>Peak</th><th>Sigma</th><th>P5</th><th>Mean</th><th>Rec</th></tr></thead>
+        <tbody>{top5_rows}
+        </tbody>
+      </table>
+      </div>
+    </div>
+    {flip_section}
+    {divergence_section}
+    {strategy_comparison}"""
+
+        # ── Day 2: I MORGEN ──
+        day2_preds = multi_day.get("day2", {})
+        if day2_preds:
+            try:
+                tomorrow_date = (date.fromisoformat(target_date) + timedelta(days=1)).isoformat()
+            except (ValueError, TypeError):
+                tomorrow_date = (date.today() + timedelta(days=1)).isoformat()
+
+            # Sort day2 by confidence for top 5
+            day2_sorted = sorted(
+                day2_preds.items(),
+                key=lambda kv: kv[1].get("confidence", 0),
+                reverse=True,
+            )
+            day2_top5 = [c for c, _ in day2_sorted[:5]]
+            day2_top5_rows = _build_top5_rows_html(day2_preds, day2_top5)
+
+            predictions_html += f"""
+    <div class="section">
+      <h2>📅 TOP 5 — I MORGEN ({tomorrow_date})</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        All 3 strategies shown: 🎯 Sigma (μ−kσ, dynamic k), 🛡️ P5-Basert (ultra-conservative), 📊 Mean-Basert (50/50)
+      </p>
+      <div style="overflow-x: auto;">
+      <table>
+        <thead><tr><th>#</th><th>City</th><th>BMA μ</th><th>Sigma Pos</th><th>P5 Pos</th><th>Mean Pos</th><th>Conf</th><th>Models</th><th>Peak</th><th>Sigma</th><th>P5</th><th>Mean</th><th>Rec</th></tr></thead>
+        <tbody>{day2_top5_rows}
+        </tbody>
+      </table>
+      </div>
+    </div>"""
 
         # ── RESOLVED RESULTS section (show all 51 cities' outcomes) ──
         resolved_rows = ""
@@ -1124,20 +1158,32 @@ def _generate_all_cities_html() -> str:
         except Exception:
             pass
 
-    # Use flat predictions from the latest run (single day, no multi_day)
+    # Use multi-day predictions if available, fall back to flat predictions
     latest_run = runs[-1] if runs else {}
-    preds = latest_run.get("predictions", {})
+    multi_day = latest_run.get("predictions_multi_day", {})
     target_date = latest_run.get("target_date", latest_run.get("run_date", ""))
 
-    # Single lead day (0 = today)
     day_data_by_lead: dict[int, dict] = {}
     day_labels: dict[int, str] = {}
     day_target_dates: dict[int, str] = {}
 
-    if preds:
-        day_data_by_lead[0] = preds
+    # Day 1: Today (lead_days=0)
+    day1_preds = multi_day.get("day1", latest_run.get("predictions", {}))
+    if day1_preds:
+        day_data_by_lead[0] = day1_preds
         day_labels[0] = "I DAG"
         day_target_dates[0] = target_date
+
+    # Day 2: Tomorrow (lead_days=1)
+    day2_preds = multi_day.get("day2", {})
+    if day2_preds:
+        try:
+            tomorrow = (date.fromisoformat(target_date) + timedelta(days=1)).isoformat()
+        except (ValueError, TypeError):
+            tomorrow = (date.today() + timedelta(days=1)).isoformat()
+        day_data_by_lead[1] = day2_preds
+        day_labels[1] = "I MORGEN"
+        day_target_dates[1] = tomorrow
 
     if not day_data_by_lead:
         return "<!DOCTYPE html><html lang=\"no\"><head><meta charset=\"UTF-8\"><title>Alle 51 Byer</title></head><body style=\"background:#0d1117;color:#c9d1d9;font-family:sans-serif;padding:40px;text-align:center;\"><h1>Ingen data enda</h1><p>Kjor pipeline forst.</p></body></html>"
@@ -1196,7 +1242,7 @@ def _generate_all_cities_html() -> str:
     for ld in sorted_leads:
         label = day_labels.get(ld, f"+{ld}")
         target = day_target_dates.get(ld, "")
-        active_class = "active" if ld == 1 else ""
+        active_class = "active" if ld == 0 else ""
         date_buttons_html += (
             f'<button class="date-btn {active_class}" '
             f'onclick="switchDate({ld})" id="btn-{ld}">'

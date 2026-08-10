@@ -9,6 +9,8 @@ name: Model Quality Pipeline
 # Push to main → trigger deploy_dashboard.yml for GitHub Pages
 
 on:
+  push:
+    branches: ["main", "master"]
   schedule:
     - cron: '0 6 * * *'      # Daily BMA at 06:00 UTC
     - cron: '0 * * * *'      # Hourly checks (may run 2-4h rapid polling if peak windows active)
