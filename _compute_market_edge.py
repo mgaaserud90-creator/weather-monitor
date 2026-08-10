@@ -284,23 +284,22 @@ def load_market_prices() -> tuple[list[dict], str]:
         # Extract question type (highest/lowest) — from parsed question or raw market data
         question_type = parsed.get("question_type", m.get("question_type", "unknown"))
 
-        # Only include today's markets — skip past and tomorrow markets
+        # Only include today's markets — skip past AND future markets
         market_date = _extract_market_date(question)
         today = date.today()
         if market_date is not None:
-            if market_date < today:
-                continue  # Skip past markets
-            # Allow today AND future markets (not just today)
+            if market_date != today:
+                continue  # Only today's markets
         else:
             # If we can't parse the date from the question, use the market date field
             raw_date_str = parsed.get("date") or m.get("date", "")
             if raw_date_str and raw_date_str not in ("", "Unknown"):
                 try:
                     raw_date = date.fromisoformat(raw_date_str[:10])
-                    if raw_date < today:
-                        continue  # Skip past markets only
+                    if raw_date != today:
+                        continue  # Only today's markets
                 except (ValueError, TypeError):
-                    pass  # Can't parse, include anyway
+                    pass  # Can't parse, include anyway (best effort)
             # If no date at all is available, include it (best effort)
 
         opportunities.append({
@@ -826,12 +825,12 @@ def compute_resolution_arbitrage(
             action = None
             profit_cents = 0.0
 
-            if is_loser and 1 <= price_cents <= 50:
-                # SHORT: sell at price_cents, collect 100c at resolution
+            if is_loser and 1 < price_cents <= 50:
+                # SHORT: losing bucket still has value (>1c, not yet resolved)
                 action = "SHORT"
                 profit_cents = round(100 - price_cents, 1)
-            elif is_winner and 50 <= price_cents <= 95:
-                # BUY: buy at price_cents, collect 100c at resolution
+            elif is_winner and 1 < price_cents < 50:
+                # BUY: winning bucket undervalued (1-49c = genuine arb)
                 action = "BUY"
                 profit_cents = round(100 - price_cents, 1)
             else:

@@ -2730,7 +2730,7 @@ function updateCityRow(cityName, maxTemp, trend, peakStatus) {{
             const spill = parseInt(spillStr, 10);
             const market = parseFloat(marketStr);
             const measuredRounded = Math.round(maxTemp);
-            if (measuredRounded >= spill && market > 0 && market < 50) {{
+            if (measuredRounded >= spill && market > 1 && market < 50) {{
                 html += ' <span style="background:linear-gradient(135deg,#ff6b35,#ff2d55);color:#fff;padding:2px 6px;border-radius:4px;font-size:0.75rem;font-weight:700;margin-left:4px;">🔥 ARBITRAGE</span>';
             }}
         }}
