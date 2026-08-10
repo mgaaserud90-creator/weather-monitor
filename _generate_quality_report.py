@@ -1874,38 +1874,6 @@ def _generate_html_report() -> str:
     {divergence_section}
     {strategy_comparison}"""
 
-        # ── Day 2: I MORGEN ──
-        day2_preds = multi_day.get("day2", {})
-        if day2_preds:
-            try:
-                tomorrow_date = (date.fromisoformat(target_date) + timedelta(days=1)).isoformat()
-            except (ValueError, TypeError):
-                tomorrow_date = (date.today() + timedelta(days=1)).isoformat()
-
-            # Sort day2 by confidence for top 5
-            day2_sorted = sorted(
-                day2_preds.items(),
-                key=lambda kv: kv[1].get("confidence", 0),
-                reverse=True,
-            )
-            day2_top5 = [c for c, _ in day2_sorted[:5]]
-            day2_top5_rows = _build_top5_rows_html(day2_preds, day2_top5)
-
-            predictions_html += f"""
-    <div class="section">
-      <h2>📅 TOP 5 — I MORGEN ({tomorrow_date})</h2>
-      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
-        All 3 strategies shown: 🎯 Sigma (μ−kσ, dynamic k), 🛡️ P5-Basert (ultra-conservative), 📊 Mean-Basert (50/50)
-      </p>
-      <div style="overflow-x: auto;">
-      <table>
-        <thead><tr><th>#</th><th>City</th><th>BMA μ</th><th>Sigma Pos</th><th>P5 Pos</th><th>Mean Pos</th><th>Conf</th><th>Models</th><th>Peak</th><th>Sigma</th><th>P5</th><th>Mean</th><th>Rec</th></tr></thead>
-        <tbody>{day2_top5_rows}
-        </tbody>
-      </table>
-      </div>
-    </div>"""
-
         # ── RESOLVED RESULTS section (show all 51 cities' outcomes) ──
         resolved_rows = ""
         resolved_cities = []
@@ -2351,17 +2319,6 @@ def _generate_all_cities_html() -> str:
         day_labels[0] = "I DAG"
         day_target_dates[0] = target_date
 
-    # Day 2: Tomorrow (lead_days=1)
-    day2_preds = multi_day.get("day2", {})
-    if day2_preds:
-        try:
-            tomorrow = (date.fromisoformat(target_date) + timedelta(days=1)).isoformat()
-        except (ValueError, TypeError):
-            tomorrow = (date.today() + timedelta(days=1)).isoformat()
-        day_data_by_lead[1] = day2_preds
-        day_labels[1] = "I MORGEN"
-        day_target_dates[1] = tomorrow
-
     if not day_data_by_lead:
         return "<!DOCTYPE html><html lang=\"no\"><head><meta charset=\"UTF-8\"><title>Alle 51 Byer</title></head><body style=\"background:#0d1117;color:#c9d1d9;font-family:sans-serif;padding:40px;text-align:center;\"><h1>Ingen data enda</h1><p>Kjor pipeline forst.</p></body></html>"
 
@@ -2473,11 +2430,11 @@ def _generate_all_cities_html() -> str:
     summary_bar_html = ""
     if t_sigma_total > 0 or m_sigma_total > 0:
         summary_bar_html = f"""
-  <div class="section" style="max-width: 900px; margin: 0 auto 20px;">
-    <h2>📊 Today vs Tomorrow Win Rates (Resolved)</h2>
-    <div class="grid-2">
-      <div>
-        <h3 style="color: var(--green); font-size: 0.9rem;">📊 TODAY (lead_days=0)</h3>
+      <div class="section" style="max-width: 900px; margin: 0 auto 20px;">
+        <h2>📊 Today Win Rates (Resolved)</h2>
+        <div class="grid-2">
+          <div>
+            <h3 style="color: var(--green); font-size: 0.9rem;">📊 TODAY (lead_days=0)</h3>
         <table><thead><tr><th>Strategy</th><th>W/L</th><th>Rate</th></tr></thead>
         <tbody>
           <tr><td>Sigma</td><td>{today_rates['sigma']['wins']}W/{today_rates['sigma']['losses']}L</td><td>{today_sigma_wr}</td></tr>
@@ -2485,19 +2442,7 @@ def _generate_all_cities_html() -> str:
           <tr><td>Mean</td><td>{today_rates['mean']['wins']}W/{today_rates['mean']['losses']}L</td><td>{today_mean_wr}</td></tr>
         </tbody></table>
       </div>
-      <div>
-        <h3 style="color: var(--orange); font-size: 0.9rem;">📊 TOMORROW (lead_days=1)</h3>
-        <table><thead><tr><th>Strategy</th><th>W/L</th><th>Rate</th></tr></thead>
-        <tbody>
-          <tr><td>Sigma</td><td>{tomorrow_rates['sigma']['wins']}W/{tomorrow_rates['sigma']['losses']}L</td><td>{tomorrow_sigma_wr}</td></tr>
-          <tr><td>P5</td><td>{tomorrow_rates['p5']['wins']}W/{tomorrow_rates['p5']['losses']}L</td><td>{tomorrow_p5_wr}</td></tr>
-          <tr><td>Mean</td><td>{tomorrow_rates['mean']['wins']}W/{tomorrow_rates['mean']['losses']}L</td><td>{tomorrow_mean_wr}</td></tr>
-        </tbody></table>
-      </div>
-    </div>""" + (f"""
-    <div style="margin-top: 12px; padding: 10px; background: rgba({('248,81,73' if decay > 5 else ('210,153,29' if decay > 0 else '63,185,80'))}, 0.1); border-radius: 8px; text-align: center;">
-      <span style="font-weight: 700; color: {decay_color};">{decay_text}</span>
-    </div>""" if decay_text else "") + """
+    </div>
   </div>"""
 
     # ---- Build date button bar ----
@@ -2528,7 +2473,7 @@ def _generate_all_cities_html() -> str:
         available_leads = [ld for ld in sorted_leads if city_table[city].get(ld) is not None]
         if not available_leads:
             continue
-        ld = 1 if 1 in available_leads else 0
+        ld = 0
 
         d = city_table[city].get(ld)
         if d is None:

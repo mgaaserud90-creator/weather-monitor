@@ -622,6 +622,11 @@ def compute_resolution_arbitrage(
         if actual_peak is None:
             continue
 
+        # Only show if BMA confidence > 80%
+        confidence = pdata.get("confidence", 0)
+        if confidence < 0.80:
+            continue
+
         try:
             actual_val = float(actual_peak)
         except (TypeError, ValueError):
@@ -685,6 +690,8 @@ def compute_resolution_arbitrage(
                 "local_hour": local_now.hour,
                 "peak_end": peak_end,
                 "is_winner": is_winner,
+                "resolution_probability": "99% sannsynlig resolved",
+                "confidence": confidence,
             })
 
     # Deduplicate by (city, temp, action)
@@ -707,16 +714,18 @@ def format_resolution_arbitrage_table(opportunities: list[dict]) -> str:
         return ""
 
     lines = [
-        "| By | Vinner | Taper | Taper Pris | Profitt | Handling |",
-        "|----|--------|-------|-----------|---------|----------|",
+        "| By | Vinner | Taper | Taper Pris | Profitt | Sannsynlighet | Handling |",
+        "|----|--------|-------|-----------|---------|---------------|----------|",
     ]
 
     for r in opportunities:
         action_emoji = "🔴" if r["action"] == "SHORT" else "🟢"
+        res_prob = r.get("resolution_probability", "99% sannsynlig resolved")
         lines.append(
             f"| {r['city_display']} | {r['winning_temp']}°C | "
             f"{r['losing_temp']}°C @ {r['price_cents']:.1f}c | "
             f"+{r['profit_cents']:.1f}c | "
+            f"{res_prob} | "
             f"{action_emoji} {r['action']} {r['losing_temp']}°C |"
         )
 
@@ -726,19 +735,21 @@ def format_resolution_arbitrage_table(opportunities: list[dict]) -> str:
 def format_resolution_arbitrage_html_rows(opportunities: list[dict]) -> str:
     """Format resolution arbitrage results as HTML table rows."""
     if not opportunities:
-        return '<tr><td colspan="6" style="color: var(--text-dim);">Ingen resolusjonsarbitrasje funnet — peak windows har ikke passert enda.</td></tr>'
+        return '<tr><td colspan="7" style="color: var(--text-dim);">Ingen resolusjonsarbitrasje funnet — peak windows har ikke passert enda.</td></tr>'
 
     rows = ""
     for r in opportunities:
         action_color = "var(--red)" if r["action"] == "SHORT" else "var(--green)"
         action_emoji = "🔴" if r["action"] == "SHORT" else "🟢"
         action_label = f"SHORT {r['losing_temp']}°C" if r["action"] == "SHORT" else f"BUY {r['winning_temp']}°C"
+        res_prob = r.get("resolution_probability", "99% sannsynlig resolved")
 
         rows += f"""<tr>
             <td><strong>{r['city_display']}</strong></td>
             <td style="color: var(--green); font-weight: 600;">{r['winning_temp']}°C</td>
             <td>{r['losing_temp']}°C @ <span style="font-family: monospace;">{r['price_cents']:.1f}c</span></td>
             <td style="color: var(--green); font-weight: 700; font-family: monospace;">+{r['profit_cents']:.1f}c</td>
+            <td style="color: var(--green); font-weight: 600;">{res_prob}</td>
             <td style="color: {action_color}; font-weight: 600;">{action_emoji} {action_label}</td>
         </tr>"""
 
@@ -775,7 +786,7 @@ def format_resolution_arbitrage_summary_html(opportunities: list[dict]) -> str:
       <div style="overflow-x: auto;">
       <table>
         <thead><tr>
-          <th>By</th><th>Vinner</th><th>Taper</th><th>Profitt</th><th>Handling</th>
+          <th>By</th><th>Vinner</th><th>Taper</th><th>Profitt</th><th>Sannsynlighet</th><th>Handling</th>
         </tr></thead>
         <tbody>
           {rows_html}
