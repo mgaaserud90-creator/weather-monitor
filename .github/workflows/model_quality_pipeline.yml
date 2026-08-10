@@ -35,7 +35,6 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    environment: github-pages
     # Dynamic timeout:
     #   hourly_active → 300 min (5h, fits GH 6h limit for rapid 3-min polling)
     #   daily_close   → 10 min (processes ALL cities with archive API)
@@ -71,7 +70,9 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
             HOUR=$(date +%H)
-            if [ "$HOUR" = "23" ]; then
+            if [ "$HOUR" = "06" ]; then
+              MODE="daily_bma"
+            elif [ "$HOUR" = "23" ]; then
               MODE="daily_close"
             else
               MODE="hourly_active"
