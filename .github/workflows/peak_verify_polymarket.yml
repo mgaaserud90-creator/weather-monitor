@@ -90,9 +90,14 @@ jobs:
               if market_temp is not None:
                   gap = round(our_peak - market_temp, 1)
                   abs_gap = abs(gap)
-                  verdict = '✅ OK' if abs_gap <= 1.0 else ('⚠️ MINOR' if abs_gap <= 2.0 else '🔴 STASJONSFEIL')
+                  if abs_gap <= 0.5:
+                      verdict = '✅ OK'
+                  elif abs_gap <= 1.0:
+                      verdict = '⚠️ AVVIK'
+                  else:
+                      verdict = '🔴 KRITISK'
                   print(f'{verdict} {city:<30s} | Vår: {our_peak:.1f}°C | Polymarket: {market_temp}°C | Gap: {gap:+.1f}°C')
-                  if abs_gap > 1.0:
+                  if abs_gap > 0.5:
                       discrepancies.append({
                           'city': city, 'our_peak': our_peak, 'market_temp': market_temp,
                           'gap': gap, 'verdict': verdict
@@ -123,11 +128,11 @@ jobs:
             pv = json.load(open('_peak_verification_log.json'))
             disc = pv.get('discrepancies', [])
             if disc:
-                print(f'WARNING: {len(disc)} discrepancy(s) found!')
+                print(f'WARNING: {len(disc)} discrepancy(s) found (>0.5°C)!')
                 for d in disc:
                     print(f'  {d[\"verdict\"]} {d[\"city\"]}: gap={d[\"gap\"]:+.1f}°C')
             else:
-                print('All verified peaks match Polymarket within 1°C tolerance.')
+                print('All verified peaks match Polymarket within 0.5°C tolerance.')
             "
           else
             echo "No verification data generated."
