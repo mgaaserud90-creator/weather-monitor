@@ -2830,7 +2830,25 @@ const US_CITIES_JS = ['Dallas', 'Houston', 'Atlanta', 'New York', 'Chicago', 'Lo
 function isUSCity(name) {{ return US_CITIES_JS.some(c => name.includes(c)); }}
 function cToF(c) {{ return c * 9/5 + 32; }}
 
-function updateCityRow(cityName, maxTemp, trend, peakStatus) {{
+function renderSparkline(hourlyTemps, isUS) {{
+    if (!hourlyTemps || hourlyTemps.length < 2) return '—';
+    const recent = hourlyTemps.slice(-8);
+    const min = Math.min(...recent);
+    const max = Math.max(...recent);
+    const range = max - min || 1;
+    const blocks = ['▁','▂','▃','▄','▅','▆','▇','█'];
+    let html = '';
+    for (let i = 0; i < recent.length; i++) {{
+        const idx = Math.min(7, Math.floor((recent[i] - min) / range * 7));
+        const rising = i > 0 && recent[i] > recent[i-1];
+        html += '<span style=\"color:' + (rising ? '#4caf50' : '#f44336') + '\">' + blocks[idx] + '</span>';
+    }}
+    const lastVal = recent[recent.length-1];
+    html += ' <small>' + (isUS ? cToF(lastVal).toFixed(1) + '°F' : lastVal.toFixed(1) + '°C') + '</small>';
+    return html;
+}}
+
+function updateCityRow(cityName, maxTemp, trend, peakStatus, sparklineHtml) {{
     const slug = cityName.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase().replace(/-+$/g, '');
     const isUS = isUSCity(cityName);
     const displayTemp = isUS ? cToF(maxTemp).toFixed(1) + '°F' : maxTemp.toFixed(1) + '°C';
