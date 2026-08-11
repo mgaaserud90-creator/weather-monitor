@@ -196,7 +196,7 @@ const ALL_CITIES = [
 const ACTUAL_PEAK_DATA = {};
 const MARKET_PRICES = {};
 const AUTO_SELECT_CITIES = ["New York, US", "London, UK", "Dallas, US", "Houston, US", "Atlanta, US", "Chicago, US", "Toronto, CA", "Austin, US", "Miami, US", "Buenos Aires, AR", "Sao Paulo, BR", "Panama City, PA"];
-const AUTO_SELECT_GENERATED = "2026-08-11 18:09:36 UTC";
+const AUTO_SELECT_GENERATED = "2026-08-11 18:15:13 UTC";
 
 // ---- State ----
 const activeCities = new Set();  // city names currently monitored
@@ -782,13 +782,101 @@ function stopMonitoring() {
     all.forEach(name => stopCity(name));
 }
 
-// ---- Auto-start cities in peak window on page load ----
-(function autoStart() {
-    if (AUTO_SELECT_CITIES.length > 0) {
-        setTimeout(() => {
-            AUTO_SELECT_CITIES.forEach(name => startCity(name));
-        }, 500);
+// ---- Dynamic Peak Window Management ----
+const manuallySelectedCities = new Set();  // Cities user manually checked
+
+function computeCurrentPeakWindowCities() {
+    // Browser-side timezone math — same logic as Python pipeline (0 API calls)
+    const now = new Date();
+    const result = [];
+    ALL_CITIES.forEach(city => {
+        try {
+            const opts = { timeZone: city.tz || 'UTC', hour: '2-digit', hour12: false };
+            const localHour = parseInt(now.toLocaleString('en-US', opts).replace(/^0/, ''), 10);
+            if (isNaN(localHour)) return;
+            const ps = city.peakStart || 14;
+            const pe = city.peakEnd || 17;
+            // Live peak window: 1 hour before peak_start to 1 hour after peak_end
+            if ((ps - 1) <= localHour && localHour <= (pe + 1)) {
+                result.push(city.name);
+            }
+        } catch(e) {}
+    });
+    return result;
+}
+
+function syncAutoCities() {
+    const currentPeakCities = new Set(computeCurrentPeakWindowCities());
+    const nowActive = new Set(activeCities);
+
+    // 1. Start cities that entered the peak window (and not manually stopped)
+    currentPeakCities.forEach(name => {
+        if (!nowActive.has(name) && !manuallySelectedCities.has(name)) {
+            // Auto-start new city — check its box too
+            const cb = document.querySelector('#city-selector input[value="' + name + '"]');
+            if (cb && !cb.checked) {
+                cb.checked = true;
+                // Mark label with indicator
+                const label = cb.parentElement;
+                if (label && !label.textContent.startsWith('🔴')) {
+                    label.innerHTML = '<input type="checkbox" value="' + name + '" onchange="onCityToggle(this)" checked> 🔴 ' + name;
+                }
+            }
+            startCity(name);
+        }
+    });
+
+    // 2. Stop cities that left the peak window (only auto-managed, not manual)
+    nowActive.forEach(name => {
+        if (!currentPeakCities.has(name) && !manuallySelectedCities.has(name)) {
+            const cb = document.querySelector('#city-selector input[value="' + name + '"]');
+            if (cb) {
+                cb.checked = false;
+                const label = cb.parentElement;
+                if (label) {
+                    label.innerHTML = '<input type="checkbox" value="' + name + '" onchange="onCityToggle(this)"> ' + name;
+                }
+            }
+            stopCity(name);
+        }
+    });
+
+    updateStatusBar();
+}
+
+function onCityToggle(checkbox) {
+    const cityName = checkbox.value;
+    if (checkbox.checked) {
+        manuallySelectedCities.add(cityName);  // User manually checked it
+        // Update label to show it's selected
+        const label = checkbox.parentElement;
+        if (label && !label.textContent.startsWith('🔴')) {
+            label.innerHTML = '<input type="checkbox" value="' + cityName + '" onchange="onCityToggle(this)" checked> 🔴 ' + cityName;
+        }
+        startCity(cityName);
+    } else {
+        manuallySelectedCities.delete(cityName);  // User manually unchecked
+        stopCity(cityName);
     }
+}
+
+// ---- Init: auto-start + periodic sync ----
+(function initDynamicAuto() {
+    // Initial auto-start
+    setTimeout(() => {
+        const peakCities = computeCurrentPeakWindowCities();
+        peakCities.forEach(name => {
+            const cb = document.querySelector('#city-selector input[value="' + name + '"]');
+            if (cb && !cb.checked) cb.checked = true;
+            startCity(name);
+        });
+        updateStatusBar();
+    }, 500);
+
+    // Re-sync every 2 minutes — add new, remove stale (0 API calls)
+    setInterval(() => {
+        syncAutoCities();
+    }, 120000);
 })();
 
 window.addEventListener('resize', () => {
@@ -796,7 +884,6 @@ window.addEventListener('resize', () => {
         const safeId = cityName.replace(/[^a-zA-Z0-9]/g, '_');
         const canvas = document.getElementById('spark-' + safeId);
         if (canvas) {
-            const city = cityLookup.get(cityName);
             canvas.width = canvas.offsetWidth || 320;
             drawSparkline(cityName, 'spark-' + safeId);
         }
