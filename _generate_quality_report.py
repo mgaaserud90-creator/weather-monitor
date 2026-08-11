@@ -2973,13 +2973,10 @@ async function fetchLivePeak() {{
             return h >= (c.peakStart || 14) && h <= (c.peakEnd || 17);
         }} catch(e) {{ return false; }}
     }});
-    const nextInterval = anyInWindow ? 180000 : 3600000;
-    if (fetchLivePeak._timer) clearTimeout(fetchLivePeak._timer);
-    fetchLivePeak._timer = setTimeout(fetchLivePeak, nextInterval);
+    // No auto-refetch — manual button click only
 }}
 
-// Auto-fetch on page load
-setTimeout(fetchLivePeak, 2000);
+// Manual fetch only — no auto-fetch on page load
 </script>
 </body>
 </html>"""
@@ -3610,13 +3607,10 @@ async function fetchLivePeak() {{
             return h >= (c.peakStart || 14) && h <= (c.peakEnd || 17);
         }} catch(e) {{ return false; }}
     }});
-    const nextInterval = anyInWindow ? 180000 : 3600000; // 3 min or 60 min
-    if (fetchLivePeak._timer) clearTimeout(fetchLivePeak._timer);
-    fetchLivePeak._timer = setTimeout(fetchLivePeak, nextInterval);
+    // No auto-refetch — manual button click only
 }}
 
-// Auto-fetch on page load
-setTimeout(fetchLivePeak, 2000);
+// Manual fetch only — no auto-fetch on page load
 
 var currentLead = {sorted_leads[0] if sorted_leads else 1};
 
