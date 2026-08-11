@@ -448,8 +448,10 @@ def _build_strat_rec_html_section(best_per_city: dict) -> str:
 # HTML Report Generator (Dark Theme Dashboard — 3-Strategy Edition)
 # =============================================================================
 
-def _build_top5_rows_html(predictions: dict, top5_cities: list[str]) -> str:
+def _build_top5_rows_html(predictions: dict, top5_cities: list[str], peak_data: dict | None = None) -> str:
     """Build HTML table rows for top 5 cities with all 3 strategy results."""
+    if peak_data is None:
+        peak_data = {}
     resolved_market = _load_resolved_market_outcomes()
     rows = ""
     for i, city in enumerate(top5_cities):
@@ -502,14 +504,19 @@ def _build_top5_rows_html(predictions: dict, top5_cities: list[str]) -> str:
         bma_str = f"{bma_mean:.1f}°C" if isinstance(bma_mean, (int, float)) else str(bma_mean)
         std_str = f"{bma_std:.1f}" if isinstance(bma_std, (int, float)) else str(bma_std)
 
-        actual_str = f"{sigma_actual:.1f}°C" if isinstance(sigma_actual, (int, float)) else "—"
+        # Use pipeline peak_data first, fall back to sigma_actual from archive
+        pipeline_actual = peak_data.get(city)
+        actual_str = f"{pipeline_actual:.1f}°C" if isinstance(pipeline_actual, (int, float)) else (
+            f"{sigma_actual:.1f}°C" if isinstance(sigma_actual, (int, float)) else "—"
+        )
 
-        # Market deviation cell
+        # Build market peak cell from pipeline peak data or archive data
+        effective_actual = pipeline_actual if isinstance(pipeline_actual, (int, float)) else sigma_actual
         market_peak_str = actual_str
         city_base = city.split(",")[0].strip()
         market_temp = resolved_market.get(city_base) or resolved_market.get(city)
-        if market_temp is not None and isinstance(sigma_actual, (int, float)):
-            gap = round(sigma_actual - market_temp, 1)
+        if market_temp is not None and isinstance(effective_actual, (int, float)):
+            gap = round(effective_actual - market_temp, 1)
             gap_color = "#f85149" if abs(gap) > 2.0 else ("#d2991d" if abs(gap) > 1.0 else "#3fb950")
             avvik_icon = "⚠️" if abs(gap) > 2.0 else ("🟡" if abs(gap) > 1.0 else "✅")
             market_peak_str = (
@@ -519,6 +526,8 @@ def _build_top5_rows_html(predictions: dict, top5_cities: list[str]) -> str:
             )
         elif market_temp is not None:
             market_peak_str = f'📡 {actual_str} | Marked: {market_temp}°C'
+        elif isinstance(pipeline_actual, (int, float)):
+            market_peak_str = f'📡 {actual_str} ✅'
 
         # Recommendation styling
         rec_class = ""
@@ -1640,13 +1649,15 @@ def _build_resolution_arbitrage_html_section() -> str:
 # Market Edge Section — BMA vs Polymarket
 # =============================================================================
 
-def _build_market_edge_html_section() -> str:
+def _build_market_edge_html_section(peak_data: dict | None = None) -> str:
    """Build HTML section showing BMA vs Polymarket — separate highest/lowest tables.
 
    Each market type gets its own section with title:
        🔺 HØYESTE TEMPERATUR
        🔻 LAVESTE TEMPERATUR
    """
+   if peak_data is None:
+       peak_data = {}
    if not HAS_MARKET_EDGE:
        return ""
 
@@ -1701,20 +1712,20 @@ def _build_market_edge_html_section() -> str:
    if highest:
        sections.append(build_market_type_section_html(
            highest, "HØYESTE TEMPERATUR", "🔺",
-           "rgba(248,81,73,0.3)", n_show=20
+           "rgba(248,81,73,0.3)", n_show=20, peak_data=peak_data
        ))
 
    # Lowest temperature section
    if lowest:
        sections.append(build_market_type_section_html(
            lowest, "LAVESTE TEMPERATUR", "🔻",
-           "rgba(88,166,255,0.3)", n_show=20
+           "rgba(88,166,255,0.3)", n_show=20, peak_data=peak_data
        ))
 
    if other:
        sections.append(build_market_type_section_html(
            other, "ANDRE TEMPERATURMARKEDER", "📊",
-           "rgba(188,140,255,0.3)", n_show=20
+           "rgba(188,140,255,0.3)", n_show=20, peak_data=peak_data
        ))
 
    return "\n".join(sections)
@@ -2217,6 +2228,16 @@ def _generate_html_report() -> str:
     log_data = _load_log()
     runs = log_data.get("runs", [])
     cum = log_data.get("cumulative", {})
+
+    # Load peak data from pipeline
+    peak_data = {}
+    if runs:
+        latest = runs[-1]
+        for city, pdata in latest.get("predictions", {}).items():
+            actual = pdata.get("strategies", {}).get("sigma", {}).get("actual_peak")
+            if actual:
+                peak_data[city] = actual
+
     best_per_city = _get_best_strategy_per_city(runs)
 
     # Aggregate per-strategy stats
@@ -2318,7 +2339,7 @@ def _generate_html_report() -> str:
 
         # ── Day 1: I DAG ──
         if top5_cities:
-            top5_rows = _build_top5_rows_html(preds, top5_cities[:5])
+            top5_rows = _build_top5_rows_html(preds, top5_cities[:5], peak_data)
             flip_section = _build_flip_recommendations_section(preds, top5_cities[:5])
             strategy_comparison = _build_strategy_comparison_section(preds)
             divergence_section = _build_city_divergence_section(preds)
@@ -2450,7 +2471,7 @@ def _generate_html_report() -> str:
     strat_rec_section = _build_strat_rec_html_section(best_per_city)
 
     # ── Market Edge Section (BMA vs Polymarket) ──
-    market_edge_section = _build_market_edge_html_section()
+    market_edge_section = _build_market_edge_html_section(peak_data)
 
     # ── Expandable Market Detail Section ──
     expandable_market_section = _build_expandable_market_section_html()
@@ -2469,9 +2490,6 @@ def _generate_html_report() -> str:
 
     # ── Peak Verification: Var vs Polymarket ──
     peak_verification_section = _build_peak_verification_html_section()
-
-    # ── Live Peak Detection: CITIES JS array ──
-    cities_js = _build_cities_js_array()
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -2823,179 +2841,6 @@ function sortTable(colIdx) {{
   Model Quality Dashboard · 3-Strategy Comparison · Sigma (μ−kσ) vs P5 vs Mean · GitHub Pages Deploy
 </footer>
 
-<script>
-{cities_js}
-
-const US_CITIES_JS = ['Dallas', 'Houston', 'Atlanta', 'New York', 'Chicago', 'Los Angeles', 'San Francisco', 'Seattle', 'Miami', 'Denver', 'Austin'];
-function isUSCity(name) {{ return US_CITIES_JS.some(c => name.includes(c)); }}
-function cToF(c) {{ return c * 9/5 + 32; }}
-
-function renderSparkline(hourlyTemps, isUS) {{
-    if (!hourlyTemps || hourlyTemps.length < 2) return '—';
-    const recent = hourlyTemps.slice(-8);
-    const min = Math.min(...recent);
-    const max = Math.max(...recent);
-    const range = max - min || 1;
-    const blocks = ['▁','▂','▃','▄','▅','▆','▇','█'];
-    let html = '';
-    for (let i = 0; i < recent.length; i++) {{
-        const idx = Math.min(7, Math.floor((recent[i] - min) / range * 7));
-        const rising = i > 0 && recent[i] > recent[i-1];
-        html += '<span style=\"color:' + (rising ? '#4caf50' : '#f44336') + '\">' + blocks[idx] + '</span>';
-    }}
-    const lastVal = recent[recent.length-1];
-    html += ' <small>' + (isUS ? cToF(lastVal).toFixed(1) + '°F' : lastVal.toFixed(1) + '°C') + '</small>';
-    return html;
-}}
-
-function updateCityRow(cityName, maxTemp, trend, peakStatus, sparklineHtml) {{
-    const slug = cityName.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase().replace(/-+$/g, '');
-    const isUS = isUSCity(cityName);
-    const displayTemp = isUS ? cToF(maxTemp).toFixed(1) + '°F' : maxTemp.toFixed(1) + '°C';
-    // Use querySelectorAll to match all temp-bucket rows (e.g., peak-Dallas_US-37, peak-Dallas_US-38)
-    const peakEls = document.querySelectorAll('[id^="peak-' + slug + '-"]');
-    const trendEls = document.querySelectorAll('[id^="trend-' + slug + '-"]');
-    for (const peakEl of peakEls) {{
-        var html = '📡 ' + maxTemp.toFixed(1) + '°C ' + peakStatus;
-        // 🔥 ARBITRAGE: measured peak exceeds spill AND market still below 50c
-        const spillStr = peakEl.getAttribute('data-spill');
-        const marketStr = peakEl.getAttribute('data-market');
-        if (spillStr !== null && marketStr !== null) {{
-            const spill = parseInt(spillStr, 10);
-            const market = parseFloat(marketStr);
-            const measuredRounded = Math.round(maxTemp);
-            if (measuredRounded >= spill && market > 1 && market < 50) {{
-                html += ' <span style="background:linear-gradient(135deg,#ff6b35,#ff2d55);color:#fff;padding:2px 6px;border-radius:4px;font-size:0.75rem;font-weight:700;margin-left:4px;">🔥 ARBITRAGE</span>';
-            }}
-        }}
-        peakEl.innerHTML = html;
-    }}
-    for (const trendEl of trendEls) {{
-        trendEl.textContent = trend;
-        trendEl.style.color = trend === '↑' ? 'var(--red)' : (trend === '↓' ? 'var(--blue)' : 'var(--text-dim)');
-    }}
-}}
-
-const cityPeakState = {{}};
-
-function computeAllCitiesConfidence(city, temps, localHour) {{
-    const peakStart = city.peakStart || 14;
-    const peakEnd = city.peakEnd || 17;
-    const dailyMax = data.daily?.temperature_2m_max?.[1];
-    const maxTemp = (dailyMax != null) ? dailyMax : Math.max.apply(null, temps);
-    const latestTemp = temps[temps.length - 1];
-    let consecutiveDeclines = 0;
-    for (let i = temps.length - 1; i >= 1; i--) {{
-        if (temps[i] < temps[i-1] - 0.1) {{ consecutiveDeclines++; }}
-        else {{ break; }}
-    }}
-    let confidence = 0;
-    if (localHour > peakEnd) confidence += 60;
-    else if (localHour >= peakStart) confidence += 30;
-    if (consecutiveDeclines >= 3) confidence += 25;
-    else if (consecutiveDeclines >= 1) confidence += 10;
-    const gap = maxTemp - latestTemp;
-    if (gap > 1.0) confidence += 15;
-    else if (gap > 0.3) confidence += 5;
-    return Math.min(98, confidence);
-}}
-
-async function fetchLivePeak() {{
-    const today = new Date().toISOString().slice(0, 10);
-    const statusEl = document.getElementById('fetch-status');
-    const activeCities = CITIES.filter(c => c.has_market === true);
-    const fetchCities = activeCities.length > 0 ? activeCities : CITIES;
-    const total = fetchCities.length;
-    let done = 0;
-    for (const city of fetchCities) {{
-        done++;
-        if (statusEl) statusEl.textContent = '⏳ Henter peak ' + done + '/' + total + '...';
-        try {{
-            const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + city.lat +
-                '&longitude=' + city.lon + '&hourly=temperature_2m&daily=temperature_2m_max&past_days=1&forecast_days=1' +
-                '&timezone=' + encodeURIComponent(city.tz);
-            const resp = await fetch(url, {{ headers: {{ 'User-Agent': 'WeatherMonitor/1.0' }} }});
-            const data = await resp.json();
-            if (data.error) {{
-                updateCityRow(city.name, 0, '—', '⚠️ Rate limit');
-                await new Promise(r => setTimeout(r, 500));
-                continue;
-            }}
-            const temps = data.hourly.temperature_2m.filter(function(t) {{ return t !== null; }});
-            if (temps.length < 2) {{
-                await new Promise(r => setTimeout(r, 500));
-                continue;
-            }}
-            // Use official daily max from forecast API (index 1 = today when past_days=1).
-            // This matches the archive API value and is more accurate than max(hourly).
-            const dailyMax = data.daily?.temperature_2m_max?.[1];
-            const maxTemp = (dailyMax != null) ? dailyMax : Math.max.apply(null, temps);
-            const latestTemp = temps[temps.length - 1];
-            const prevTemp = temps[temps.length - 2];
-            const trend = latestTemp > prevTemp ? '↑' : (latestTemp < prevTemp ? '↓' : '→');
-            const times = data.hourly.time;
-            const lastTime = times[times.length - 1];
-            const hour = parseInt(lastTime.split('T')[1].split(':')[0]);
-            const peakStart = city.peakStart || 14;
-            const peakEnd = city.peakEnd || 17;
-            const coastalTzs = ['Asia/Taipei', 'Asia/Hong_Kong', 'Asia/Manila', 'Asia/Singapore',
-                'Pacific/Auckland', 'America/New_York', 'America/Los_Angeles',
-                'America/Miami', 'Europe/London', 'America/Panama'];
-            const adjustedPeakEnd = coastalTzs.includes(city.tz) ? peakEnd - 1 : peakEnd;
-            const inPeakWindow = (hour >= peakStart && hour <= adjustedPeakEnd);
-            const pastPeakWindow = (hour > adjustedPeakEnd);
-            const isLateDay = hour > 18;
-            if (!cityPeakState[city.name]) cityPeakState[city.name] = {{ lastNewMax: 0 }};
-            const st = cityPeakState[city.name];
-            const maxIdx = temps.lastIndexOf(maxTemp);
-            const maxHour = parseInt(times[maxIdx].split('T')[1].split(':')[0]);
-            if (maxHour >= peakStart && maxHour <= adjustedPeakEnd) {{
-                st.lastNewMax = Date.now();
-            }}
-            const noNewMax2h = st.lastNewMax > 0 && (Date.now() - st.lastNewMax) > 2 * 3600 * 1000;
-            let consecDec = 0;
-            for (let i = temps.length - 1; i >= 1; i--) {{
-                if (temps[i] < temps[i-1] - 0.1) consecDec++;
-                else break;
-            }}
-            const declineConfirmed = consecDec >= 3 && latestTemp < maxTemp - 0.3;
-            var peakStatus;
-            if (isLateDay || pastPeakWindow) {{
-                peakStatus = '🔴 PEAK NÅDD';
-            }} else if (declineConfirmed && inPeakWindow) {{
-                peakStatus = '✅ PEAK BEKREFTET';
-            }} else if (noNewMax2h && hour >= peakStart && temps.length >= 8) {{
-                peakStatus = '🟡 PEAK SANSYNLIG';
-            }} else if (inPeakWindow && trend === '↑') {{
-                peakStatus = '🟢 STIGER';
-            }} else if (inPeakWindow) {{
-                peakStatus = '🟠 NÆR PEAK';
-            }} else {{
-                peakStatus = '⏳ VENTER';
-            }}
-            const conf = computeAllCitiesConfidence(city, temps, hour);
-            peakStatus += ' [' + conf + '%]';
-            updateCityRow(city.name, maxTemp, trend, peakStatus);
-        }} catch (e) {{
-            updateCityRow(city.name, 0, '—', '⚠️ Rate limit');
-        }}
-        if (done < total) await new Promise(r => setTimeout(r, 500));
-    }}
-    if (statusEl) statusEl.textContent = '✅ Peak-data oppdatert (' + total + ' byer)';
-    const updatedEl = document.getElementById('live-updated');
-    if (updatedEl) updatedEl.textContent = new Date().toLocaleTimeString('no-NO');
-    const anyInWindow = fetchCities.some(c => {{
-        try {{
-            const opts = {{ timeZone: c.tz || 'UTC', hour: '2-digit', hour12: false }};
-            const h = parseInt(new Date().toLocaleString('en-US', opts).replace(/^0/, ''), 10);
-            return h >= (c.peakStart || 14) && h <= (c.peakEnd || 17);
-        }} catch(e) {{ return false; }}
-    }});
-    // No auto-refetch — manual button click only
-}}
-
-// Manual fetch only — no auto-fetch on page load
-</script>
 </body>
 </html>"""
     return html

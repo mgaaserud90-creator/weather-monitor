@@ -700,15 +700,21 @@ def split_edges_by_type(edges: list[dict]) -> tuple[list[dict], list[dict], list
 
 
 def build_market_type_section_html(
-    edges: list[dict], title: str, emoji: str, color: str, n_show: int = 20
+    edges: list[dict], title: str, emoji: str, color: str, n_show: int = 20,
+    peak_data: dict | None = None,
 ) -> str:
     """Build an HTML section for a specific market type (highest or lowest).
 
     Includes the full HTML table with header, not just rows.
     Now includes live peak detection columns: 📡 Foreløpig Peak, 📈 Trend, ⚡ Peak Status.
+    When peak_data is not None, pre-fills cells from pipeline data (no JS fetch needed).
+    When peak_data is None, shows manual fetch button (all-cities mode).
     """
     if not edges:
         return ""
+    embed_peaks = peak_data is not None
+    if peak_data is None:
+        peak_data = {}
 
     rows_html = ""
     for i, e in enumerate(edges[:n_show]):
@@ -726,6 +732,14 @@ def build_market_type_section_html(
         city_slug = re.sub(r"[^a-zA-Z0-9]+", "-", city).lower().strip("-")
         temp = e["temp"]
         market_prob = e.get("market_prob", 0)
+
+        # Pre-fill peak cell from pipeline data if available
+        pip_peak = peak_data.get(city)
+        if isinstance(pip_peak, (int, float)):
+            peak_cell = f'📡 {pip_peak:.1f}°C ✅'
+        else:
+            peak_cell = '⏳'
+
         rows_html += f"""<tr>
                 <td>{i+1}</td>
                 <td><strong>{city}</strong>{resolved_badge}</td>
@@ -735,14 +749,16 @@ def build_market_type_section_html(
                 <td{market_prob_style}>{e['market_prob']:.1f}%</td>
                 <td style="color: var(--text-dim);">{fmt_temp(e['bma_mean'], city)}</td>
                 <td style="color: var(--text-dim);">{e.get('volume_display', '')}</td>
-                <td class="col-peak" id="peak-{city_slug}-{temp}" data-spill="{temp}" data-market="{market_prob}">⏳</td>
+                <td class="col-peak" id="peak-{city_slug}-{temp}" data-spill="{temp}" data-market="{market_prob}">{peak_cell}</td>
                 <td class="col-trend" id="trend-{city_slug}-{temp}">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr>"""
 
-    return f"""
-    <div class="section" style="border-color: {color};">
-      <h2>{emoji} {title} <span style="color: var(--text-dim); font-size: 0.8rem;">({len(edges)} markeder)</span></h2>
+    # Only show fetch button when NOT called from quality report (peak_data is None)
+    if embed_peaks:
+        fetch_section = ''
+    else:
+        fetch_section = f"""
       <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
         Sammenligner BMA-ensemblets prediksjoner mot Polymarket-priser.
         Sortert etter BMA-konfidens (høyest først). Ingen trading-signaler — ren data.
@@ -752,7 +768,12 @@ def build_market_type_section_html(
         <button class="live-btn" onclick="fetchLivePeak()" id="fetch-btn">🔄 Hent Live Peak</button>
         <span class="live-status" id="fetch-status"></span>
         <span class="live-updated" id="live-updated"></span>
-      </div>
+      </div>"""
+
+    return f"""
+    <div class="section" style="border-color: {color};">
+      <h2>{emoji} {title} <span style="color: var(--text-dim); font-size: 0.8rem;">({len(edges)} markeder)</span></h2>
+      {fetch_section}
       <div style="overflow-x: auto;">
       <table>
         <thead><tr><th>#</th><th>By</th><th>Dato</th><th>Spill</th><th>BMA Sanns.</th><th>Marked</th><th>BMA μ</th><th>Volum</th><th>📡 Foreløpig Peak</th><th>📈 Trend</th><th>⚡ Peak Status</th></tr></thead>
