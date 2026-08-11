@@ -1026,14 +1026,9 @@ async def _hourly_check_active(
     elif newly_confirmed:
         print(f"\n  🔔 {newly_confirmed} ny(e) peak(er) bekreftet denne runden.\n")
     elif cities_for_rapid:
-        print(f"\n  ⚡ {len(cities_for_rapid)} by(er) i peak-vindu — starter 3-min rapid monitor\n")
-        await _rapid_peak_monitor(
-            entry=entry,
-            cities_in_window=cities_for_rapid,
-            predictions=preds_dict,
-            observations=observations,
-        )
-        _save_log(log_data)
+        print(f"\n  ⚡ {len(cities_for_rapid)} by(er) i peak-vindu — rapid monitor DISABLED (next hourly check will poll again)")
+        # Rapid peak monitor removed — too many API calls and ties up runner.
+        # The next hourly pipeline run will do another single-pass peak check.
     else:
         print(f"\n  ✅ timesone-aktiv sjekk fullført — {_now_utc()}\n")
 
