@@ -4314,6 +4314,23 @@ function updateCard(cityName, result) {{
         const cityMeta = result._city || {{ peakStart: 14, peakEnd: 17, tz: 'UTC' }};
         const peakInfo = computePeakStatus(cityName, result.temp, cityMeta);
 
+        // Track all-day max (even outside peak window)
+        if (data.allDayMax === undefined || data.allDayMax === null || result.temp > data.allDayMax) {{
+            data.allDayMax = result.temp;
+        }}
+        const allDayMaxEl = card.querySelector('.card-alltime-max');
+        if (allDayMaxEl) {{
+            const maxColor = data.allDayMax >= 40 ? '#f85149' : data.allDayMax >= 35 ? '#d2991d' : '#d2991d';
+            allDayMaxEl.innerHTML = 'Døgnmaks hittil: <span style="color:' + maxColor + ';">' + data.allDayMax.toFixed(1) + '°C</span>';
+            // Add indicator if max was outside peak window
+            const city = result._city || {{}};
+            const ps = city.peakStart || 14;
+            const pe = city.peakEnd || 17;
+            if (peakInfo.localHour !== undefined && (peakInfo.localHour < ps || peakInfo.localHour > pe)) {{
+                allDayMaxEl.innerHTML += ' <span style="font-size:0.65rem;color:var(--text-dim);" title="Maks registrert utenfor peak-vinduet (nå: kl ' + peakInfo.localHour + ')">⚠️ utenfor vindu</span>';
+            }}
+        }}
+
         // Track peak resolution: if peakReached, mark city as resolved
         if (peakInfo.peakReached && result._city) {{
             result._city._peak_resolved = true;
@@ -4391,6 +4408,7 @@ function buildCardHTML(city) {{
       '</div>' +
       actualPeakHTML +
       '<div class="card-temp">—°C</div>' +
+      '<div class="card-alltime-max" style="font-size:0.82rem;font-weight:600;color:var(--orange);margin-bottom:4px;">Døgnmaks hittil: —</div>' +
       '<div class="card-meta">' +
         '<span>' + city.lat.toFixed(2) + ', ' + city.lon.toFixed(2) + '</span>' +
         '<span>' + city.tz + '</span>' +
