@@ -260,7 +260,10 @@ def _get_best_strategy_per_city(runs: list) -> dict:
         mean_wl = f"{stats['mean']['wins']}W/{stats['mean']['losses']}L"
 
         rates = {"sigma": sigma_rate, "p5": p5_rate, "mean": mean_rate}
-        best = max(rates, key=lambda k: rates[k])
+        if total_resolved == 0:
+            best = "none"
+        else:
+            best = max(rates, key=lambda k: rates[k])
 
         result[city] = {
             "best": best,
@@ -319,13 +322,17 @@ def _build_resultant_monitor_lines(best_per_city: dict) -> list[str]:
     lines.append(f"Samlet edge (hvis alle fulgte anbefalt): {edge}%")
     lines.append("")
 
-    # Top 10 cities with their recommended strategy
-    sorted_cities = sorted(best_per_city.items(), key=lambda kv: kv[1][f"{kv[1]['best']}_rate"], reverse=True)
+    # Top 10 cities with their recommended strategy (only resolved cities)
+    cities_with_data = [(c, d) for c, d in best_per_city.items() if d["total_resolved"] > 0]
+    sorted_cities = sorted(cities_with_data, key=lambda kv: kv[1][f"{kv[1]['best']}_rate"], reverse=True)
     lines.append("🏆 TOP 10 PER CITY:")
-    for i, (city, d) in enumerate(sorted_cities[:10]):
-        best_name = {"sigma": "Sigma", "p5": "P5", "mean": "Mean"}.get(d["best"], d["best"])
-        rate = d[f"{d['best']}_rate"]
-        lines.append(f"   {i+1:2d}. {city:<30s} → {best_name} ({rate}%) [{d['total_resolved']} resolved]")
+    if sorted_cities:
+        for i, (city, d) in enumerate(sorted_cities[:10]):
+            best_name = {"sigma": "Sigma", "p5": "P5", "mean": "Mean"}.get(d["best"], d["best"])
+            rate = d[f"{d['best']}_rate"]
+            lines.append(f"   {i+1:2d}. {city:<30s} → {best_name} ({rate}%) [{d['total_resolved']} resolved]")
+    else:
+        lines.append("   (ingen løste data ennå)")
     lines.append("")
 
     # Per-city detailed breakdown
@@ -398,19 +405,23 @@ def _build_strat_rec_html_section(best_per_city: dict) -> str:
     mean_pct = round(len(mean_cities) / max(1, total_with_data) * 100, 1)
     p5_pct = round(len(p5_cities) / max(1, total_with_data) * 100, 1)
 
-    # Top 10 rows
-    sorted_cities = sorted(best_per_city.items(), key=lambda kv: kv[1][f"{kv[1]['best']}_rate"], reverse=True)
+    # Top 10 rows — only show cities with resolved data
+    cities_with_data = [(c, d) for c, d in best_per_city.items() if d["total_resolved"] > 0]
+    sorted_cities = sorted(cities_with_data, key=lambda kv: kv[1][f"{kv[1]['best']}_rate"], reverse=True)
     top10_rows = ""
-    for i, (city, d) in enumerate(sorted_cities[:10]):
-        best_name = {"sigma": "Sigma", "p5": "P5", "mean": "Mean"}.get(d["best"], d["best"])
-        rate = d[f"{d['best']}_rate"]
-        emoji = {"sigma": "🎯", "p5": "🛡️", "mean": "📊"}.get(d["best"], "")
-        top10_rows += (
-            f'<tr><td>{i+1}</td><td><strong>{city}</strong></td>'
-            f'<td>{emoji} {best_name}</td>'
-            f'<td style="font-weight:600;">{rate}%</td>'
-            f'<td style="color:var(--text-dim);">{d["total_resolved"]}</td></tr>'
-        )
+    if sorted_cities:
+        for i, (city, d) in enumerate(sorted_cities[:10]):
+            best_name = {"sigma": "Sigma", "p5": "P5", "mean": "Mean"}.get(d["best"], d["best"])
+            rate = d[f"{d['best']}_rate"]
+            emoji = {"sigma": "🎯", "p5": "🛡️", "mean": "📊"}.get(d["best"], "")
+            top10_rows += (
+                f'<tr><td>{i+1}</td><td><strong>{city}</strong></td>'
+                f'<td>{emoji} {best_name}</td>'
+                f'<td style="font-weight:600;">{rate}%</td>'
+                f'<td style="color:var(--text-dim);">{d["total_resolved"]}</td></tr>'
+            )
+    else:
+        top10_rows = '<tr><td colspan="5" style="color:var(--text-dim);text-align:center;padding:20px;">Ingen løste data ennå — vent til daily_close kl 23:00 UTC</td></tr>'
 
     return f"""
     <div class="section">
