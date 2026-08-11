@@ -3437,7 +3437,40 @@ def _generate_all_cities_html() -> str:
 {cities_js}
 
 // ---- Live Peak Detection (Hourly Archive API) ----
-function updateCityRow(cityName, maxTemp, trend, peakStatus) {{
+const SPARK_BLOCKS = ['▁','▂','▃','▄','▅','▆','▇','█'];
+
+function isUSCity(cityName) {{
+    return /, US$/.test(cityName);
+}}
+
+function cToF(c) {{
+    return c * 9.0 / 5.0 + 32.0;
+}}
+
+function renderSparkline(hourlyTemps, isUS) {{
+    if (!hourlyTemps || hourlyTemps.length < 2) return '—';
+
+    // Get last 8 readings
+    const recent = hourlyTemps.slice(-8);
+    const min = Math.min(...recent);
+    const max = Math.max(...recent);
+    const range = max - min || 1;
+
+    let sparkline = '';
+    for (let i = 0; i < recent.length; i++) {{
+        const idx = Math.min(7, Math.max(0, Math.floor((recent[i] - min) / range * 7)));
+        const isRising = i > 0 && recent[i] > recent[i-1];
+        const color = isRising ? '#4caf50' : '#f44336';
+        sparkline += '<span style="color:' + color + '">' + SPARK_BLOCKS[idx] + '</span>';
+    }}
+
+    // Show current temp label (F for US, C for rest)
+    const lastTemp = recent[recent.length - 1];
+    const label = isUS ? cToF(lastTemp).toFixed(0) + '°F' : lastTemp.toFixed(0) + '°C';
+    return sparkline + ' <span style="font-size:0.65rem;color:var(--text-dim);">' + label + '</span>';
+}}
+
+function updateCityRow(cityName, maxTemp, trend, peakStatus, sparklineHtml) {{
     const slug = cityName.replace(/[^a-zA-Z0-9]/g, '_');
     const peakEl = document.getElementById('peak-' + slug);
     const trendEl = document.getElementById('trend-' + slug);
@@ -3445,8 +3478,12 @@ function updateCityRow(cityName, maxTemp, trend, peakStatus) {{
         peakEl.innerHTML = '📡 ' + maxTemp.toFixed(1) + '°C ' + peakStatus;
     }}
     if (trendEl) {{
-        trendEl.textContent = trend;
-        trendEl.style.color = trend === '↑' ? 'var(--red)' : (trend === '↓' ? 'var(--blue)' : 'var(--text-dim)');
+        if (sparklineHtml) {{
+            trendEl.innerHTML = sparklineHtml;
+        }} else {{
+            trendEl.textContent = trend;
+            trendEl.style.color = trend === '↑' ? 'var(--red)' : (trend === '↓' ? 'var(--blue)' : 'var(--text-dim)');
+        }}
     }}
 }}
 
@@ -3578,7 +3615,9 @@ async function fetchLivePeak() {{
             const conf = computeAllCitiesConfidence(city, temps, hour);
             peakStatus += ' [' + conf + '%]';
 
-            updateCityRow(city.name, maxTemp, trend, peakStatus);
+            const usFlag = isUSCity(city.name);
+            const sparkHtml = renderSparkline(temps, usFlag);
+            updateCityRow(city.name, maxTemp, trend, peakStatus, sparkHtml);
         }} catch (e) {{
             updateCityRow(city.name, 0, '—', '⚠️ Rate limit');
         }}
