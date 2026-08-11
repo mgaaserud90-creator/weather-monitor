@@ -1849,7 +1849,7 @@ def _build_peak_verification_html_section() -> str:
       <h2>PEAK VERIFICATION - Var vs Polymarket</h2>
       <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
         Cross-referencing our archive peak (Open-Meteo) against Polymarket resolved outcomes.
-        STASJONSFEIL = likely different weather stations used. OK = within 1C tolerance.
+        OK = within 0.5°C | MINOR = 0.5–1.0°C (edge-affecting) | STASJONSFEIL = >1.0°C (likely wrong station).
       </p>
       <div class="card-grid" style="margin-bottom: 16px;">
         <div class="card" style="border: 1px solid #3fb950;">

@@ -105,18 +105,32 @@ jobs:
               else:
                   print(f'⚪ {city:<30s} | Vår: {our_peak:.1f}°C | Polymarket: (ikke resolved)')
 
-          # Save verification log
+          # Save verification log (compatible format with _generate_quality_report.py)
           now = datetime.now(timezone.utc).isoformat()
-          pv = {
-              'last_updated': now,
-              'run_date': latest.get('run_date', ''),
-              'total_verified': sum(1 for p in preds.values() if p.get('strategies',{}).get('sigma',{}).get('actual_peak') is not None),
-              'total_matched': len([d for d in discrepancies]) + sum(1 for city, pdata in preds.items() if pdata.get('strategies',{}).get('sigma',{}).get('actual_peak') is not None and (market_resolved.get(city) or market_resolved.get(city.split(',')[0].strip())) is not None),
-              'discrepancies': discrepancies,
-          }
+          verifications = {}
+          for city, pdata in sorted(preds.items()):
+              sigma = pdata.get('strategies', {}).get('sigma', {})
+              our_peak = sigma.get('actual_peak')
+              if our_peak is None:
+                  continue
+              city_base = city.split(',')[0].strip()
+              market_temp = market_resolved.get(city) or market_resolved.get(city_base)
+              if market_temp is not None:
+                  gap = round(our_peak - market_temp, 1)
+                  abs_gap = abs(gap)
+                  if abs_gap <= 0.5:
+                      verdict = 'OK'
+                  elif abs_gap <= 1.0:
+                      verdict = 'MINOR'
+                  else:
+                      verdict = 'STATION_MISMATCH'
+                  verifications[city] = {
+                      'our_peak': our_peak, 'market_resolved': market_temp,
+                      'gap': gap, 'verdict': verdict, 'logged_at': now
+                  }
+          pv = {'last_updated': now, 'verifications': verifications}
           Path('_peak_verification_log.json').write_text(json.dumps(pv, indent=2, ensure_ascii=False))
-          print(f'\\nVerification saved to _peak_verification_log.json')
-          print(f'Discrepancies (>1°C): {len(discrepancies)}')
+          print(f'\\nVerification saved to _peak_verification_log.json ({len(verifications)} cities)')
           "
 
       - name: Summary
