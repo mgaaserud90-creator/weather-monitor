@@ -30,13 +30,29 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Verify prerequisites
+        run: |
+          echo "=== Checking prerequisites ==="
+          python3 --version
+          echo "Files in workspace:"
+          ls -la _generate_quality_report.py weather_monitor_defaults.json 2>/dev/null || echo "WARNING: Some files missing"
+          if [ ! -f "weather_monitor_defaults.json" ]; then
+            echo "ERROR: weather_monitor_defaults.json is required"
+            exit 1
+          fi
+
       - name: Generate peak detection page
-        run: python _generate_quality_report.py --peak
+        run: |
+          set -x
+          python3 _generate_quality_report.py --peak
+          echo "Exit code: $?"
 
       - name: Verify output
         run: |
           if [ -f "_peak_detection.html" ]; then
-            echo "OK: _peak_detection.html ($(wc -c < _peak_detection.html) bytes)"
+            AUTO_COUNT=$(grep -c '"AUTO_SELECT_CITIES"' _peak_detection.html || echo 0)
+            echo "OK: _peak_detection.html ($(wc -c < _peak_detection.html) bytes, auto-select line found: $AUTO_COUNT)"
+            head -c 500 _peak_detection.html
           else
             echo "ERROR: _peak_detection.html not generated"
             exit 1
@@ -44,5 +60,5 @@ jobs:
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Auto: live peak selector $(date -Iminutes)"
+          commit_message: "Auto: live peak selector $(date -u +%Y-%m-%dT%H:%M)"
           file_pattern: '_peak_detection.html'
