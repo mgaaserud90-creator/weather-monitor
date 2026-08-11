@@ -1,0 +1,48 @@
+name: Fetch Market Prices
+
+# Fetches Polymarket temperature market prices every 5 minutes.
+# Uses Polymarket CLOB + Gamma APIs (separate from Open-Meteo, no rate conflict).
+# Output: _market_prices.json
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'     # Every 5 minutes
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-market-prices
+  cancel-in-progress: true
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Fetch Polymarket prices
+        run: |
+          set -x
+          python3 _fetch_market_prices.py
+          echo "Exit code: $?"
+
+      - name: Verify output
+        run: |
+          if [ -f "_market_prices.json" ]; then
+            echo "OK: _market_prices.json ($(wc -c < _market_prices.json) bytes)"
+          else
+            echo "WARNING: _market_prices.json not generated (API may be rate-limited)"
+          fi
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto: market prices $(date -u +%Y-%m-%dT%H:%M)"
+          file_pattern: '_market_prices.json'

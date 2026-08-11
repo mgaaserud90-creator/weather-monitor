@@ -84,9 +84,6 @@ jobs:
           echo "mode=$MODE" >> $GITHUB_OUTPUT
           echo "Running mode: $MODE at UTC $(date -u +%H:%M) (schedule: ${SCHEDULE:-manual})"
 
-      - name: Fetch market prices
-        run: python _fetch_market_prices.py
-
       - name: Run tracker
         run: |
           set -x
