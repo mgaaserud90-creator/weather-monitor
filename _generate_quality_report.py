@@ -4026,14 +4026,15 @@ function deselectAll() {{
 async function fetchCurrentTemp(city) {{
     try {{
         const resp = await fetch(
-            'https://api.open-meteo.com/v1/forecast?latitude=' + city.lat + '&longitude=' + city.lon + '&current=temperature_2m&timezone=' + encodeURIComponent(city.tz),
+            'https://api.open-meteo.com/v1/forecast?latitude=' + city.lat + '&longitude=' + city.lon + '&current=temperature_2m&daily=temperature_2m_max&timezone=' + encodeURIComponent(city.tz),
             {{ headers: {{ 'User-Agent': 'WeatherMonitor/1.0' }} }}
         );
         const data = await resp.json();
         if (data.error) throw new Error(data.reason);
         const temp = data.current?.temperature_2m;
         const time = data.current?.time || new Date().toISOString();
-        return {{ temp, time }};
+        const dailyMax = data.daily?.temperature_2m_max?.[0] ?? null;
+        return {{ temp, time, dailyMax }};
     }} catch (e) {{
         console.error('Fetch failed for ' + city.name + ':', e);
         return null;
@@ -4320,20 +4321,27 @@ function updateCard(cityName, result) {{
         const cityMeta = result._city || {{ peakStart: 14, peakEnd: 17, tz: 'UTC' }};
         const peakInfo = computePeakStatus(cityName, result.temp, cityMeta);
 
-        // Track all-day max (even outside peak window)
-        if (data.allDayMax === undefined || data.allDayMax === null || result.temp > data.allDayMax) {{
+        // Track all-day max — use API daily max when available, fall back to local tracking
+        const apiDailyMax = result.dailyMax;
+        if (apiDailyMax !== null && apiDailyMax !== undefined) {{
+            if (data.allDayMax === undefined || data.allDayMax === null || apiDailyMax > data.allDayMax) {{
+                data.allDayMax = apiDailyMax;
+            }}
+        }} else if (data.allDayMax === undefined || data.allDayMax === null || result.temp > data.allDayMax) {{
             data.allDayMax = result.temp;
         }}
         const allDayMaxEl = card.querySelector('.card-alltime-max');
-        if (allDayMaxEl) {{
+        if (allDayMaxEl && data.allDayMax != null) {{
             const maxColor = data.allDayMax >= 40 ? '#f85149' : data.allDayMax >= 35 ? '#d2991d' : '#d2991d';
             allDayMaxEl.innerHTML = 'Døgnmaks hittil: <span style="color:' + maxColor + ';">' + data.allDayMax.toFixed(1) + '°C</span>';
-            // Add indicator if max was outside peak window
+            if (apiDailyMax !== null && apiDailyMax !== undefined) {{
+                allDayMaxEl.innerHTML += ' <span style="font-size:0.6rem;color:var(--green);">📡 API</span>';
+            }}
             const city = result._city || {{}};
             const ps = city.peakStart || 14;
             const pe = city.peakEnd || 17;
             if (peakInfo.localHour !== undefined && (peakInfo.localHour < ps || peakInfo.localHour > pe)) {{
-                allDayMaxEl.innerHTML += ' <span style="font-size:0.65rem;color:var(--text-dim);" title="Maks registrert utenfor peak-vinduet (nå: kl ' + peakInfo.localHour + ')">⚠️ utenfor vindu</span>';
+                allDayMaxEl.innerHTML += ' <span style="font-size:0.65rem;color:var(--text-dim);">⚠️ utenfor vindu</span>';
             }}
         }}
 
