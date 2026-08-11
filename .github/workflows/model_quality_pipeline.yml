@@ -1,17 +1,11 @@
 name: Model Quality Pipeline
 
-# Timezone-aware pipeline — process cities only in their active window.
+# Lightweight pipeline — minimal API calls.
 #
-# Three cron triggers:
-#   */10 6-22 * * * → hourly_active (10-min) — Near-real-time SMS alerts during
-#                                              peak hours. Quick BMA + peak check
-#                                              for cities in active window.
-#   0 * * * *       → hourly_active (hourly)  — Full BMA + peak check + rapid
-#                                              monitoring for cities in active
-#                                              window (04:00 local → peak_end+2).
-#                                              Different regions active at different UTC hours.
-#   0 23 * * *      → daily_close  — Finalize ALL 51 cities at 23:00 UTC (end of UTC day).
-#                                    Resolves today's predictions against archive data.
+# Two cron triggers:
+#   0 * * * *       → hourly_active  — Simple BMA + peak check once per hour.
+#                                      No rapid monitoring. ~50 API calls per run.
+#   0 23 * * *      → daily_close    — Resolve today's predictions against archive data.
 #
 # Push to main → trigger deploy_dashboard.yml for GitHub Pages
 
@@ -19,9 +13,8 @@ on:
   push:
     branches: ["main", "master"]
   schedule:
-    - cron: '*/10 6-22 * * *' # Every 10 min, 06:00-22:00 UTC — near-real-time SMS alerts
-    - cron: '0 * * * *'       # Hourly: timezone-aware active-city processing + rapid monitor
-    - cron: '0 23 * * *'      # Daily close at 23:00 UTC (ALL cities)
+    - cron: '0 * * * *'       # Hourly: simple BMA + peak check
+    - cron: '0 23 * * *'      # Daily close at 23:00 UTC
   workflow_dispatch:
     inputs:
       mode:
@@ -40,12 +33,9 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    # Dynamic timeout:
-    #   10-min cron   → 10 min (quick SMS check, no rapid monitoring)
-    #   hourly cron   → 300 min (5h, fits GH 6h limit for rapid 3-min polling)
-    #   daily_close   → 10 min (processes ALL cities with archive API)
-    #   other modes   → 5 min (simple one-shot operations)
-    timeout-minutes: ${{ (github.event.schedule == '*/10 6-22 * * *') && 10 || (github.event.schedule == '0 23 * * *') && 10 || (github.event.schedule == '0 * * * *') && 300 || 5 }}
+    # Hourly: 10 min (simple BMA + peak check)
+    # Daily close: 10 min (archive API)
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
