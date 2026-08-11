@@ -76,6 +76,10 @@ jobs:
             fi
           else
             MODE="${{ inputs.mode }}"
+            if [ -z "$MODE" ]; then
+              MODE="hourly_active"
+              echo "No mode provided, defaulting to hourly_active"
+            fi
           fi
           echo "mode=$MODE" >> $GITHUB_OUTPUT
           echo "Running mode: $MODE at UTC $(date -u +%H:%M) (schedule: ${SCHEDULE:-manual})"
