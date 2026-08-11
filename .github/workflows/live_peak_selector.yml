@@ -1,0 +1,48 @@
+name: Live Peak Auto-Selector
+
+# Runs every 5 minutes. ZERO weather API calls — only timezone math.
+# Detects which cities are in their peak window and generates
+# _peak_detection.html with those cities auto-selected.
+#
+# Browser JS handles actual temperature fetching (user's IP = separate rate limit).
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'     # Every 5 minutes
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: live-peak-selector
+  cancel-in-progress: true
+
+jobs:
+  select:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generate peak detection page
+        run: python _generate_quality_report.py --peak
+
+      - name: Verify output
+        run: |
+          if [ -f "_peak_detection.html" ]; then
+            echo "OK: _peak_detection.html ($(wc -c < _peak_detection.html) bytes)"
+          else
+            echo "ERROR: _peak_detection.html not generated"
+            exit 1
+          fi
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto: live peak selector $(date -Iminutes)"
+          file_pattern: '_peak_detection.html'

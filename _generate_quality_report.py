@@ -3706,10 +3706,13 @@ def _generate_peak_detection_html() -> str:
     """Generate a live-updating peak detection page with city toggle cards."""
     defaults_path = Path(_SCRIPT_DIR) / "weather_monitor_defaults.json"
     cities_js_entries: list[str] = []
+    auto_select_cities: list[str] = []
+    _default_locs: list[dict] = []
     if defaults_path.exists():
         try:
             defaults = json.loads(defaults_path.read_text(encoding="utf-8"))
-            for loc in defaults.get("default_locations", []):
+            _default_locs = defaults.get("default_locations", [])
+            for loc in _default_locs:
                 name = loc.get("name", "")
                 lat = loc.get("lat", 0)
                 lon = loc.get("lon", 0)
@@ -3761,7 +3764,33 @@ def _generate_peak_detection_html() -> str:
         pass
     market_prices_js = "const MARKET_PRICES = {\n" + ",\n".join(market_prices_entries) + "\n};" if market_prices_entries else "const MARKET_PRICES = {};"
 
+    # ── Compute auto-select cities (in live peak window: peak_start-1h to peak_end+1h) ──
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    try:
+        from zoneinfo import ZoneInfo
+        _now_utc = datetime.now(timezone.utc)
+        for loc in _default_locs:
+            name = loc.get("name", "")
+            tz_str = loc.get("tz", "UTC")
+            pw = PEAK_WINDOWS.get(name, (14, 17))
+            peak_start = pw[0]
+            peak_end = pw[1]
+            try:
+                tz_obj = ZoneInfo(tz_str)
+                local_dt = _now_utc.astimezone(tz_obj)
+                local_hour = local_dt.hour
+                # Live peak window: 1 hour before peak_start to 1 hour after peak_end
+                if (peak_start - 1) <= local_hour <= (peak_end + 1):
+                    auto_select_cities.append(name)
+            except Exception:
+                pass
+    except Exception:
+        pass
+    auto_select_js = (
+        "const AUTO_SELECT_CITIES = [\"" +
+        "\", \"".join(auto_select_cities) +
+        "\"];\nconst AUTO_SELECT_GENERATED = \"" + now_str + "\";"
+    ) if auto_select_cities else "const AUTO_SELECT_CITIES = [];\nconst AUTO_SELECT_GENERATED = \"" + now_str + "\";"
 
     return f"""<!DOCTYPE html>
 <html lang="no">
@@ -3877,7 +3906,7 @@ def _generate_peak_detection_html() -> str:
 
 <div class="container">
   <div class="status-bar" id="status-bar">
-    Klar — velg byer og trykk "Start Overvakning"
+    Laster... byer i peak-vindu auto-velges automatisk
   </div>
 
   <div class="controls">
@@ -3908,23 +3937,29 @@ def _generate_peak_detection_html() -> str:
 {cities_js_array}
 {actual_peak_js}
 {market_prices_js}
+{auto_select_js}
 
 // ---- State ----
-let monitoredCities = [];
-let monitoringIntervals = {{}};  // per-city interval IDs for adaptive polling
+const activeCities = new Set();  // city names currently monitored
+const monitoringIntervals = {{}};  // per-city interval IDs for adaptive polling
 const PEAK_POLL_MS = 180000;     // 3 min — cities in peak window
-const NORMAL_POLL_MS = 3600000;  // 60 min — cities outside peak window
+const NORMAL_POLL_MS = 600000;   // 10 min — cities outside peak window
 const cityData = {{}};
 const MAX_DATA_POINTS = 30;
+const cityLookup = new Map();    // name -> city object for fast lookup
 
 // ---- Build city selector checkboxes ----
 (function buildSelector() {{
     const container = document.getElementById('city-selector');
     ALL_CITIES.forEach(city => {{
+        cityLookup.set(city.name, city);
         const label = document.createElement('label');
-        label.innerHTML = '<input type="checkbox" value="' + city.name + '" onchange="onCityToggle()"> ' + city.name;
+        const isAuto = AUTO_SELECT_CITIES.includes(city.name);
+        label.innerHTML = '<input type="checkbox" value="' + city.name + '" onchange="onCityToggle(this)"' + (isAuto ? ' checked' : '') + '> ' + (isAuto ? '🔴 ' : '') + city.name;
         container.appendChild(label);
     }});
+    // Update status bar
+    updateStatusBar();
 }})();
 
 function getCheckedCities() {{
@@ -3932,14 +3967,39 @@ function getCheckedCities() {{
     return Array.from(checks).map(c => c.value);
 }}
 
-function onCityToggle() {{ /* tracked on Start */ }}
+function updateStatusBar() {{
+    const total = activeCities.size;
+    const autoCount = AUTO_SELECT_CITIES.length;
+    if (total > 0) {{
+        document.getElementById('status-bar').innerHTML =
+            '🟢 Overvåker <b>' + total + '</b> byer' +
+            (autoCount > 0 ? ' | 🔴 <b>' + autoCount + '</b> i peak-vindu' : '') +
+            ' | Generert: ' + AUTO_SELECT_GENERATED +
+            ' | Poll: 3 min (peak) / 10 min (utenfor)';
+    }} else if (autoCount > 0) {{
+        document.getElementById('status-bar').innerHTML =
+            '🔴 <b>' + autoCount + '</b> byer i peak-vindu — kryss av for å starte overvåkning | Generert: ' + AUTO_SELECT_GENERATED;
+    }} else {{
+        document.getElementById('status-bar').textContent =
+            'Ingen byer i peak-vindu akkurat nå. Velg byer manuelt. | Generert: ' + AUTO_SELECT_GENERATED;
+    }}
+}}
+
+function onCityToggle(checkbox) {{
+    const cityName = checkbox.value;
+    if (checkbox.checked) {{
+        startCity(cityName);
+    }} else {{
+        stopCity(cityName);
+    }}
+}}
 
 function selectAll() {{
-    document.querySelectorAll('#city-selector input[type="checkbox"]').forEach(cb => cb.checked = true);
+    document.querySelectorAll('#city-selector input[type="checkbox"]').forEach(cb => {{ cb.checked = true; startCity(cb.value); }});
 }}
 
 function deselectAll() {{
-    document.querySelectorAll('#city-selector input[type="checkbox"]').forEach(cb => cb.checked = false);
+    document.querySelectorAll('#city-selector input[type="checkbox"]').forEach(cb => {{ cb.checked = false; stopCity(cb.value); }});
 }}
 
 async function fetchCurrentTemp(city) {{
@@ -4224,16 +4284,33 @@ function updateCard(cityName, result) {{
             data.timestamps.shift();
         }}
 
-        tempEl.textContent = result.temp.toFixed(1) + '°C';
+        // Trend arrow: compare last 2 temps (or last 6 for longer trend)
+        let trendArrow = '';
+        let trendColor = '';
+        if (data.temps.length >= 2) {{
+            const shortDiff = data.temps[data.temps.length - 1] - data.temps[data.temps.length - 2];
+            const longDiff = data.temps.length >= 6 ? data.temps[data.temps.length - 1] - data.temps[data.temps.length - 6] : shortDiff;
+            if (Math.abs(shortDiff) < 0.15) {{ trendArrow = '→ stabil'; trendColor = '#8b949e'; }}
+            else if (shortDiff > 0) {{ trendArrow = '↑ +' + shortDiff.toFixed(1) + '°C'; trendColor = '#3fb950'; }}
+            else {{ trendArrow = '↓ ' + shortDiff.toFixed(1) + '°C'; trendColor = '#f85149'; }}
+        }}
+
+        tempEl.innerHTML = result.temp.toFixed(1) + '°C <span style="font-size:0.65rem;color:' + trendColor + ';font-weight:600;">' + trendArrow + '</span>';
         const cityMeta = result._city || {{ peakStart: 14, peakEnd: 17, tz: 'UTC' }};
         const peakInfo = computePeakStatus(cityName, result.temp, cityMeta);
 
-        // Track peak resolution: if peakReached, mark city as resolved to throttle polling
+        // Track peak resolution: if peakReached, mark city as resolved
         if (peakInfo.peakReached && result._city) {{
             result._city._peak_resolved = true;
         }}
 
-        statusEl.textContent = peakInfo.label;
+        // Add lock indicator for confirmed peaks
+        let lockBadge = '';
+        if (peakInfo.peakReached) {{
+            lockBadge = ' 🔒';
+        }}
+
+        statusEl.textContent = peakInfo.label + lockBadge;
         statusEl.className = 'card-status ' + peakInfo.cssClass;
         card.className = 'peak-card status-' + peakInfo.cssClass;
 
@@ -4250,8 +4327,7 @@ function updateCard(cityName, result) {{
             const city = result._city;
             const pwStatus = getPeakStatus(city.peakStart || 14, city.peakEnd || 17, city.tz);
             peakWindowEl.className = 'peak-window-bar ' + pwStatus.colorClass;
-            peakWindowEl.innerHTML = pwStatus.icon + ' <span class="peak-window-time">Peak: ' + formatPeakWindow(city.peakStart || 14, city.peakEnd || 17) + ' ' + (city.tz.split('/')[1] || city.tz) + '</span> | <span class="peak-window-label">' + pwStatus.label + '</span>' + (pwStatus.detail ? ' <span>(' + pwStatus.detail + ')</span>' : '');
-            // Also set card border class for peak window
+            peakWindowEl.innerHTML = pwStatus.icon + ' <span class="peak-window-time">⏰ Peak: ' + formatPeakWindow(city.peakStart || 14, city.peakEnd || 17) + ' ' + (city.tz.split('/')[1] || city.tz) + '</span> | <span class="peak-window-label">' + pwStatus.label + '</span>' + (pwStatus.detail ? ' <span>(' + pwStatus.detail + ')</span>' : '');
             card.classList.add(pwStatus.borderClass);
         }}
     }} else {{
@@ -4324,95 +4400,88 @@ function isInPeakWindow(city) {{
     }} catch(e) {{ return false; }}
 }}
 
-function startMonitoring() {{
-    const checked = getCheckedCities();
-    if (checked.length === 0) {{
-        document.getElementById('status-bar').textContent = 'Velg minst en by forst!';
-        return;
+// ---- Per-City Start/Stop (independent — no reset of other cities) ----
+
+function ensureCardExists(city) {{
+    const safeId = city.name.replace(/[^a-zA-Z0-9]/g, '_');
+    let card = document.getElementById('card-' + safeId);
+    if (!card) {{
+        const grid = document.getElementById('cards-grid');
+        const emptyState = grid.querySelector('.empty-state');
+        if (emptyState) emptyState.remove();
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = buildCardHTML(city);
+        grid.appendChild(tempDiv.firstElementChild);
+        card = document.getElementById('card-' + safeId);
     }}
+    if (card) {{
+        const canvas = document.getElementById('spark-' + safeId);
+        if (canvas) {{
+            canvas.width = canvas.offsetWidth || 320;
+            canvas.height = 80;
+        }}
+    }}
+    return card;
+}}
 
-    // Only monitor cities with active Polymarket markets (if any), else all checked
-    const marketCities = ALL_CITIES.filter(c => c.has_market === true);
-    const useMarketFilter = marketCities.length > 0;
+function removeCard(cityName) {{
+    const safeId = cityName.replace(/[^a-zA-Z0-9]/g, '_');
+    const card = document.getElementById('card-' + safeId);
+    if (card) card.remove();
+    const grid = document.getElementById('cards-grid');
+    if (grid.children.length === 0) {{
+        grid.innerHTML = '<div class="empty-state"><div class="icon">📈</div><p>Velg byer over for a begynne.</p><p style="font-size:0.8rem; margin-top:8px;">Byer i peak-vindu auto-velges.</p></div>';
+    }}
+}}
 
-    monitoredCities = ALL_CITIES.filter(c => {{
-        if (!checked.includes(c.name)) return false;
-        if (useMarketFilter && c.is_resolved) return false; // skip resolved
-        return true;
-    }});
+function startCity(cityName) {{
+    if (activeCities.has(cityName)) return;
+    const city = cityLookup.get(cityName);
+    if (!city) return;
 
-    monitoredCities.forEach(c => {{
-        initCityData(c.name);
-        cityData[c.name].temps = [];
-        cityData[c.name].timestamps = [];
-        cityData[c.name].bmaLine = null;
-        cityData[c.name].consecutiveDeclines = 0;
-        cityData[c.name].lastNewMaxTime = null;
-        c._peak_resolved = false;
-    }});
+    initCityData(cityName);
+    activeCities.add(cityName);
+    ensureCardExists(city);
 
-    // Try to set BMA predictions from quality log
     fetch('_model_quality_log.json')
         .then(r => r.json())
         .then(log => {{
             const runs = log.runs || [];
             if (runs.length > 0) {{
-                const lastRun = runs[runs.length - 1];
-                const preds = lastRun.predictions || {{}};
-                monitoredCities.forEach(c => {{
-                    const p = preds[c.name];
-                    if (p && p.bma_mean != null) {{
-                        cityData[c.name].bmaLine = p.bma_mean;
-                    }}
-                }});
+                const p = (runs[runs.length-1].predictions || {{}})[cityName];
+                if (p && p.bma_mean != null) cityData[cityName].bmaLine = p.bma_mean;
             }}
         }}).catch(() => {{}});
 
-    const grid = document.getElementById('cards-grid');
-    grid.innerHTML = monitoredCities.map(c => buildCardHTML(c)).join('');
+    fetchOneCity(city);
 
-    monitoredCities.forEach(c => {{
-        const safeId = c.name.replace(/[^a-zA-Z0-9]/g, '_');
-        const canvas = document.getElementById('spark-' + safeId);
-        if (canvas) {{
-            canvas.width = canvas.offsetWidth || 320;
-            canvas.height = 80;
-            drawSparkline(c.name, 'spark-' + safeId);
+    const pollMs = isInPeakWindow(city) ? PEAK_POLL_MS : NORMAL_POLL_MS;
+    monitoringIntervals[cityName] = setInterval(() => {{
+        if (!activeCities.has(cityName)) {{ clearInterval(monitoringIntervals[cityName]); delete monitoringIntervals[cityName]; return; }}
+        const curPoll = isInPeakWindow(city) ? PEAK_POLL_MS : NORMAL_POLL_MS;
+        if (curPoll !== pollMs && monitoringIntervals[cityName]) {{
+            clearInterval(monitoringIntervals[cityName]);
+            monitoringIntervals[cityName] = setInterval(() => fetchOneCity(city), curPoll);
         }}
-    }});
+        fetchOneCity(city);
+    }}, pollMs);
 
-    document.getElementById('btn-start').style.display = 'none';
-    document.getElementById('btn-stop').style.display = 'inline-block';
-    document.getElementById('monitor-status').textContent = 'Overvaker ' + monitoredCities.length + ' byer';
-    document.getElementById('status-bar').textContent = 'Overvakning aktiv — adaptiv polling (3 min peak / 60 min utenfor)';
-
-    // Initial fetch for all cities
-    fetchAllMonitored();
-
-    // Adaptive per-city polling
-    scheduleAdaptivePolling();
+    updateStatusBar();
 }}
 
-function scheduleAdaptivePolling() {{
-    // Clear existing intervals
-    Object.values(monitoringIntervals).forEach(clearInterval);
-    monitoringIntervals = {{}};
-
-    monitoredCities.forEach(city => {{
-        const pollMs = isInPeakWindow(city) ? PEAK_POLL_MS : NORMAL_POLL_MS;
-        monitoringIntervals[city.name] = setInterval(() => {{
-            // Don't fetch for resolved cities
-            if (city._peak_resolved) return;
-            // Re-evaluate polling rate each cycle
-            const currentPollMs = isInPeakWindow(city) ? PEAK_POLL_MS : NORMAL_POLL_MS;
-            if (currentPollMs !== pollMs) {{
-                clearInterval(monitoringIntervals[city.name]);
-                monitoringIntervals[city.name] = setInterval(() => fetchOneCity(city), currentPollMs);
-            }} else {{
-                fetchOneCity(city);
-            }}
-        }}, pollMs);
-    }});
+function stopCity(cityName) {{
+    activeCities.delete(cityName);
+    if (monitoringIntervals[cityName]) {{
+        clearInterval(monitoringIntervals[cityName]);
+        delete monitoringIntervals[cityName];
+    }}
+    const safeId = cityName.replace(/[^a-zA-Z0-9]/g, '_');
+    const card = document.getElementById('card-' + safeId);
+    if (card) {{
+        const statusEl = card.querySelector('.card-status');
+        if (statusEl) {{ statusEl.textContent = 'PAUSET'; statusEl.className = 'card-status unknown'; }}
+    }}
+    updateStatusBar();
 }}
 
 async function fetchOneCity(city) {{
@@ -4425,43 +4494,34 @@ async function fetchOneCity(city) {{
     }} catch(e) {{ /* skip */ }}
 }}
 
+// Legacy buttons — start/stop all checked
+function startMonitoring() {{
+    const checked = getCheckedCities();
+    checked.forEach(name => startCity(name));
+}}
+
 function stopMonitoring() {{
-    Object.values(monitoringIntervals).forEach(clearInterval);
-    monitoringIntervals = {{}};
-    document.getElementById('btn-start').style.display = 'inline-block';
-    document.getElementById('btn-stop').style.display = 'none';
-    document.getElementById('monitor-status').textContent = '';
-    document.getElementById('status-bar').textContent = 'Overvakning stoppet';
+    const all = Array.from(activeCities);
+    all.forEach(name => stopCity(name));
 }}
 
-async function fetchAllMonitored() {{
-    if (monitoredCities.length === 0) return;
-    document.getElementById('status-bar').textContent = 'Henter temperaturer...';
-
-    const promises = monitoredCities.map(async (city, idx) => {{
-        if (idx > 0) await new Promise(r => setTimeout(r, 300));
-        const result = await fetchCurrentTemp(city);
-        if (result) {{
-            result._city = city;
-            updateCard(city.name, result);
-        }} else {{
-            updateCard(city.name, null);
-        }}
-        return result;
-    }});
-
-    await Promise.allSettled(promises);
-    document.getElementById('status-bar').textContent =
-        'Overvakning aktiv — ' + monitoredCities.length + ' byer — Sist oppdatert: ' + new Date().toLocaleTimeString('no-NO');
-}}
+// ---- Auto-start cities in peak window on page load ----
+(function autoStart() {{
+    if (AUTO_SELECT_CITIES.length > 0) {{
+        setTimeout(() => {{
+            AUTO_SELECT_CITIES.forEach(name => startCity(name));
+        }}, 500);
+    }}
+}})();
 
 window.addEventListener('resize', () => {{
-    monitoredCities.forEach(c => {{
-        const safeId = c.name.replace(/[^a-zA-Z0-9]/g, '_');
+    activeCities.forEach(cityName => {{
+        const safeId = cityName.replace(/[^a-zA-Z0-9]/g, '_');
         const canvas = document.getElementById('spark-' + safeId);
         if (canvas) {{
+            const city = cityLookup.get(cityName);
             canvas.width = canvas.offsetWidth || 320;
-            drawSparkline(c.name, 'spark-' + safeId);
+            drawSparkline(cityName, 'spark-' + safeId);
         }}
     }});
 }});
