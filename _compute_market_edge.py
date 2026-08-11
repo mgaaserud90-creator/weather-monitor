@@ -453,6 +453,48 @@ def build_market_lookup() -> dict[tuple[str, int], float]:
     return lookup
 
 
+# ── Kelly Criterion Position Sizing ──
+
+DEFAULT_BANKROLL = 1000.0  # USD
+KELLY_FRACTION = 0.25       # Quarter-Kelly (conservative)
+
+
+def compute_kelly_size(
+    bma_win_prob: float,      # BMA win probability (0-1)
+    market_price_yes: float,  # Polymarket YES price (0-1)
+    bankroll: float = DEFAULT_BANKROLL,
+    kelly_fraction: float = KELLY_FRACTION,
+) -> dict:
+    """Compute Kelly-optimal position size for a binary market.
+
+    For Polymarket binary outcomes:
+      b = (1 - price) / price  (net odds for buying YES)
+      f* = (p*b - q) / b       (full Kelly)
+      Recommended = f* * kelly_fraction * bankroll
+
+    Returns dict with 'full_kelly', 'recommended', 'net_odds', 'is_valid'.
+    Returns 0 if edge is negative or probability too low.
+    """
+    price = max(0.01, min(0.99, market_price_yes))  # clamp to avoid div by zero
+    p_win = max(0.0, min(1.0, bma_win_prob))
+    q_lose = 1.0 - p_win
+    net_odds = (1.0 - price) / price
+
+    if net_odds <= 0 or p_win <= 0.5:
+        return {"full_kelly": 0.0, "recommended": 0.0, "net_odds": net_odds, "is_valid": False}
+
+    full_kelly = (p_win * net_odds - q_lose) / net_odds
+    full_kelly = max(0.0, full_kelly)
+    recommended = full_kelly * kelly_fraction * bankroll
+
+    return {
+        "full_kelly": round(full_kelly, 4),
+        "recommended": round(recommended, 2),
+        "net_odds": round(net_odds, 4),
+        "is_valid": full_kelly > 0.01,
+    }
+
+
 def compute_edges(
     market_opps: list[dict],
     bma_preds: dict[str, dict],
@@ -549,6 +591,9 @@ def compute_edges(
         else:
             edge = 0
 
+        # Kelly sizing
+        kelly = compute_kelly_size(bma_prob / 100.0, market_prob / 100.0)
+
         results.append({
             "city": city,
             "temp": temp,
@@ -568,6 +613,9 @@ def compute_edges(
             "date": opp["date"],
             "question": opp["question"],
             "is_resolved": opp.get("is_resolved", False),
+            "kelly_size": kelly["recommended"],
+            "kelly_valid": kelly["is_valid"],
+            "net_odds": kelly["net_odds"],
         })
 
     # Deduplicate by (city, temp, qtype) — keep entry with highest volume.
@@ -677,6 +725,14 @@ def format_edge_html_rows(edges: list[dict]) -> str:
             elif e["market_prob"] < 0.01:
                 market_prob_style = ' style="color: var(--red); font-weight: 600;"'
         city = e["city"]
+        ks = e.get("kelly_size", 0)
+        kv = e.get("kelly_valid", False)
+        if kv and ks > 0:
+            kelly_cell = f'<span style="color:var(--green);font-weight:600;">${ks:.0f}</span>'
+        elif ks > 0:
+            kelly_cell = f'<span style="color:var(--text-dim);">${ks:.0f}</span>'
+        else:
+            kelly_cell = '<span style="color:var(--text-dim);">—</span>'
         rows += f"""<tr>
                 <td>{i+1}</td>
                 <td><strong>{city}</strong>{resolved_badge}</td>
@@ -686,6 +742,7 @@ def format_edge_html_rows(edges: list[dict]) -> str:
                 <td{market_prob_style}>{e['market_prob']:.1f}%</td>
                 <td style="color: var(--text-dim);">{fmt_temp(e['bma_mean'], city)}</td>
                 <td style="color: var(--text-dim);">{e.get('volume_display', '')}</td>
+                <td>{kelly_cell}</td>
             </tr>"""
 
     return rows
@@ -740,6 +797,16 @@ def build_market_type_section_html(
         else:
             peak_cell = '⏳'
 
+        # Kelly cell
+        ks = e.get("kelly_size", 0)
+        kv = e.get("kelly_valid", False)
+        if kv and ks > 0:
+            kelly_cell = f'<span style="color:var(--green);font-weight:600;">${ks:.0f}</span>'
+        elif ks > 0:
+            kelly_cell = f'<span style="color:var(--text-dim);">${ks:.0f}</span>'
+        else:
+            kelly_cell = '<span style="color:var(--text-dim);">—</span>'
+
         rows_html += f"""<tr>
                 <td>{i+1}</td>
                 <td><strong>{city}</strong>{resolved_badge}</td>
@@ -749,6 +816,7 @@ def build_market_type_section_html(
                 <td{market_prob_style}>{e['market_prob']:.1f}%</td>
                 <td style="color: var(--text-dim);">{fmt_temp(e['bma_mean'], city)}</td>
                 <td style="color: var(--text-dim);">{e.get('volume_display', '')}</td>
+                <td>{kelly_cell}</td>
                 <td class="col-peak" id="peak-{city_slug}-{temp}" data-spill="{temp}" data-market="{market_prob}">{peak_cell}</td>
                 <td class="col-trend" id="trend-{city_slug}-{temp}">—</td>
                 <td class="col-spark">⚡ —</td>
@@ -775,12 +843,12 @@ def build_market_type_section_html(
       <h2>{emoji} {title} <span style="color: var(--text-dim); font-size: 0.8rem;">({len(edges)} markeder)</span></h2>
       {fetch_section}
       <div style="overflow-x: auto;">
-      <table>
-        <thead><tr><th>#</th><th>By</th><th>Dato</th><th>Spill</th><th>BMA Sanns.</th><th>Marked</th><th>BMA μ</th><th>Volum</th><th>📡 Foreløpig Peak</th><th>📈 Trend</th><th>⚡ Peak Status</th></tr></thead>
-        <tbody>{rows_html}</tbody>
-      </table>
-      </div>
-    </div>"""
+     <table>
+       <thead><tr><th>#</th><th>By</th><th>Dato</th><th>Spill</th><th>BMA Sanns.</th><th>Marked</th><th>BMA μ</th><th>Volum</th><th>Kelly ($)</th><th>📡 Foreløpig Peak</th><th>📈 Trend</th><th>⚡ Peak Status</th></tr></thead>
+       <tbody>{rows_html}</tbody>
+     </table>
+     </div>
+   </div>"""
 
 
 # ---------------------------------------------------------------------------
@@ -1045,8 +1113,66 @@ def format_resolution_arbitrage_summary_html(opportunities: list[dict]) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Main
+# Safe Winners: Near-Resolved Markets with High Profit
 # ---------------------------------------------------------------------------
+
+def build_safe_winners_html_section(edges: list[dict]) -> str:
+    """Build HTML section highlighting markets at 85-99% where BMA strongly agrees.
+
+    These are "practically resolved" markets — the peak has happened, the outcome
+    is ~95%+ certain via BMA, and the market is trading at 85-95%. These offer
+    5-15% safe profit with very low risk.
+
+    Also includes Kelly sizing to show optimal position per market.
+    """
+    safe = [
+        e for e in edges
+        if 85 <= e["market_prob"] <= 99
+        and not e.get("is_resolved")
+        and e.get("bma_prob", 0) >= e["market_prob"]
+    ]
+    if not safe:
+        return ""
+
+    safe.sort(key=lambda e: e.get("kelly_size", 0), reverse=True)
+
+    total_kelly = sum(e.get("kelly_size", 0) for e in safe)
+    avg_return = sum((100 - e["market_prob"]) for e in safe) / len(safe)
+
+    rows = ""
+    for i, e in enumerate(safe[:10]):
+        city = e["city"]
+        ks = e.get("kelly_size", 0)
+        ret = round((100 - e["market_prob"]), 1)
+        rows += f"""<tr>
+                <td>{i+1}</td>
+                <td><strong>{city}</strong></td>
+                <td>{fmt_temp(e['temp'], city)}</td>
+                <td style="color:var(--green);font-weight:600;">{e['bma_prob']:.1f}%</td>
+                <td style="color:var(--green);font-weight:600;">{e['market_prob']:.1f}%</td>
+                <td style="color:var(--green);font-weight:700;">+{ret:.1f}%</td>
+                <td style="color:var(--green);font-weight:600;">${ks:.0f}</td>
+            </tr>"""
+
+    return f"""<div class="section" style="border-color: rgba(63,185,80,0.5);">
+      <h2>🟢 SIKRE VINNERE — Near-Resolved Safe Profit</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 8px;">
+        Markeder som handles til 85-99% der BMA er enig eller sterkere.
+        Disse gir {avg_return:.0f}% snitt avkastning med svært lav risiko.
+        15% på en sikker bet er bedre enn 80% på en usikker.
+      </p>
+      <div style="display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap;">
+        <span style="color: var(--green); font-weight: 600;">🔒 {len(safe)} sikre markeder</span>
+        <span style="color: var(--green); font-weight: 600;">📈 Snitt: +{avg_return:.0f}%</span>
+        <span style="color: var(--purple); font-weight: 700;">💰 Total Kelly: ${total_kelly:.0f}</span>
+      </div>
+      <div style="overflow-x: auto;">
+      <table>
+        <thead><tr><th>#</th><th>By</th><th>Spill</th><th>BMA Sanns.</th><th>Marked</th><th>Avkastning</th><th>Kelly ($)</th></tr></thead>
+        <tbody>{rows}</tbody>
+      </table>
+      </div>
+    </div>"""
 
 def main() -> int:
     parser = argparse.ArgumentParser(

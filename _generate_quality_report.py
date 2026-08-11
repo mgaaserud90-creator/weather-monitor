@@ -51,6 +51,7 @@ try:
         format_edge_html_rows, build_market_lookup, compute_bma_prob,
         compute_resolution_arbitrage, format_resolution_arbitrage_summary_html,
         split_edges_by_type, build_market_type_section_html,
+        build_safe_winners_html_section,
         is_us_city, c_to_f, fmt_temp,
     )
     HAS_MARKET_EDGE = True
@@ -1738,6 +1739,11 @@ def _build_market_edge_html_section(peak_data: dict | None = None) -> str:
            other, "ANDRE TEMPERATURMARKEDER", "📊",
            "rgba(188,140,255,0.3)", n_show=20, peak_data=peak_data
        ))
+
+   # Safe Winners section (near-resolved markets)
+   safe_winners_section = build_safe_winners_html_section(edges)
+   if safe_winners_section:
+       sections.insert(0, safe_winners_section)  # Show first for visibility
 
    return "\n".join(sections)
 
