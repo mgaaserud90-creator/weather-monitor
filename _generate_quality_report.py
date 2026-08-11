@@ -3681,7 +3681,11 @@ def _generate_index_html() -> str:
     </a>
     <a href="_peak_detection.html" class="nav-card">
       <span class="nav-icon">📈</span>
-      <span class="nav-text"><h3>Live Peak Detection</h3><p>Sanntids-overvakning · Velg byer · PEAK NADD / STIGER / VENTER</p></span>
+      <span class="nav-text"><h3>Live Peak Detection</h3><p>Sanntids-overvakning · Auto-velg byer i peak-vindu · Trend-piler · Peak-las</p></span>
+    </a>
+    <a href="brukermanual.html" class="nav-card">
+      <span class="nav-icon">📖</span>
+      <span class="nav-text"><h3>Brukermanual</h3><p>Norsk brukermanual · Oppsett · Funksjoner · Feilsøking</p></span>
     </a>
   </div>
   <footer>Generert: {now_str} · GitHub Pages Deploy</footer>

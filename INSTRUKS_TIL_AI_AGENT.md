@@ -1,9 +1,9 @@
 # 🌤️ VærMonitor — Komplett Dokumentasjon for AI Agent
 
-> **Versjon:** 2.0  
-> **Sist oppdatert:** 2026-08-10  
-> **Repo:** [github.com/mgaaserud90-creator/weather-monitor](https://github.com/mgaaserud90-creator/weather-monitor)  
-> **Dashboard:** [mgaaserud90-creator.github.io/weather-monitor/_quality_report.html](https://mgaaserud90-creator.github.io/weather-monitor/_quality_report.html)  
+> **Versjon:** 2.1
+> **Sist oppdatert:** 2026-08-11
+> **Repo:** [github.com/mgaaserud90-creator/weather-monitor](https://github.com/mgaaserud90-creator/weather-monitor)
+> **Dashboard:** [mgaaserud90-creator.github.io/weather-monitor/_quality_report.html](https://mgaaserud90-creator.github.io/weather-monitor/_quality_report.html)
 > **Hjemmeside:** [mgaaserud90-creator.github.io/weather-monitor/](https://mgaaserud90-creator.github.io/weather-monitor/)
 
 ---
@@ -44,10 +44,11 @@
 | Edge-kalkulasjon | ✅ | `edge = BMA_prob - market_price` (BUY/SHORT signal) |
 | Resolution Arbitrage | ✅ | Post-peak scanner for gratis penger |
 | Peak Detection (7 states) | ✅ | Med live confidence og 5 alert-nivåer |
-| Rapid Peak Monitor | ✅ | 3-minutts polling med ALLE 8 edge-filtre |
-| GitHub Actions cron | ✅ | Hver time + 23:00 UTC daily_close |
+| Live Peak Auto-Select | ✅ | `live_peak_selector.yml` — hvert 5. min, 0 API-kall, auto-velger byer i peak-vindu |
+| Peak Verify vs Polymarket | ✅ | `peak_verify_polymarket.yml` — 23:30 UTC, sammenligner våre peaks mot Polymarket resolved |
+| GitHub Actions (4 workflows) | ✅ | `model_quality_pipeline` + `live_peak_selector` + `fetch_market_prices` + `peak_verify_polymarket` |
 | GitHub Pages dashboard | ✅ | Auto-deploy ved push til main |
-| Per-by strategi-anbefaling | ✅ | Resultant Monitor |
+| Per-by strategi-anbefaling | ✅ | Resultant Monitor — viser "Ingen data" når ingen resolved |
 | Twilio SMS alerts | ✅ | Sendes når peak confidence > 70% OG strategi i fare |
 | Model Agreement tracking | ✅ | 4 tiers (8/8, 7/8, 6/8, <6) |
 | Edge Validation (Real vs Imagined) | ✅ | A/B-test per feature |
@@ -429,69 +430,46 @@ git commit -m "Beskrivende melding"
 git push origin main
 ```
 
-### GitHub Actions Workflows
+### GitHub Actions Workflows (4 aktive)
 
-#### 1. `model_quality_pipeline.yml` — Hovedpipeline ✅
+| # | Workflow | Cron | API-kall | Hensikt |
+|---|----------|------|----------|---------|
+| 1 | `model_quality_pipeline.yml` | Hver time + 23:00 UTC | ~827/dag (Open-Meteo) | BMA, peak check, daily_close, quality report, all-cities |
+| 2 | `live_peak_selector.yml` | Hvert 5. min | **0** (kun tidssone-matematikk) | Auto-velger byer i peak-vindu → `_peak_detection.html` |
+| 3 | `fetch_market_prices.yml` | Hvert 5. min | Polymarket API | Henter markedspriser → `_market_prices.json` |
+| 4 | `peak_verify_polymarket.yml` | 23:30 UTC | 0 (leser JSON) | Sammenligner våre archive peaks mot Polymarket resolved |
 
-**Triggere:**
-- `push` til `main`/`master`
-- `schedule`: 2 cron-jobber
-- `workflow_dispatch`: Manuell med mode-valg
+#### 1. `model_quality_pipeline.yml` — Hovedpipeline
 
-**Cron-skjema:**
+**Triggere:** `push`, `schedule`, `workflow_dispatch`
+**Timeout:** 10 min
+**Steg:** Checkout → Python 3.11 → pip install → smoke test → bestem mode → run tracker → generer HTML → SMS alerts → commit
 
-| Cron | UTC | Mode | Beskrivelse |
-|------|-----|------|-------------|
-| `0 * * * *` | Hver time | `hourly_active` | Tidssone-aware: BMA + peak check for aktive byer |
-| `0 23 * * *` | 23:00 | `daily_close` | Hent arkiv, avgjør ALLE 51 byer, 3 strategier |
+#### 2. `live_peak_selector.yml` — Auto-Select Peak Window Cities
 
-**Timeout:**
-- `hourly_active`: 300 minutter (5 timer, for rapid peak monitoring)
-- `daily_close`: 10 minutter
-- Manuell trigger: 5 minutter
+**Trigger:** `*/5 * * * *` (hvert 5. min) + `workflow_dispatch`
+**Timeout:** 3 min
+**API-kall:** 0 (kun tidssone-matematikk, `date.today()` + `ZoneInfo`)
+**Output:** `_peak_detection.html` med `AUTO_SELECT_CITIES` innebygd. Browser JS henter temperaturer fra brukerens IP (separat rate limit).
 
-**Permissions:** `contents: write`
+#### 3. `fetch_market_prices.yml` — Polymarket Priser
 
-**Steg:**
-1. Checkout + Python 3.11
-2. `pip install httpx structlog tenacity pydantic pydantic-settings python-dotenv orjson redis`
-3. Lag minimal `.env`
-4. Smoke test
-5. Bestem mode (schedule → auto; manual → input)
-6. `python _fetch_market_prices.py`
-7. `python _model_quality_tracker.py --mode {mode}`
-8. `python _generate_quality_report.py --html`
-9. `python _generate_quality_report.py --all-cities`
-10. Verifiser output
-11. Send SMS alerts (`python _sms_alert.py --check-and-send`)
-12. Auto-commit + push (via `stefanzweifel/git-auto-commit-action@v5`)
+**Trigger:** `*/5 * * * *` + `workflow_dispatch`
+**Timeout:** 5 min
+**API-kall:** Polymarket CLOB + Gamma (separat fra Open-Meteo)
+**Output:** `_market_prices.json`
 
-#### 2. `deploy_dashboard.yml` — GitHub Pages ✅
+#### 4. `peak_verify_polymarket.yml` — Peak Verifisering
+
+**Trigger:** `30 23 * * *` (23:30 UTC, 30 min etter daily_close) + `workflow_dispatch`
+**Timeout:** 5 min
+**Steg:** Leser `_model_quality_log.json` + `_market_prices.json` → sammenligner våre archive peaks mot Polymarket resolved outcomes → `_peak_verification_log.json`
+**Toleranser:** ≤0.5°C = OK | 0.5–1.0°C = MINOR | >1.0°C = STASJONSFEIL
+
+#### `deploy_dashboard.yml` — GitHub Pages Deploy
 
 **Trigger:** Push til `main` + `workflow_dispatch`
-
-**Permissions:** `contents: read`, `pages: write`, `id-token: write`
-
-**Steg:**
-1. Checkout + Python 3.11 + deps
-2. Lag `.env`
-3. `python _generate_quality_report.py --html`
-4. `python _generate_quality_report.py --all-cities`
-5. `python _generate_quality_report.py --index`
-6. `python _generate_quality_report.py --peak`
-7. `actions/configure-pages@v4`
-8. `actions/upload-pages-artifact@v3`
-9. `actions/deploy-pages@v4`
-
-#### 3. `daily_analysis.yml` — DEPRECATED ⚠️
-
-Trigger kun `workflow_dispatch`. Erstatter av `model_quality_pipeline.yml`. Kjører en noop.
-
-#### 4. `test_smoke.yml` — Smoke Test 🧪
-
-**Trigger:** Kun `workflow_dispatch`
-
-Tester imports og kjører `daily_bma` mode.
+Genererer alle HTML-filer og deployer til GitHub Pages.
 
 ---
 
