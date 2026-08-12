@@ -161,7 +161,7 @@
 // No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-08-12T09:04:43Z');
+    var deployTime = new Date('2026-08-12T10:04:26Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {
@@ -350,11 +350,11 @@ function sortTable(colIdx) {
      </p>
      <div class="card-grid" style="margin-bottom: 20px;">
        <div class="card">
-         <div class="value" style="color: var(--blue);">38</div>
+         <div class="value" style="color: var(--blue);">46</div>
          <div class="label">Totale Markeder Matchet</div>
        </div>
        <div class="card">
-         <div class="value" style="color: var(--red);">35</div>
+         <div class="value" style="color: var(--red);">43</div>
          <div class="label">🔺 Høyeste</div>
        </div>
        <div class="card">
@@ -369,7 +369,7 @@ function sortTable(colIdx) {
    </div>
 
     <div class="section" style="border-color: rgba(248,81,73,0.3);">
-      <h2>🔺 HØYESTE TEMPERATUR <span style="color: var(--text-dim); font-size: 0.8rem;">(35 markeder)</span></h2>
+      <h2>🔺 HØYESTE TEMPERATUR <span style="color: var(--text-dim); font-size: 0.8rem;">(43 markeder)</span></h2>
       
       <div style="overflow-x: auto;">
      <table>
@@ -380,11 +380,11 @@ function sortTable(colIdx) {
                 <td>2026-08-12</td>
                 <td>38°C</td>
                 <td>40.3%</td>
-                <td>66.5%</td>
+                <td>82.0%</td>
                 <td style="color: var(--text-dim);">37.4°C</td>
-                <td style="color: var(--text-dim);">$16K</td>
+                <td style="color: var(--text-dim);">$17K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-madrid-es-38" data-spill="38" data-market="66.5">⏳</td>
+                <td class="col-peak" id="peak-madrid-es-38" data-spill="38" data-market="82.0">⏳</td>
                 <td class="col-trend" id="trend-madrid-es-38">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
@@ -417,6 +417,19 @@ function sortTable(colIdx) {
                 <td>4</td>
                 <td><strong>Wellington, NZ</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
                 <td>2026-08-12</td>
+                <td>15°C</td>
+                <td>6.6%</td>
+                <td>0.1%</td>
+                <td style="color: var(--text-dim);">13.5°C</td>
+                <td style="color: var(--text-dim);">$20K</td>
+                <td><span style="color:var(--text-dim);">—</span></td>
+                <td class="col-peak" id="peak-wellington-nz-15" data-spill="15" data-market="0.1">⏳</td>
+                <td class="col-trend" id="trend-wellington-nz-15">—</td>
+                <td class="col-spark">⚡ —</td>
+            </tr><tr>
+                <td>5</td>
+                <td><strong>Wellington, NZ</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
+                <td>2026-08-12</td>
                 <td>11°C</td>
                 <td>0.1%</td>
                 <td>0.1%</td>
@@ -427,30 +440,17 @@ function sortTable(colIdx) {
                 <td class="col-trend" id="trend-wellington-nz-11">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
-                <td>5</td>
+                <td>6</td>
                 <td><strong>Wellington, NZ</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
                 <td>2026-08-12</td>
                 <td>14°C</td>
                 <td>43.2%</td>
                 <td style="color: var(--green); font-weight: 600;">100.0%</td>
                 <td style="color: var(--text-dim);">13.5°C</td>
-                <td style="color: var(--text-dim);">$15K</td>
+                <td style="color: var(--text-dim);">$16K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
                 <td class="col-peak" id="peak-wellington-nz-14" data-spill="14" data-market="100.0">⏳</td>
                 <td class="col-trend" id="trend-wellington-nz-14">—</td>
-                <td class="col-spark">⚡ —</td>
-            </tr><tr>
-                <td>6</td>
-                <td><strong>Wellington, NZ</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
-                <td>2026-08-12</td>
-                <td>15°C</td>
-                <td>6.6%</td>
-                <td>0.1%</td>
-                <td style="color: var(--text-dim);">13.5°C</td>
-                <td style="color: var(--text-dim);">$13K</td>
-                <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-wellington-nz-15" data-spill="15" data-market="0.1">⏳</td>
-                <td class="col-trend" id="trend-wellington-nz-15">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
                 <td>7</td>
@@ -460,13 +460,52 @@ function sortTable(colIdx) {
                 <td>0.0%</td>
                 <td>0.1%</td>
                 <td style="color: var(--text-dim);">13.5°C</td>
-                <td style="color: var(--text-dim);">$11K</td>
+                <td style="color: var(--text-dim);">$12K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
                 <td class="col-peak" id="peak-wellington-nz-10" data-spill="10" data-market="0.1">⏳</td>
                 <td class="col-trend" id="trend-wellington-nz-10">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
                 <td>8</td>
+                <td><strong>Chongqing, CN</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
+                <td>2026-08-12</td>
+                <td>34°C</td>
+                <td>41.5%</td>
+                <td>0.1%</td>
+                <td style="color: var(--text-dim);">34.5°C</td>
+                <td style="color: var(--text-dim);">$11K</td>
+                <td><span style="color:var(--text-dim);">—</span></td>
+                <td class="col-peak" id="peak-chongqing-cn-34" data-spill="34" data-market="0.1">⏳</td>
+                <td class="col-trend" id="trend-chongqing-cn-34">—</td>
+                <td class="col-spark">⚡ —</td>
+            </tr><tr>
+                <td>9</td>
+                <td><strong>London, UK</strong></td>
+                <td>2026-08-12</td>
+                <td>31°C</td>
+                <td>45.5%</td>
+                <td>55.5%</td>
+                <td style="color: var(--text-dim);">30.9°C</td>
+                <td style="color: var(--text-dim);">$15K</td>
+                <td><span style="color:var(--text-dim);">—</span></td>
+                <td class="col-peak" id="peak-london-uk-31" data-spill="31" data-market="55.5">⏳</td>
+                <td class="col-trend" id="trend-london-uk-31">—</td>
+                <td class="col-spark">⚡ —</td>
+            </tr><tr>
+                <td>10</td>
+                <td><strong>Hong Kong, HK</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
+                <td>2026-08-12</td>
+                <td>34°C</td>
+                <td>24.2%</td>
+                <td style="color: var(--green); font-weight: 600;">100.0%</td>
+                <td style="color: var(--text-dim);">33.0°C</td>
+                <td style="color: var(--text-dim);">$43K</td>
+                <td><span style="color:var(--text-dim);">—</span></td>
+                <td class="col-peak" id="peak-hong-kong-hk-34" data-spill="34" data-market="100.0">⏳</td>
+                <td class="col-trend" id="trend-hong-kong-hk-34">—</td>
+                <td class="col-spark">⚡ —</td>
+            </tr><tr>
+                <td>11</td>
                 <td><strong>Hong Kong, HK</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
                 <td>2026-08-12</td>
                 <td>33°C</td>
@@ -479,7 +518,33 @@ function sortTable(colIdx) {
                 <td class="col-trend" id="trend-hong-kong-hk-33">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
-                <td>9</td>
+                <td>12</td>
+                <td><strong>Hong Kong, HK</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
+                <td>2026-08-12</td>
+                <td>35°C</td>
+                <td>6.1%</td>
+                <td>0.1%</td>
+                <td style="color: var(--text-dim);">33.0°C</td>
+                <td style="color: var(--text-dim);">$34K</td>
+                <td><span style="color:var(--text-dim);">—</span></td>
+                <td class="col-peak" id="peak-hong-kong-hk-35" data-spill="35" data-market="0.1">⏳</td>
+                <td class="col-trend" id="trend-hong-kong-hk-35">—</td>
+                <td class="col-spark">⚡ —</td>
+            </tr><tr>
+                <td>13</td>
+                <td><strong>Hong Kong, HK</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
+                <td>2026-08-12</td>
+                <td>36°C</td>
+                <td>0.6%</td>
+                <td>0.1%</td>
+                <td style="color: var(--text-dim);">33.0°C</td>
+                <td style="color: var(--text-dim);">$32K</td>
+                <td><span style="color:var(--text-dim);">—</span></td>
+                <td class="col-peak" id="peak-hong-kong-hk-36" data-spill="36" data-market="0.1">⏳</td>
+                <td class="col-trend" id="trend-hong-kong-hk-36">—</td>
+                <td class="col-spark">⚡ —</td>
+            </tr><tr>
+                <td>14</td>
                 <td><strong>Hong Kong, HK</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
                 <td>2026-08-12</td>
                 <td>32°C</td>
@@ -492,147 +557,82 @@ function sortTable(colIdx) {
                 <td class="col-trend" id="trend-hong-kong-hk-32">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
-                <td>10</td>
-                <td><strong>Hong Kong, HK</strong></td>
+                <td>15</td>
+                <td><strong>Singapore, SG</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
                 <td>2026-08-12</td>
-                <td>34°C</td>
-                <td>24.2%</td>
-                <td>96.5%</td>
-                <td style="color: var(--text-dim);">33.0°C</td>
-                <td style="color: var(--text-dim);">$28K</td>
+                <td>32°C</td>
+                <td>40.6%</td>
+                <td style="color: var(--green); font-weight: 600;">99.5%</td>
+                <td style="color: var(--text-dim);">31.5°C</td>
+                <td style="color: var(--text-dim);">$17K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-hong-kong-hk-34" data-spill="34" data-market="96.5">⏳</td>
-                <td class="col-trend" id="trend-hong-kong-hk-34">—</td>
+                <td class="col-peak" id="peak-singapore-sg-32" data-spill="32" data-market="99.5">⏳</td>
+                <td class="col-trend" id="trend-singapore-sg-32">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
-                <td>11</td>
-                <td><strong>Hong Kong, HK</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
+                <td>16</td>
+                <td><strong>Singapore, SG</strong></td>
                 <td>2026-08-12</td>
-                <td>36°C</td>
-                <td>0.6%</td>
-                <td>0.6%</td>
-                <td style="color: var(--text-dim);">33.0°C</td>
-                <td style="color: var(--text-dim);">$26K</td>
+                <td>33°C</td>
+                <td>9.0%</td>
+                <td>3.3%</td>
+                <td style="color: var(--text-dim);">31.5°C</td>
+                <td style="color: var(--text-dim);">$14K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-hong-kong-hk-36" data-spill="36" data-market="0.6">⏳</td>
-                <td class="col-trend" id="trend-hong-kong-hk-36">—</td>
+                <td class="col-peak" id="peak-singapore-sg-33" data-spill="33" data-market="3.3">⏳</td>
+                <td class="col-trend" id="trend-singapore-sg-33">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
-                <td>12</td>
-                <td><strong>Hong Kong, HK</strong></td>
-                <td>2026-08-12</td>
-                <td>35°C</td>
-                <td>6.1%</td>
-                <td>3.0%</td>
-                <td style="color: var(--text-dim);">33.0°C</td>
-                <td style="color: var(--text-dim);">$21K</td>
-                <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-hong-kong-hk-35" data-spill="35" data-market="3.0">⏳</td>
-                <td class="col-trend" id="trend-hong-kong-hk-35">—</td>
-                <td class="col-spark">⚡ —</td>
-            </tr><tr>
-                <td>13</td>
+                <td>17</td>
                 <td><strong>Shanghai, CN</strong></td>
                 <td>2026-08-12</td>
                 <td>28°C</td>
                 <td>44.4%</td>
-                <td>13.0%</td>
+                <td>1.5%</td>
                 <td style="color: var(--text-dim);">27.7°C</td>
-                <td style="color: var(--text-dim);">$26K</td>
+                <td style="color: var(--text-dim);">$30K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-shanghai-cn-28" data-spill="28" data-market="13.0">⏳</td>
+                <td class="col-peak" id="peak-shanghai-cn-28" data-spill="28" data-market="1.5">⏳</td>
                 <td class="col-trend" id="trend-shanghai-cn-28">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
-                <td>14</td>
+                <td>18</td>
                 <td><strong>Shanghai, CN</strong></td>
                 <td>2026-08-12</td>
                 <td>27°C</td>
                 <td>33.6%</td>
-                <td>87.0%</td>
+                <td>98.2%</td>
                 <td style="color: var(--text-dim);">27.7°C</td>
-                <td style="color: var(--text-dim);">$24K</td>
+                <td style="color: var(--text-dim);">$28K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-shanghai-cn-27" data-spill="27" data-market="87.0">⏳</td>
+                <td class="col-peak" id="peak-shanghai-cn-27" data-spill="27" data-market="98.2">⏳</td>
                 <td class="col-trend" id="trend-shanghai-cn-27">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
-                <td>15</td>
+                <td>19</td>
                 <td><strong>Shanghai, CN</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
                 <td>2026-08-12</td>
                 <td>30°C</td>
                 <td>1.1%</td>
-                <td>0.4%</td>
+                <td>0.1%</td>
                 <td style="color: var(--text-dim);">27.7°C</td>
-                <td style="color: var(--text-dim);">$19K</td>
+                <td style="color: var(--text-dim);">$21K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-shanghai-cn-30" data-spill="30" data-market="0.4">⏳</td>
+                <td class="col-peak" id="peak-shanghai-cn-30" data-spill="30" data-market="0.1">⏳</td>
                 <td class="col-trend" id="trend-shanghai-cn-30">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
-                <td>16</td>
+                <td>20</td>
                 <td><strong>Shanghai, CN</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
                 <td>2026-08-12</td>
                 <td>29°C</td>
                 <td>14.4%</td>
-                <td>0.5%</td>
+                <td>0.1%</td>
                 <td style="color: var(--text-dim);">27.7°C</td>
-                <td style="color: var(--text-dim);">$18K</td>
+                <td style="color: var(--text-dim);">$20K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-shanghai-cn-29" data-spill="29" data-market="0.5">⏳</td>
+                <td class="col-peak" id="peak-shanghai-cn-29" data-spill="29" data-market="0.1">⏳</td>
                 <td class="col-trend" id="trend-shanghai-cn-29">—</td>
-                <td class="col-spark">⚡ —</td>
-            </tr><tr>
-                <td>17</td>
-                <td><strong>Tokyo, JP</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
-                <td>2026-08-12</td>
-                <td>29°C</td>
-                <td>14.0%</td>
-                <td style="color: var(--green); font-weight: 600;">99.5%</td>
-                <td style="color: var(--text-dim);">27.5°C</td>
-                <td style="color: var(--text-dim);">$17K</td>
-                <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-tokyo-jp-29" data-spill="29" data-market="99.5">⏳</td>
-                <td class="col-trend" id="trend-tokyo-jp-29">—</td>
-                <td class="col-spark">⚡ —</td>
-            </tr><tr>
-                <td>18</td>
-                <td><strong>Tokyo, JP</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
-                <td>2026-08-12</td>
-                <td>30°C</td>
-                <td>2.4%</td>
-                <td>0.6%</td>
-                <td style="color: var(--text-dim);">27.5°C</td>
-                <td style="color: var(--text-dim);">$15K</td>
-                <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-tokyo-jp-30" data-spill="30" data-market="0.6">⏳</td>
-                <td class="col-trend" id="trend-tokyo-jp-30">—</td>
-                <td class="col-spark">⚡ —</td>
-            </tr><tr>
-                <td>19</td>
-                <td><strong>Tokyo, JP</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
-                <td>2026-08-12</td>
-                <td>28°C</td>
-                <td>33.4%</td>
-                <td>0.1%</td>
-                <td style="color: var(--text-dim);">27.5°C</td>
-                <td style="color: var(--text-dim);">$15K</td>
-                <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-tokyo-jp-28" data-spill="28" data-market="0.1">⏳</td>
-                <td class="col-trend" id="trend-tokyo-jp-28">—</td>
-                <td class="col-spark">⚡ —</td>
-            </tr><tr>
-                <td>20</td>
-                <td><strong>Tokyo, JP</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
-                <td>2026-08-12</td>
-                <td>27°C</td>
-                <td>33.4%</td>
-                <td>0.1%</td>
-                <td style="color: var(--text-dim);">27.5°C</td>
-                <td style="color: var(--text-dim);">$14K</td>
-                <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-tokyo-jp-27" data-spill="27" data-market="0.1">⏳</td>
-                <td class="col-trend" id="trend-tokyo-jp-27">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr></tbody>
      </table>
@@ -649,27 +649,27 @@ function sortTable(colIdx) {
                 <td>1</td>
                 <td><strong>Hong Kong, HK</strong></td>
                 <td>2026-08-12</td>
-                <td>30°C</td>
-                <td>0.6%</td>
-                <td>63.4%</td>
+                <td>29°C</td>
+                <td>0.0%</td>
+                <td>7.5%</td>
                 <td style="color: var(--text-dim);">33.0°C</td>
-                <td style="color: var(--text-dim);">$13K</td>
+                <td style="color: var(--text-dim);">$15K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-hong-kong-hk-30" data-spill="30" data-market="63.4">⏳</td>
-                <td class="col-trend" id="trend-hong-kong-hk-30">—</td>
+                <td class="col-peak" id="peak-hong-kong-hk-29" data-spill="29" data-market="7.5">⏳</td>
+                <td class="col-trend" id="trend-hong-kong-hk-29">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
                 <td>2</td>
                 <td><strong>Hong Kong, HK</strong></td>
                 <td>2026-08-12</td>
-                <td>29°C</td>
-                <td>0.0%</td>
-                <td>20.0%</td>
+                <td>30°C</td>
+                <td>0.6%</td>
+                <td>92.6%</td>
                 <td style="color: var(--text-dim);">33.0°C</td>
-                <td style="color: var(--text-dim);">$12K</td>
+                <td style="color: var(--text-dim);">$13K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-hong-kong-hk-29" data-spill="29" data-market="20.0">⏳</td>
-                <td class="col-trend" id="trend-hong-kong-hk-29">—</td>
+                <td class="col-peak" id="peak-hong-kong-hk-30" data-spill="30" data-market="92.6">⏳</td>
+                <td class="col-trend" id="trend-hong-kong-hk-30">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
                 <td>3</td>
@@ -677,11 +677,11 @@ function sortTable(colIdx) {
                 <td>2026-08-12</td>
                 <td>28°C</td>
                 <td>0.0%</td>
-                <td>2.5%</td>
+                <td>2.0%</td>
                 <td style="color: var(--text-dim);">33.0°C</td>
                 <td style="color: var(--text-dim);">$13K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-hong-kong-hk-28" data-spill="28" data-market="2.5">⏳</td>
+                <td class="col-peak" id="peak-hong-kong-hk-28" data-spill="28" data-market="2.0">⏳</td>
                 <td class="col-trend" id="trend-hong-kong-hk-28">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr></tbody>
@@ -702,9 +702,9 @@ function sortTable(colIdx) {
         <tbody><tr class="mkt-group" onclick="toggleMarketBuckets('beijing')">
             <td><span class="expand-icon">▶</span></td>
             <td><strong>Beijing</strong></td>
-            <td>3 buckets</td>
-            <td>$44K</td>
-            <td>2/3 resolved</td>
+            <td>4 buckets</td>
+            <td>$66K</td>
+            <td>3/4 resolved</td>
         </tr><tr class="mkt-bucket beijing" style="color:var(--red);">
             <td></td>
             <td>24°C <span style="color:#3fb950;">✅</span></td>
@@ -717,35 +717,65 @@ function sortTable(colIdx) {
             <td>BMA: 32.4%</td>
             <td>Mkt: 0.1%</td>
             <td></td>
+        </tr><tr class="mkt-bucket beijing" style="color:var(--red);">
+            <td></td>
+            <td>26°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 40.8%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
         </tr><tr class="mkt-bucket beijing">
             <td></td>
-            <td>26°C</td>
-            <td>BMA: 40.8%</td>
-            <td>Mkt: 27.5%</td>
+            <td>27°C</td>
+            <td>BMA: 16.1%</td>
+            <td>Mkt: 98.5%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('busan')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Busan</strong> <span style="color:#3fb950;font-size:0.7rem;">✅ → 31°C</span></td>
+            <td>1 buckets</td>
+            <td>$11K</td>
+            <td>1/1 resolved</td>
+        </tr><tr class="mkt-bucket busan" style="color:var(--green);">
+            <td></td>
+            <td>31°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 13.2%</td>
+            <td>Mkt: 100.0%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('chongqing')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Chongqing</strong></td>
+            <td>1 buckets</td>
+            <td>$11K</td>
+            <td>1/1 resolved</td>
+        </tr><tr class="mkt-bucket chongqing" style="color:var(--red);">
+            <td></td>
+            <td>34°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 41.5%</td>
+            <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('hong-kong')">
             <td><span class="expand-icon">▶</span></td>
-            <td><strong>Hong Kong</strong></td>
+            <td><strong>Hong Kong</strong> <span style="color:#3fb950;font-size:0.7rem;">✅ → 34°C</span></td>
             <td>8 buckets</td>
-            <td>$177K</td>
-            <td>3/8 resolved</td>
+            <td>$213K</td>
+            <td>5/8 resolved</td>
         </tr><tr class="mkt-bucket hong-kong">
             <td></td>
             <td>28°C</td>
             <td>BMA: 0.0%</td>
-            <td>Mkt: 2.5%</td>
+            <td>Mkt: 2.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket hong-kong">
             <td></td>
             <td>29°C</td>
             <td>BMA: 0.0%</td>
-            <td>Mkt: 20.0%</td>
+            <td>Mkt: 7.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket hong-kong">
             <td></td>
             <td>30°C</td>
             <td>BMA: 0.6%</td>
-            <td>Mkt: 63.4%</td>
+            <td>Mkt: 92.6%</td>
             <td></td>
         </tr><tr class="mkt-bucket hong-kong" style="color:var(--red);">
             <td></td>
@@ -759,41 +789,53 @@ function sortTable(colIdx) {
             <td>BMA: 38.3%</td>
             <td>Mkt: 0.1%</td>
             <td></td>
-        </tr><tr class="mkt-bucket hong-kong">
+        </tr><tr class="mkt-bucket hong-kong" style="color:var(--green);">
             <td></td>
-            <td>34°C</td>
+            <td>34°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 24.2%</td>
-            <td>Mkt: 96.5%</td>
+            <td>Mkt: 100.0%</td>
             <td></td>
-        </tr><tr class="mkt-bucket hong-kong">
+        </tr><tr class="mkt-bucket hong-kong" style="color:var(--red);">
             <td></td>
-            <td>35°C</td>
+            <td>35°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 6.1%</td>
-            <td>Mkt: 3.0%</td>
+            <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-bucket hong-kong" style="color:var(--red);">
             <td></td>
             <td>36°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 0.6%</td>
-            <td>Mkt: 0.6%</td>
+            <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('kuala-lumpur')">
             <td><span class="expand-icon">▶</span></td>
             <td><strong>Kuala Lumpur</strong></td>
             <td>2 buckets</td>
-            <td>$43K</td>
-            <td>1/2 resolved</td>
+            <td>$46K</td>
+            <td>2/2 resolved</td>
         </tr><tr class="mkt-bucket kuala-lumpur" style="color:var(--red);">
             <td></td>
             <td>33°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 26.4%</td>
             <td>Mkt: 0.1%</td>
             <td></td>
-        </tr><tr class="mkt-bucket kuala-lumpur">
+        </tr><tr class="mkt-bucket kuala-lumpur" style="color:var(--red);">
             <td></td>
-            <td>35°C</td>
+            <td>35°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 3.7%</td>
-            <td>Mkt: 10.7%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('london')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>London</strong></td>
+            <td>1 buckets</td>
+            <td>$15K</td>
+            <td>0/1 resolved</td>
+        </tr><tr class="mkt-bucket london">
+            <td></td>
+            <td>31°C</td>
+            <td>BMA: 45.5%</td>
+            <td>Mkt: 55.5%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('lucknow')">
             <td><span class="expand-icon">▶</span></td>
@@ -811,44 +853,32 @@ function sortTable(colIdx) {
             <td><span class="expand-icon">▶</span></td>
             <td><strong>Madrid</strong></td>
             <td>1 buckets</td>
-            <td>$16K</td>
+            <td>$17K</td>
             <td>0/1 resolved</td>
         </tr><tr class="mkt-bucket madrid">
             <td></td>
             <td>38°C</td>
             <td>BMA: 40.3%</td>
-            <td>Mkt: 66.5%</td>
+            <td>Mkt: 82.0%</td>
             <td></td>
-        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('panama-city')">
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('new-york')">
             <td><span class="expand-icon">▶</span></td>
-            <td><strong>Panama City</strong></td>
+            <td><strong>New York</strong></td>
             <td>1 buckets</td>
-            <td>$402</td>
+            <td>$10K</td>
             <td>0/1 resolved</td>
-        </tr><tr class="mkt-bucket panama-city">
+        </tr><tr class="mkt-bucket new-york">
             <td></td>
-            <td>29°C</td>
-            <td>BMA: 2.9%</td>
-            <td>Mkt: 1.2%</td>
-            <td></td>
-        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('seattle')">
-            <td><span class="expand-icon">▶</span></td>
-            <td><strong>Seattle</strong></td>
-            <td>1 buckets</td>
-            <td>$385</td>
-            <td>0/1 resolved</td>
-        </tr><tr class="mkt-bucket seattle">
-            <td></td>
-            <td>78.8°F</td>
-            <td>BMA: —</td>
-            <td>Mkt: 13.0%</td>
+            <td>86.0°F</td>
+            <td>BMA: 23.9%</td>
+            <td>Mkt: 47.5%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('seoul')">
             <td><span class="expand-icon">▶</span></td>
-            <td><strong>Seoul</strong></td>
+            <td><strong>Seoul</strong> <span style="color:#3fb950;font-size:0.7rem;">✅ → 32°C</span></td>
             <td>4 buckets</td>
-            <td>$63K</td>
-            <td>2/4 resolved</td>
+            <td>$79K</td>
+            <td>4/4 resolved</td>
         </tr><tr class="mkt-bucket seoul" style="color:var(--red);">
             <td></td>
             <td>30°C <span style="color:#3fb950;">✅</span></td>
@@ -861,65 +891,95 @@ function sortTable(colIdx) {
             <td>BMA: —</td>
             <td>Mkt: 0.1%</td>
             <td></td>
-        </tr><tr class="mkt-bucket seoul">
+        </tr><tr class="mkt-bucket seoul" style="color:var(--green);">
             <td></td>
-            <td>32°C</td>
+            <td>32°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: —</td>
-            <td>Mkt: 97.0%</td>
+            <td>Mkt: 99.9%</td>
             <td></td>
-        </tr><tr class="mkt-bucket seoul">
+        </tr><tr class="mkt-bucket seoul" style="color:var(--red);">
             <td></td>
-            <td>33°C</td>
+            <td>33°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: —</td>
-            <td>Mkt: 2.3%</td>
+            <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('shanghai')">
             <td><span class="expand-icon">▶</span></td>
             <td><strong>Shanghai</strong></td>
             <td>4 buckets</td>
-            <td>$87K</td>
+            <td>$99K</td>
             <td>2/4 resolved</td>
         </tr><tr class="mkt-bucket shanghai">
             <td></td>
             <td>27°C</td>
             <td>BMA: 33.6%</td>
-            <td>Mkt: 87.0%</td>
+            <td>Mkt: 98.2%</td>
             <td></td>
         </tr><tr class="mkt-bucket shanghai">
             <td></td>
             <td>28°C</td>
             <td>BMA: 44.4%</td>
-            <td>Mkt: 13.0%</td>
+            <td>Mkt: 1.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket shanghai" style="color:var(--red);">
             <td></td>
             <td>29°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 14.4%</td>
-            <td>Mkt: 0.5%</td>
+            <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-bucket shanghai" style="color:var(--red);">
             <td></td>
             <td>30°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 1.1%</td>
-            <td>Mkt: 0.4%</td>
+            <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('shenzhen')">
             <td><span class="expand-icon">▶</span></td>
-            <td><strong>Shenzhen</strong></td>
-            <td>1 buckets</td>
-            <td>$16K</td>
-            <td>0/1 resolved</td>
-        </tr><tr class="mkt-bucket shenzhen">
+            <td><strong>Shenzhen</strong> <span style="color:#3fb950;font-size:0.7rem;">✅ → 36°C</span></td>
+            <td>3 buckets</td>
+            <td>$100K</td>
+            <td>3/3 resolved</td>
+        </tr><tr class="mkt-bucket shenzhen" style="color:var(--red);">
             <td></td>
-            <td>34°C</td>
+            <td>34°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 21.6%</td>
-            <td>Mkt: 31.6%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket shenzhen" style="color:var(--red);">
+            <td></td>
+            <td>35°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 23.2%</td>
+            <td>Mkt: 0.1%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket shenzhen" style="color:var(--green);">
+            <td></td>
+            <td>36°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 17.5%</td>
+            <td>Mkt: 99.7%</td>
+            <td></td>
+        </tr><tr class="mkt-group" onclick="toggleMarketBuckets('singapore')">
+            <td><span class="expand-icon">▶</span></td>
+            <td><strong>Singapore</strong> <span style="color:#3fb950;font-size:0.7rem;">✅ → 32°C</span></td>
+            <td>2 buckets</td>
+            <td>$31K</td>
+            <td>1/2 resolved</td>
+        </tr><tr class="mkt-bucket singapore" style="color:var(--green);">
+            <td></td>
+            <td>32°C <span style="color:#3fb950;">✅</span></td>
+            <td>BMA: 40.6%</td>
+            <td>Mkt: 99.5%</td>
+            <td></td>
+        </tr><tr class="mkt-bucket singapore">
+            <td></td>
+            <td>33°C</td>
+            <td>BMA: 9.0%</td>
+            <td>Mkt: 3.3%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('tokyo')">
             <td><span class="expand-icon">▶</span></td>
             <td><strong>Tokyo</strong> <span style="color:#3fb950;font-size:0.7rem;">✅ → 29°C</span></td>
             <td>6 buckets</td>
-            <td>$86K</td>
+            <td>$95K</td>
             <td>6/6 resolved</td>
         </tr><tr class="mkt-bucket tokyo" style="color:var(--red);">
             <td></td>
@@ -943,19 +1003,19 @@ function sortTable(colIdx) {
             <td></td>
             <td>29°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 14.0%</td>
-            <td>Mkt: 99.5%</td>
+            <td>Mkt: 100.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket tokyo" style="color:var(--red);">
             <td></td>
             <td>30°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 2.4%</td>
-            <td>Mkt: 0.6%</td>
+            <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-bucket tokyo" style="color:var(--red);">
             <td></td>
             <td>31°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 0.2%</td>
-            <td>Mkt: 0.2%</td>
+            <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('toronto')">
             <td><span class="expand-icon">▶</span></td>
@@ -967,13 +1027,13 @@ function sortTable(colIdx) {
             <td></td>
             <td>24°C</td>
             <td>BMA: 21.0%</td>
-            <td>Mkt: 7.0%</td>
+            <td>Mkt: 5.2%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('wellington')">
             <td><span class="expand-icon">▶</span></td>
             <td><strong>Wellington</strong> <span style="color:#3fb950;font-size:0.7rem;">✅ → 14°C</span></td>
             <td>6 buckets</td>
-            <td>$111K</td>
+            <td>$119K</td>
             <td>6/6 resolved</td>
         </tr><tr class="mkt-bucket wellington" style="color:var(--red);">
             <td></td>
