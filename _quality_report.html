@@ -161,7 +161,7 @@
 // No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-08-12T18:46:50Z');
+    var deployTime = new Date('2026-08-12T19:27:16Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {
@@ -244,7 +244,7 @@ function sortTable(colIdx) {
 <body>
 <header>
   <h1>🌡️ Model Quality Dashboard <span class="rapid-badge">3 STRATEGIES</span></h1>
-  <div class="subtitle" id="last-updated">🤖 Siste pipeline: 18:46 UTC | Neste pipeline-oppdatering: …</div>
+  <div class="subtitle" id="last-updated">🤖 Siste pipeline: 19:27 UTC | Neste pipeline-oppdatering: …</div>
 </header>
 <div class="container">
 
@@ -262,7 +262,7 @@ function sortTable(colIdx) {
       <div class="label">Overall Win Rate (Sigma)</div>
     </div>
     <div class="card">
-      <div class="value" style="color: var(--text);">0.560 / 0.534</div>
+      <div class="value" style="color: var(--text);">0.560 / 0.540</div>
       <div class="label">Avg Conf (Winners / Losers)</div>
     </div>
   </div>
@@ -290,6 +290,45 @@ function sortTable(colIdx) {
 
   <!-- TODAY VS TOMORROW SEPARATION -->
   
+    <div class="section">
+      <h2>📊 Today vs Tomorrow Prediction Accuracy</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        Compares same-day predictions (lead_days=0) against next-day predictions (lead_days=1).
+        Higher edge decay = tomorrow predictions lose more accuracy.
+      </p>
+      <div class="grid-2">
+        <div>
+          <h3 style="color: var(--green); font-size: 1rem; margin-bottom: 8px;">📊 TODAY'S PREDICTIONS (lead_days=0)</h3>
+          <table>
+            <thead><tr><th>Strategy</th><th>Record</th><th>Win Rate</th></tr></thead>
+            <tbody>
+              <tr><td><strong>🎯 Sigma</strong></td><td>0W/1L</td><td style="font-weight:600;">0.0%</td></tr>
+              <tr><td><strong>🛡️ P5</strong></td><td>0W/1L</td><td style="font-weight:600;">0.0%</td></tr>
+              <tr><td><strong>📊 Mean</strong></td><td>0W/1L</td><td style="font-weight:600;">0.0%</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <h3 style="color: var(--orange); font-size: 1rem; margin-bottom: 8px;">📊 TOMORROW'S PREDICTIONS (lead_days=1)</h3>
+          <table>
+            <thead><tr><th>Strategy</th><th>Record</th><th>Win Rate</th></tr></thead>
+            <tbody>
+              <tr><td><strong>🎯 Sigma</strong></td><td>0W/0L</td><td style="font-weight:600;">0.0%</td></tr>
+              <tr><td><strong>🛡️ P5</strong></td><td>0W/0L</td><td style="font-weight:600;">0.0%</td></tr>
+              <tr><td><strong>📊 Mean</strong></td><td>0W/0L</td><td style="font-weight:600;">0.0%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div style="margin-top: 16px; padding: 12px; background: rgba(63,185,80, 0.1); border-radius: 8px; text-align: center;">
+        <span style="font-size: 1.1rem; font-weight: 700; color: #3fb950;">
+          📊 EDGE DECAY: Tomorrow predictions are 0% less accurate (Sigma)
+        </span>
+        <br/><span style="color: var(--text-dim); font-size: 0.8rem;">
+          P5 decay: 0% | Mean decay: 0%
+        </span>
+      </div>
+    </div>
 
   <!-- RESOLUTION ARBITRAGE: Post-Peak -->
   <div class="section">
@@ -301,6 +340,33 @@ function sortTable(colIdx) {
 
   <!-- MADRID ARBITRAGE HIGHLIGHT -->
   
+    <div class="section" style="border-color: rgba(210,153,29,0.5); box-shadow: 0 0 20px rgba(210,153,29,0.1);">
+      <h2>💰 MADRID ARBITRASJE — Peak Detected!</h2>
+      <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 280px;">
+          <div style="font-size: 2.5rem; font-weight: 800; color: #f85149;">
+            🔴 37.8°C
+          </div>
+          <div style="font-size: 1.2rem; font-weight: 700; margin-bottom: 8px;">
+            Madrid, ES — FAKTISK PEAK (bekreftet 19:27)
+          </div>
+          <div style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 4px;">
+            BMA predikert: 37.4°C | Spill (sigma): 37°C
+          </div>
+          <div style="font-size: 0.9rem; font-weight: 600; color: #f85149; margin-top: 8px;">
+            SELG 37°C → SHORT! Peak ble 37.8°C (round=38 ≠ spill=37)
+          </div>
+        </div>
+        <div style="flex: 0 0 auto; text-align: center; padding: 12px 20px; background: rgba(210,153,29,0.1); border-radius: 12px;">
+          <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Marked Linje</div>
+          <div style="font-size: 1.5rem; font-weight: 800; color: var(--orange);">37°C</div>
+          <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 4px;">Sjekk Polymarket!</div>
+        </div>
+      </div>
+      <p style="color: var(--text-dim); font-size: 0.8rem; margin-top: 12px;">
+        📡 Peak bekreftet via archive data. Arbitrasje-vindu: markedet kan fremdeles trade feil side av denne temperaturen.
+      </p>
+    </div>
 
   <!-- PEAK VERIFICATION: Var vs Polymarket -->
   
@@ -308,7 +374,7 @@ function sortTable(colIdx) {
       <h2>PEAK VERIFICATION - Var vs Polymarket</h2>
       <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
         Cross-referencing our archive peak (Open-Meteo) against Polymarket resolved outcomes.
-        OK = within 0.5°C | MINOR = 0.5–1.0°C (edge-affecting) | STASJONSFEIL = >1.0°C (likely wrong station).
+        OK = within 1.0°C | MINOR = 1.0–2.0°C (edge-affecting) | STASJONSFEIL = >2.0°C (likely wrong station). US (°F) markets are shown in °F.
       </p>
       <div class="card-grid" style="margin-bottom: 16px;">
         <div class="card" style="border: 1px solid #3fb950;">
@@ -328,303 +394,303 @@ function sortTable(colIdx) {
         <thead><tr><th>By</th><th>Var Peak</th><th>Marked</th><th>Gap</th><th>Status</th></tr></thead>
         <tbody><tr>
             <td><strong>Amsterdam, NL</strong></td>
-            <td>22.1C</td>
-            <td>22C</td>
-            <td style="color:#3fb950;font-weight:600;">+0.1C</td>
+            <td>22.1°C</td>
+            <td>22°C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.1°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Ankara, TR</strong></td>
-            <td>32.1C</td>
-            <td>32C</td>
-            <td style="color:#3fb950;font-weight:600;">+0.1C</td>
+            <td>32.1°C</td>
+            <td>32°C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.1°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Atlanta, US</strong></td>
-            <td>30.8C</td>
-            <td>34C</td>
-            <td style="color:#f85149;font-weight:600;">-3.2C</td>
+            <td>30.8°C</td>
+            <td>34°C</td>
+            <td style="color:#f85149;font-weight:600;">-3.2°C</td>
             <td style="color:#f85149;font-weight:700;">STASJONSFEIL</td>
         </tr><tr>
             <td><strong>Austin, US</strong></td>
-            <td>36.7C</td>
-            <td>38C</td>
-            <td style="color:#d2991d;font-weight:600;">-1.3C</td>
+            <td>36.7°C</td>
+            <td>38°C</td>
+            <td style="color:#d2991d;font-weight:600;">-1.3°C</td>
             <td style="color:#d2991d;font-weight:700;">MINOR</td>
         </tr><tr>
             <td><strong>Beijing, CN</strong></td>
-            <td>33.2C</td>
-            <td>33C</td>
-            <td style="color:#3fb950;font-weight:600;">+0.2C</td>
+            <td>33.2°C</td>
+            <td>33°C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.2°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Buenos Aires, AR</strong></td>
-            <td>11.4C</td>
-            <td>12C</td>
-            <td style="color:#3fb950;font-weight:600;">-0.6C</td>
+            <td>11.4°C</td>
+            <td>12°C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.6°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Busan, KR</strong></td>
-            <td>30.2C</td>
-            <td>31C</td>
-            <td style="color:#3fb950;font-weight:600;">-0.8C</td>
+            <td>30.2°C</td>
+            <td>31°C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.8°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Cape Town, ZA</strong></td>
-            <td>19.6C</td>
-            <td>20C</td>
-            <td style="color:#3fb950;font-weight:600;">-0.4C</td>
+            <td>19.6°C</td>
+            <td>20°C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.4°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Chengdu, CN</strong></td>
-            <td>33.6C</td>
-            <td>35C</td>
-            <td style="color:#d2991d;font-weight:600;">-1.4C</td>
+            <td>33.6°C</td>
+            <td>35°C</td>
+            <td style="color:#d2991d;font-weight:600;">-1.4°C</td>
             <td style="color:#d2991d;font-weight:700;">MINOR</td>
         </tr><tr>
             <td><strong>Chicago, US</strong></td>
-            <td>26.7C</td>
-            <td>27C</td>
-            <td style="color:#3fb950;font-weight:600;">-0.3C</td>
+            <td>26.7°C</td>
+            <td>27°C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.3°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Chongqing, CN</strong></td>
-            <td>33.6C</td>
-            <td>35C</td>
-            <td style="color:#d2991d;font-weight:600;">-1.4C</td>
+            <td>33.6°C</td>
+            <td>35°C</td>
+            <td style="color:#d2991d;font-weight:600;">-1.4°C</td>
             <td style="color:#d2991d;font-weight:700;">MINOR</td>
         </tr><tr>
             <td><strong>Dallas, US</strong></td>
-            <td>37.9C</td>
-            <td>37C</td>
-            <td style="color:#3fb950;font-weight:600;">+0.9C</td>
+            <td>37.9°C</td>
+            <td>37°C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.9°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Denver, US</strong></td>
-            <td>35.8C</td>
-            <td>35C</td>
-            <td style="color:#3fb950;font-weight:600;">+0.8C</td>
+            <td>35.8°C</td>
+            <td>35°C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.8°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Guangzhou, CN</strong></td>
-            <td>35.1C</td>
-            <td>37C</td>
-            <td style="color:#d2991d;font-weight:600;">-1.9C</td>
+            <td>35.1°C</td>
+            <td>37°C</td>
+            <td style="color:#d2991d;font-weight:600;">-1.9°C</td>
             <td style="color:#d2991d;font-weight:700;">MINOR</td>
         </tr><tr>
             <td><strong>Helsinki, FI</strong></td>
-            <td>17.5C</td>
-            <td>18C</td>
-            <td style="color:#3fb950;font-weight:600;">-0.5C</td>
+            <td>17.5°C</td>
+            <td>18°C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.5°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Hong Kong, HK</strong></td>
-            <td>35.7C</td>
-            <td>35C</td>
-            <td style="color:#3fb950;font-weight:600;">+0.7C</td>
+            <td>35.7°C</td>
+            <td>35°C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.7°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Houston, US</strong></td>
-            <td>31.8C</td>
-            <td>34C</td>
-            <td style="color:#f85149;font-weight:600;">-2.2C</td>
+            <td>31.8°C</td>
+            <td>34°C</td>
+            <td style="color:#f85149;font-weight:600;">-2.2°C</td>
             <td style="color:#f85149;font-weight:700;">STASJONSFEIL</td>
         </tr><tr>
             <td><strong>Istanbul, TR</strong></td>
-            <td>27.8C</td>
-            <td>27C</td>
-            <td style="color:#3fb950;font-weight:600;">+0.8C</td>
+            <td>27.8°C</td>
+            <td>27°C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.8°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Jeddah, SA</strong></td>
-            <td>39.4C</td>
-            <td>40C</td>
-            <td style="color:#3fb950;font-weight:600;">-0.6C</td>
+            <td>39.4°C</td>
+            <td>40°C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.6°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Jinan, CN</strong></td>
-            <td>32.9C</td>
-            <td>26C</td>
-            <td style="color:#f85149;font-weight:600;">+6.9C</td>
+            <td>32.9°C</td>
+            <td>26°C</td>
+            <td style="color:#f85149;font-weight:600;">+6.9°C</td>
             <td style="color:#f85149;font-weight:700;">STASJONSFEIL</td>
         </tr><tr>
             <td><strong>Karachi, PK</strong></td>
-            <td>32.5C</td>
-            <td>32C</td>
-            <td style="color:#3fb950;font-weight:600;">+0.5C</td>
+            <td>32.5°C</td>
+            <td>32°C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.5°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Kuala Lumpur, MY</strong></td>
-            <td>32.2C</td>
-            <td>32C</td>
-            <td style="color:#3fb950;font-weight:600;">+0.2C</td>
+            <td>32.2°C</td>
+            <td>32°C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.2°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>London, UK</strong></td>
-            <td>31.0C</td>
-            <td>30C</td>
-            <td style="color:#3fb950;font-weight:600;">+1.0C</td>
+            <td>31.0°C</td>
+            <td>30°C</td>
+            <td style="color:#3fb950;font-weight:600;">+1.0°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Los Angeles, US</strong></td>
-            <td>26.6C</td>
-            <td>27C</td>
-            <td style="color:#3fb950;font-weight:600;">-0.4C</td>
+            <td>26.6°C</td>
+            <td>27°C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.4°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Lucknow, IN</strong></td>
-            <td>33.1C</td>
-            <td>34C</td>
-            <td style="color:#3fb950;font-weight:600;">-0.9C</td>
+            <td>33.1°C</td>
+            <td>34°C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.9°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Madrid, ES</strong></td>
-            <td>35.6C</td>
-            <td>36C</td>
-            <td style="color:#3fb950;font-weight:600;">-0.4C</td>
+            <td>37.8°C</td>
+            <td>38°C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.2°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Manila, PH</strong></td>
-            <td>30.0C</td>
-            <td>31C</td>
-            <td style="color:#3fb950;font-weight:600;">-1.0C</td>
+            <td>30.0°C</td>
+            <td>31°C</td>
+            <td style="color:#3fb950;font-weight:600;">-1.0°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Mexico City, MX</strong></td>
-            <td>23.7C</td>
-            <td>25C</td>
-            <td style="color:#d2991d;font-weight:600;">-1.3C</td>
+            <td>23.7°C</td>
+            <td>25°C</td>
+            <td style="color:#d2991d;font-weight:600;">-1.3°C</td>
             <td style="color:#d2991d;font-weight:700;">MINOR</td>
         </tr><tr>
             <td><strong>Miami, US</strong></td>
-            <td>33.1C</td>
-            <td>34C</td>
-            <td style="color:#3fb950;font-weight:600;">-0.9C</td>
+            <td>33.1°C</td>
+            <td>34°C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.9°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Milan, IT</strong></td>
-            <td>35.5C</td>
-            <td>36C</td>
-            <td style="color:#3fb950;font-weight:600;">-0.5C</td>
+            <td>35.5°C</td>
+            <td>36°C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.5°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Moscow, RU</strong></td>
-            <td>24.4C</td>
-            <td>26C</td>
-            <td style="color:#d2991d;font-weight:600;">-1.6C</td>
+            <td>24.4°C</td>
+            <td>26°C</td>
+            <td style="color:#d2991d;font-weight:600;">-1.6°C</td>
             <td style="color:#d2991d;font-weight:700;">MINOR</td>
         </tr><tr>
             <td><strong>Munich, DE</strong></td>
-            <td>28.7C</td>
-            <td>31C</td>
-            <td style="color:#f85149;font-weight:600;">-2.3C</td>
+            <td>28.7°C</td>
+            <td>31°C</td>
+            <td style="color:#f85149;font-weight:600;">-2.3°C</td>
             <td style="color:#f85149;font-weight:700;">STASJONSFEIL</td>
         </tr><tr>
             <td><strong>Panama City, PA</strong></td>
-            <td>32.7C</td>
-            <td>33C</td>
-            <td style="color:#3fb950;font-weight:600;">-0.3C</td>
+            <td>32.7°C</td>
+            <td>33°C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.3°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Paris, FR</strong></td>
-            <td>31.7C</td>
-            <td>32C</td>
-            <td style="color:#3fb950;font-weight:600;">-0.3C</td>
+            <td>31.7°C</td>
+            <td>32°C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.3°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Qingdao, CN</strong></td>
-            <td>32.0C</td>
-            <td>31C</td>
-            <td style="color:#3fb950;font-weight:600;">+1.0C</td>
+            <td>32.0°C</td>
+            <td>31°C</td>
+            <td style="color:#3fb950;font-weight:600;">+1.0°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>San Francisco, US</strong></td>
-            <td>20.7C</td>
-            <td>25C</td>
-            <td style="color:#f85149;font-weight:600;">-4.3C</td>
+            <td>20.7°C</td>
+            <td>25°C</td>
+            <td style="color:#f85149;font-weight:600;">-4.3°C</td>
             <td style="color:#f85149;font-weight:700;">STASJONSFEIL</td>
         </tr><tr>
             <td><strong>Sao Paulo, BR</strong></td>
-            <td>17.1C</td>
-            <td>18C</td>
-            <td style="color:#3fb950;font-weight:600;">-0.9C</td>
+            <td>17.1°C</td>
+            <td>18°C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.9°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Seattle, US</strong></td>
-            <td>25.9C</td>
-            <td>26C</td>
-            <td style="color:#3fb950;font-weight:600;">-0.1C</td>
+            <td>25.9°C</td>
+            <td>26°C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.1°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Seoul (Incheon), KR</strong></td>
-            <td>31.5C</td>
-            <td>32C</td>
-            <td style="color:#3fb950;font-weight:600;">-0.5C</td>
+            <td>31.5°C</td>
+            <td>32°C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.5°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Shanghai, CN</strong></td>
-            <td>27.9C</td>
-            <td>29C</td>
-            <td style="color:#d2991d;font-weight:600;">-1.1C</td>
+            <td>27.9°C</td>
+            <td>29°C</td>
+            <td style="color:#d2991d;font-weight:600;">-1.1°C</td>
             <td style="color:#d2991d;font-weight:700;">MINOR</td>
         </tr><tr>
             <td><strong>Shenzhen, CN</strong></td>
-            <td>34.8C</td>
-            <td>37C</td>
-            <td style="color:#f85149;font-weight:600;">-2.2C</td>
+            <td>34.8°C</td>
+            <td>37°C</td>
+            <td style="color:#f85149;font-weight:600;">-2.2°C</td>
             <td style="color:#f85149;font-weight:700;">STASJONSFEIL</td>
         </tr><tr>
             <td><strong>Singapore, SG</strong></td>
-            <td>33.1C</td>
-            <td>33C</td>
-            <td style="color:#3fb950;font-weight:600;">+0.1C</td>
+            <td>33.1°C</td>
+            <td>33°C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.1°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Taipei, TW</strong></td>
-            <td>32.9C</td>
-            <td>35C</td>
-            <td style="color:#f85149;font-weight:600;">-2.1C</td>
+            <td>32.9°C</td>
+            <td>35°C</td>
+            <td style="color:#f85149;font-weight:600;">-2.1°C</td>
             <td style="color:#f85149;font-weight:700;">STASJONSFEIL</td>
         </tr><tr>
             <td><strong>Tel Aviv, IL</strong></td>
-            <td>34.8C</td>
-            <td>35C</td>
-            <td style="color:#3fb950;font-weight:600;">-0.2C</td>
+            <td>34.8°C</td>
+            <td>35°C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.2°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Tokyo, JP</strong></td>
-            <td>30.5C</td>
-            <td>32C</td>
-            <td style="color:#d2991d;font-weight:600;">-1.5C</td>
+            <td>30.5°C</td>
+            <td>32°C</td>
+            <td style="color:#d2991d;font-weight:600;">-1.5°C</td>
             <td style="color:#d2991d;font-weight:700;">MINOR</td>
         </tr><tr>
             <td><strong>Toronto, CA</strong></td>
-            <td>28.8C</td>
-            <td>29C</td>
-            <td style="color:#3fb950;font-weight:600;">-0.2C</td>
+            <td>28.8°C</td>
+            <td>29°C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.2°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Warsaw, PL</strong></td>
-            <td>21.5C</td>
-            <td>22C</td>
-            <td style="color:#3fb950;font-weight:600;">-0.5C</td>
+            <td>21.5°C</td>
+            <td>22°C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.5°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr><tr>
             <td><strong>Wellington, NZ</strong></td>
-            <td>11.4C</td>
-            <td>14C</td>
-            <td style="color:#f85149;font-weight:600;">-2.6C</td>
+            <td>11.4°C</td>
+            <td>14°C</td>
+            <td style="color:#f85149;font-weight:600;">-2.6°C</td>
             <td style="color:#f85149;font-weight:700;">STASJONSFEIL</td>
         </tr><tr>
             <td><strong>Wuhan, CN</strong></td>
-            <td>30.6C</td>
-            <td>29C</td>
-            <td style="color:#d2991d;font-weight:600;">+1.6C</td>
+            <td>30.6°C</td>
+            <td>29°C</td>
+            <td style="color:#d2991d;font-weight:600;">+1.6°C</td>
             <td style="color:#d2991d;font-weight:700;">MINOR</td>
         </tr><tr>
             <td><strong>Zhengzhou, CN</strong></td>
-            <td>25.2C</td>
-            <td>26C</td>
-            <td style="color:#3fb950;font-weight:600;">-0.8C</td>
+            <td>25.2°C</td>
+            <td>26°C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.8°C</td>
             <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr></tbody>
       </table>
@@ -712,7 +778,7 @@ function sortTable(colIdx) {
       <div class="card-grid" style="margin-bottom: 20px;">
         <div class="card" style="border: 2px solid var(--red);">
           <div class="value" style="color: var(--red);">100.0%</div>
-          <div class="label">🔴 SHORT<br/>3W/0L</div>
+          <div class="label">🔴 SHORT<br/>4W/0L</div>
         </div>
         <div class="card" style="border: 2px solid var(--green);">
           <div class="value" style="color: var(--green);">0.0%</div>
@@ -720,7 +786,7 @@ function sortTable(colIdx) {
         </div>
         <div class="card">
           <div class="value" style="color: var(--orange);">100.0%</div>
-          <div class="label">💰 Total Arbitrage<br/>3W/0L</div>
+          <div class="label">💰 Total Arbitrage<br/>4W/0L</div>
         </div>
       </div>
     </div>
@@ -770,7 +836,7 @@ function sortTable(colIdx) {
                 <td style="color: var(--text-dim);">37.4°C</td>
                 <td style="color: var(--text-dim);">$24K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-madrid-es-38" data-spill="38" data-market="99.8">⏳</td>
+                <td class="col-peak" id="peak-madrid-es-38" data-spill="38" data-market="99.8">📡 37.8°C ✅</td>
                 <td class="col-trend" id="trend-madrid-es-38">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
@@ -944,19 +1010,6 @@ function sortTable(colIdx) {
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
                 <td>15</td>
-                <td><strong>Tokyo, JP</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
-                <td>2026-08-12</td>
-                <td>29°C</td>
-                <td>14.0%</td>
-                <td style="color: var(--green); font-weight: 600;">100.0%</td>
-                <td style="color: var(--text-dim);">27.5°C</td>
-                <td style="color: var(--text-dim);">$18K</td>
-                <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-tokyo-jp-29" data-spill="29" data-market="100.0">⏳</td>
-                <td class="col-trend" id="trend-tokyo-jp-29">—</td>
-                <td class="col-spark">⚡ —</td>
-            </tr><tr>
-                <td>16</td>
                 <td><strong>Helsinki, FI</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
                 <td>2026-08-12</td>
                 <td>17°C</td>
@@ -969,7 +1022,7 @@ function sortTable(colIdx) {
                 <td class="col-trend" id="trend-helsinki-fi-17">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
-                <td>17</td>
+                <td>16</td>
                 <td><strong>New York, US</strong></td>
                 <td>2026-08-12</td>
                 <td>86.0°F</td>
@@ -982,7 +1035,7 @@ function sortTable(colIdx) {
                 <td class="col-trend" id="trend-new-york-us-30">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
-                <td>18</td>
+                <td>17</td>
                 <td><strong>Toronto, CA</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
                 <td>2026-08-12</td>
                 <td>24°C</td>
@@ -993,6 +1046,19 @@ function sortTable(colIdx) {
                 <td><span style="color:var(--text-dim);">—</span></td>
                 <td class="col-peak" id="peak-toronto-ca-24" data-spill="24" data-market="0.1">⏳</td>
                 <td class="col-trend" id="trend-toronto-ca-24">—</td>
+                <td class="col-spark">⚡ —</td>
+            </tr><tr>
+                <td>18</td>
+                <td><strong>Tokyo, JP</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
+                <td>2026-08-12</td>
+                <td>29°C</td>
+                <td>22.1%</td>
+                <td style="color: var(--green); font-weight: 600;">100.0%</td>
+                <td style="color: var(--text-dim);">28.4°C</td>
+                <td style="color: var(--text-dim);">$18K</td>
+                <td><span style="color:var(--text-dim);">—</span></td>
+                <td class="col-peak" id="peak-tokyo-jp-29" data-spill="29" data-market="100.0">⏳</td>
+                <td class="col-trend" id="trend-tokyo-jp-29">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
                 <td>19</td>
@@ -1223,7 +1289,7 @@ function sortTable(colIdx) {
         </tr><tr class="mkt-bucket tokyo" style="color:var(--green);">
             <td></td>
             <td>29°C <span style="color:#3fb950;">✅</span></td>
-            <td>BMA: 14.0%</td>
+            <td>BMA: 22.1%</td>
             <td>Mkt: 100.0%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('toronto')">
@@ -1256,36 +1322,6 @@ function sortTable(colIdx) {
         <tbody>
             <tr>
                 <td>1</td>
-                <td><strong>Madrid, ES</strong></td>
-                <td>37.4°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.6</span></td>
-                <td><strong>37°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.3, 50%)</span></td>
-                <td>36°C</td>
-                <td>37°C</td>
-                <td>🟢 82%</td>
-                <td>7/8</td>
-                <td>📡 — | Marked: 38°C</td>
-                <td><span style="color:#8b949e;">⏳</span></td>
-                <td><span style="color:#8b949e;">⏳</span></td>
-                <td><span style="color:#8b949e;">⏳</span></td>
-                <td >—</td>
-            </tr>
-            <tr>
-                <td>2</td>
-                <td><strong>London, UK</strong></td>
-                <td>31.0°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.8</span></td>
-                <td><strong>30°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.5, 23%)</span></td>
-                <td>30°C</td>
-                <td>31°C</td>
-                <td>🟠 78%</td>
-                <td>7/8</td>
-                <td>📡 — | Marked: 30°C</td>
-                <td><span style="color:#8b949e;">⏳</span></td>
-                <td><span style="color:#8b949e;">⏳</span></td>
-                <td><span style="color:#8b949e;">⏳</span></td>
-                <td >—</td>
-            </tr>
-            <tr>
-                <td>3</td>
                 <td><strong>Dallas, US</strong></td>
                 <td>38.8°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.7</span></td>
                 <td><strong>38°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.5, 30%)</span></td>
@@ -1300,7 +1336,7 @@ function sortTable(colIdx) {
                 <td >—</td>
             </tr>
             <tr>
-                <td>4</td>
+                <td>2</td>
                 <td><strong>Houston, US</strong></td>
                 <td>34.4°C <span style="color:#8b949e;font-size:0.75rem;">σ=1.1</span></td>
                 <td><strong>33°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.7, 16%)</span></td>
@@ -1315,7 +1351,7 @@ function sortTable(colIdx) {
                 <td >—</td>
             </tr>
             <tr>
-                <td>5</td>
+                <td>3</td>
                 <td><strong>Austin, US</strong></td>
                 <td>37.6°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.8</span></td>
                 <td><strong>37°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.7, 36%)</span></td>
@@ -1323,6 +1359,36 @@ function sortTable(colIdx) {
                 <td>38°C</td>
                 <td>🔴 60%</td>
                 <td>8/8</td>
+                <td>—</td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td >—</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td><strong>Sao Paulo, BR</strong></td>
+                <td>23.8°C <span style="color:#8b949e;font-size:0.75rem;">σ=1.1</span></td>
+                <td><strong>23°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.7, 27%)</span></td>
+                <td>22°C</td>
+                <td>24°C</td>
+                <td>🔴 59%</td>
+                <td>7/8</td>
+                <td>—</td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td >—</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td><strong>Busan, KR</strong></td>
+                <td>31.3°C <span style="color:#8b949e;font-size:0.75rem;">σ=1.1</span></td>
+                <td><strong>30°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.7, 18%)</span></td>
+                <td>29°C</td>
+                <td>31°C</td>
+                <td>🔴 59%</td>
+                <td>7/8</td>
                 <td>—</td>
                 <td><span style="color:#8b949e;">⏳</span></td>
                 <td><span style="color:#8b949e;">⏳</span></td>
@@ -1388,9 +1454,9 @@ function sortTable(colIdx) {
             </tr>
             <tr>
                 <td>Busan, KR</td>
-                <td >28°C ⏳</td>
-                <td >28°C ⏳</td>
                 <td >30°C ⏳</td>
+                <td >29°C ⏳</td>
+                <td >31°C ⏳</td>
             </tr>
             <tr>
                 <td>Cape Town, ZA</td>
@@ -1502,9 +1568,9 @@ function sortTable(colIdx) {
             </tr>
             <tr>
                 <td>Madrid, ES</td>
-                <td >37°C ⏳</td>
-                <td >36°C ⏳</td>
-                <td >37°C ⏳</td>
+                <td >37°C ❌</td>
+                <td >36°C ❌</td>
+                <td >37°C ❌</td>
             </tr>
             <tr>
                 <td>Manila, PH</td>
@@ -1586,7 +1652,7 @@ function sortTable(colIdx) {
             </tr>
             <tr>
                 <td>Seoul (Incheon), KR</td>
-                <td >29°C ⏳</td>
+                <td >28°C ⏳</td>
                 <td >27°C ⏳</td>
                 <td >30°C ⏳</td>
             </tr>
@@ -1622,7 +1688,7 @@ function sortTable(colIdx) {
             </tr>
             <tr>
                 <td>Tokyo, JP</td>
-                <td >26°C ⏳</td>
+                <td >27°C ⏳</td>
                 <td >26°C ⏳</td>
                 <td >28°C ⏳</td>
             </tr>
@@ -1660,6 +1726,31 @@ function sortTable(colIdx) {
      </table>
      </div>
    </div>
+   <div class="section">
+      <h2>📊 AVGJORTE RESULTATER (1 byer, 2026-08-12)</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        Resolved against archive data. ✅ WIN = round(actual peak) == spill bucket.
+        📡 = vår live peak | Marked = Polymarket utfall | ⚠️ Avvik = stasjonsfeil hvis >2°C
+      </p>
+     <div style="max-height: 600px; overflow-y: auto;">
+     <table>
+       <thead><tr><th>By</th><th>Sigma Spill</th><th>Sigma Utfall</th><th>P5 Spill</th><th>P5 Utfall</th><th>Mean Spill</th><th>Mean Utfall</th><th>Marked</th><th>⚠️ Avvik</th></tr></thead>
+       <tbody>
+                <tr>
+                    <td><strong>Madrid, ES</strong></td>
+                    <td>37°C</td>
+                    <td>❌ LOSS (37.8°C)</td>
+                    <td>36°C</td>
+                    <td>❌ LOSS</td>
+                    <td>37°C</td>
+                    <td>❌ LOSS</td>
+                    <td>38°C</td>
+                    <td><span style="color:#3fb950;font-weight:600;">✅ -0.2°C</span></td>
+                </tr>
+       </tbody>
+     </table>
+     </div>
+   </div>
 
   <div class="section">
     <h2>📊 WIN RATE BY CONFIDENCE (resolved markets only)</h2>
@@ -1668,10 +1759,10 @@ function sortTable(colIdx) {
       <tbody>
             <tr>
                 <td>🟢 >80%</td>
+                <td>1</td>
                 <td>0</td>
-                <td>0</td>
-                <td>0</td>
-                <td>0%</td>
+                <td>1</td>
+                <td>0.0%</td>
             </tr>
             <tr>
                 <td>🟠 70-80%</td>
@@ -1731,6 +1822,28 @@ function sortTable(colIdx) {
 
   <!-- EDGE-MAXIMIZING METRICS -->
   
+   <div class="section">
+     <h2>🏆 Win Rate Per City — Sigma Strategy</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       Sorted by sigma strategy win rate. Only cities with ≥2 resolved predictions shown.
+     </p>
+     <div class="grid-2">
+       <div>
+         <h3 style="color: var(--green); font-size: 1rem; margin-bottom: 8px;">🏆 BESTE BYER</h3>
+         <table>
+           <thead><tr><th>#</th><th>City</th><th>Record</th><th>Win Rate</th></tr></thead>
+           <tbody><tr><td>🥇</td><td><strong>Madrid, ES</strong></td><td>0W/2L</td><td style="color:#f85149;font-weight:600;">0.0%</td></tr></tbody>
+         </table>
+       </div>
+       <div>
+         <h3 style="color: var(--red); font-size: 1rem; margin-bottom: 8px;">📉 SVESTE BYER</h3>
+         <table>
+           <thead><tr><th>#</th><th>City</th><th>Record</th><th>Win Rate</th></tr></thead>
+           <tbody></tbody>
+         </table>
+       </div>
+     </div>
+   </div>
   
    <div class="section">
      <h2>📊 Model Agreement & Win Rate</h2>
@@ -1739,7 +1852,7 @@ function sortTable(colIdx) {
      </p>
      <table>
        <thead><tr><th>Agreement</th><th>Positions</th><th>Record</th><th>Win Rate</th></tr></thead>
-       <tbody><tr><td><strong>8/8 enige</strong></td><td>12</td><td>1W/11L</td><td>8.3%</td></tr><tr><td><strong>7/8 enige</strong></td><td>39</td><td>3W/36L</td><td>7.7%</td></tr><tr><td><strong>6/8 enige</strong></td><td>0</td><td>0W/0L</td><td>0%</td></tr><tr><td><strong><6 enige</strong></td><td>0</td><td>0W/0L</td><td>0%</td></tr></tbody>
+       <tbody><tr><td><strong>8/8 enige</strong></td><td>12</td><td>1W/11L</td><td>8.3%</td></tr><tr><td><strong>7/8 enige</strong></td><td>40</td><td>3W/37L</td><td>7.5%</td></tr><tr><td><strong>6/8 enige</strong></td><td>0</td><td>0W/0L</td><td>0%</td></tr><tr><td><strong><6 enige</strong></td><td>0</td><td>0W/0L</td><td>0%</td></tr></tbody>
      </table>
    </div>
   
@@ -1750,7 +1863,7 @@ function sortTable(colIdx) {
      </p>
      <table>
        <thead><tr><th>Range Size</th><th>Positions</th><th>Record</th><th>Win Rate</th></tr></thead>
-       <tbody><tr><td><strong>Smal (<2°C)</strong></td><td>0</td><td>0W/0L</td><td>0%</td></tr><tr><td><strong>Medium (2-4°C)</strong></td><td>31</td><td>3W/28L</td><td>9.7%</td></tr><tr><td><strong>Bred (>4°C)</strong></td><td>20</td><td>1W/19L</td><td>5.0%</td></tr></tbody>
+       <tbody><tr><td><strong>Smal (<2°C)</strong></td><td>0</td><td>0W/0L</td><td>0%</td></tr><tr><td><strong>Medium (2-4°C)</strong></td><td>32</td><td>3W/29L</td><td>9.4%</td></tr><tr><td><strong>Bred (>4°C)</strong></td><td>20</td><td>1W/19L</td><td>5.0%</td></tr></tbody>
      </table>
    </div>
   
@@ -1761,7 +1874,7 @@ function sortTable(colIdx) {
      </p>
      <table>
        <thead><tr><th>Tier</th><th>🎯 Sigma</th><th>🛡️ P5</th><th>📊 Mean</th><th>🏆 Best</th></tr></thead>
-       <tbody><tr><td>🟢 >80%</td><td><span style="color:#3fb950;font-weight:600;">0%</span></td><td>0%</td><td>0%</td><td><span class="best-strategy">Sigma (0%)</span></td></tr><tr><td>🟠 70-80%</td><td><span style="color:#3fb950;font-weight:600;">25.0%</span></td><td>0.0%</td><td>25.0%</td><td><span class="best-strategy">Sigma (25.0%)</span></td></tr><tr><td>🟡 60-70%</td><td>0.0%</td><td>0.0%</td><td><span style="color:#3fb950;font-weight:600;">57.1%</span></td><td><span class="best-strategy">Mean (57.1%)</span></td></tr><tr><td>🔴 50-60%</td><td>5.0%</td><td>0.0%</td><td><span style="color:#3fb950;font-weight:600;">65.0%</span></td><td><span class="best-strategy">Mean (65.0%)</span></td></tr><tr><td>🔴 <50%</td><td>10.0%</td><td>5.0%</td><td><span style="color:#3fb950;font-weight:600;">35.0%</span></td><td><span class="best-strategy">Mean (35.0%)</span></td></tr></tbody>
+       <tbody><tr><td>🟢 >80%</td><td><span style="color:#3fb950;font-weight:600;">0.0%</span></td><td>0.0%</td><td>0.0%</td><td><span class="best-strategy">Sigma (0.0%)</span></td></tr><tr><td>🟠 70-80%</td><td><span style="color:#3fb950;font-weight:600;">25.0%</span></td><td>0.0%</td><td>25.0%</td><td><span class="best-strategy">Sigma (25.0%)</span></td></tr><tr><td>🟡 60-70%</td><td>0.0%</td><td>0.0%</td><td><span style="color:#3fb950;font-weight:600;">57.1%</span></td><td><span class="best-strategy">Mean (57.1%)</span></td></tr><tr><td>🔴 50-60%</td><td>5.0%</td><td>0.0%</td><td><span style="color:#3fb950;font-weight:600;">65.0%</span></td><td><span class="best-strategy">Mean (65.0%)</span></td></tr><tr><td>🔴 <50%</td><td>10.0%</td><td>5.0%</td><td><span style="color:#3fb950;font-weight:600;">35.0%</span></td><td><span class="best-strategy">Mean (35.0%)</span></td></tr></tbody>
      </table>
    </div>
   
@@ -1784,7 +1897,7 @@ function sortTable(colIdx) {
      </p>
      <table>
        <thead><tr><th>Region</th><th>Positions</th><th>Record</th><th>Win Rate</th></tr></thead>
-       <tbody><tr><td><strong>Americas</strong></td><td>16</td><td>2W/14L</td><td style="color:#f85149;font-weight:600;">12.5%</td></tr><tr><td><strong>Europe</strong></td><td>11</td><td>1W/10L</td><td style="color:#f85149;font-weight:600;">9.1%</td></tr><tr><td><strong>Asia</strong></td><td>22</td><td>1W/21L</td><td style="color:#f85149;font-weight:600;">4.5%</td></tr><tr><td><strong>Oceania</strong></td><td>1</td><td>0W/1L</td><td style="color:#f85149;font-weight:600;">0.0%</td></tr><tr><td><strong>Africa</strong></td><td>1</td><td>0W/1L</td><td style="color:#f85149;font-weight:600;">0.0%</td></tr></tbody>
+       <tbody><tr><td><strong>Americas</strong></td><td>16</td><td>2W/14L</td><td style="color:#f85149;font-weight:600;">12.5%</td></tr><tr><td><strong>Europe</strong></td><td>12</td><td>1W/11L</td><td style="color:#f85149;font-weight:600;">8.3%</td></tr><tr><td><strong>Asia</strong></td><td>22</td><td>1W/21L</td><td style="color:#f85149;font-weight:600;">4.5%</td></tr><tr><td><strong>Oceania</strong></td><td>1</td><td>0W/1L</td><td style="color:#f85149;font-weight:600;">0.0%</td></tr><tr><td><strong>Africa</strong></td><td>1</td><td>0W/1L</td><td style="color:#f85149;font-weight:600;">0.0%</td></tr></tbody>
      </table>
    </div>
   
@@ -1797,7 +1910,7 @@ function sortTable(colIdx) {
        <thead><tr><th>UHI Category</th><th>Count</th><th>Avg BMA Error</th></tr></thead>
        <tbody>
          <tr><td><strong>High UHI cities (≥1.0°C)</strong></td><td>28</td><td>0.61°C</td></tr>
-         <tr><td><strong>Low UHI cities (≤0.5°C)</strong></td><td>12</td><td>0.87°C</td></tr>
+         <tr><td><strong>Low UHI cities (≤0.5°C)</strong></td><td>13</td><td>0.83°C</td></tr>
        </tbody>
      </table>
    </div>
@@ -1821,7 +1934,7 @@ function sortTable(colIdx) {
           <div class="label">🛡️ P5 (0.0%)</div>
         </div>
         <div class="card">
-          <div class="value" style="color: var(--purple);">54.9%</div>
+          <div class="value" style="color: var(--purple);">53.8%</div>
           <div class="label">Samlet Edge (anbefalt)</div>
         </div>
       </div>
@@ -1846,17 +1959,17 @@ function sortTable(colIdx) {
         <tr>
             <td><strong>🎯 Dynamic k</strong></td>
             <td>3W/44L = 6.4%</td>
-            <td>1W/3L = 25.0%</td>
+            <td>1W/4L = 20.0%</td>
             <td>k>0.5 vs k≤0.5</td>
-            <td style="text-align:right;">-18.6%</td>
+            <td style="text-align:right;">-13.6%</td>
             <td><span style="color:#f85149;font-weight:700;">🔴 IMAGINED / NOISE</span></td>
         </tr>
 <tr>
             <td><strong>🏙️ UHI Adjustment</strong></td>
             <td>2W/37L = 5.1%</td>
-            <td>2W/10L = 16.7%</td>
+            <td>2W/11L = 15.4%</td>
             <td>UHI≥0.5°C vs <0.5°C</td>
-            <td style="text-align:right;">-11.6%</td>
+            <td style="text-align:right;">-10.3%</td>
             <td><span style="color:#f85149;font-weight:700;">🔴 IMAGINED / NOISE</span></td>
         </tr>
         </tbody>
@@ -1864,7 +1977,7 @@ function sortTable(colIdx) {
       <h3 style="color: var(--purple); margin-top: 20px; font-size: 1rem;">🏆 BEST FEATURE COMBOS</h3>
       <table>
         <thead><tr><th>Combo</th><th>Record</th><th>Win Rate</th></tr></thead>
-        <tbody><tr><td><strong>Weights + UHI</strong></td><td>1W/2L</td><td style="color:#f85149;font-weight:600;">33.3%</td></tr><tr><td><strong>Weights + Dyn k</strong></td><td>2W/9L</td><td style="color:#f85149;font-weight:600;">18.2%</td></tr><tr><td><strong>Weights + Dyn k + UHI</strong></td><td>1W/35L</td><td style="color:#f85149;font-weight:600;">2.8%</td></tr><tr><td><strong>Weights</strong></td><td>0W/1L</td><td style="color:#f85149;font-weight:600;">0.0%</td></tr></tbody>
+        <tbody><tr><td><strong>Weights + UHI</strong></td><td>1W/2L</td><td style="color:#f85149;font-weight:600;">33.3%</td></tr><tr><td><strong>Weights + Dyn k</strong></td><td>2W/9L</td><td style="color:#f85149;font-weight:600;">18.2%</td></tr><tr><td><strong>Weights + Dyn k + UHI</strong></td><td>1W/35L</td><td style="color:#f85149;font-weight:600;">2.8%</td></tr><tr><td><strong>Weights</strong></td><td>0W/2L</td><td style="color:#f85149;font-weight:600;">0.0%</td></tr></tbody>
       </table>
     </div>
 
