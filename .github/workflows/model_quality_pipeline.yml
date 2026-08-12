@@ -95,6 +95,9 @@ jobs:
       - name: Consolidate trading data
         run: python3 _consolidate_trading_data.py
 
+      - name: Track model accuracy
+        run: python3 _model_accuracy_tracker.py
+
       - name: Verify data
         run: |
           set -x
@@ -122,7 +125,7 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Auto: ${{ steps.mode.outputs.mode }} $(date -Iminutes)"
-          file_pattern: '_model_quality_log.json _quality_report.md _quality_report.html _all_cities.html _market_prices.json _trading_data.csv _strategy_summary.csv'
+          file_pattern: '_model_quality_log.json _quality_report.md _quality_report.html _all_cities.html _market_prices.json _trading_data.csv _strategy_summary.csv _model_accuracy_log.json _model_accuracy.csv'
           push_options: '--force-with-lease'
 
       - name: Trigger deploy to GitHub Pages
