@@ -66,10 +66,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
             HOUR=$(date +%H)
-            SCHEDULE="${{ github.event.schedule }}"
-            if [ "$HOUR" = "06" ] && [ "$SCHEDULE" != "*/10 6-22 * * *" ]; then
-              MODE="daily_bma"
-            elif [ "$HOUR" = "23" ]; then
+            if [ "$HOUR" = "23" ]; then
               MODE="daily_close"
             else
               MODE="hourly_active"

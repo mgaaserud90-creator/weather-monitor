@@ -1783,10 +1783,16 @@ def _load_resolved_market_outcomes() -> dict[str, int]:
 
         # Extract date from question for date-matched comparison
         date_str = None
-        months = ["January","February","March","April","May","June",
-                  "July","August","September","October","November","December"]
-        month_map = {m.lower(): i+1 for i, m in enumerate(months)}
-        dm = re.search(r'(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})(?:,\s*(\d{4}))?', question, re.IGNORECASE)
+        months_full = ["January","February","March","April","May","June",
+                       "July","August","September","October","November","December"]
+        months_abbr = ["Jan","Feb","Mar","Apr","May","Jun",
+                       "Jul","Aug","Sep","Oct","Nov","Dec"]
+        month_map = {}
+        for i, m in enumerate(months_full):
+            month_map[m.lower()] = i + 1
+            month_map[months_abbr[i].lower()] = i + 1
+        month_pattern = "|".join(months_full + months_abbr)
+        dm = re.search(rf'({month_pattern})\s+(\d{{1,2}})(?:,\s*(\d{{4}}))?', question, re.IGNORECASE)
         if dm:
             month = month_map.get(dm.group(1).lower(), 1)
             day = int(dm.group(2))

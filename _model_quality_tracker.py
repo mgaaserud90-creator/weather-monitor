@@ -226,11 +226,18 @@ def _compute_optimal_spill(
     p5_spill = int(round(p5_c))
     mean_spill = int(round(mean_c))
 
-    # Win probability under normal approximation: P(temp ≥ T) = 1 - Φ((T-μ)/σ)
+    # Win probability under normal approximation: P(round(temp) == spill)
+    # Polymarket resolves to round(actual_temp) == spill_bucket.
+    # Correct probability: P(spill - 0.5 <= temp < spill + 0.5) = Φ(hi) - Φ(lo)
     def win_prob(t: float, mu: float, sigma: float) -> float:
         if sigma <= 0:
-            return 0.5
-        return round(0.5 * (1 + math.erf((mu - t) / (sigma * 1.4142135623730951))), 3)
+            return 0.5 if abs(mu - t) < 0.5 else 0.0
+        sqrt2 = 1.4142135623730951
+        z_hi = (t + 0.5 - mu) / sigma
+        z_lo = (t - 0.5 - mu) / sigma
+        phi_hi = 0.5 * (1 + math.erf(z_hi / sqrt2))
+        phi_lo = 0.5 * (1 + math.erf(z_lo / sqrt2))
+        return round(max(0.0, phi_hi - phi_lo), 3)
 
     predicted_wp = win_prob(sigma_spill, mean_c, std_c)
 
@@ -3032,12 +3039,17 @@ def _generate_markdown_report(log_data: dict, today_entry: dict | None) -> None:
 def _extract_date_from_question(question: str) -> str | None:
     """Extract target date from Polymarket question text. Returns ISO date or None."""
     import re as _re
-    # "August 11, 2026" or "August 11"
-    months = ["January","February","March","April","May","June",
-              "July","August","September","October","November","December"]
-    month_map = {m.lower(): i+1 for i, m in enumerate(months)}
-    # Try "Month DD, YYYY" or "Month DD"
-    m = _re.search(r'(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})(?:,\s*(\d{4}))?', question, _re.IGNORECASE)
+    # Full + abbreviated: "August 11, 2026" / "Aug 11" / "August 11"
+    months_full = ["January","February","March","April","May","June",
+                   "July","August","September","October","November","December"]
+    months_abbr = ["Jan","Feb","Mar","Apr","May","Jun",
+                   "Jul","Aug","Sep","Oct","Nov","Dec"]
+    month_map = {}
+    for i, m in enumerate(months_full):
+        month_map[m.lower()] = i + 1
+        month_map[months_abbr[i].lower()] = i + 1
+    month_pattern = "|".join(months_full + months_abbr)
+    m = _re.search(rf'({month_pattern})\s+(\d{{1,2}})(?:,\s*(\d{{4}}))?', question, _re.IGNORECASE)
     if m:
         month = month_map.get(m.group(1).lower(), 1)
         day = int(m.group(2))
@@ -3207,7 +3219,7 @@ async def _verify_peaks_vs_market(
         lat = pdata.get("_lat", 0)
         lon = pdata.get("_lon", 0)
         _log_peak_verification(
-            city=city, date_str=today,
+            city=city, date_str=city_target,
             our_peak=float(actual_peak), our_lat=float(lat), our_lon=float(lon),
             market_resolved=market_temp,
         )
