@@ -161,7 +161,7 @@
 // No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-08-12T06:18:24Z');
+    var deployTime = new Date('2026-08-12T06:22:17Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {
@@ -244,13 +244,13 @@ function sortTable(colIdx) {
 <body>
 <header>
   <h1>🌡️ Model Quality Dashboard <span class="rapid-badge">3 STRATEGIES</span></h1>
-  <div class="subtitle" id="last-updated">🤖 Siste pipeline: 06:04 UTC | Neste pipeline-oppdatering: …</div>
+  <div class="subtitle" id="last-updated">🤖 Siste pipeline: 06:22 UTC | Neste pipeline-oppdatering: …</div>
 </header>
 <div class="container">
 
   <div class="card-grid">
     <div class="card">
-      <div class="value" style="color: var(--blue);">1</div>
+      <div class="value" style="color: var(--blue);">2</div>
       <div class="label">Days Tracked</div>
     </div>
     <div class="card">
@@ -301,33 +301,6 @@ function sortTable(colIdx) {
 
   <!-- MADRID ARBITRAGE HIGHLIGHT -->
   
-    <div class="section" style="border-color: rgba(210,153,29,0.5); box-shadow: 0 0 20px rgba(210,153,29,0.1);">
-      <h2>💰 MADRID ARBITRASJE — Peak Detected!</h2>
-      <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
-        <div style="flex: 1; min-width: 280px;">
-          <div style="font-size: 2.5rem; font-weight: 800; color: #f85149;">
-            🔴 35.6°C
-          </div>
-          <div style="font-size: 1.2rem; font-weight: 700; margin-bottom: 8px;">
-            Madrid, ES — FAKTISK PEAK (bekreftet 06:04)
-          </div>
-          <div style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 4px;">
-            BMA predikert: 35.3°C | Spill (sigma): 34°C
-          </div>
-          <div style="font-size: 0.9rem; font-weight: 600; color: #f85149; margin-top: 8px;">
-            SELG 34°C → SHORT! Peak ble 35.6°C (round=36 ≠ spill=34)
-          </div>
-        </div>
-        <div style="flex: 0 0 auto; text-align: center; padding: 12px 20px; background: rgba(210,153,29,0.1); border-radius: 12px;">
-          <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Marked Linje</div>
-          <div style="font-size: 1.5rem; font-weight: 800; color: var(--orange);">37°C</div>
-          <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 4px;">Sjekk Polymarket!</div>
-        </div>
-      </div>
-      <p style="color: var(--text-dim); font-size: 0.8rem; margin-top: 12px;">
-        📡 Peak bekreftet via archive data. Arbitrasje-vindu: markedet kan fremdeles trade feil side av denne temperaturen.
-      </p>
-    </div>
 
   <!-- PEAK VERIFICATION: Var vs Polymarket -->
   
@@ -346,11 +319,11 @@ function sortTable(colIdx) {
      </p>
      <div class="card-grid" style="margin-bottom: 20px;">
        <div class="card">
-         <div class="value" style="color: var(--blue);">30</div>
+         <div class="value" style="color: var(--blue);">29</div>
          <div class="label">Totale Markeder Matchet</div>
        </div>
        <div class="card">
-         <div class="value" style="color: var(--red);">27</div>
+         <div class="value" style="color: var(--red);">26</div>
          <div class="label">🔺 Høyeste</div>
        </div>
        <div class="card">
@@ -358,14 +331,14 @@ function sortTable(colIdx) {
          <div class="label">🔻 Laveste</div>
        </div>
        <div class="card">
-         <div class="value" style="color: var(--purple);">51</div>
+         <div class="value" style="color: var(--purple);">35</div>
          <div class="label">Byer med BMA-data</div>
        </div>
      </div>
    </div>
 
     <div class="section" style="border-color: rgba(248,81,73,0.3);">
-      <h2>🔺 HØYESTE TEMPERATUR <span style="color: var(--text-dim); font-size: 0.8rem;">(27 markeder)</span></h2>
+      <h2>🔺 HØYESTE TEMPERATUR <span style="color: var(--text-dim); font-size: 0.8rem;">(26 markeder)</span></h2>
       
       <div style="overflow-x: auto;">
      <table>
@@ -375,260 +348,260 @@ function sortTable(colIdx) {
                 <td><strong>Madrid, ES</strong></td>
                 <td>2026-08-12</td>
                 <td>38°C</td>
-                <td>43.2%</td>
+                <td>40.3%</td>
                 <td>64.0%</td>
-                <td style="color: var(--text-dim);">37.5°C</td>
+                <td style="color: var(--text-dim);">37.4°C</td>
                 <td style="color: var(--text-dim);">$16K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-madrid-es-38" data-spill="38" data-market="64.0">📡 35.6°C ✅</td>
+                <td class="col-peak" id="peak-madrid-es-38" data-spill="38" data-market="64.0">⏳</td>
                 <td class="col-trend" id="trend-madrid-es-38">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
                 <td>2</td>
-                <td><strong>Shanghai, CN</strong></td>
-                <td>2026-08-12</td>
-                <td>27°C</td>
-                <td>13.7%</td>
-                <td>30.5%</td>
-                <td style="color: var(--text-dim);">28.3°C</td>
-                <td style="color: var(--text-dim);">$20K</td>
-                <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-shanghai-cn-27" data-spill="27" data-market="30.5">📡 27.9°C ✅</td>
-                <td class="col-trend" id="trend-shanghai-cn-27">—</td>
-                <td class="col-spark">⚡ —</td>
-            </tr><tr>
-                <td>3</td>
-                <td><strong>Shanghai, CN</strong></td>
-                <td>2026-08-12</td>
-                <td>28°C</td>
-                <td>45.8%</td>
-                <td>56.5%</td>
-                <td style="color: var(--text-dim);">28.3°C</td>
-                <td style="color: var(--text-dim);">$24K</td>
-                <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-shanghai-cn-28" data-spill="28" data-market="56.5">📡 27.9°C ✅</td>
-                <td class="col-trend" id="trend-shanghai-cn-28">—</td>
-                <td class="col-spark">⚡ —</td>
-            </tr><tr>
-                <td>4</td>
-                <td><strong>Shanghai, CN</strong></td>
-                <td>2026-08-12</td>
-                <td>30°C</td>
-                <td>5.5%</td>
-                <td>1.5%</td>
-                <td style="color: var(--text-dim);">28.3°C</td>
-                <td style="color: var(--text-dim);">$18K</td>
-                <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-shanghai-cn-30" data-spill="30" data-market="1.5">📡 27.9°C ✅</td>
-                <td class="col-trend" id="trend-shanghai-cn-30">—</td>
-                <td class="col-spark">⚡ —</td>
-            </tr><tr>
-                <td>5</td>
-                <td><strong>Shanghai, CN</strong></td>
-                <td>2026-08-12</td>
-                <td>29°C</td>
-                <td>33.9%</td>
-                <td>4.0%</td>
-                <td style="color: var(--text-dim);">28.3°C</td>
-                <td style="color: var(--text-dim);">$16K</td>
-                <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-shanghai-cn-29" data-spill="29" data-market="4.0">📡 27.9°C ✅</td>
-                <td class="col-trend" id="trend-shanghai-cn-29">—</td>
-                <td class="col-spark">⚡ —</td>
-            </tr><tr>
-                <td>6</td>
-                <td><strong>Hong Kong, HK</strong></td>
-                <td>2026-08-12</td>
-                <td>35°C</td>
-                <td>13.6%</td>
-                <td>49.0%</td>
-                <td style="color: var(--text-dim);">33.4°C</td>
-                <td style="color: var(--text-dim);">$16K</td>
-                <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-hong-kong-hk-35" data-spill="35" data-market="49.0">📡 35.7°C ✅</td>
-                <td class="col-trend" id="trend-hong-kong-hk-35">—</td>
-                <td class="col-spark">⚡ —</td>
-            </tr><tr>
-                <td>7</td>
-                <td><strong>Hong Kong, HK</strong></td>
-                <td>2026-08-12</td>
-                <td>34°C</td>
-                <td>29.4%</td>
-                <td>49.5%</td>
-                <td style="color: var(--text-dim);">33.4°C</td>
-                <td style="color: var(--text-dim);">$20K</td>
-                <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-hong-kong-hk-34" data-spill="34" data-market="49.5">📡 35.7°C ✅</td>
-                <td class="col-trend" id="trend-hong-kong-hk-34">—</td>
-                <td class="col-spark">⚡ —</td>
-            </tr><tr>
-                <td>8</td>
-                <td><strong>Hong Kong, HK</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
-                <td>2026-08-12</td>
-                <td>33°C</td>
-                <td>31.5%</td>
-                <td>0.1%</td>
-                <td style="color: var(--text-dim);">33.4°C</td>
-                <td style="color: var(--text-dim);">$34K</td>
-                <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-hong-kong-hk-33" data-spill="33" data-market="0.1">📡 35.7°C ✅</td>
-                <td class="col-trend" id="trend-hong-kong-hk-33">—</td>
-                <td class="col-spark">⚡ —</td>
-            </tr><tr>
-                <td>9</td>
-                <td><strong>Hong Kong, HK</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
-                <td>2026-08-12</td>
-                <td>32°C</td>
-                <td>16.8%</td>
-                <td>0.1%</td>
-                <td style="color: var(--text-dim);">33.4°C</td>
-                <td style="color: var(--text-dim);">$29K</td>
-                <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-hong-kong-hk-32" data-spill="32" data-market="0.1">📡 35.7°C ✅</td>
-                <td class="col-trend" id="trend-hong-kong-hk-32">—</td>
-                <td class="col-spark">⚡ —</td>
-            </tr><tr>
-                <td>10</td>
-                <td><strong>Hong Kong, HK</strong></td>
-                <td>2026-08-12</td>
-                <td>36°C</td>
-                <td>3.1%</td>
-                <td>2.1%</td>
-                <td style="color: var(--text-dim);">33.4°C</td>
-                <td style="color: var(--text-dim);">$20K</td>
-                <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-hong-kong-hk-36" data-spill="36" data-market="2.1">📡 35.7°C ✅</td>
-                <td class="col-trend" id="trend-hong-kong-hk-36">—</td>
-                <td class="col-spark">⚡ —</td>
-            </tr><tr>
-                <td>11</td>
                 <td><strong>Wellington, NZ</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
                 <td>2026-08-12</td>
                 <td>13°C</td>
-                <td>20.2%</td>
+                <td>43.2%</td>
                 <td>0.1%</td>
-                <td style="color: var(--text-dim);">14.1°C</td>
+                <td style="color: var(--text-dim);">13.5°C</td>
                 <td style="color: var(--text-dim);">$28K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-wellington-nz-13" data-spill="13" data-market="0.1">📡 11.4°C ✅</td>
+                <td class="col-peak" id="peak-wellington-nz-13" data-spill="13" data-market="0.1">⏳</td>
                 <td class="col-trend" id="trend-wellington-nz-13">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
-                <td>12</td>
+                <td>3</td>
                 <td><strong>Wellington, NZ</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
                 <td>2026-08-12</td>
                 <td>12°C</td>
-                <td>2.1%</td>
+                <td>6.6%</td>
                 <td>0.1%</td>
-                <td style="color: var(--text-dim);">14.1°C</td>
+                <td style="color: var(--text-dim);">13.5°C</td>
                 <td style="color: var(--text-dim);">$26K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-wellington-nz-12" data-spill="12" data-market="0.1">📡 11.4°C ✅</td>
+                <td class="col-peak" id="peak-wellington-nz-12" data-spill="12" data-market="0.1">⏳</td>
                 <td class="col-trend" id="trend-wellington-nz-12">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
-                <td>13</td>
+                <td>4</td>
                 <td><strong>Wellington, NZ</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
                 <td>2026-08-12</td>
                 <td>11°C</td>
-                <td>0.0%</td>
                 <td>0.1%</td>
-                <td style="color: var(--text-dim);">14.1°C</td>
+                <td>0.1%</td>
+                <td style="color: var(--text-dim);">13.5°C</td>
                 <td style="color: var(--text-dim);">$18K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-wellington-nz-11" data-spill="11" data-market="0.1">📡 11.4°C ✅</td>
+                <td class="col-peak" id="peak-wellington-nz-11" data-spill="11" data-market="0.1">⏳</td>
                 <td class="col-trend" id="trend-wellington-nz-11">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
-                <td>14</td>
+                <td>5</td>
                 <td><strong>Wellington, NZ</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
                 <td>2026-08-12</td>
                 <td>14°C</td>
-                <td>47.0%</td>
+                <td>43.2%</td>
                 <td style="color: var(--green); font-weight: 600;">100.0%</td>
-                <td style="color: var(--text-dim);">14.1°C</td>
+                <td style="color: var(--text-dim);">13.5°C</td>
                 <td style="color: var(--text-dim);">$15K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-wellington-nz-14" data-spill="14" data-market="100.0">📡 11.4°C ✅</td>
+                <td class="col-peak" id="peak-wellington-nz-14" data-spill="14" data-market="100.0">⏳</td>
                 <td class="col-trend" id="trend-wellington-nz-14">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
-                <td>15</td>
+                <td>6</td>
                 <td><strong>Wellington, NZ</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
                 <td>2026-08-12</td>
                 <td>10°C</td>
                 <td>0.0%</td>
                 <td>0.1%</td>
-                <td style="color: var(--text-dim);">14.1°C</td>
+                <td style="color: var(--text-dim);">13.5°C</td>
                 <td style="color: var(--text-dim);">$11K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-wellington-nz-10" data-spill="10" data-market="0.1">📡 11.4°C ✅</td>
+                <td class="col-peak" id="peak-wellington-nz-10" data-spill="10" data-market="0.1">⏳</td>
                 <td class="col-trend" id="trend-wellington-nz-10">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
-                <td>16</td>
-                <td><strong>Beijing, CN</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
+                <td>7</td>
+                <td><strong>Hong Kong, HK</strong></td>
                 <td>2026-08-12</td>
-                <td>24°C</td>
-                <td>6.5%</td>
-                <td>0.1%</td>
-                <td style="color: var(--text-dim);">26.3°C</td>
-                <td style="color: var(--text-dim);">$17K</td>
-                <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-beijing-cn-24" data-spill="24" data-market="0.1">📡 33.2°C ✅</td>
-                <td class="col-trend" id="trend-beijing-cn-24">—</td>
-                <td class="col-spark">⚡ —</td>
-            </tr><tr>
-                <td>17</td>
-                <td><strong>Beijing, CN</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
-                <td>2026-08-12</td>
-                <td>25°C</td>
-                <td>18.6%</td>
-                <td>0.1%</td>
-                <td style="color: var(--text-dim);">26.3°C</td>
+                <td>35°C</td>
+                <td>5.3%</td>
+                <td>49.0%</td>
+                <td style="color: var(--text-dim);">33.1°C</td>
                 <td style="color: var(--text-dim);">$16K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-beijing-cn-25" data-spill="25" data-market="0.1">📡 33.2°C ✅</td>
-                <td class="col-trend" id="trend-beijing-cn-25">—</td>
+                <td class="col-peak" id="peak-hong-kong-hk-35" data-spill="35" data-market="49.0">⏳</td>
+                <td class="col-trend" id="trend-hong-kong-hk-35">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
-                <td>18</td>
+                <td>8</td>
+                <td><strong>Hong Kong, HK</strong></td>
+                <td>2026-08-12</td>
+                <td>34°C</td>
+                <td>26.9%</td>
+                <td>49.5%</td>
+                <td style="color: var(--text-dim);">33.1°C</td>
+                <td style="color: var(--text-dim);">$20K</td>
+                <td><span style="color:var(--text-dim);">—</span></td>
+                <td class="col-peak" id="peak-hong-kong-hk-34" data-spill="34" data-market="49.5">⏳</td>
+                <td class="col-trend" id="trend-hong-kong-hk-34">—</td>
+                <td class="col-spark">⚡ —</td>
+            </tr><tr>
+                <td>9</td>
+                <td><strong>Hong Kong, HK</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
+                <td>2026-08-12</td>
+                <td>33°C</td>
+                <td>42.8%</td>
+                <td>0.1%</td>
+                <td style="color: var(--text-dim);">33.1°C</td>
+                <td style="color: var(--text-dim);">$34K</td>
+                <td><span style="color:var(--text-dim);">—</span></td>
+                <td class="col-peak" id="peak-hong-kong-hk-33" data-spill="33" data-market="0.1">⏳</td>
+                <td class="col-trend" id="trend-hong-kong-hk-33">—</td>
+                <td class="col-spark">⚡ —</td>
+            </tr><tr>
+                <td>10</td>
+                <td><strong>Hong Kong, HK</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
+                <td>2026-08-12</td>
+                <td>32°C</td>
+                <td>21.3%</td>
+                <td>0.1%</td>
+                <td style="color: var(--text-dim);">33.1°C</td>
+                <td style="color: var(--text-dim);">$29K</td>
+                <td><span style="color:var(--text-dim);">—</span></td>
+                <td class="col-peak" id="peak-hong-kong-hk-32" data-spill="32" data-market="0.1">⏳</td>
+                <td class="col-trend" id="trend-hong-kong-hk-32">—</td>
+                <td class="col-spark">⚡ —</td>
+            </tr><tr>
+                <td>11</td>
+                <td><strong>Hong Kong, HK</strong></td>
+                <td>2026-08-12</td>
+                <td>36°C</td>
+                <td>0.3%</td>
+                <td>2.1%</td>
+                <td style="color: var(--text-dim);">33.1°C</td>
+                <td style="color: var(--text-dim);">$20K</td>
+                <td><span style="color:var(--text-dim);">—</span></td>
+                <td class="col-peak" id="peak-hong-kong-hk-36" data-spill="36" data-market="2.1">⏳</td>
+                <td class="col-trend" id="trend-hong-kong-hk-36">—</td>
+                <td class="col-spark">⚡ —</td>
+            </tr><tr>
+                <td>12</td>
                 <td><strong>Tokyo, JP</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
                 <td>2026-08-12</td>
                 <td>28°C</td>
-                <td>4.1%</td>
+                <td>31.5%</td>
                 <td>0.1%</td>
-                <td style="color: var(--text-dim);">25.8°C</td>
+                <td style="color: var(--text-dim);">27.3°C</td>
                 <td style="color: var(--text-dim);">$15K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-tokyo-jp-28" data-spill="28" data-market="0.1">📡 30.5°C ✅</td>
+                <td class="col-peak" id="peak-tokyo-jp-28" data-spill="28" data-market="0.1">⏳</td>
                 <td class="col-trend" id="trend-tokyo-jp-28">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
-                <td>19</td>
+                <td>13</td>
                 <td><strong>Tokyo, JP</strong></td>
                 <td>2026-08-12</td>
                 <td>29°C</td>
-                <td>0.3%</td>
+                <td>9.1%</td>
                 <td>95.0%</td>
-                <td style="color: var(--text-dim);">25.8°C</td>
+                <td style="color: var(--text-dim);">27.3°C</td>
                 <td style="color: var(--text-dim);">$14K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-tokyo-jp-29" data-spill="29" data-market="95.0">📡 30.5°C ✅</td>
+                <td class="col-peak" id="peak-tokyo-jp-29" data-spill="29" data-market="95.0">⏳</td>
                 <td class="col-trend" id="trend-tokyo-jp-29">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
-                <td>20</td>
+                <td>14</td>
                 <td><strong>Tokyo, JP</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
                 <td>2026-08-12</td>
                 <td>27°C</td>
-                <td>19.7%</td>
+                <td>38.7%</td>
                 <td>0.1%</td>
-                <td style="color: var(--text-dim);">25.8°C</td>
+                <td style="color: var(--text-dim);">27.3°C</td>
                 <td style="color: var(--text-dim);">$14K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-tokyo-jp-27" data-spill="27" data-market="0.1">📡 30.5°C ✅</td>
+                <td class="col-peak" id="peak-tokyo-jp-27" data-spill="27" data-market="0.1">⏳</td>
                 <td class="col-trend" id="trend-tokyo-jp-27">—</td>
+                <td class="col-spark">⚡ —</td>
+            </tr><tr>
+                <td>15</td>
+                <td><strong>Tokyo, JP</strong></td>
+                <td>2026-08-12</td>
+                <td>30°C</td>
+                <td>0.9%</td>
+                <td>5.3%</td>
+                <td style="color: var(--text-dim);">27.3°C</td>
+                <td style="color: var(--text-dim);">$14K</td>
+                <td><span style="color:var(--text-dim);">—</span></td>
+                <td class="col-peak" id="peak-tokyo-jp-30" data-spill="30" data-market="5.3">⏳</td>
+                <td class="col-trend" id="trend-tokyo-jp-30">—</td>
+                <td class="col-spark">⚡ —</td>
+            </tr><tr>
+                <td>16</td>
+                <td><strong>Tokyo, JP</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
+                <td>2026-08-12</td>
+                <td>25°C</td>
+                <td>2.6%</td>
+                <td>0.1%</td>
+                <td style="color: var(--text-dim);">27.3°C</td>
+                <td style="color: var(--text-dim);">$12K</td>
+                <td><span style="color:var(--text-dim);">—</span></td>
+                <td class="col-peak" id="peak-tokyo-jp-25" data-spill="25" data-market="0.1">⏳</td>
+                <td class="col-trend" id="trend-tokyo-jp-25">—</td>
+                <td class="col-spark">⚡ —</td>
+            </tr><tr>
+                <td>17</td>
+                <td><strong>Shanghai, CN</strong></td>
+                <td>2026-08-12</td>
+                <td>28°C</td>
+                <td>49.1%</td>
+                <td>56.5%</td>
+                <td style="color: var(--text-dim);">27.8°C</td>
+                <td style="color: var(--text-dim);">$24K</td>
+                <td><span style="color:var(--text-dim);">—</span></td>
+                <td class="col-peak" id="peak-shanghai-cn-28" data-spill="28" data-market="56.5">⏳</td>
+                <td class="col-trend" id="trend-shanghai-cn-28">—</td>
+                <td class="col-spark">⚡ —</td>
+            </tr><tr>
+                <td>18</td>
+                <td><strong>Shanghai, CN</strong></td>
+                <td>2026-08-12</td>
+                <td>27°C</td>
+                <td>30.3%</td>
+                <td>30.5%</td>
+                <td style="color: var(--text-dim);">27.8°C</td>
+                <td style="color: var(--text-dim);">$20K</td>
+                <td><span style="color:var(--text-dim);">—</span></td>
+                <td class="col-peak" id="peak-shanghai-cn-27" data-spill="27" data-market="30.5">⏳</td>
+                <td class="col-trend" id="trend-shanghai-cn-27">—</td>
+                <td class="col-spark">⚡ —</td>
+            </tr><tr>
+                <td>19</td>
+                <td><strong>Shanghai, CN</strong></td>
+                <td>2026-08-12</td>
+                <td>30°C</td>
+                <td>1.0%</td>
+                <td>1.5%</td>
+                <td style="color: var(--text-dim);">27.8°C</td>
+                <td style="color: var(--text-dim);">$18K</td>
+                <td><span style="color:var(--text-dim);">—</span></td>
+                <td class="col-peak" id="peak-shanghai-cn-30" data-spill="30" data-market="1.5">⏳</td>
+                <td class="col-trend" id="trend-shanghai-cn-30">—</td>
+                <td class="col-spark">⚡ —</td>
+            </tr><tr>
+                <td>20</td>
+                <td><strong>Shanghai, CN</strong></td>
+                <td>2026-08-12</td>
+                <td>29°C</td>
+                <td>15.9%</td>
+                <td>4.0%</td>
+                <td style="color: var(--text-dim);">27.8°C</td>
+                <td style="color: var(--text-dim);">$16K</td>
+                <td><span style="color:var(--text-dim);">—</span></td>
+                <td class="col-peak" id="peak-shanghai-cn-29" data-spill="29" data-market="4.0">⏳</td>
+                <td class="col-trend" id="trend-shanghai-cn-29">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr></tbody>
      </table>
@@ -646,12 +619,12 @@ function sortTable(colIdx) {
                 <td><strong>Hong Kong, HK</strong></td>
                 <td>2026-08-12</td>
                 <td>30°C</td>
-                <td>0.6%</td>
+                <td>0.2%</td>
                 <td>57.9%</td>
-                <td style="color: var(--text-dim);">33.4°C</td>
+                <td style="color: var(--text-dim);">33.1°C</td>
                 <td style="color: var(--text-dim);">$13K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-hong-kong-hk-30" data-spill="30" data-market="57.9">📡 35.7°C ✅</td>
+                <td class="col-peak" id="peak-hong-kong-hk-30" data-spill="30" data-market="57.9">⏳</td>
                 <td class="col-trend" id="trend-hong-kong-hk-30">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
@@ -661,10 +634,10 @@ function sortTable(colIdx) {
                 <td>28°C</td>
                 <td>0.0%</td>
                 <td>2.5%</td>
-                <td style="color: var(--text-dim);">33.4°C</td>
+                <td style="color: var(--text-dim);">33.1°C</td>
                 <td style="color: var(--text-dim);">$13K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-hong-kong-hk-28" data-spill="28" data-market="2.5">📡 35.7°C ✅</td>
+                <td class="col-peak" id="peak-hong-kong-hk-28" data-spill="28" data-market="2.5">⏳</td>
                 <td class="col-trend" id="trend-hong-kong-hk-28">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
@@ -674,10 +647,10 @@ function sortTable(colIdx) {
                 <td>29°C</td>
                 <td>0.0%</td>
                 <td>13.0%</td>
-                <td style="color: var(--text-dim);">33.4°C</td>
+                <td style="color: var(--text-dim);">33.1°C</td>
                 <td style="color: var(--text-dim);">$12K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-hong-kong-hk-29" data-spill="29" data-market="13.0">📡 35.7°C ✅</td>
+                <td class="col-peak" id="peak-hong-kong-hk-29" data-spill="29" data-market="13.0">⏳</td>
                 <td class="col-trend" id="trend-hong-kong-hk-29">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr></tbody>
@@ -704,13 +677,13 @@ function sortTable(colIdx) {
         </tr><tr class="mkt-bucket beijing" style="color:var(--red);">
             <td></td>
             <td>24°C <span style="color:#3fb950;">✅</span></td>
-            <td>BMA: 6.5%</td>
+            <td>BMA: 10.3%</td>
             <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-bucket beijing" style="color:var(--red);">
             <td></td>
             <td>25°C <span style="color:#3fb950;">✅</span></td>
-            <td>BMA: 18.6%</td>
+            <td>BMA: 34.3%</td>
             <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('hong-kong')">
@@ -734,37 +707,37 @@ function sortTable(colIdx) {
         </tr><tr class="mkt-bucket hong-kong">
             <td></td>
             <td>30°C</td>
-            <td>BMA: 0.6%</td>
+            <td>BMA: 0.2%</td>
             <td>Mkt: 57.9%</td>
             <td></td>
         </tr><tr class="mkt-bucket hong-kong" style="color:var(--red);">
             <td></td>
             <td>32°C <span style="color:#3fb950;">✅</span></td>
-            <td>BMA: 16.8%</td>
+            <td>BMA: 21.3%</td>
             <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-bucket hong-kong" style="color:var(--red);">
             <td></td>
             <td>33°C <span style="color:#3fb950;">✅</span></td>
-            <td>BMA: 31.5%</td>
+            <td>BMA: 42.8%</td>
             <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-bucket hong-kong">
             <td></td>
             <td>34°C</td>
-            <td>BMA: 29.4%</td>
+            <td>BMA: 26.9%</td>
             <td>Mkt: 49.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket hong-kong">
             <td></td>
             <td>35°C</td>
-            <td>BMA: 13.6%</td>
+            <td>BMA: 5.3%</td>
             <td>Mkt: 49.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket hong-kong">
             <td></td>
             <td>36°C</td>
-            <td>BMA: 3.1%</td>
+            <td>BMA: 0.3%</td>
             <td>Mkt: 2.1%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('lucknow')">
@@ -776,7 +749,7 @@ function sortTable(colIdx) {
         </tr><tr class="mkt-bucket lucknow" style="color:var(--red);">
             <td></td>
             <td>32°C <span style="color:#3fb950;">✅</span></td>
-            <td>BMA: 2.8%</td>
+            <td>BMA: 1.3%</td>
             <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('madrid')">
@@ -788,7 +761,7 @@ function sortTable(colIdx) {
         </tr><tr class="mkt-bucket madrid">
             <td></td>
             <td>38°C</td>
-            <td>BMA: 43.2%</td>
+            <td>BMA: 40.3%</td>
             <td>Mkt: 64.0%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('seoul')">
@@ -818,25 +791,25 @@ function sortTable(colIdx) {
         </tr><tr class="mkt-bucket shanghai">
             <td></td>
             <td>27°C</td>
-            <td>BMA: 13.7%</td>
+            <td>BMA: 30.3%</td>
             <td>Mkt: 30.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket shanghai">
             <td></td>
             <td>28°C</td>
-            <td>BMA: 45.8%</td>
+            <td>BMA: 49.1%</td>
             <td>Mkt: 56.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket shanghai">
             <td></td>
             <td>29°C</td>
-            <td>BMA: 33.9%</td>
+            <td>BMA: 15.9%</td>
             <td>Mkt: 4.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket shanghai">
             <td></td>
             <td>30°C</td>
-            <td>BMA: 5.5%</td>
+            <td>BMA: 1.0%</td>
             <td>Mkt: 1.5%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('shenzhen')">
@@ -848,7 +821,7 @@ function sortTable(colIdx) {
         </tr><tr class="mkt-bucket shenzhen">
             <td></td>
             <td>34°C</td>
-            <td>BMA: 19.3%</td>
+            <td>BMA: 23.9%</td>
             <td>Mkt: 22.5%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('tokyo')">
@@ -860,31 +833,31 @@ function sortTable(colIdx) {
         </tr><tr class="mkt-bucket tokyo" style="color:var(--red);">
             <td></td>
             <td>25°C <span style="color:#3fb950;">✅</span></td>
-            <td>BMA: 28.5%</td>
+            <td>BMA: 2.6%</td>
             <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-bucket tokyo" style="color:var(--red);">
             <td></td>
             <td>27°C <span style="color:#3fb950;">✅</span></td>
-            <td>BMA: 19.7%</td>
+            <td>BMA: 38.7%</td>
             <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-bucket tokyo" style="color:var(--red);">
             <td></td>
             <td>28°C <span style="color:#3fb950;">✅</span></td>
-            <td>BMA: 4.1%</td>
+            <td>BMA: 31.5%</td>
             <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-bucket tokyo">
             <td></td>
             <td>29°C</td>
-            <td>BMA: 0.3%</td>
+            <td>BMA: 9.1%</td>
             <td>Mkt: 95.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket tokyo">
             <td></td>
             <td>30°C</td>
-            <td>BMA: 0.0%</td>
+            <td>BMA: 0.9%</td>
             <td>Mkt: 5.3%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('toronto')">
@@ -896,7 +869,7 @@ function sortTable(colIdx) {
         </tr><tr class="mkt-bucket toronto">
             <td></td>
             <td>24°C</td>
-            <td>BMA: 7.9%</td>
+            <td>BMA: —</td>
             <td>Mkt: 8.0%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('wellington')">
@@ -914,25 +887,25 @@ function sortTable(colIdx) {
         </tr><tr class="mkt-bucket wellington" style="color:var(--red);">
             <td></td>
             <td>11°C <span style="color:#3fb950;">✅</span></td>
-            <td>BMA: 0.0%</td>
+            <td>BMA: 0.1%</td>
             <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-bucket wellington" style="color:var(--red);">
             <td></td>
             <td>12°C <span style="color:#3fb950;">✅</span></td>
-            <td>BMA: 2.1%</td>
+            <td>BMA: 6.6%</td>
             <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-bucket wellington" style="color:var(--red);">
             <td></td>
             <td>13°C <span style="color:#3fb950;">✅</span></td>
-            <td>BMA: 20.2%</td>
+            <td>BMA: 43.2%</td>
             <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-bucket wellington" style="color:var(--green);">
             <td></td>
             <td>14°C <span style="color:#3fb950;">✅</span></td>
-            <td>BMA: 47.0%</td>
+            <td>BMA: 43.2%</td>
             <td>Mkt: 100.0%</td>
             <td></td>
         </tr></tbody>
@@ -943,7 +916,7 @@ function sortTable(colIdx) {
   <!-- TOP 5 PREDICTIONS -->
   
     <div class="section">
-      <h2>📅 TOP 5 — I DAG (2026-08-11)</h2>
+      <h2>📅 TOP 5 — I DAG (2026-08-12)</h2>
       <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
         All 3 strategies shown: 🎯 Sigma (μ−kσ, dynamic k), 🛡️ P5-Basert (ultra-conservative), 📊 Mean-Basert (50/50)
       </p>
@@ -954,304 +927,84 @@ function sortTable(colIdx) {
             <tr>
                 <td>1</td>
                 <td><strong>Madrid, ES</strong></td>
-                <td>35.3°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.6</span></td>
-                <td><strong>34°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.5, 98%)</span></td>
-                <td>34°C</td>
-                <td>35°C</td>
-                <td>🟠 74%</td>
+                <td>37.4°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.6</span></td>
+                <td><strong>37°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.3, 76%)</span></td>
+                <td>36°C</td>
+                <td>37°C</td>
+                <td>🟢 83%</td>
                 <td>7/8</td>
-                <td>📡 35.6°C ✅</td>
-                <td><span class="badge-loss">❌ LOSS</span></td>
-                <td><span class="badge-loss">❌ LOSS</span></td>
-                <td><span class="badge-loss">❌ LOSS</span></td>
-                <td style="color:#b71c1c;">🔴 SELG med tap — gå SHORT 34°C (peak=35.6°C → round=36 ≠ 34)</td>
+                <td>—</td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td >—</td>
             </tr>
             <tr>
                 <td>2</td>
-                <td><strong>London, UK</strong></td>
-                <td>24.5°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.7</span></td>
-                <td><strong>24°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.5, 77%)</span></td>
-                <td>23°C</td>
-                <td>24°C</td>
-                <td>🟠 74%</td>
+                <td><strong>Chongqing, CN</strong></td>
+                <td>34.5°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.7</span></td>
+                <td><strong>34°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.5, 75%)</span></td>
+                <td>33°C</td>
+                <td>34°C</td>
+                <td>🟠 80%</td>
                 <td>7/8</td>
-                <td>📡 24.6°C | Marked: 24°C <span style="color:#3fb950;font-weight:600;">✅ +0.6°C</span></td>
-                <td><span class="badge-loss">❌ LOSS</span></td>
-                <td><span class="badge-loss">❌ LOSS</span></td>
-                <td><span class="badge-loss">❌ LOSS</span></td>
-                <td style="color:#b71c1c;">🔴 SELG med tap — gå SHORT 24°C (peak=24.6°C → round=25 ≠ 24)</td>
+                <td>—</td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td >—</td>
             </tr>
             <tr>
                 <td>3</td>
-                <td><strong>Denver, US</strong></td>
-                <td>34.8°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.7</span></td>
-                <td><strong>34°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.5, 88%)</span></td>
-                <td>34°C</td>
-                <td>35°C</td>
-                <td>🟠 74%</td>
-                <td>8/8</td>
-                <td>📡 35.8°C ✅</td>
-                <td><span class="badge-loss">❌ LOSS</span></td>
-                <td><span class="badge-loss">❌ LOSS</span></td>
-                <td><span class="badge-loss">❌ LOSS</span></td>
-                <td style="color:#b71c1c;">🔴 SELG med tap — gå SHORT 34°C (peak=35.8°C → round=36 ≠ 34)</td>
+                <td><strong>Wellington, NZ</strong></td>
+                <td>13.5°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.7</span></td>
+                <td><strong>13°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.5, 77%)</span></td>
+                <td>12°C</td>
+                <td>14°C</td>
+                <td>🟠 73%</td>
+                <td>7/8</td>
+                <td>📡 — | Marked: 14°C</td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td >—</td>
             </tr>
             <tr>
                 <td>4</td>
-                <td><strong>Moscow, RU</strong></td>
-                <td>24.4°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.7</span></td>
-                <td><strong>24°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.5, 72%)</span></td>
-                <td>23°C</td>
-                <td>24°C</td>
-                <td>🟠 73%</td>
+                <td><strong>London, UK</strong></td>
+                <td>30.9°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.8</span></td>
+                <td><strong>30°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.5, 86%)</span></td>
+                <td>30°C</td>
+                <td>31°C</td>
+                <td>🟠 71%</td>
                 <td>7/8</td>
-                <td>📡 24.4°C ✅</td>
-                <td><span class="badge-win">✅ WIN</span></td>
-                <td><span class="badge-loss">❌ LOSS</span></td>
-                <td><span class="badge-win">✅ WIN</span></td>
-                <td style="color:#1b5e20;">✅ HOLD — bet vinner (round(24.4°C) == 24°C)</td>
+                <td>📡 — | Marked: 24°C</td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td >—</td>
             </tr>
             <tr>
                 <td>5</td>
-                <td><strong>Guangzhou, CN</strong></td>
-                <td>35.1°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.8</span></td>
-                <td><strong>34°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.7, 90%)</span></td>
-                <td>34°C</td>
-                <td>35°C</td>
-                <td>🔴 70%</td>
+                <td><strong>Manila, PH</strong></td>
+                <td>29.2°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.8</span></td>
+                <td><strong>28°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.5, 92%)</span></td>
+                <td>28°C</td>
+                <td>29°C</td>
+                <td>🟠 70%</td>
                 <td>7/8</td>
-                <td>📡 35.1°C ✅</td>
-                <td><span class="badge-loss">❌ LOSS</span></td>
-                <td><span class="badge-loss">❌ LOSS</span></td>
-                <td><span class="badge-win">✅ WIN</span></td>
-                <td style="color:#b71c1c;">🔴 SELG med tap — gå SHORT 34°C (peak=35.1°C → round=35 ≠ 34) | Alt. ville vunnet: Mean@35°C</td>
+                <td>—</td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td >—</td>
             </tr>
         </tbody>
       </table>
       </div>
     </div>
     
-   <div class="section">
-     <h2>🔄 Flip Recommendations</h2>
-     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
-       Cities where the position lost — recommendation is to reverse.
-       💰 = flip would have been profitable (P5 strategy would have won).
-     </p>
-     <table>
-       <thead><tr><th>City</th><th>Position</th><th>Actual Peak</th><th>Recommendation</th><th>Flip Profitable?</th></tr></thead>
-       <tbody>
-            <tr>
-                <td><strong>Madrid, ES</strong></td>
-                <td>34°C</td>
-                <td>35.6°C</td>
-                <td style="color:#f85149;">🔴 SELG med tap — gå SHORT 34°C (peak=35.6°C → round=36 ≠ 34)</td>
-                <td>—</td>
-            </tr>
-            <tr>
-                <td><strong>London, UK</strong></td>
-                <td>24°C</td>
-                <td>24.6°C</td>
-                <td style="color:#f85149;">🔴 SELG med tap — gå SHORT 24°C (peak=24.6°C → round=25 ≠ 24)</td>
-                <td>—</td>
-            </tr>
-            <tr>
-                <td><strong>Denver, US</strong></td>
-                <td>34°C</td>
-                <td>35.8°C</td>
-                <td style="color:#f85149;">🔴 SELG med tap — gå SHORT 34°C (peak=35.8°C → round=36 ≠ 34)</td>
-                <td>—</td>
-            </tr>
-            <tr>
-                <td><strong>Guangzhou, CN</strong></td>
-                <td>34°C</td>
-                <td>35.1°C</td>
-                <td style="color:#f85149;">🔴 SELG med tap — gå SHORT 34°C (peak=35.1°C → round=35 ≠ 34) | Alt. ville vunnet: Mean@35°C</td>
-                <td>—</td>
-            </tr>
-       </tbody>
-     </table>
-   </div>
     
-   <div class="section">
-     <h2>🔍 Strategy Divergence — Mixed Results</h2>
-     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
-       Cities where strategies disagreed: at least one won while another lost.
-       These are candidates for strategy optimization.
-     </p>
-     <table>
-       <thead><tr><th>City</th><th>🎯 Sigma</th><th>🛡️ P5</th><th>📊 Mean</th></tr></thead>
-       <tbody>
-            <tr>
-                <td><strong>Amsterdam, NL</strong></td>
-                <td>❌ 21°C</td>
-                <td>❌ 20°C</td>
-                <td>✅ 22°C</td>
-            </tr>
-            <tr>
-                <td><strong>Austin, US</strong></td>
-                <td>❌ 36°C</td>
-                <td>❌ 36°C</td>
-                <td>✅ 37°C</td>
-            </tr>
-            <tr>
-                <td><strong>Beijing, CN</strong></td>
-                <td>❌ 32°C</td>
-                <td>❌ 31°C</td>
-                <td>✅ 33°C</td>
-            </tr>
-            <tr>
-                <td><strong>Buenos Aires, AR</strong></td>
-                <td>❌ 10°C</td>
-                <td>❌ 10°C</td>
-                <td>✅ 11°C</td>
-            </tr>
-            <tr>
-                <td><strong>Chongqing, CN</strong></td>
-                <td>❌ 33°C</td>
-                <td>❌ 32°C</td>
-                <td>✅ 34°C</td>
-            </tr>
-            <tr>
-                <td><strong>Dallas, US</strong></td>
-                <td>❌ 37°C</td>
-                <td>❌ 37°C</td>
-                <td>✅ 38°C</td>
-            </tr>
-            <tr>
-                <td><strong>Guangzhou, CN</strong></td>
-                <td>❌ 34°C</td>
-                <td>❌ 34°C</td>
-                <td>✅ 35°C</td>
-            </tr>
-            <tr>
-                <td><strong>Helsinki, FI</strong></td>
-                <td>❌ 17°C</td>
-                <td>❌ 16°C</td>
-                <td>✅ 18°C</td>
-            </tr>
-            <tr>
-                <td><strong>Houston, US</strong></td>
-                <td>✅ 32°C</td>
-                <td>✅ 32°C</td>
-                <td>❌ 33°C</td>
-            </tr>
-            <tr>
-                <td><strong>Jeddah, SA</strong></td>
-                <td>❌ 37°C</td>
-                <td>❌ 35°C</td>
-                <td>✅ 39°C</td>
-            </tr>
-            <tr>
-                <td><strong>Karachi, PK</strong></td>
-                <td>❌ 31°C</td>
-                <td>❌ 30°C</td>
-                <td>✅ 32°C</td>
-            </tr>
-            <tr>
-                <td><strong>Los Angeles, US</strong></td>
-                <td>❌ 25°C</td>
-                <td>❌ 24°C</td>
-                <td>✅ 27°C</td>
-            </tr>
-            <tr>
-                <td><strong>Manila, PH</strong></td>
-                <td>❌ 29°C</td>
-                <td>❌ 29°C</td>
-                <td>✅ 30°C</td>
-            </tr>
-            <tr>
-                <td><strong>Mexico City, MX</strong></td>
-                <td>✅ 24°C</td>
-                <td>❌ 23°C</td>
-                <td>❌ 25°C</td>
-            </tr>
-            <tr>
-                <td><strong>Miami, US</strong></td>
-                <td>❌ 32°C</td>
-                <td>❌ 31°C</td>
-                <td>✅ 33°C</td>
-            </tr>
-            <tr>
-                <td><strong>Milan, IT</strong></td>
-                <td>❌ 34°C</td>
-                <td>❌ 33°C</td>
-                <td>✅ 36°C</td>
-            </tr>
-            <tr>
-                <td><strong>Moscow, RU</strong></td>
-                <td>✅ 24°C</td>
-                <td>❌ 23°C</td>
-                <td>✅ 24°C</td>
-            </tr>
-            <tr>
-                <td><strong>Munich, DE</strong></td>
-                <td>❌ 28°C</td>
-                <td>❌ 27°C</td>
-                <td>✅ 29°C</td>
-            </tr>
-            <tr>
-                <td><strong>Paris, FR</strong></td>
-                <td>❌ 31°C</td>
-                <td>❌ 30°C</td>
-                <td>✅ 32°C</td>
-            </tr>
-            <tr>
-                <td><strong>Qingdao, CN</strong></td>
-                <td>❌ 30°C</td>
-                <td>❌ 30°C</td>
-                <td>✅ 32°C</td>
-            </tr>
-            <tr>
-                <td><strong>San Francisco, US</strong></td>
-                <td>❌ 19°C</td>
-                <td>❌ 18°C</td>
-                <td>✅ 21°C</td>
-            </tr>
-            <tr>
-                <td><strong>Shanghai, CN</strong></td>
-                <td>❌ 27°C</td>
-                <td>❌ 27°C</td>
-                <td>✅ 28°C</td>
-            </tr>
-            <tr>
-                <td><strong>Shenzhen, CN</strong></td>
-                <td>❌ 34°C</td>
-                <td>❌ 33°C</td>
-                <td>✅ 35°C</td>
-            </tr>
-            <tr>
-                <td><strong>Taipei, TW</strong></td>
-                <td>❌ 32°C</td>
-                <td>❌ 31°C</td>
-                <td>✅ 33°C</td>
-            </tr>
-            <tr>
-                <td><strong>Tel Aviv, IL</strong></td>
-                <td>✅ 35°C</td>
-                <td>❌ 34°C</td>
-                <td>❌ 36°C</td>
-            </tr>
-            <tr>
-                <td><strong>Tokyo, JP</strong></td>
-                <td>❌ 29°C</td>
-                <td>❌ 28°C</td>
-                <td>✅ 30°C</td>
-            </tr>
-            <tr>
-                <td><strong>Warsaw, PL</strong></td>
-                <td>❌ 21°C</td>
-                <td>❌ 20°C</td>
-                <td>✅ 22°C</td>
-            </tr>
-            <tr>
-                <td><strong>Zhengzhou, CN</strong></td>
-                <td>❌ 24°C</td>
-                <td>❌ 23°C</td>
-                <td>✅ 25°C</td>
-            </tr>
-       </tbody>
-     </table>
-   </div>
     
    <div class="section">
      <h2>📊 Per-City Strategy Comparison</h2>
@@ -1269,885 +1022,214 @@ function sortTable(colIdx) {
        <tbody>
             <tr>
                 <td>Amsterdam, NL</td>
-                <td >21°C ❌</td>
-                <td >20°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">22°C ✅</td>
+                <td >26°C ⏳</td>
+                <td >24°C ⏳</td>
+                <td >28°C ⏳</td>
             </tr>
             <tr>
                 <td>Ankara, TR</td>
-                <td >29°C ❌</td>
-                <td >29°C ❌</td>
-                <td >31°C ❌</td>
-            </tr>
-            <tr>
-                <td>Atlanta, US</td>
-                <td >30°C ❌</td>
-                <td >29°C ❌</td>
-                <td >32°C ❌</td>
-            </tr>
-            <tr>
-                <td>Austin, US</td>
-                <td >36°C ❌</td>
-                <td >36°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">37°C ✅</td>
+                <td >30°C ⏳</td>
+                <td >30°C ⏳</td>
+                <td >32°C ⏳</td>
             </tr>
             <tr>
                 <td>Beijing, CN</td>
-                <td >32°C ❌</td>
-                <td >31°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">33°C ✅</td>
-            </tr>
-            <tr>
-                <td>Buenos Aires, AR</td>
-                <td >10°C ❌</td>
-                <td >10°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">11°C ✅</td>
+                <td >24°C ⏳</td>
+                <td >24°C ⏳</td>
+                <td >26°C ⏳</td>
             </tr>
             <tr>
                 <td>Busan, KR</td>
-                <td >28°C ❌</td>
-                <td >27°C ❌</td>
-                <td >29°C ❌</td>
+                <td >28°C ⏳</td>
+                <td >28°C ⏳</td>
+                <td >29°C ⏳</td>
             </tr>
             <tr>
                 <td>Cape Town, ZA</td>
-                <td >17°C ❌</td>
-                <td >16°C ❌</td>
-                <td >19°C ❌</td>
+                <td >20°C ⏳</td>
+                <td >19°C ⏳</td>
+                <td >21°C ⏳</td>
             </tr>
             <tr>
                 <td>Chengdu, CN</td>
-                <td >31°C ❌</td>
-                <td >30°C ❌</td>
-                <td >33°C ❌</td>
-            </tr>
-            <tr>
-                <td>Chicago, US</td>
-                <td >26°C ❌</td>
-                <td >24°C ❌</td>
-                <td >28°C ❌</td>
+                <td >34°C ⏳</td>
+                <td >33°C ⏳</td>
+                <td >35°C ⏳</td>
             </tr>
             <tr>
                 <td>Chongqing, CN</td>
-                <td >33°C ❌</td>
-                <td >32°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">34°C ✅</td>
-            </tr>
-            <tr>
-                <td>Dallas, US</td>
-                <td >37°C ❌</td>
-                <td >37°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">38°C ✅</td>
-            </tr>
-            <tr>
-                <td>Denver, US</td>
-                <td >34°C ❌</td>
-                <td >34°C ❌</td>
-                <td >35°C ❌</td>
+                <td >34°C ⏳</td>
+                <td >33°C ⏳</td>
+                <td >34°C ⏳</td>
             </tr>
             <tr>
                 <td>Guangzhou, CN</td>
-                <td >34°C ❌</td>
-                <td >34°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">35°C ✅</td>
+                <td >35°C ⏳</td>
+                <td >35°C ⏳</td>
+                <td >37°C ⏳</td>
             </tr>
             <tr>
                 <td>Helsinki, FI</td>
-                <td >17°C ❌</td>
-                <td >16°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">18°C ✅</td>
+                <td >17°C ⏳</td>
+                <td >17°C ⏳</td>
+                <td >18°C ⏳</td>
             </tr>
             <tr>
                 <td>Hong Kong, HK</td>
-                <td >33°C ❌</td>
-                <td >32°C ❌</td>
-                <td >34°C ❌</td>
-            </tr>
-            <tr>
-                <td>Houston, US</td>
-                <td style="color:#3fb950;font-weight:600;">32°C ✅</td>
-                <td >32°C ✅</td>
-                <td >33°C ❌</td>
+                <td >32°C ⏳</td>
+                <td >32°C ⏳</td>
+                <td >33°C ⏳</td>
             </tr>
             <tr>
                 <td>Istanbul, TR</td>
-                <td >25°C ❌</td>
-                <td >24°C ❌</td>
-                <td >26°C ❌</td>
+                <td >26°C ⏳</td>
+                <td >25°C ⏳</td>
+                <td >28°C ⏳</td>
             </tr>
             <tr>
                 <td>Jeddah, SA</td>
-                <td >37°C ❌</td>
-                <td >35°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">39°C ✅</td>
+                <td >37°C ⏳</td>
+                <td >35°C ⏳</td>
+                <td >39°C ⏳</td>
             </tr>
             <tr>
                 <td>Jinan, CN</td>
-                <td >29°C ❌</td>
-                <td >28°C ❌</td>
-                <td >31°C ❌</td>
+                <td >28°C ⏳</td>
+                <td >27°C ⏳</td>
+                <td >29°C ⏳</td>
             </tr>
             <tr>
                 <td>Karachi, PK</td>
-                <td >31°C ❌</td>
-                <td >30°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">32°C ✅</td>
+                <td >31°C ⏳</td>
+                <td >31°C ⏳</td>
+                <td >33°C ⏳</td>
             </tr>
             <tr>
                 <td>Kuala Lumpur, MY</td>
-                <td >30°C ❌</td>
-                <td >30°C ❌</td>
-                <td >31°C ❌</td>
+                <td >31°C ⏳</td>
+                <td >30°C ⏳</td>
+                <td >32°C ⏳</td>
             </tr>
             <tr>
                 <td>London, UK</td>
-                <td >24°C ❌</td>
-                <td >23°C ❌</td>
-                <td >24°C ❌</td>
-            </tr>
-            <tr>
-                <td>Los Angeles, US</td>
-                <td >25°C ❌</td>
-                <td >24°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">27°C ✅</td>
+                <td >30°C ⏳</td>
+                <td >30°C ⏳</td>
+                <td >31°C ⏳</td>
             </tr>
             <tr>
                 <td>Lucknow, IN</td>
-                <td >32°C ❌</td>
-                <td >31°C ❌</td>
-                <td >34°C ❌</td>
+                <td >34°C ⏳</td>
+                <td >33°C ⏳</td>
+                <td >36°C ⏳</td>
             </tr>
             <tr>
                 <td>Madrid, ES</td>
-                <td >34°C ❌</td>
-                <td >34°C ❌</td>
-                <td >35°C ❌</td>
+                <td >37°C ⏳</td>
+                <td >36°C ⏳</td>
+                <td >37°C ⏳</td>
             </tr>
             <tr>
                 <td>Manila, PH</td>
-                <td >29°C ❌</td>
-                <td >29°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">30°C ✅</td>
-            </tr>
-            <tr>
-                <td>Mexico City, MX</td>
-                <td style="color:#3fb950;font-weight:600;">24°C ✅</td>
-                <td >23°C ❌</td>
-                <td >25°C ❌</td>
-            </tr>
-            <tr>
-                <td>Miami, US</td>
-                <td >32°C ❌</td>
-                <td >31°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">33°C ✅</td>
+                <td >28°C ⏳</td>
+                <td >28°C ⏳</td>
+                <td >29°C ⏳</td>
             </tr>
             <tr>
                 <td>Milan, IT</td>
-                <td >34°C ❌</td>
-                <td >33°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">36°C ✅</td>
+                <td >33°C ⏳</td>
+                <td >32°C ⏳</td>
+                <td >35°C ⏳</td>
             </tr>
             <tr>
                 <td>Moscow, RU</td>
-                <td style="color:#3fb950;font-weight:600;">24°C ✅</td>
-                <td >23°C ❌</td>
-                <td >24°C ✅</td>
+                <td >17°C ⏳</td>
+                <td >17°C ⏳</td>
+                <td >18°C ⏳</td>
             </tr>
             <tr>
                 <td>Munich, DE</td>
-                <td >28°C ❌</td>
-                <td >27°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">29°C ✅</td>
-            </tr>
-            <tr>
-                <td>New York, US</td>
-                <td >30°C ❌</td>
-                <td >30°C ❌</td>
-                <td >31°C ❌</td>
-            </tr>
-            <tr>
-                <td>Panama City, PA</td>
-                <td >32°C ❌</td>
-                <td >32°C ❌</td>
-                <td >34°C ❌</td>
+                <td >28°C ⏳</td>
+                <td >27°C ⏳</td>
+                <td >29°C ⏳</td>
             </tr>
             <tr>
                 <td>Paris, FR</td>
-                <td >31°C ❌</td>
-                <td >30°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">32°C ✅</td>
+                <td >33°C ⏳</td>
+                <td >33°C ⏳</td>
+                <td >35°C ⏳</td>
             </tr>
             <tr>
                 <td>Qingdao, CN</td>
-                <td >30°C ❌</td>
-                <td >30°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">32°C ✅</td>
-            </tr>
-            <tr>
-                <td>San Francisco, US</td>
-                <td >19°C ❌</td>
-                <td >18°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">21°C ✅</td>
-            </tr>
-            <tr>
-                <td>Sao Paulo, BR</td>
-                <td >15°C ❌</td>
-                <td >15°C ❌</td>
-                <td >16°C ❌</td>
-            </tr>
-            <tr>
-                <td>Seattle, US</td>
-                <td >24°C ❌</td>
-                <td >23°C ❌</td>
-                <td >25°C ❌</td>
+                <td >30°C ⏳</td>
+                <td >30°C ⏳</td>
+                <td >31°C ⏳</td>
             </tr>
             <tr>
                 <td>Seoul (Incheon), KR</td>
-                <td >28°C ❌</td>
-                <td >27°C ❌</td>
-                <td >30°C ❌</td>
+                <td >29°C ⏳</td>
+                <td >27°C ⏳</td>
+                <td >30°C ⏳</td>
             </tr>
             <tr>
                 <td>Shanghai, CN</td>
-                <td >27°C ❌</td>
-                <td >27°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">28°C ✅</td>
+                <td >27°C ⏳</td>
+                <td >27°C ⏳</td>
+                <td >28°C ⏳</td>
             </tr>
             <tr>
                 <td>Shenzhen, CN</td>
-                <td >34°C ❌</td>
-                <td >33°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">35°C ✅</td>
+                <td >33°C ⏳</td>
+                <td >32°C ⏳</td>
+                <td >35°C ⏳</td>
             </tr>
             <tr>
                 <td>Singapore, SG</td>
-                <td >31°C ❌</td>
-                <td >30°C ❌</td>
-                <td >32°C ❌</td>
+                <td >30°C ⏳</td>
+                <td >30°C ⏳</td>
+                <td >31°C ⏳</td>
             </tr>
             <tr>
                 <td>Taipei, TW</td>
-                <td >32°C ❌</td>
-                <td >31°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">33°C ✅</td>
+                <td >32°C ⏳</td>
+                <td >31°C ⏳</td>
+                <td >34°C ⏳</td>
             </tr>
             <tr>
                 <td>Tel Aviv, IL</td>
-                <td style="color:#3fb950;font-weight:600;">35°C ✅</td>
-                <td >34°C ❌</td>
-                <td >36°C ❌</td>
+                <td >34°C ⏳</td>
+                <td >34°C ⏳</td>
+                <td >36°C ⏳</td>
             </tr>
             <tr>
                 <td>Tokyo, JP</td>
-                <td >29°C ❌</td>
-                <td >28°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">30°C ✅</td>
-            </tr>
-            <tr>
-                <td>Toronto, CA</td>
-                <td >27°C ❌</td>
-                <td >26°C ❌</td>
-                <td >28°C ❌</td>
+                <td >26°C ⏳</td>
+                <td >26°C ⏳</td>
+                <td >27°C ⏳</td>
             </tr>
             <tr>
                 <td>Warsaw, PL</td>
-                <td >21°C ❌</td>
-                <td >20°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">22°C ✅</td>
+                <td >22°C ⏳</td>
+                <td >21°C ⏳</td>
+                <td >23°C ⏳</td>
             </tr>
             <tr>
                 <td>Wellington, NZ</td>
-                <td >12°C ❌</td>
-                <td >12°C ❌</td>
-                <td >14°C ❌</td>
+                <td >13°C ⏳</td>
+                <td >12°C ⏳</td>
+                <td >14°C ⏳</td>
             </tr>
             <tr>
                 <td>Wuhan, CN</td>
-                <td >28°C ❌</td>
-                <td >27°C ❌</td>
-                <td >30°C ❌</td>
+                <td >28°C ⏳</td>
+                <td >28°C ⏳</td>
+                <td >30°C ⏳</td>
             </tr>
             <tr>
                 <td>Zhengzhou, CN</td>
-                <td >24°C ❌</td>
-                <td >23°C ❌</td>
-                <td style="color:#3fb950;font-weight:600;">25°C ✅</td>
+                <td >23°C ⏳</td>
+                <td >23°C ⏳</td>
+                <td >24°C ⏳</td>
             </tr>
-       </tbody>
-     </table>
-     </div>
-   </div>
-   <div class="section">
-      <h2>📊 AVGJORTE RESULTATER (51 byer, 2026-08-11)</h2>
-      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
-        Resolved against archive data. ✅ WIN = round(actual peak) == spill bucket.
-        📡 = vår live peak | Marked = Polymarket utfall | ⚠️ Avvik = stasjonsfeil hvis >2°C
-      </p>
-     <div style="max-height: 600px; overflow-y: auto;">
-     <table>
-       <thead><tr><th>By</th><th>Sigma Spill</th><th>Sigma Utfall</th><th>P5 Spill</th><th>P5 Utfall</th><th>Mean Spill</th><th>Mean Utfall</th><th>Marked</th><th>⚠️ Avvik</th></tr></thead>
-       <tbody>
-                <tr>
-                    <td><strong>Amsterdam, NL</strong></td>
-                    <td>21°C</td>
-                    <td>❌ LOSS (22.1°C)</td>
-                    <td>20°C</td>
-                    <td>❌ LOSS</td>
-                    <td>22°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Ankara, TR</strong></td>
-                    <td>29°C</td>
-                    <td>❌ LOSS (32.1°C)</td>
-                    <td>29°C</td>
-                    <td>❌ LOSS</td>
-                    <td>31°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Atlanta, US</strong></td>
-                    <td>30°C</td>
-                    <td>❌ LOSS (30.8°C)</td>
-                    <td>29°C</td>
-                    <td>❌ LOSS</td>
-                    <td>32°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Austin, US</strong></td>
-                    <td>36°C</td>
-                    <td>❌ LOSS (36.7°C)</td>
-                    <td>36°C</td>
-                    <td>❌ LOSS</td>
-                    <td>37°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Beijing, CN</strong></td>
-                    <td>32°C</td>
-                    <td>❌ LOSS (33.2°C)</td>
-                    <td>31°C</td>
-                    <td>❌ LOSS</td>
-                    <td>33°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Buenos Aires, AR</strong></td>
-                    <td>10°C</td>
-                    <td>❌ LOSS (11.4°C)</td>
-                    <td>10°C</td>
-                    <td>❌ LOSS</td>
-                    <td>11°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Busan, KR</strong></td>
-                    <td>28°C</td>
-                    <td>❌ LOSS (30.2°C)</td>
-                    <td>27°C</td>
-                    <td>❌ LOSS</td>
-                    <td>29°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Cape Town, ZA</strong></td>
-                    <td>17°C</td>
-                    <td>❌ LOSS (19.6°C)</td>
-                    <td>16°C</td>
-                    <td>❌ LOSS</td>
-                    <td>19°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Chengdu, CN</strong></td>
-                    <td>31°C</td>
-                    <td>❌ LOSS (33.6°C)</td>
-                    <td>30°C</td>
-                    <td>❌ LOSS</td>
-                    <td>33°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Chicago, US</strong></td>
-                    <td>26°C</td>
-                    <td>❌ LOSS (26.7°C)</td>
-                    <td>24°C</td>
-                    <td>❌ LOSS</td>
-                    <td>28°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Chongqing, CN</strong></td>
-                    <td>33°C</td>
-                    <td>❌ LOSS (33.6°C)</td>
-                    <td>32°C</td>
-                    <td>❌ LOSS</td>
-                    <td>34°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Dallas, US</strong></td>
-                    <td>37°C</td>
-                    <td>❌ LOSS (37.9°C)</td>
-                    <td>37°C</td>
-                    <td>❌ LOSS</td>
-                    <td>38°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Denver, US</strong></td>
-                    <td>34°C</td>
-                    <td>❌ LOSS (35.8°C)</td>
-                    <td>34°C</td>
-                    <td>❌ LOSS</td>
-                    <td>35°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Guangzhou, CN</strong></td>
-                    <td>34°C</td>
-                    <td>❌ LOSS (35.1°C)</td>
-                    <td>34°C</td>
-                    <td>❌ LOSS</td>
-                    <td>35°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Helsinki, FI</strong></td>
-                    <td>17°C</td>
-                    <td>❌ LOSS (17.5°C)</td>
-                    <td>16°C</td>
-                    <td>❌ LOSS</td>
-                    <td>18°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Hong Kong, HK</strong></td>
-                    <td>33°C</td>
-                    <td>❌ LOSS (35.7°C)</td>
-                    <td>32°C</td>
-                    <td>❌ LOSS</td>
-                    <td>34°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Houston, US</strong></td>
-                    <td>32°C</td>
-                    <td>✅ WIN (31.8°C)</td>
-                    <td>32°C</td>
-                    <td>✅ WIN</td>
-                    <td>33°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Istanbul, TR</strong></td>
-                    <td>25°C</td>
-                    <td>❌ LOSS (27.8°C)</td>
-                    <td>24°C</td>
-                    <td>❌ LOSS</td>
-                    <td>26°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Jeddah, SA</strong></td>
-                    <td>37°C</td>
-                    <td>❌ LOSS (39.4°C)</td>
-                    <td>35°C</td>
-                    <td>❌ LOSS</td>
-                    <td>39°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Jinan, CN</strong></td>
-                    <td>29°C</td>
-                    <td>❌ LOSS (32.9°C)</td>
-                    <td>28°C</td>
-                    <td>❌ LOSS</td>
-                    <td>31°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Karachi, PK</strong></td>
-                    <td>31°C</td>
-                    <td>❌ LOSS (32.5°C)</td>
-                    <td>30°C</td>
-                    <td>❌ LOSS</td>
-                    <td>32°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Kuala Lumpur, MY</strong></td>
-                    <td>30°C</td>
-                    <td>❌ LOSS (32.2°C)</td>
-                    <td>30°C</td>
-                    <td>❌ LOSS</td>
-                    <td>31°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>London, UK</strong></td>
-                    <td>24°C</td>
-                    <td>❌ LOSS (24.6°C)</td>
-                    <td>23°C</td>
-                    <td>❌ LOSS</td>
-                    <td>24°C</td>
-                    <td>❌ LOSS</td>
-                    <td>24°C</td>
-                    <td><span style="color:#3fb950;font-weight:600;">✅ +0.6°C</span></td>
-                </tr>
-                <tr>
-                    <td><strong>Los Angeles, US</strong></td>
-                    <td>25°C</td>
-                    <td>❌ LOSS (26.6°C)</td>
-                    <td>24°C</td>
-                    <td>❌ LOSS</td>
-                    <td>27°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Lucknow, IN</strong></td>
-                    <td>32°C</td>
-                    <td>❌ LOSS (33.1°C)</td>
-                    <td>31°C</td>
-                    <td>❌ LOSS</td>
-                    <td>34°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Madrid, ES</strong></td>
-                    <td>34°C</td>
-                    <td>❌ LOSS (35.6°C)</td>
-                    <td>34°C</td>
-                    <td>❌ LOSS</td>
-                    <td>35°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Manila, PH</strong></td>
-                    <td>29°C</td>
-                    <td>❌ LOSS (30.0°C)</td>
-                    <td>29°C</td>
-                    <td>❌ LOSS</td>
-                    <td>30°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Mexico City, MX</strong></td>
-                    <td>24°C</td>
-                    <td>✅ WIN (23.7°C)</td>
-                    <td>23°C</td>
-                    <td>❌ LOSS</td>
-                    <td>25°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Miami, US</strong></td>
-                    <td>32°C</td>
-                    <td>❌ LOSS (33.1°C)</td>
-                    <td>31°C</td>
-                    <td>❌ LOSS</td>
-                    <td>33°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Milan, IT</strong></td>
-                    <td>34°C</td>
-                    <td>❌ LOSS (35.5°C)</td>
-                    <td>33°C</td>
-                    <td>❌ LOSS</td>
-                    <td>36°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Moscow, RU</strong></td>
-                    <td>24°C</td>
-                    <td>✅ WIN (24.4°C)</td>
-                    <td>23°C</td>
-                    <td>❌ LOSS</td>
-                    <td>24°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Munich, DE</strong></td>
-                    <td>28°C</td>
-                    <td>❌ LOSS (28.7°C)</td>
-                    <td>27°C</td>
-                    <td>❌ LOSS</td>
-                    <td>29°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>New York, US</strong></td>
-                    <td>30°C</td>
-                    <td>❌ LOSS (31.6°C)</td>
-                    <td>30°C</td>
-                    <td>❌ LOSS</td>
-                    <td>31°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Panama City, PA</strong></td>
-                    <td>32°C</td>
-                    <td>❌ LOSS (32.7°C)</td>
-                    <td>32°C</td>
-                    <td>❌ LOSS</td>
-                    <td>34°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Paris, FR</strong></td>
-                    <td>31°C</td>
-                    <td>❌ LOSS (31.7°C)</td>
-                    <td>30°C</td>
-                    <td>❌ LOSS</td>
-                    <td>32°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Qingdao, CN</strong></td>
-                    <td>30°C</td>
-                    <td>❌ LOSS (32.0°C)</td>
-                    <td>30°C</td>
-                    <td>❌ LOSS</td>
-                    <td>32°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>San Francisco, US</strong></td>
-                    <td>19°C</td>
-                    <td>❌ LOSS (20.7°C)</td>
-                    <td>18°C</td>
-                    <td>❌ LOSS</td>
-                    <td>21°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Sao Paulo, BR</strong></td>
-                    <td>15°C</td>
-                    <td>❌ LOSS (17.1°C)</td>
-                    <td>15°C</td>
-                    <td>❌ LOSS</td>
-                    <td>16°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Seattle, US</strong></td>
-                    <td>24°C</td>
-                    <td>❌ LOSS (25.9°C)</td>
-                    <td>23°C</td>
-                    <td>❌ LOSS</td>
-                    <td>25°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Seoul (Incheon), KR</strong></td>
-                    <td>28°C</td>
-                    <td>❌ LOSS (31.5°C)</td>
-                    <td>27°C</td>
-                    <td>❌ LOSS</td>
-                    <td>30°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Shanghai, CN</strong></td>
-                    <td>27°C</td>
-                    <td>❌ LOSS (27.9°C)</td>
-                    <td>27°C</td>
-                    <td>❌ LOSS</td>
-                    <td>28°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Shenzhen, CN</strong></td>
-                    <td>34°C</td>
-                    <td>❌ LOSS (34.8°C)</td>
-                    <td>33°C</td>
-                    <td>❌ LOSS</td>
-                    <td>35°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Singapore, SG</strong></td>
-                    <td>31°C</td>
-                    <td>❌ LOSS (33.1°C)</td>
-                    <td>30°C</td>
-                    <td>❌ LOSS</td>
-                    <td>32°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Taipei, TW</strong></td>
-                    <td>32°C</td>
-                    <td>❌ LOSS (32.9°C)</td>
-                    <td>31°C</td>
-                    <td>❌ LOSS</td>
-                    <td>33°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Tel Aviv, IL</strong></td>
-                    <td>35°C</td>
-                    <td>✅ WIN (34.8°C)</td>
-                    <td>34°C</td>
-                    <td>❌ LOSS</td>
-                    <td>36°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Tokyo, JP</strong></td>
-                    <td>29°C</td>
-                    <td>❌ LOSS (30.5°C)</td>
-                    <td>28°C</td>
-                    <td>❌ LOSS</td>
-                    <td>30°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Toronto, CA</strong></td>
-                    <td>27°C</td>
-                    <td>❌ LOSS (28.8°C)</td>
-                    <td>26°C</td>
-                    <td>❌ LOSS</td>
-                    <td>28°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Warsaw, PL</strong></td>
-                    <td>21°C</td>
-                    <td>❌ LOSS (21.5°C)</td>
-                    <td>20°C</td>
-                    <td>❌ LOSS</td>
-                    <td>22°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Wellington, NZ</strong></td>
-                    <td>12°C</td>
-                    <td>❌ LOSS (11.4°C)</td>
-                    <td>12°C</td>
-                    <td>❌ LOSS</td>
-                    <td>14°C</td>
-                    <td>❌ LOSS</td>
-                    <td>14°C</td>
-                    <td><span style="color:#f85149;font-weight:600;">⚠️ -2.6°C</span></td>
-                </tr>
-                <tr>
-                    <td><strong>Wuhan, CN</strong></td>
-                    <td>28°C</td>
-                    <td>❌ LOSS (30.6°C)</td>
-                    <td>27°C</td>
-                    <td>❌ LOSS</td>
-                    <td>30°C</td>
-                    <td>❌ LOSS</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Zhengzhou, CN</strong></td>
-                    <td>24°C</td>
-                    <td>❌ LOSS (25.2°C)</td>
-                    <td>23°C</td>
-                    <td>❌ LOSS</td>
-                    <td>25°C</td>
-                    <td>✅ WIN</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
        </tbody>
      </table>
      </div>
@@ -2196,6 +1278,7 @@ function sortTable(colIdx) {
     <table>
       <thead><tr><th>Date</th><th>Phase</th><th>Sigma W/L</th><th>P5 W/L</th><th>Mean W/L</th><th>Rate (Sigma)</th></tr></thead>
       <tbody>
+                <tr><td>2026-08-12</td><td>hourly_active</td><td>0/0</td><td>0/0</td><td>0/0</td><td>—</td></tr>
                 <tr><td>2026-08-11</td><td>🔒 closed</td><td>4/47</td><td>1/50</td><td>25/26</td><td>7.8%</td></tr>
       </tbody>
     </table>
