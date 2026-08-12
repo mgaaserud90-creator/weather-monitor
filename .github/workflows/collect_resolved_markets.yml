@@ -1,0 +1,45 @@
+name: Collect Resolved Markets
+
+# Fetches ALL resolved (closed) Polymarket temperature markets from Gamma API.
+# Collects city, date, and resolved temperature for historical comparison.
+# Runs every 30 minutes to catch new resolutions.
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'   # Every 30 minutes
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collect-resolved-markets
+  cancel-in-progress: true
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Collect resolved markets
+        run: python3 _collect_resolved_markets.py
+
+      - name: Cross-reference with our peaks
+        run: |
+          if [ -f "_resolved_markets_log.json" ]; then
+            COUNT=$(python3 -c "import json; d=json.load(open('_resolved_markets_log.json')); print(len(d.get('markets',{})))")
+            echo "Resolved markets collected: $COUNT"
+          fi
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto: resolved markets $(date -u +%Y-%m-%dT%H:%M)"
+          file_pattern: '_resolved_markets_log.json _resolved_markets.csv'
+          push_options: '--force-with-lease'
