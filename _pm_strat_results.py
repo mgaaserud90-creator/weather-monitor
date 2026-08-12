@@ -21,13 +21,15 @@ if not runs:
     print("No data")
     exit(0)
 
-# Find most recent run with resolved predictions
+# Find run with the MOST resolved predictions (ground truth comparisons)
 latest = None
-for r in reversed(runs):
-    if any(p.get("strategies", {}).get("sigma", {}).get("actual_peak") is not None
-           for p in r.get("predictions", {}).values()):
+max_resolved = -1
+for r in runs:
+    n = sum(1 for p in r.get("predictions", {}).values()
+            if p.get("strategies", {}).get("sigma", {}).get("actual_peak") is not None)
+    if n > max_resolved:
+        max_resolved = n
         latest = r
-        break
 if latest is None:
     latest = runs[-1]
 target_date = latest["run_date"]
@@ -43,36 +45,40 @@ def best_spill(pdata):
     return sig, "sigma"
 
 rows = ""
-wins = losses = 0
+wins = losses = na_count = 0
 for city in sorted(preds):
     pdata = preds[city]
     cb = city.split(",")[0].strip()
     pt = pm.get((city, target_date)) or pm.get((cb, target_date))
-    if pt is None:
-        continue
     sigma = pdata.get("strategies", {}).get("sigma", {})
     our_peak = sigma.get("actual_peak")
-    if our_peak is None:
+    spill, strat = best_spill(pdata)
+
+    if pt is None or our_peak is None:
+        # No resolution yet — show NA
+        na_count += 1
+        our_str = f"{round(our_peak)}C" if our_peak is not None else "—"
+        rows += f"<tr><td>{city}</td><td>{our_str}</td><td>NA</td><td>—</td><td>{spill or '—'}C ({strat})</td><td style='color:var(--text-dim);'>NA</td></tr>\n"
         continue
+
     our_round = round(our_peak)
     pm_round = int(round(pt))
     gap = round(our_peak - pt, 1)
-    spill, strat = best_spill(pdata)
     is_win = int(spill) == pm_round if spill else False
     if is_win:
         wins += 1
     else:
         losses += 1
-    rows += f"<tr><td>{city}</td><td>{our_round}C</td><td>{pm_round}C</td><td>{gap:+.1f}C</td><td>{spill}C ({strat})</td><td>{'WIN' if is_win else 'TAP'}</td></tr>\n"
+    rows += f"<tr><td>{city}</td><td>{our_round}C</td><td>{pm_round}C</td><td>{gap:+.1f}C</td><td>{spill}C ({strat})</td><td style='color:{'var(--green)' if is_win else 'var(--red)'};'>{'WIN' if is_win else 'TAP'}</td></tr>\n"
 
 total = wins + losses
 rate = round(wins/max(1,total)*100,1)
-print(f"PM Strategy Results ({total} cities): {wins}W/{losses}L = {rate}%")
+print(f"PM Strategy Results ({total} resolved, {na_count} NA): {wins}W/{losses}L = {rate}%")
 print(rows)
 
 # Write HTML section
 html = f"""<div class="section" style="border-color: rgba(210,153,29,0.4);">
-  <h2>🎯 ANBEFALT SPILL vs POLYMARKET ({total} byer, {target_date})</h2>
+  <h2>🎯 ANBEFALT SPILL vs POLYMARKET ({total} resolved, {na_count} NA, {target_date})</h2>
   <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
     Anbefalt strategispill (mean) sjekket mot Polymarkets faktiske resolusjon.
   </p>
