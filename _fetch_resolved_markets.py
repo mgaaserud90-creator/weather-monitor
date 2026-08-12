@@ -86,18 +86,75 @@ def fetch_json(url: str) -> dict | list | None:
     return None
 
 
-def parse_temp_bracket(bracket: str, city: str) -> float | None:
-    """Parse temperature bracket like '35°C' or '80-81°F' to Celsius float."""
-    bracket = bracket.strip()
+def parse_temp_bracket(bracket: str, city: str, question: str = "") -> dict | None:
+    """Classify a resolved temperature market and return a storage payload.
+
+    Point markets (bucket or single value) carry a native-unit numeric value.
+    US °F buckets stay in °F (numeric midpoint + original bucket label) and are
+    never converted to °C for comparison/display.
+    Threshold markets ("X°C or higher" / "or above" / "at least" / "≥") carry
+    only a lower bound and are excluded from point-value gap comparisons.
+    Returns None when the market cannot be classified.
+    """
+    bracket = (bracket or "").strip()
+    question = (question or "").strip()
+    text = f"{question} {bracket}".strip()
+
+    # Threshold markets: "X°C or higher" / "at least" / "or above" / "≥" / "or below".
+    th = re.search(
+        r'(\d+(?:\.\d+)?)\s*°\s*([CF])\s*'
+        r'(?:or\s+higher|or\s+above|at\s+least|or\s+more|or\s+below|or\s+lower|≥|≤)',
+        text, re.IGNORECASE,
+    )
+    if th:
+        val = float(th.group(1))
+        unit = th.group(2).upper()
+        display = (bracket or question).strip() or None
+        payload: dict = {
+            "type": "threshold",
+            "unit": unit,
+            "bucket": display,
+            "temp_display": display,
+        }
+        if unit == "F":
+            payload["lower_bound_f"] = val
+            payload["lower_bound_c"] = round((val - 32) * 5 / 9, 1)
+        else:
+            payload["lower_bound_c"] = val
+        return payload
+
+    # °F bucket markets: "86-87°F" or a single "92°F".
     if "°F" in bracket:
-        parts = bracket.replace("°F", "").split("-")
-        nums = [int(p.strip()) for p in parts if p.strip().isdigit()]
-        if nums:
-            return f_to_c(sum(nums) / len(nums))
-    elif "°C" in bracket:
-        m = re.search(r'(\d+)', bracket)
+        m = re.search(r'(\d+)\s*[-–]\s*(\d+)\s*°\s*F', bracket, re.IGNORECASE)
         if m:
-            return float(m.group(1))
+            lo, hi = int(m.group(1)), int(m.group(2))
+            midpoint = (lo + hi) / 2.0
+            return {
+                "type": "point", "unit": "F",
+                "temp_f": midpoint, "value": midpoint,
+                "temp_c": round((midpoint - 32) * 5 / 9, 1),  # legacy field for old consumers
+                "bucket": m.group(0).strip(), "temp_display": bracket,
+            }
+        m = re.search(r'(\d+(?:\.\d+)?)\s*°\s*F', bracket, re.IGNORECASE)
+        if m:
+            val = float(m.group(1))
+            return {
+                "type": "point", "unit": "F",
+                "temp_f": val, "value": val,
+                "temp_c": round((val - 32) * 5 / 9, 1),
+                "bucket": m.group(0).strip(), "temp_display": bracket,
+            }
+
+    # °C point markets.
+    if "°C" in bracket:
+        m = re.search(r'(\d+(?:\.\d+)?)\s*°\s*C', bracket, re.IGNORECASE)
+        if m:
+            val = float(m.group(1))
+            return {
+                "type": "point", "unit": "C",
+                "temp_c": val, "value": val,
+                "bucket": m.group(0).strip(), "temp_display": bracket,
+            }
     return None
 
 
@@ -155,19 +212,25 @@ def fetch_resolved_for_date(target_date: str) -> dict[tuple[str, str], dict]:
                     except (ValueError, TypeError):
                         continue
                     if price_val >= 0.999 and i < len(outcomes) and outcomes[i].lower() == "yes":
-                        temp_c = parse_temp_bracket(group_title, name)
-                        if temp_c is not None:
+                        payload = parse_temp_bracket(group_title, name, market.get("question", ""))
+                        if payload is not None:
                             key = (name, target_date)
                             if key not in resolved:
-                                resolved[key] = {
-                                    "temp_c": temp_c,
-                                    "temp_display": group_title,
+                                entry = {
                                     "city": name,
                                     "date": target_date,
                                     "source": "Polymarket Gamma API",
                                     "fetched_at": datetime.now(timezone.utc).isoformat(),
                                 }
-                                print(f"  {name:<25s} -> {group_title} ({temp_c:.1f}C)")
+                                entry.update(payload)
+                                resolved[key] = entry
+                                if payload.get("type") == "threshold":
+                                    bound = payload.get("lower_bound_c")
+                                    print(f"  {name:<25s} -> THRESHOLD {bound}°C+ (excluded from gaps)")
+                                elif payload.get("unit") == "F":
+                                    print(f"  {name:<25s} -> {group_title} ({payload.get('value'):.1f}°F)")
+                                else:
+                                    print(f"  {name:<25s} -> {group_title} ({payload.get('value'):.1f}°C)")
                         break
 
         time.sleep(0.5)
@@ -207,10 +270,14 @@ def save_results(markets_map: dict, target_date: str) -> None:
     with open(CSV_FILE, "w", encoding="utf-8", newline="") as f:
         import csv
         w = csv.writer(f)
-        w.writerow(["city", "date", "temp_c", "temp_display", "source"])
+        w.writerow(["city", "date", "unit", "type", "bucket", "value",
+                    "temp_c", "temp_f", "temp_display", "source"])
         for str_key, data in sorted(existing_markets.items()):
             w.writerow([data.get("city", ""), data.get("date", ""),
-                        data.get("temp_c", ""), data.get("temp_display", ""),
+                        data.get("unit", ""), data.get("type", ""),
+                        data.get("bucket", ""), data.get("value", ""),
+                        data.get("temp_c", ""), data.get("temp_f", ""),
+                        data.get("temp_display", ""),
                         data.get("source", "")])
 
     print(f"\nSaved {len(markets_map)} new + {len(existing_markets) - len(markets_map)} existing = {len(existing_markets)} total")

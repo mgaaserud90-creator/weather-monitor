@@ -3062,13 +3062,117 @@ def _extract_date_from_question(question: str) -> str | None:
     return None
 
 
-def _load_market_resolved_temps() -> dict[tuple[str, str], int]:
-    """Extract resolved market outcomes from _market_prices.json.
-    Returns: {(city_name, date_iso): resolved_temperature_celsius}
-    Only includes markets where price > 0.95 for YES outcome.
+def _parse_market_question(question: str) -> dict[str, Any] | None:
+    """Classify a resolved Polymarket temperature market from its question text.
+
+    Returns None if the question cannot be parsed. Otherwise returns a dict:
+      - type: "point" | "threshold"
+      - unit: "C" | "F"
+      - value: numeric midpoint in native unit (point markets only)
+      - bucket: original temperature label (e.g. "86-87°F", "29°C")
+      - lower_bound_c: threshold lower bound in °C (threshold markets)
+      - lower_bound_f: threshold lower bound in °F (°F threshold markets)
     """
-    import re as _re
-    resolved: dict[tuple[str, str], int] = {}
+    q = question or ""
+
+    # Threshold markets: "X°C or higher" / "at least" / "or above" / "≥" / "or below".
+    # These are binary bounds, not resolved point temperatures — never treat the
+    # threshold number as the actual resolved temperature.
+    th = re.search(
+        r'(\d+(?:\.\d+)?)\s*°\s*([CF])\s*'
+        r'(?:or\s+higher|or\s+above|at\s+least|or\s+more|or\s+below|or\s+lower|≥|≤)',
+        q, re.IGNORECASE,
+    )
+    if th:
+        val = float(th.group(1))
+        unit = th.group(2).upper()
+        info: dict[str, Any] = {"type": "threshold", "unit": unit, "bucket": q.strip()}
+        if unit == "F":
+            info["lower_bound_f"] = val
+            info["lower_bound_c"] = round((val - 32) * 5 / 9, 1)
+        else:
+            info["lower_bound_c"] = val
+        return info
+
+    # °F bucket markets: "between 86-87°F" or a single "92°F" bucket.
+    if "°F" in q:
+        m = re.search(r'(\d+)\s*[-–]\s*(\d+)\s*°\s*F', q, re.IGNORECASE)
+        if m:
+            lo, hi = int(m.group(1)), int(m.group(2))
+            midpoint = (lo + hi) / 2.0
+            return {
+                "type": "point", "unit": "F", "value": midpoint,
+                "bucket": m.group(0).strip(),
+            }
+        m = re.search(r'(\d+(?:\.\d+)?)\s*°\s*F', q, re.IGNORECASE)
+        if m:
+            return {
+                "type": "point", "unit": "F", "value": float(m.group(1)),
+                "bucket": m.group(0).strip(),
+            }
+
+    # °C point markets.
+    m = re.search(r'(\d+(?:\.\d+)?)\s*°\s*C', q, re.IGNORECASE)
+    if m:
+        return {
+            "type": "point", "unit": "C", "value": float(m.group(1)),
+            "bucket": m.group(0).strip(),
+        }
+    return None
+
+
+def _resolved_log_entry_to_info(data: dict[str, Any]) -> dict[str, Any] | None:
+    """Normalize a _resolved_markets_log.json entry to a market-info dict.
+
+    Backward compatible: entries without unit/type default to a °C point market.
+    Entries whose temp_display/bucket contains °F are inferred as °F point markets
+    even when the newer unit/type fields are absent.
+    """
+    mtype = data.get("type", "point")
+    unit = (data.get("unit") or "").upper()
+    display = data.get("bucket") or data.get("temp_display") or ""
+    if not unit:
+        unit = "F" if "°F" in str(display) else "C"
+
+    if mtype == "threshold":
+        info: dict[str, Any] = {
+            "type": "threshold",
+            "unit": unit,
+            "bucket": display,
+            "lower_bound_c": data.get("lower_bound_c"),
+        }
+        if data.get("lower_bound_f") is not None:
+            info["lower_bound_f"] = data.get("lower_bound_f")
+        return info
+
+    # Point market — prefer the generic value field, then unit-specific fields.
+    value = data.get("value")
+    if value is None:
+        value = data.get("temp_f") if unit == "F" else data.get("temp_c")
+    if value is None:
+        # Infer from a °F temp_display bucket (e.g. "78-79°F") when possible.
+        if unit == "F":
+            m = re.search(r'(\d+)\s*[-–]\s*(\d+)\s*°\s*F', str(display), re.IGNORECASE)
+            if m:
+                value = (int(m.group(1)) + int(m.group(2))) / 2.0
+    if value is None:
+        return None
+    return {
+        "type": "point",
+        "unit": unit,
+        "value": float(value),
+        "bucket": display,
+    }
+
+
+def _load_market_resolved_details() -> dict[tuple[str, str], dict[str, Any]]:
+    """Extract resolved market outcomes (unit-aware) from all sources.
+
+    Returns {(city, date_iso): market_info}. Point markets carry a native-unit
+    numeric value; threshold markets carry lower_bound_c and are excluded from
+    point-value gap comparisons downstream.
+    """
+    details: dict[tuple[str, str], dict[str, Any]] = {}
     market_path = Path(_SCRIPT_DIR) / "_market_prices.json"
     if market_path.exists():
         try:
@@ -3087,24 +3191,29 @@ def _load_market_resolved_temps() -> dict[tuple[str, str], int]:
                 continue
             for o in m.get("outcomes", []):
                 if o.get("price", 0) > 0.95 and o.get("label", "").lower() == "yes":
-                    match = _re.search(r'(\d+)°C', m.get("question", ""))
-                    if match:
-                        resolved_temp = int(match.group(1))
+                    info = _parse_market_question(m.get("question", ""))
+                    if info:
                         key = (city, date_str)
-                        if key not in resolved:
-                            resolved[key] = resolved_temp
+                        if key not in details:
+                            details[key] = info
                     break
+
     # Also merge from peak verification log
     if PEAK_VERIFICATION_LOG.exists():
         try:
             pv = json.loads(PEAK_VERIFICATION_LOG.read_text(encoding="utf-8"))
             for city_key, entry in pv.get("verifications", {}).items():
                 mr = entry.get("market_resolved")
-                vdate = entry.get("run_date", "")
+                vdate = entry.get("date") or entry.get("run_date", "")
                 if mr is not None and vdate:
                     key = (city_key, vdate)
-                    if key not in resolved:
-                        resolved[key] = int(mr)
+                    if key not in details:
+                        details[key] = {
+                            "type": "point",
+                            "unit": (entry.get("unit") or "C").upper(),
+                            "value": float(mr),
+                            "bucket": entry.get("market_display"),
+                        }
         except Exception:
             pass
 
@@ -3114,25 +3223,67 @@ def _load_market_resolved_temps() -> dict[tuple[str, str], int]:
         try:
             rl = json.loads(resolved_log.read_text(encoding="utf-8"))
             for key_str, data in rl.get("markets", {}).items():
-                if "||" in key_str:
-                    city, date_str = key_str.split("||", 1)
-                    temp_c = data.get("temp_c")
-                    if temp_c is not None:
-                        resolved_key = (city, date_str)
-                        if resolved_key not in resolved:
-                            resolved[resolved_key] = int(round(temp_c))
+                if "||" not in key_str:
+                    continue
+                city, date_str = key_str.split("||", 1)
+                info = _resolved_log_entry_to_info(data)
+                if info is None:
+                    continue
+                key = (city, date_str)
+                if key not in details:
+                    details[key] = info
         except Exception:
             pass
 
+    return details
+
+
+def _load_market_resolved_temps() -> dict[tuple[str, str], int]:
+    """Legacy wrapper: resolved point markets as whole °C ints.
+
+    Kept for backfill scripts (e.g. _populate_peak_verify.py). °F point markets
+    are converted back to °C here for legacy consumers only; the main pipeline
+    uses _load_market_resolved_details() so °F markets stay in °F.
+    Threshold markets are excluded so they can never masquerade as point temps.
+    """
+    resolved: dict[tuple[str, str], int] = {}
+    for key, info in _load_market_resolved_details().items():
+        if info.get("type") != "point" or info.get("value") is None:
+            continue
+        value = float(info["value"])
+        if info.get("unit") == "F":
+            value = (value - 32) * 5 / 9
+        resolved[key] = int(round(value))
     return resolved
 
 
 def _log_peak_verification(
     city: str, date_str: str, our_peak: float,
     our_lat: float, our_lon: float,
-    market_resolved: int | None, our_station: str = "",
+    market_resolved: float | None, our_station: str = "",
+    unit: str = "C", bucket: str | None = None,
 ) -> None:
-    """Log peak verification: our archive peak vs Polymarket resolved outcome."""
+    """Log peak verification: our archive peak vs Polymarket resolved outcome.
+
+    Comparison runs in the market's native unit (°C or °F). °F markets are
+    compared in °F — our °C peak is converted for the gap and nothing is
+    converted back to °C for display.
+    """
+    unit = (unit or "C").upper()
+    if market_resolved is None:
+        return
+    if unit == "F":
+        our_native = float(our_peak) * 9.0 / 5.0 + 32.0
+        market_native = float(market_resolved)
+        ok_threshold = 1.0 * 9.0 / 5.0     # 1°C tolerance in °F
+        minor_threshold = 2.0 * 9.0 / 5.0   # 2°C tolerance in °F
+    else:
+        our_native = float(our_peak)
+        market_native = float(market_resolved)
+        ok_threshold = 1.0
+        minor_threshold = 2.0
+    unit_label = "F" if unit == "F" else "C"
+
     pv_data = {"last_updated": _now_utc(), "verifications": {}}
     if PEAK_VERIFICATION_LOG.exists():
         try:
@@ -3140,42 +3291,44 @@ def _log_peak_verification(
         except (json.JSONDecodeError, KeyError):
             pass
     verifications = pv_data.setdefault("verifications", {})
-    gap = round(our_peak - market_resolved, 1) if market_resolved is not None else 0.0
+    gap = round(our_native - market_native, 1)
     abs_gap = abs(gap)
-    if abs_gap <= 1.0:
+    if abs_gap <= ok_threshold:
         verdict = "OK"
-    elif abs_gap <= 2.0:
+    elif abs_gap <= minor_threshold:
         verdict = "MINOR"
     else:
         verdict = "STATION_MISMATCH"
     note = ""
     if verdict == "STATION_MISMATCH":
         note = (
-            f"Gap {gap:+.1f}C suggests different weather stations. "
+            f"Gap {gap:+.1f}{unit_label} suggests different weather stations. "
             f"Our API (lat={our_lat}, lon={our_lon}) may differ from Polymarket. "
             f"Investigate which station Polymarket uses for {city}."
         )
     elif verdict == "MINOR":
-        note = f"Small gap of {gap:+.1f}C - likely calibration or timing difference."
+        note = f"Small gap of {gap:+.1f}{unit_label} - likely calibration or timing difference."
     else:
-        note = "Within 1C tolerance - station match confirmed."
+        note = f"Within {ok_threshold:.1f}{unit_label} tolerance - station match confirmed."
     entry = {
-        "date": date_str, "our_peak": round(our_peak, 1),
+        "date": date_str, "our_peak": round(our_native, 1),
         "our_station": our_station or f"lat={our_lat},lon={our_lon}",
         "our_lat": our_lat, "our_lon": our_lon,
-        "market_resolved": market_resolved, "gap": gap,
+        "market_resolved": round(market_native, 1),
+        "market_display": bucket,
+        "gap": gap, "unit": unit_label,
         "verdict": verdict, "note": note, "logged_at": _now_utc(),
     }
     existing = verifications.get(city, {})
-    if not (existing.get("date") == date_str and existing.get("our_peak") == round(our_peak, 1)):
+    if not (existing.get("date") == date_str and existing.get("our_peak") == round(our_native, 1)):
         verifications[city] = entry
         pv_data["last_updated"] = _now_utc()
         PEAK_VERIFICATION_LOG.write_text(
             json.dumps(pv_data, indent=2, ensure_ascii=False), encoding="utf-8"
         )
         verdict_icon = {"OK": "OK", "MINOR": "MINOR", "STATION_MISMATCH": "STASJONSFEIL"}.get(verdict, "?")
-        print(f"  PEAK VERIFY: {verdict_icon} {city}: var={our_peak:.1f}C vs "
-              f"marked={market_resolved}C gap={gap:+.1f}C [{verdict}]")
+        print(f"  PEAK VERIFY: {verdict_icon} {city}: var={our_native:.1f}{unit_label} vs "
+              f"marked={market_native:.1f}{unit_label} gap={gap:+.1f}{unit_label} [{verdict}]")
     # Inject market_resolved into quality log for dashboard
     log_data = _load_log()
     target_date = date_str if date_str else _today_iso()
@@ -3183,7 +3336,9 @@ def _log_peak_verification(
         if run.get("run_date") == target_date or run.get("target_date") == target_date:
             pdata = run.get("predictions", {}).get(city)
             if pdata is not None:
-                pdata["_market_resolved"] = market_resolved
+                pdata["_market_resolved"] = round(market_native, 1)
+                pdata["_market_unit"] = unit_label
+                pdata["_market_display"] = bucket
                 pdata["_peak_gap"] = gap
                 pdata["_verdict"] = verdict
                 _save_log(log_data)
@@ -3196,7 +3351,7 @@ async def _verify_peaks_vs_market(
     """Cross-reference our resolved peaks with Polymarket outcomes.
     Called after archive max is fetched in daily_close / post-peak.
     """
-    resolved_markets = _load_market_resolved_temps()
+    resolved_markets = _load_market_resolved_details()
     if not resolved_markets:
         return
     today = _today_iso()
@@ -3210,18 +3365,28 @@ async def _verify_peaks_vs_market(
         city_target = pdata.get("_target_date", today)
         city_base = city.split(",")[0].strip()
         # Match by (city, date) — strict date matching only
-        market_temp = (
+        market_info = (
             resolved_markets.get((city, city_target))
             or resolved_markets.get((city_base, city_target))
         )
-        if market_temp is None:
+        if market_info is None:
             continue
+        # Threshold markets are binary bounds ("X°C or higher"), not resolved
+        # point temperatures — exclude them from point-value gap comparisons.
+        if market_info.get("type") == "threshold":
+            continue
+        market_value = market_info.get("value")
+        if market_value is None:
+            continue
+        unit = (market_info.get("unit") or "C").upper()
         lat = pdata.get("_lat", 0)
         lon = pdata.get("_lon", 0)
         _log_peak_verification(
             city=city, date_str=city_target,
             our_peak=float(actual_peak), our_lat=float(lat), our_lon=float(lon),
-            market_resolved=market_temp,
+            market_resolved=float(market_value),
+            unit=unit,
+            bucket=market_info.get("bucket"),
         )
 
 

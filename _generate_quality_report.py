@@ -1846,8 +1846,11 @@ def _build_peak_verification_html_section() -> str:
     for city, v in sorted(verifications.items()):
         our_peak = v.get("our_peak", "?")
         market = v.get("market_resolved", "?")
+        market_display = v.get("market_display") or v.get("bucket")
         gap = v.get("gap", 0)
         verdict = v.get("verdict", "?")
+        unit = (v.get("unit") or "C").upper()
+        unit_suffix = "°F" if unit == "F" else "°C"
 
         if verdict == "OK":
             status_icon = "OK"
@@ -1855,13 +1858,19 @@ def _build_peak_verification_html_section() -> str:
         elif verdict == "MINOR":
             status_icon = "MINOR"
             status_color = "#d2991d"
+        elif verdict == "THRESHOLD_MARKET":
+            status_icon = "THRESHOLD_MARKET"
+            status_color = "#8b949e"
         else:
             status_icon = "STASJONSFEIL"
             status_color = "#f85149"
 
-        our_str = f"{our_peak}C" if isinstance(our_peak, (int, float)) else str(our_peak)
-        market_str = f"{market}C" if isinstance(market, (int, float)) else str(market)
-        gap_str = f"{gap:+.1f}C" if isinstance(gap, (int, float)) else str(gap)
+        our_str = f"{our_peak}{unit_suffix}" if isinstance(our_peak, (int, float)) else str(our_peak)
+        if market_display:
+            market_str = str(market_display)
+        else:
+            market_str = f"{market}{unit_suffix}" if isinstance(market, (int, float)) else str(market)
+        gap_str = f"{gap:+.1f}{unit_suffix}" if isinstance(gap, (int, float)) else str(gap)
 
         rows += f"""<tr>
             <td><strong>{city}</strong></td>
@@ -1880,7 +1889,7 @@ def _build_peak_verification_html_section() -> str:
       <h2>PEAK VERIFICATION - Var vs Polymarket</h2>
       <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
         Cross-referencing our archive peak (Open-Meteo) against Polymarket resolved outcomes.
-        OK = within 0.5°C | MINOR = 0.5–1.0°C (edge-affecting) | STASJONSFEIL = >1.0°C (likely wrong station).
+        OK = within 1.0°C | MINOR = 1.0–2.0°C (edge-affecting) | STASJONSFEIL = >2.0°C (likely wrong station). US (°F) markets are shown in °F.
       </p>
       <div class="card-grid" style="margin-bottom: 16px;">
         <div class="card" style="border: 1px solid #3fb950;">

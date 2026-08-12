@@ -90,6 +90,9 @@ jobs:
       - name: PM Strategy Results
         run: python3 _pm_strat_results.py
 
+      - name: Per-city deviation stats
+        run: python3 _city_deviation_stats.py
+
       - name: Generate Dashboard HTML
         run: python _generate_quality_report.py --html
 
@@ -132,7 +135,7 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Auto: ${{ steps.mode.outputs.mode }} $(date -Iminutes)"
-          file_pattern: '_model_quality_log.json _quality_report.md _quality_report.html _all_cities.html _market_prices.json _trading_data.csv _strategy_summary.csv _model_accuracy_log.json _model_accuracy.csv _peak_verification_log.json _resolved_markets_log.json _resolved_markets.csv _pm_strat_section.html'
+          file_pattern: '_model_quality_log.json _quality_report.md _quality_report.html _all_cities.html _market_prices.json _trading_data.csv _strategy_summary.csv _model_accuracy_log.json _model_accuracy.csv _peak_verification_log.json _resolved_markets_log.json _resolved_markets.csv _pm_strat_section.html _city_deviation_log.json'
           push_options: '--force-with-lease'
 
       - name: Trigger deploy to GitHub Pages
