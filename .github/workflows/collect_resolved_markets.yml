@@ -29,7 +29,7 @@ jobs:
           python-version: '3.11'
 
       - name: Collect resolved markets
-        run: python3 _collect_resolved_markets.py
+        run: python3 _fetch_resolved_markets.py --dates 2026-08-10 2026-08-11 2026-08-12
 
       - name: Cross-reference with our peaks
         run: |
