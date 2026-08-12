@@ -3993,6 +3993,8 @@ const NORMAL_POLL_MS = 600000;   // 10 min — cities outside peak window
 const cityData = {{}};
 const MAX_DATA_POINTS = 30;
 const cityLookup = new Map();    // name -> city object for fast lookup
+const smsSentToday = {{}};       // cityName -> true if SMS already sent today
+const recSpills = {{}};          // cityName -> {{strategy: "mean", spill: 22}} loaded from quality log
 
 // ---- Build city selector checkboxes ----
 (function buildSelector() {{
@@ -4393,6 +4395,15 @@ function updateCard(cityName, result) {{
         if (dataInfoEl) dataInfoEl.textContent = 'Data: ' + data.temps.length + ' pkt';
         drawSparkline(cityName, 'spark-' + cityName.replace(/[^a-zA-Z0-9]/g, '_'));
 
+        // SMS Alert: daily max exceeded recommended spill (once per city per day)
+        const rs = recSpills[cityName];
+        if (rs && data.allDayMax != null && data.allDayMax > rs.spill && !smsSentToday[cityName]) {{
+            smsSentToday[cityName] = true;
+            const spillEl = card.querySelector('.card-rec-spill');
+            if (spillEl) spillEl.innerHTML = 'Anbefalt spill: <b>' + rs.spill + 'C</b> (' + rs.strategy + ') <span style="color:var(--red);font-weight:700;">ALARM! Dognmaks > spill</span>';
+            console.log('SMS ALERT: ' + cityName + ' daily max ' + data.allDayMax.toFixed(1) + 'C > recommended spill ' + rs.spill + 'C (' + rs.strategy + ')');
+        }}
+
         // Update peak window status
         if (peakWindowEl && result._city) {{
             const city = result._city;
@@ -4448,6 +4459,7 @@ function buildCardHTML(city) {{
       actualPeakHTML +
       '<div class="card-temp">—°C</div>' +
       '<div class="card-alltime-max" style="font-size:0.82rem;font-weight:600;color:var(--orange);margin-bottom:4px;">Døgnmaks hittil: —</div>' +
+      '<div class="card-rec-spill" style="font-size:0.78rem;color:var(--purple);margin-bottom:4px;">Anbefalt spill: laster...</div>' +
       '<div class="card-meta">' +
         '<span>' + city.lat.toFixed(2) + ', ' + city.lon.toFixed(2) + '</span>' +
         '<span>' + city.tz + '</span>' +
@@ -4522,6 +4534,24 @@ function startCity(cityName) {{
             if (runs.length > 0) {{
                 const p = (runs[runs.length-1].predictions || {{}})[cityName];
                 if (p && p.bma_mean != null) cityData[cityName].bmaLine = p.bma_mean;
+                // Load recommended strategy spill for this city
+                const strats = p?.strategies || {{}};
+                const sigma = strats.sigma || {{}};
+                const p5 = strats.p5 || {{}};
+                const meanS = strats.mean || {{}};
+                // Determine best strategy (simple heuristic: prefer mean if available, else sigma)
+                if (meanS.spill != null) {{
+                    recSpills[cityName] = {{strategy: 'mean', spill: meanS.spill}};
+                }} else if (sigma.spill != null) {{
+                    recSpills[cityName] = {{strategy: 'sigma', spill: sigma.spill}};
+                }}
+                // Update the card's spill display
+                const safeId = cityName.replace(/[^a-zA-Z0-9]/g, '_');
+                const spillEl = document.getElementById('card-' + safeId)?.querySelector('.card-rec-spill');
+                if (spillEl && recSpills[cityName]) {{
+                    const rs = recSpills[cityName];
+                    spillEl.innerHTML = 'Anbefalt spill: <b>' + rs.spill + 'C</b> (' + rs.strategy + ')';
+                }}
             }}
         }}).catch(() => {{}});
 
@@ -4621,7 +4651,7 @@ function syncAutoCities() {{
         }}
     }});
 
-    // 2. Stop cities that left the peak window (only auto-managed, not manual)
+    // 2. Remove cities that left the peak window (auto-managed only, keep manual)
     nowActive.forEach(name => {{
         if (!currentPeakCities.has(name) && !manuallySelectedCities.has(name)) {{
             const cb = document.querySelector('#city-selector input[value="' + name + '"]');
@@ -4632,7 +4662,9 @@ function syncAutoCities() {{
                     label.innerHTML = '<input type="checkbox" value="' + name + '" onchange="onCityToggle(this)"> ' + name;
                 }}
             }}
+            // Fully remove card (not just pause) — city left peak window
             stopCity(name);
+            removeCard(name);
         }}
     }});
 
