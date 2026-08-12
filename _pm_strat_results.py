@@ -66,5 +66,29 @@ for city in sorted(preds):
     rows += f"<tr><td>{city}</td><td>{our_round}C</td><td>{pm_round}C</td><td>{gap:+.1f}C</td><td>{spill}C ({strat})</td><td>{'WIN' if is_win else 'TAP'}</td></tr>\n"
 
 total = wins + losses
-print(f"PM Strategy Results ({total} cities): {wins}W/{losses}L = {round(wins/max(1,total)*100,1)}%")
+rate = round(wins/max(1,total)*100,1)
+print(f"PM Strategy Results ({total} cities): {wins}W/{losses}L = {rate}%")
 print(rows)
+
+# Write HTML section
+html = f"""<div class="section" style="border-color: rgba(210,153,29,0.4);">
+  <h2>🎯 ANBEFALT SPILL vs POLYMARKET ({total} byer, {target_date})</h2>
+  <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+    Anbefalt strategispill (mean) sjekket mot Polymarkets faktiske resolusjon.
+  </p>
+  <div class="card-grid" style="margin-bottom: 12px;">
+    <div class="card" style="border: 1px solid var(--green);">
+      <div class="value" style="color: var(--green);">{rate}%</div>
+      <div class="label">Win Rate vs PM ({wins}W/{losses}L)</div>
+    </div>
+  </div>
+  <div style="max-height: 600px; overflow-y: auto;">
+  <table>
+    <thead><tr><th>By</th><th>Var Peak (round)</th><th>PM Resolved</th><th>Avvik</th><th>Anbefalt Spill</th><th>Vinner?</th></tr></thead>
+    <tbody>{rows}</tbody>
+  </table>
+  </div>
+</div>"""
+out_path = SCRIPT_DIR / "_pm_strat_section.html"
+out_path.write_text(html, encoding="utf-8")
+print(f"HTML written to {out_path}")
