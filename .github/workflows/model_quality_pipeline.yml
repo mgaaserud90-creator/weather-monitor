@@ -123,3 +123,4 @@ jobs:
         with:
           commit_message: "Auto: ${{ steps.mode.outputs.mode }} $(date -Iminutes)"
           file_pattern: '_model_quality_log.json _quality_report.md _quality_report.html _all_cities.html _market_prices.json'
+          push_options: '--force-with-lease'
