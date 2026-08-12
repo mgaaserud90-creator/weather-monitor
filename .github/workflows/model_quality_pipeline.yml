@@ -13,8 +13,8 @@ on:
   push:
     branches: ["main", "master"]
   schedule:
-    - cron: '0 * * * *'       # Hourly: simple BMA + peak check
-    - cron: '0 23 * * *'      # Daily close at 23:00 UTC
+    - cron: '0 0-22 * * *'    # Hourly (00:00-22:00 UTC): simple BMA + peak check
+    - cron: '0 23 * * *'      # Daily close at 23:00 UTC (NO hourly at 23:00 to avoid conflict)
   workflow_dispatch:
     inputs:
       mode:
