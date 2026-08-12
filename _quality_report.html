@@ -161,7 +161,7 @@
 // No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-08-12T07:07:48Z');
+    var deployTime = new Date('2026-08-12T08:56:45Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {
@@ -304,6 +304,37 @@ function sortTable(colIdx) {
 
   <!-- PEAK VERIFICATION: Var vs Polymarket -->
   
+    <div class="section" style="border-color: rgba(188, 140, 255, 0.3);">
+      <h2>PEAK VERIFICATION - Var vs Polymarket</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        Cross-referencing our archive peak (Open-Meteo) against Polymarket resolved outcomes.
+        OK = within 0.5°C | MINOR = 0.5–1.0°C (edge-affecting) | STASJONSFEIL = >1.0°C (likely wrong station).
+      </p>
+      <div class="card-grid" style="margin-bottom: 16px;">
+        <div class="card" style="border: 1px solid #3fb950;">
+          <div class="value" style="color: #3fb950;">0</div>
+          <div class="label">OK</div>
+        </div>
+        <div class="card" style="border: 1px solid #d2991d;">
+          <div class="value" style="color: #d2991d;">0</div>
+          <div class="label">MINOR</div>
+        </div>
+        <div class="card" style="border: 1px solid #f85149;">
+          <div class="value" style="color: #f85149;">1</div>
+          <div class="label">STASJONSFEIL</div>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>By</th><th>Var Peak</th><th>Marked</th><th>Gap</th><th>Status</th></tr></thead>
+        <tbody><tr>
+            <td><strong>Wellington, NZ</strong></td>
+            <td>11.4C</td>
+            <td>14C</td>
+            <td style="color:#f85149;font-weight:600;">-2.6C</td>
+            <td style="color:#f85149;font-weight:700;">STASJONSFEIL</td>
+        </tr></tbody>
+      </table>
+    </div>
 
   <!-- ARBITRAGE STATS: Win/Loss Tracking -->
   

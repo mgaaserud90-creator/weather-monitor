@@ -3180,12 +3180,10 @@ async def _verify_peaks_vs_market(
             continue
         city_target = pdata.get("_target_date", today)
         city_base = city.split(",")[0].strip()
-        # Match by (city, date) first, then (city_base, date)
+        # Match by (city, date) — strict date matching only
         market_temp = (
             resolved_markets.get((city, city_target))
             or resolved_markets.get((city_base, city_target))
-            or resolved_markets.get((city, today))
-            or resolved_markets.get((city_base, today))
         )
         if market_temp is None:
             continue
