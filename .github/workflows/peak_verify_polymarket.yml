@@ -137,17 +137,7 @@ jobs:
         run: |
           if [ -f "_peak_verification_log.json" ]; then
             echo "=== Verification complete ==="
-            python3 -c "
-            import json
-            pv = json.load(open('_peak_verification_log.json'))
-            disc = pv.get('discrepancies', [])
-            if disc:
-                print(f'WARNING: {len(disc)} discrepancy(s) found (>0.5°C)!')
-                for d in disc:
-                    print(f'  {d[\"verdict\"]} {d[\"city\"]}: gap={d[\"gap\"]:+.1f}°C')
-            else:
-                print('All verified peaks match Polymarket within 0.5°C tolerance.')
-            "
+            python3 _summarize_peak_verify.py
           else
             echo "No verification data generated."
           fi
