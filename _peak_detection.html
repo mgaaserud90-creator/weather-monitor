@@ -193,10 +193,12 @@ const ALL_CITIES = [
   {name: "Panama City, PA", lat: 8.9733, lon: -79.5556, tz: "America/Panama", peakStart: 14, peakEnd: 17},
   {name: "Jinan, CN", lat: 36.8572, lon: 117.2158, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16}
 ];
-const ACTUAL_PEAK_DATA = {};
+const ACTUAL_PEAK_DATA = {
+  "Munich, DE": {actual_peak: 30.0, peak_detected_at: "2026-08-12T15:30:00", recommendation: "🔴 SELG med tap — gå SHORT 27°C (peak=30.0°C → round=30 ≠ 27)", spill: 27}
+};
 const MARKET_PRICES = {};
 const AUTO_SELECT_CITIES = ["Madrid, ES", "Paris, FR", "Munich, DE", "London, UK", "Milan, IT", "Helsinki, FI", "Jeddah, SA", "Istanbul, TR", "Ankara, TR", "Amsterdam, NL", "Warsaw, PL", "Cape Town, ZA", "Tel Aviv, IL", "Moscow, RU"];
-const AUTO_SELECT_GENERATED = "2026-08-12 14:08:59 UTC";
+const AUTO_SELECT_GENERATED = "2026-08-12 15:58:17 UTC";
 
 // ---- State ----
 const activeCities = new Set();  // city names currently monitored
