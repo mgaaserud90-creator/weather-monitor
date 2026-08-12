@@ -29,7 +29,16 @@ jobs:
           python-version: '3.11'
 
       - name: Collect resolved markets
-        run: python3 _fetch_resolved_markets.py --dates 2026-08-10 2026-08-11 2026-08-12
+        run: |
+          # Fetch last 7 days of resolved markets (auto-rolling window)
+          DATES=$(python3 -c "
+          from datetime import date, timedelta
+          today = date.today()
+          dates = [(today - timedelta(days=i)).isoformat() for i in range(7)]
+          print(' '.join(dates))
+          ")
+          echo "Fetching dates: $DATES"
+          python3 _fetch_resolved_markets.py --dates $DATES
 
       - name: Cross-reference with our peaks
         run: |
