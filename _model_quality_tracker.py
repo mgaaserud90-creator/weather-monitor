@@ -3082,7 +3082,7 @@ def _load_market_resolved_temps() -> dict[tuple[str, str], int]:
                         if key not in resolved:
                             resolved[key] = resolved_temp
                     break
-    # Also merge date-matched entries from peak verification log
+    # Also merge from peak verification log
     if PEAK_VERIFICATION_LOG.exists():
         try:
             pv = json.loads(PEAK_VERIFICATION_LOG.read_text(encoding="utf-8"))
@@ -3095,6 +3095,23 @@ def _load_market_resolved_temps() -> dict[tuple[str, str], int]:
                         resolved[key] = int(mr)
         except Exception:
             pass
+
+    # Also merge from resolved markets log (comprehensive collector)
+    resolved_log = Path(_SCRIPT_DIR) / "_resolved_markets_log.json"
+    if resolved_log.exists():
+        try:
+            rl = json.loads(resolved_log.read_text(encoding="utf-8"))
+            for key_str, data in rl.get("markets", {}).items():
+                if "||" in key_str:
+                    city, date_str = key_str.split("||", 1)
+                    temp_c = data.get("temp_c")
+                    if temp_c is not None:
+                        resolved_key = (city, date_str)
+                        if resolved_key not in resolved:
+                            resolved[resolved_key] = int(round(temp_c))
+        except Exception:
+            pass
+
     return resolved
 
 
