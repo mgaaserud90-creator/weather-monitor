@@ -3029,13 +3029,34 @@ def _generate_markdown_report(log_data: dict, today_entry: dict | None) -> None:
 # CLI Entry Point
 # =============================================================================
 
-def _load_market_resolved_temps() -> dict[str, int]:
+def _extract_date_from_question(question: str) -> str | None:
+    """Extract target date from Polymarket question text. Returns ISO date or None."""
+    import re as _re
+    # "August 11, 2026" or "August 11"
+    months = ["January","February","March","April","May","June",
+              "July","August","September","October","November","December"]
+    month_map = {m.lower(): i+1 for i, m in enumerate(months)}
+    # Try "Month DD, YYYY" or "Month DD"
+    m = _re.search(r'(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})(?:,\s*(\d{4}))?', question, _re.IGNORECASE)
+    if m:
+        month = month_map.get(m.group(1).lower(), 1)
+        day = int(m.group(2))
+        year = int(m.group(3)) if m.group(3) else 2026
+        return f"{year:04d}-{month:02d}-{day:02d}"
+    # Try "YYYY-MM-DD"
+    m = _re.search(r'(\d{4})-(\d{2})-(\d{2})', question)
+    if m:
+        return f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
+    return None
+
+
+def _load_market_resolved_temps() -> dict[tuple[str, str], int]:
     """Extract resolved market outcomes from _market_prices.json.
-    Returns: {city_name: resolved_temperature_celsius}
-    Uses price > 0.95 as resolution threshold.
+    Returns: {(city_name, date_iso): resolved_temperature_celsius}
+    Only includes markets where price > 0.95 for YES outcome.
     """
     import re as _re
-    resolved: dict[str, int] = {}
+    resolved: dict[tuple[str, str], int] = {}
     market_path = Path(_SCRIPT_DIR) / "_market_prices.json"
     if market_path.exists():
         try:
@@ -3049,25 +3070,29 @@ def _load_market_resolved_temps() -> dict[str, int]:
                 continue
             if m.get("question_type") != "highest":
                 continue
+            date_str = _extract_date_from_question(m.get("question", ""))
+            if not date_str:
+                continue
             for o in m.get("outcomes", []):
                 if o.get("price", 0) > 0.95 and o.get("label", "").lower() == "yes":
                     match = _re.search(r'(\d+)°C', m.get("question", ""))
                     if match:
                         resolved_temp = int(match.group(1))
-                        if city not in resolved:
-                            resolved[city] = resolved_temp
+                        key = (city, date_str)
+                        if key not in resolved:
+                            resolved[key] = resolved_temp
                     break
-    # Also merge manual entries from peak verification log
+    # Also merge date-matched entries from peak verification log
     if PEAK_VERIFICATION_LOG.exists():
         try:
             pv = json.loads(PEAK_VERIFICATION_LOG.read_text(encoding="utf-8"))
             for city_key, entry in pv.get("verifications", {}).items():
                 mr = entry.get("market_resolved")
-                if mr is not None:
-                    city_base = city_key.split(",")[0].strip()
-                    if city_base not in resolved:
-                        resolved[city_base] = int(mr)
-                    resolved[city_key] = int(mr)
+                vdate = entry.get("run_date", "")
+                if mr is not None and vdate:
+                    key = (city_key, vdate)
+                    if key not in resolved:
+                        resolved[key] = int(mr)
         except Exception:
             pass
     return resolved
@@ -3153,9 +3178,15 @@ async def _verify_peaks_vs_market(
         actual_peak = sigma.get("actual_peak")
         if actual_peak is None:
             continue
-        # Try exact city name then base name
+        city_target = pdata.get("_target_date", today)
         city_base = city.split(",")[0].strip()
-        market_temp = resolved_markets.get(city) or resolved_markets.get(city_base)
+        # Match by (city, date) first, then (city_base, date)
+        market_temp = (
+            resolved_markets.get((city, city_target))
+            or resolved_markets.get((city_base, city_target))
+            or resolved_markets.get((city, today))
+            or resolved_markets.get((city_base, today))
+        )
         if market_temp is None:
             continue
         lat = pdata.get("_lat", 0)

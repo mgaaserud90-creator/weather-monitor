@@ -1780,23 +1780,42 @@ def _load_resolved_market_outcomes() -> dict[str, int]:
         outcomes = m.get("outcomes", [])
         if m.get("question_type") != "highest":
             continue
-        
+
+        # Extract date from question for date-matched comparison
+        date_str = None
+        months = ["January","February","March","April","May","June",
+                  "July","August","September","October","November","December"]
+        month_map = {m.lower(): i+1 for i, m in enumerate(months)}
+        dm = re.search(r'(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})(?:,\s*(\d{4}))?', question, re.IGNORECASE)
+        if dm:
+            month = month_map.get(dm.group(1).lower(), 1)
+            day = int(dm.group(2))
+            year = int(dm.group(3)) if dm.group(3) else 2026
+            date_str = f"{year:04d}-{month:02d}-{day:02d}"
+        else:
+            dm2 = re.search(r'(\d{4})-(\d{2})-(\d{2})', question)
+            if dm2:
+                date_str = f"{dm2.group(1)}-{dm2.group(2)}-{dm2.group(3)}"
+
         # Check if any outcome is >0.99 (resolved YES)
         resolved_temp = None
         for o in outcomes:
             if o.get("price", 0) > 0.99 and o.get("label", "").lower() == "yes":
-                # Extract temperature from question
                 match = re.search(r'(\d+)°C', question)
                 if match:
                     resolved_temp = int(match.group(1))
                 break
-        
+
         if resolved_temp is not None:
-            # Map city to resolved temp, preferring full name matches
-            city_key = city  # "Hong Kong", "Taipei", etc.
-            if city_key not in resolved:
-                resolved[city_key] = resolved_temp
-    
+            # Key by (city, date) to prevent cross-date mismatches
+            if date_str:
+                key = f"{city}_{date_str}"
+                if key not in resolved:
+                    resolved[key] = resolved_temp
+            # Also store by city alone for backward compat
+            if city not in resolved:
+                resolved[city] = resolved_temp
+
     return resolved
 
 
