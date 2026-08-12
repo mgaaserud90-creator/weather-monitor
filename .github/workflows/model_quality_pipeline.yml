@@ -129,7 +129,7 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Auto: ${{ steps.mode.outputs.mode }} $(date -Iminutes)"
-          file_pattern: '_model_quality_log.json _quality_report.md _quality_report.html _all_cities.html _market_prices.json _trading_data.csv _strategy_summary.csv _model_accuracy_log.json _model_accuracy.csv'
+          file_pattern: '_model_quality_log.json _quality_report.md _quality_report.html _all_cities.html _market_prices.json _trading_data.csv _strategy_summary.csv _model_accuracy_log.json _model_accuracy.csv _peak_verification_log.json _resolved_markets_log.json _resolved_markets.csv'
           push_options: '--force-with-lease'
 
       - name: Trigger deploy to GitHub Pages
