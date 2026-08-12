@@ -98,7 +98,10 @@ jobs:
       - name: Track model accuracy
         run: python3 _model_accuracy_tracker.py
 
-      - name: Verify data
+      - name: Verify all data integrity
+        run: python3 _verify_all_data.py
+
+      - name: Verify output files
         run: |
           set -x
           echo "=== Verifying generated files ==="
