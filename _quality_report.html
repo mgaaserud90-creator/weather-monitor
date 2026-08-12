@@ -161,7 +161,7 @@
 // No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-08-12T10:33:16Z');
+    var deployTime = new Date('2026-08-12T11:21:31Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {
@@ -244,7 +244,7 @@ function sortTable(colIdx) {
 <body>
 <header>
   <h1>🌡️ Model Quality Dashboard <span class="rapid-badge">3 STRATEGIES</span></h1>
-  <div class="subtitle" id="last-updated">🤖 Siste pipeline: 10:33 UTC | Neste pipeline-oppdatering: …</div>
+  <div class="subtitle" id="last-updated">🤖 Siste pipeline: 11:21 UTC | Neste pipeline-oppdatering: …</div>
 </header>
 <div class="container">
 
@@ -312,26 +312,320 @@ function sortTable(colIdx) {
       </p>
       <div class="card-grid" style="margin-bottom: 16px;">
         <div class="card" style="border: 1px solid #3fb950;">
-          <div class="value" style="color: #3fb950;">0</div>
+          <div class="value" style="color: #3fb950;">33</div>
           <div class="label">OK</div>
         </div>
         <div class="card" style="border: 1px solid #d2991d;">
-          <div class="value" style="color: #d2991d;">0</div>
+          <div class="value" style="color: #d2991d;">9</div>
           <div class="label">MINOR</div>
         </div>
         <div class="card" style="border: 1px solid #f85149;">
-          <div class="value" style="color: #f85149;">1</div>
+          <div class="value" style="color: #f85149;">8</div>
           <div class="label">STASJONSFEIL</div>
         </div>
       </div>
       <table>
         <thead><tr><th>By</th><th>Var Peak</th><th>Marked</th><th>Gap</th><th>Status</th></tr></thead>
         <tbody><tr>
+            <td><strong>Amsterdam, NL</strong></td>
+            <td>22.1C</td>
+            <td>22C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.1C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Ankara, TR</strong></td>
+            <td>32.1C</td>
+            <td>32C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.1C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Atlanta, US</strong></td>
+            <td>30.8C</td>
+            <td>34C</td>
+            <td style="color:#f85149;font-weight:600;">-3.2C</td>
+            <td style="color:#f85149;font-weight:700;">STASJONSFEIL</td>
+        </tr><tr>
+            <td><strong>Austin, US</strong></td>
+            <td>36.7C</td>
+            <td>38C</td>
+            <td style="color:#d2991d;font-weight:600;">-1.3C</td>
+            <td style="color:#d2991d;font-weight:700;">MINOR</td>
+        </tr><tr>
+            <td><strong>Beijing, CN</strong></td>
+            <td>33.2C</td>
+            <td>33C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.2C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Buenos Aires, AR</strong></td>
+            <td>11.4C</td>
+            <td>12C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.6C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Busan, KR</strong></td>
+            <td>30.2C</td>
+            <td>31C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.8C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Cape Town, ZA</strong></td>
+            <td>19.6C</td>
+            <td>20C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.4C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Chengdu, CN</strong></td>
+            <td>33.6C</td>
+            <td>35C</td>
+            <td style="color:#d2991d;font-weight:600;">-1.4C</td>
+            <td style="color:#d2991d;font-weight:700;">MINOR</td>
+        </tr><tr>
+            <td><strong>Chicago, US</strong></td>
+            <td>26.7C</td>
+            <td>27C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.3C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Chongqing, CN</strong></td>
+            <td>33.6C</td>
+            <td>35C</td>
+            <td style="color:#d2991d;font-weight:600;">-1.4C</td>
+            <td style="color:#d2991d;font-weight:700;">MINOR</td>
+        </tr><tr>
+            <td><strong>Dallas, US</strong></td>
+            <td>37.9C</td>
+            <td>37C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.9C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Denver, US</strong></td>
+            <td>35.8C</td>
+            <td>35C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.8C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Guangzhou, CN</strong></td>
+            <td>35.1C</td>
+            <td>37C</td>
+            <td style="color:#d2991d;font-weight:600;">-1.9C</td>
+            <td style="color:#d2991d;font-weight:700;">MINOR</td>
+        </tr><tr>
+            <td><strong>Helsinki, FI</strong></td>
+            <td>17.5C</td>
+            <td>18C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.5C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Hong Kong, HK</strong></td>
+            <td>35.7C</td>
+            <td>35C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.7C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Houston, US</strong></td>
+            <td>31.8C</td>
+            <td>34C</td>
+            <td style="color:#f85149;font-weight:600;">-2.2C</td>
+            <td style="color:#f85149;font-weight:700;">STASJONSFEIL</td>
+        </tr><tr>
+            <td><strong>Istanbul, TR</strong></td>
+            <td>27.8C</td>
+            <td>27C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.8C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Jeddah, SA</strong></td>
+            <td>39.4C</td>
+            <td>40C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.6C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Jinan, CN</strong></td>
+            <td>32.9C</td>
+            <td>26C</td>
+            <td style="color:#f85149;font-weight:600;">+6.9C</td>
+            <td style="color:#f85149;font-weight:700;">STASJONSFEIL</td>
+        </tr><tr>
+            <td><strong>Karachi, PK</strong></td>
+            <td>32.5C</td>
+            <td>32C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.5C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Kuala Lumpur, MY</strong></td>
+            <td>32.2C</td>
+            <td>32C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.2C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>London, UK</strong></td>
+            <td>24.6C</td>
+            <td>24C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.6C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Los Angeles, US</strong></td>
+            <td>26.6C</td>
+            <td>27C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.4C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Lucknow, IN</strong></td>
+            <td>33.1C</td>
+            <td>34C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.9C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Madrid, ES</strong></td>
+            <td>35.6C</td>
+            <td>36C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.4C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Manila, PH</strong></td>
+            <td>30.0C</td>
+            <td>31C</td>
+            <td style="color:#3fb950;font-weight:600;">-1.0C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Mexico City, MX</strong></td>
+            <td>23.7C</td>
+            <td>25C</td>
+            <td style="color:#d2991d;font-weight:600;">-1.3C</td>
+            <td style="color:#d2991d;font-weight:700;">MINOR</td>
+        </tr><tr>
+            <td><strong>Miami, US</strong></td>
+            <td>33.1C</td>
+            <td>34C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.9C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Milan, IT</strong></td>
+            <td>35.5C</td>
+            <td>36C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.5C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Moscow, RU</strong></td>
+            <td>24.4C</td>
+            <td>26C</td>
+            <td style="color:#d2991d;font-weight:600;">-1.6C</td>
+            <td style="color:#d2991d;font-weight:700;">MINOR</td>
+        </tr><tr>
+            <td><strong>Munich, DE</strong></td>
+            <td>28.7C</td>
+            <td>31C</td>
+            <td style="color:#f85149;font-weight:600;">-2.3C</td>
+            <td style="color:#f85149;font-weight:700;">STASJONSFEIL</td>
+        </tr><tr>
+            <td><strong>Panama City, PA</strong></td>
+            <td>32.7C</td>
+            <td>33C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.3C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Paris, FR</strong></td>
+            <td>31.7C</td>
+            <td>32C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.3C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Qingdao, CN</strong></td>
+            <td>32.0C</td>
+            <td>31C</td>
+            <td style="color:#3fb950;font-weight:600;">+1.0C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>San Francisco, US</strong></td>
+            <td>20.7C</td>
+            <td>25C</td>
+            <td style="color:#f85149;font-weight:600;">-4.3C</td>
+            <td style="color:#f85149;font-weight:700;">STASJONSFEIL</td>
+        </tr><tr>
+            <td><strong>Sao Paulo, BR</strong></td>
+            <td>17.1C</td>
+            <td>18C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.9C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Seattle, US</strong></td>
+            <td>25.9C</td>
+            <td>26C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.1C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Seoul (Incheon), KR</strong></td>
+            <td>31.5C</td>
+            <td>32C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.5C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Shanghai, CN</strong></td>
+            <td>27.9C</td>
+            <td>29C</td>
+            <td style="color:#d2991d;font-weight:600;">-1.1C</td>
+            <td style="color:#d2991d;font-weight:700;">MINOR</td>
+        </tr><tr>
+            <td><strong>Shenzhen, CN</strong></td>
+            <td>34.8C</td>
+            <td>37C</td>
+            <td style="color:#f85149;font-weight:600;">-2.2C</td>
+            <td style="color:#f85149;font-weight:700;">STASJONSFEIL</td>
+        </tr><tr>
+            <td><strong>Singapore, SG</strong></td>
+            <td>33.1C</td>
+            <td>33C</td>
+            <td style="color:#3fb950;font-weight:600;">+0.1C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Taipei, TW</strong></td>
+            <td>32.9C</td>
+            <td>35C</td>
+            <td style="color:#f85149;font-weight:600;">-2.1C</td>
+            <td style="color:#f85149;font-weight:700;">STASJONSFEIL</td>
+        </tr><tr>
+            <td><strong>Tel Aviv, IL</strong></td>
+            <td>34.8C</td>
+            <td>35C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.2C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Tokyo, JP</strong></td>
+            <td>30.5C</td>
+            <td>32C</td>
+            <td style="color:#d2991d;font-weight:600;">-1.5C</td>
+            <td style="color:#d2991d;font-weight:700;">MINOR</td>
+        </tr><tr>
+            <td><strong>Toronto, CA</strong></td>
+            <td>28.8C</td>
+            <td>29C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.2C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
+            <td><strong>Warsaw, PL</strong></td>
+            <td>21.5C</td>
+            <td>22C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.5C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
+        </tr><tr>
             <td><strong>Wellington, NZ</strong></td>
             <td>11.4C</td>
             <td>14C</td>
             <td style="color:#f85149;font-weight:600;">-2.6C</td>
             <td style="color:#f85149;font-weight:700;">STASJONSFEIL</td>
+        </tr><tr>
+            <td><strong>Wuhan, CN</strong></td>
+            <td>30.6C</td>
+            <td>29C</td>
+            <td style="color:#d2991d;font-weight:600;">+1.6C</td>
+            <td style="color:#d2991d;font-weight:700;">MINOR</td>
+        </tr><tr>
+            <td><strong>Zhengzhou, CN</strong></td>
+            <td>25.2C</td>
+            <td>26C</td>
+            <td style="color:#3fb950;font-weight:600;">-0.8C</td>
+            <td style="color:#3fb950;font-weight:700;">OK</td>
         </tr></tbody>
       </table>
     </div>
@@ -362,7 +656,7 @@ function sortTable(colIdx) {
          <div class="label">🔻 Laveste</div>
        </div>
        <div class="card">
-         <div class="value" style="color: var(--purple);">48</div>
+         <div class="value" style="color: var(--purple);">51</div>
          <div class="label">Byer med BMA-data</div>
        </div>
      </div>
@@ -870,7 +1164,7 @@ function sortTable(colIdx) {
         </tr><tr class="mkt-bucket new-york">
             <td></td>
             <td>86.0°F</td>
-            <td>BMA: 23.5%</td>
+            <td>BMA: 23.7%</td>
             <td>Mkt: 47.5%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('seoul')">
@@ -1026,7 +1320,7 @@ function sortTable(colIdx) {
         </tr><tr class="mkt-bucket toronto">
             <td></td>
             <td>24°C</td>
-            <td>BMA: 11.5%</td>
+            <td>BMA: 14.9%</td>
             <td>Mkt: 5.2%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('wellington')">
@@ -1104,21 +1398,6 @@ function sortTable(colIdx) {
             </tr>
             <tr>
                 <td>2</td>
-                <td><strong>Manila, PH</strong></td>
-                <td>29.1°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.8</span></td>
-                <td><strong>28°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.5, 21%)</span></td>
-                <td>28°C</td>
-                <td>29°C</td>
-                <td>🟠 77%</td>
-                <td>7/8</td>
-                <td>—</td>
-                <td><span style="color:#8b949e;">⏳</span></td>
-                <td><span style="color:#8b949e;">⏳</span></td>
-                <td><span style="color:#8b949e;">⏳</span></td>
-                <td >—</td>
-            </tr>
-            <tr>
-                <td>3</td>
                 <td><strong>Madrid, ES</strong></td>
                 <td>37.4°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.6</span></td>
                 <td><strong>37°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.5, 51%)</span></td>
@@ -1133,7 +1412,7 @@ function sortTable(colIdx) {
                 <td >—</td>
             </tr>
             <tr>
-                <td>4</td>
+                <td>3</td>
                 <td><strong>Munich, DE</strong></td>
                 <td>28.5°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.8</span></td>
                 <td><strong>27°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.7, 11%)</span></td>
@@ -1148,15 +1427,30 @@ function sortTable(colIdx) {
                 <td >—</td>
             </tr>
             <tr>
-                <td>5</td>
-                <td><strong>Hong Kong, HK</strong></td>
-                <td>33.0°C <span style="color:#8b949e;font-size:0.75rem;">σ=1.0</span></td>
-                <td><strong>32°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.7, 24%)</span></td>
-                <td>31°C</td>
-                <td>33°C</td>
-                <td>🔴 67%</td>
+                <td>4</td>
+                <td><strong>Moscow, RU</strong></td>
+                <td>17.7°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.7</span></td>
+                <td><strong>17°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.7, 34%)</span></td>
+                <td>16°C</td>
+                <td>18°C</td>
+                <td>🔴 66%</td>
                 <td>7/8</td>
-                <td>📡 — | Marked: 34°C</td>
+                <td>—</td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td><span style="color:#8b949e;">⏳</span></td>
+                <td >—</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td><strong>Austin, US</strong></td>
+                <td>37.7°C <span style="color:#8b949e;font-size:0.75rem;">σ=0.8</span></td>
+                <td><strong>37°C</strong> <span style="font-size:0.75rem;color:#8b949e;">(k=0.7, 33%)</span></td>
+                <td>36°C</td>
+                <td>38°C</td>
+                <td>🔴 66%</td>
+                <td>8/8</td>
+                <td>—</td>
                 <td><span style="color:#8b949e;">⏳</span></td>
                 <td><span style="color:#8b949e;">⏳</span></td>
                 <td><span style="color:#8b949e;">⏳</span></td>
@@ -1239,7 +1533,7 @@ function sortTable(colIdx) {
             </tr>
             <tr>
                 <td>Chicago, US</td>
-                <td >25°C ⏳</td>
+                <td >26°C ⏳</td>
                 <td >24°C ⏳</td>
                 <td >27°C ⏳</td>
             </tr>
@@ -1322,6 +1616,12 @@ function sortTable(colIdx) {
                 <td >31°C ⏳</td>
             </tr>
             <tr>
+                <td>Los Angeles, US</td>
+                <td >24°C ⏳</td>
+                <td >23°C ⏳</td>
+                <td >26°C ⏳</td>
+            </tr>
+            <tr>
                 <td>Lucknow, IN</td>
                 <td >34°C ⏳</td>
                 <td >33°C ⏳</td>
@@ -1394,10 +1694,22 @@ function sortTable(colIdx) {
                 <td >31°C ⏳</td>
             </tr>
             <tr>
+                <td>San Francisco, US</td>
+                <td >19°C ⏳</td>
+                <td >18°C ⏳</td>
+                <td >21°C ⏳</td>
+            </tr>
+            <tr>
                 <td>Sao Paulo, BR</td>
                 <td >22°C ⏳</td>
                 <td >22°C ⏳</td>
                 <td >23°C ⏳</td>
+            </tr>
+            <tr>
+                <td>Seattle, US</td>
+                <td >23°C ⏳</td>
+                <td >23°C ⏳</td>
+                <td >24°C ⏳</td>
             </tr>
             <tr>
                 <td>Seoul (Incheon), KR</td>
@@ -1444,7 +1756,7 @@ function sortTable(colIdx) {
             <tr>
                 <td>Toronto, CA</td>
                 <td >25°C ⏳</td>
-                <td >24°C ⏳</td>
+                <td >23°C ⏳</td>
                 <td >26°C ⏳</td>
             </tr>
             <tr>
