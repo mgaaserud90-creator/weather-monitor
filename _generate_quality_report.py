@@ -1990,7 +1990,7 @@ def _load_market_city_set() -> tuple[set[str], set[str], set[str]]:
                     continue
                 # Check if any outcome is >99% (resolved) or >0% (active)
                 outcomes = m.get("outcomes", [])
-                is_resolved = any(o.get("price", 0) > 0.99 for o in outcomes)
+                is_resolved = any((o.get("price") or 0) > 0.99 for o in outcomes)
                 has_volume = m.get("volume", 0) > 0
                 if has_volume:
                     active.add(city)

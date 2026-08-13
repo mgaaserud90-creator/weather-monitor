@@ -63,7 +63,10 @@ def load_resolved_markets() -> dict[tuple[str, str], float]:
         year = int(dm.group(3)) if dm.group(3) else datetime.now(timezone.utc).year
         date_str = f"{year:04d}-{month:02d}-{day:02d}"
         for o in m.get("outcomes", []):
-            if o.get("price", 0) > 0.95 and o.get("label", "").lower() == "yes":
+            price = o.get("price")
+            if price is None:
+                continue
+            if price > 0.95 and (o.get("label") or "").lower() == "yes":
                 match = re.search(r'(\d+)°C', question)
                 if match:
                     key = (city, date_str)

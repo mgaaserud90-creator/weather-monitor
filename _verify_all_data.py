@@ -120,12 +120,12 @@ def verify_market_prices():
         check(len(markets) > 0, f"Has {len(markets)} markets", "warn" if len(markets) == 0 else "pass")
 
         resolved = [m for m in markets if any(
-            o.get("price", 0) > 0.95 for o in m.get("outcomes", []))]
+            (o.get("price") or 0) > 0.95 for o in m.get("outcomes", []))]
         print(f"  📊 Resolved (>95%): {len(resolved)}")
         for r in resolved[:3]:
             city = r.get("city", "?")
-            yes_price = max((o.get("price", 0) for o in r.get("outcomes", [])
-                           if o.get("label", "").lower() == "yes"), default=0)
+            yes_price = max(((o.get("price") or 0) for o in r.get("outcomes", [])
+                           if (o.get("label") or "").lower() == "yes"), default=0)
             print(f"    {city}: YES@{yes_price:.1%}")
 
     except Exception as e:
