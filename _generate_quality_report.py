@@ -69,6 +69,51 @@ def _load_log() -> dict:
     return {"runs": []}
 
 
+def _tally_from_predictions(runs: list) -> dict:
+    """Compute per-strategy win/loss totals from predictions (ground truth).
+
+    The run ``summary`` can be stale (e.g. an hourly run that resolved cities
+    before daily_close) so all headline W/L numbers are recomputed from the
+    resolved strategy results stored in each city's prediction.
+    """
+    totals = {
+        "sigma_wins": 0, "sigma_losses": 0,
+        "p5_wins": 0, "p5_losses": 0,
+        "mean_wins": 0, "mean_losses": 0,
+    }
+    for run in runs:
+        for pdata in run.get("predictions", {}).values():
+            strategies = pdata.get("strategies", {}) or {}
+            for sn, win_key, loss_key in (
+                ("sigma", "sigma_wins", "sigma_losses"),
+                ("p5", "p5_wins", "p5_losses"),
+                ("mean", "mean_wins", "mean_losses"),
+            ):
+                result = strategies.get(sn, {}).get("result")
+                if result == "WIN":
+                    totals[win_key] += 1
+                elif result == "LOSS":
+                    totals[loss_key] += 1
+    return totals
+
+
+def _pick_most_resolved_run(runs: list) -> dict:
+    """Return the run with the most resolved predictions (sigma actual_peak)."""
+    best = None
+    best_count = -1
+    for run in runs:
+        count = sum(
+            1 for p in run.get("predictions", {}).values()
+            if p.get("strategies", {}).get("sigma", {}).get("actual_peak") is not None
+        )
+        if count > best_count:
+            best_count = count
+            best = run
+    if best is None:
+        return runs[-1] if runs else {}
+    return best
+
+
 def _generate_report() -> str:
     """Generate the full report string."""
     log_data = _load_log()
@@ -91,13 +136,15 @@ def _generate_report() -> str:
         lines.append("")
         return "\n".join(lines)
 
-    # Aggregate per-strategy stats
-    sigma_wins = sum(r.get("summary", {}).get("sigma_wins", 0) for r in runs)
-    sigma_losses = sum(r.get("summary", {}).get("sigma_losses", 0) for r in runs)
-    p5_wins = sum(r.get("summary", {}).get("p5_wins", 0) for r in runs)
-    p5_losses = sum(r.get("summary", {}).get("p5_losses", 0) for r in runs)
-    mean_wins = sum(r.get("summary", {}).get("mean_wins", 0) for r in runs)
-    mean_losses = sum(r.get("summary", {}).get("mean_losses", 0) for r in runs)
+    # Aggregate per-strategy stats (recomputed from predictions, not the
+    # run-level summary which can go stale before daily_close).
+    _tally = _tally_from_predictions(runs)
+    sigma_wins = _tally["sigma_wins"]
+    sigma_losses = _tally["sigma_losses"]
+    p5_wins = _tally["p5_wins"]
+    p5_losses = _tally["p5_losses"]
+    mean_wins = _tally["mean_wins"]
+    mean_losses = _tally["mean_losses"]
 
     sigma_total = sigma_wins + sigma_losses
     p5_total = p5_wins + p5_losses
@@ -189,13 +236,13 @@ def _generate_report() -> str:
     lines.append("─" * 60)
     for run in runs:
         rd = run.get("run_date", "?")
-        s = run.get("summary", {})
-        sw = s.get("sigma_wins", 0)
-        sl = s.get("sigma_losses", 0)
-        pw = s.get("p5_wins", 0)
-        pl = s.get("p5_losses", 0)
-        mw = s.get("mean_wins", 0)
-        ml = s.get("mean_losses", 0)
+        _rt = _tally_from_predictions([run])
+        sw = _rt["sigma_wins"]
+        sl = _rt["sigma_losses"]
+        pw = _rt["p5_wins"]
+        pl = _rt["p5_losses"]
+        mw = _rt["mean_wins"]
+        ml = _rt["mean_losses"]
         npred = len(run.get("predictions", {}))
         if sw + sl > 0:
             sr = round(sw / (sw + sl) * 100, 1)
@@ -1806,7 +1853,10 @@ def _load_resolved_market_outcomes() -> dict[str, int]:
         # Check if any outcome is >0.99 (resolved YES)
         resolved_temp = None
         for o in outcomes:
-            if o.get("price", 0) > 0.99 and o.get("label", "").lower() == "yes":
+            _price = o.get("price", 0)
+            if _price is None:
+                _price = 0.0
+            if float(_price) > 0.99 and (o.get("label") or "").lower() == "yes":
                 match = re.search(r'(\d+)°C', question)
                 if match:
                     resolved_temp = int(match.group(1))
@@ -2302,13 +2352,15 @@ def _generate_html_report() -> str:
 
     best_per_city = _get_best_strategy_per_city(runs)
 
-    # Aggregate per-strategy stats
-    sigma_wins = sum(r.get("summary", {}).get("sigma_wins", 0) for r in runs)
-    sigma_losses = sum(r.get("summary", {}).get("sigma_losses", 0) for r in runs)
-    p5_wins = sum(r.get("summary", {}).get("p5_wins", 0) for r in runs)
-    p5_losses = sum(r.get("summary", {}).get("p5_losses", 0) for r in runs)
-    mean_wins = sum(r.get("summary", {}).get("mean_wins", 0) for r in runs)
-    mean_losses = sum(r.get("summary", {}).get("mean_losses", 0) for r in runs)
+    # Aggregate per-strategy stats (recomputed from predictions, not the
+    # run-level summary which can go stale before daily_close).
+    _tally = _tally_from_predictions(runs)
+    sigma_wins = _tally["sigma_wins"]
+    sigma_losses = _tally["sigma_losses"]
+    p5_wins = _tally["p5_wins"]
+    p5_losses = _tally["p5_losses"]
+    mean_wins = _tally["mean_wins"]
+    mean_losses = _tally["mean_losses"]
 
     sigma_total = sigma_wins + sigma_losses
     p5_total = p5_wins + p5_losses
@@ -2374,13 +2426,13 @@ def _generate_html_report() -> str:
     daily_rows = ""
     recent = sorted(runs, key=lambda r: r.get("run_date", ""), reverse=True)[:14]
     for r in recent:
-        s = r.get("summary", {})
-        sw = s.get("sigma_wins", 0)
-        sl = s.get("sigma_losses", 0)
-        pw = s.get("p5_wins", 0)
-        pl = s.get("p5_losses", 0)
-        mw = s.get("mean_wins", 0)
-        ml = s.get("mean_losses", 0)
+        _rt = _tally_from_predictions([r])
+        sw = _rt["sigma_wins"]
+        sl = _rt["sigma_losses"]
+        pw = _rt["p5_wins"]
+        pl = _rt["p5_losses"]
+        mw = _rt["mean_wins"]
+        ml = _rt["mean_losses"]
         phase = r.get("phase", "?")
         sigma_rate = round(sw / max(1, sw + sl) * 100, 1) if (sw + sl) > 0 else "—"
         sigma_rate_str = f"{sigma_rate}%" if isinstance(sigma_rate, (int, float)) else str(sigma_rate)
@@ -2393,11 +2445,17 @@ def _generate_html_report() -> str:
     predictions_html = ""
     latest_run = runs[-1] if runs else {}
 
+    # The "AVGJORTE RESULTATER" table must use the run with the most resolved
+    # predictions (ground-truth outcomes), not the most recent run.
+    resolved_run = _pick_most_resolved_run(runs)
+
     if latest_run:
         top5_cities = latest_run.get("top_5_confidence", [])
         preds = latest_run.get("predictions", {})
         multi_day = latest_run.get("predictions_multi_day", {})
         target_date = latest_run.get("target_date", latest_run.get("run_date", ""))
+        resolved_preds = resolved_run.get("predictions", {})
+        resolved_target_date = resolved_run.get("target_date", resolved_run.get("run_date", ""))
 
         # ── Day 1: I DAG ──
         if top5_cities:
@@ -2428,7 +2486,7 @@ def _generate_html_report() -> str:
         resolved_market_outcomes = _load_resolved_market_outcomes()
         resolved_rows = ""
         resolved_cities = []
-        for city, pdata in sorted(preds.items()):
+        for city, pdata in sorted(resolved_preds.items()):
             strategies = pdata.get("strategies", {})
             sigma = strategies.get("sigma", {})
             p5s = strategies.get("p5", {})
@@ -2478,7 +2536,7 @@ def _generate_html_report() -> str:
 
             predictions_html += f"""
    <div class="section">
-      <h2>📊 AVGJORTE RESULTATER ({len(resolved_cities)} byer, {target_date})</h2>
+      <h2>📊 AVGJORTE RESULTATER ({len(resolved_cities)} byer, {resolved_target_date})</h2>
       <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
         Resolved against archive data. ✅ WIN = round(actual peak) == spill bucket.
         📡 = vår live peak | Marked = Polymarket utfall | ⚠️ Avvik = stasjonsfeil hvis >2°C

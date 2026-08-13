@@ -1,27 +1,33 @@
 #!/usr/bin/env python3
-"""Generate PM Strategy comparison HTML section."""
+"""Generate PM Strategy comparison HTML section.
+
+Compares each city's recommended spill against Polymarket's resolved market
+using the unit-aware loader from _model_quality_tracker. Threshold markets are
+never treated as point temperatures, US °F bucket markets are compared against
+their inclusive °C range (not a rounded midpoint), and cities that were
+predicted but have no resolvable market are surfaced explicitly as NA.
+"""
 import json
+import sys
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPT_DIR))
+
+from _model_quality_tracker import _load_market_resolved_details  # noqa: E402
+
 QLOG = SCRIPT_DIR / "_model_quality_log.json"
-RLOG = SCRIPT_DIR / "_resolved_markets_log.json"
 
 log = json.loads(QLOG.read_text(encoding="utf-8"))
-pm = {}
-if RLOG.exists():
-    rl = json.loads(RLOG.read_text(encoding="utf-8"))
-    for k, v in rl.get("markets", {}).items():
-        if "||" in k:
-            if v.get("type") == "threshold" or "temp_c" not in v:
-                continue
-            city, date_str = k.split("||", 1)
-            pm[(city, date_str)] = float(v["temp_c"])
+
+# Unit-aware resolved markets: {(city, date): info}. Threshold markets are
+# already excluded by the loader.
+pm = _load_market_resolved_details()
 
 runs = log.get("runs", [])
 if not runs:
     print("No data")
-    exit(0)
+    sys.exit(0)
 
 # Find run with the MOST resolved predictions (ground truth comparisons)
 latest = None
@@ -37,7 +43,7 @@ if latest is None:
 target_date = latest["run_date"]
 preds = latest.get("predictions", {})
 
-# Determine best strategy per city (simple heuristic: mean > sigma > p5)
+
 def best_spill(pdata):
     s = pdata.get("strategies", {})
     m = s.get("mean", {}).get("spill")
@@ -46,15 +52,29 @@ def best_spill(pdata):
     sig = s.get("sigma", {}).get("spill")
     return sig, "sigma"
 
+
+def market_label(info):
+    unit = (info.get("unit") or "C").upper()
+    bucket = info.get("bucket") or ""
+    if bucket:
+        return bucket
+    value = info.get("value")
+    if value is None:
+        return "—"
+    return f"{value:.0f}°{unit}"
+
+
 rows = ""
 wins = losses = na_count = 0
+na_cities = []
 for city in sorted(preds):
     pdata = preds[city]
     cb = city.split(",")[0].strip()
-    pt = pm.get((city, target_date)) or pm.get((cb, target_date))
-    if pt is None:
-        # City has no resolved market for target_date — omit from the table.
+    info = pm.get((city, target_date)) or pm.get((cb, target_date))
+    if info is None or info.get("value") is None:
+        # City has no resolved POINT market for target_date — surface it.
         na_count += 1
+        na_cities.append(city)
         continue
 
     sigma = pdata.get("strategies", {}).get("sigma", {})
@@ -62,23 +82,43 @@ for city in sorted(preds):
     spill, strat = best_spill(pdata)
 
     if our_peak is None:
-        # Market exists but the model produced no resolved peak — omit.
+        # Market exists but the model produced no resolved peak.
         na_count += 1
+        na_cities.append(city)
         continue
 
-    our_round = round(our_peak)
-    pm_round = int(round(pt))
-    gap = round(our_peak - pt, 1)
-    is_win = int(spill) == pm_round if spill else False
+    unit = (info.get("unit") or "C").upper()
+    value = float(info["value"])
+    value_c = value if unit == "C" else (value - 32) * 5 / 9
+    lo_c = info.get("lo_c")
+    hi_c = info.get("hi_c")
+
+    if lo_c is not None and hi_c is not None:
+        # Compare against the bucket's inclusive °C range.
+        is_win = float(lo_c) <= float(spill) <= float(hi_c)
+    else:
+        is_win = int(spill) == int(round(value_c))
+
     if is_win:
         wins += 1
     else:
         losses += 1
-    rows += f"<tr><td>{city}</td><td>{our_round}C</td><td>{pm_round}C</td><td>{gap:+.1f}C</td><td>{spill}C ({strat})</td><td style='color:{'var(--green)' if is_win else 'var(--red)'};'>{'WIN' if is_win else 'TAP'}</td></tr>\n"
+
+    our_round = round(our_peak)
+    gap = round(our_peak - value_c, 1)
+    label = market_label(info)
+    rows += (
+        f"<tr><td>{city}</td><td>{our_round}C</td><td>{label}</td>"
+        f"<td>{gap:+.1f}C</td><td>{spill}C ({strat})</td>"
+        f"<td style='color:{'var(--green)' if is_win else 'var(--red)'};'>"
+        f"{'WIN' if is_win else 'TAP'}</td></tr>\n"
+    )
 
 total = wins + losses
-rate = round(wins/max(1,total)*100,1)
+rate = round(wins / max(1, total) * 100, 1)
 print(f"PM Strategy Results ({total} resolved, {na_count} NA): {wins}W/{losses}L = {rate}%")
+if na_cities:
+    print("  NA (predicted but no resolved point market): " + ", ".join(na_cities))
 print(rows)
 
 # Write HTML section
@@ -86,6 +126,7 @@ html = f"""<div class="section" style="border-color: rgba(210,153,29,0.4);">
   <h2>🎯 ANBEFALT SPILL vs POLYMARKET ({total} resolved, {na_count} NA, {target_date})</h2>
   <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
     Anbefalt strategispill (mean) sjekket mot Polymarkets faktiske resolusjon.
+    US °F-buckets sammenlignes mot sitt inklusive °C-område.
   </p>
   <div class="card-grid" style="margin-bottom: 12px;">
     <div class="card" style="border: 1px solid var(--green);">

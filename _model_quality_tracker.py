@@ -802,12 +802,12 @@ async def hourly_active_mode() -> None:
         top5_city_names = [p.city for p in top5]
         entry["top_5_confidence"] = top5_city_names
 
-        # Merge predictions — don't overwrite cities from earlier hourly runs.
-        # This ensures all 51 cities accumulate by 23:00 UTC for daily_close.
+        # Merge predictions — don't clobber cities already resolved in earlier
+        # hourly runs. Preserve an existing city's result/actual_peak so a
+        # re-run of the same day can never wipe out a resolved outcome.
         new_preds = _preds_to_dict(predictions, active, lead_days=0)
         existing_preds = entry.get("predictions", {})
-        existing_preds.update(new_preds)
-        entry["predictions"] = existing_preds
+        entry["predictions"] = _merge_predictions(existing_preds, new_preds)
         # Track which cities were active in THIS run (for debugging)
         entry["predictions_active"] = new_preds
 
@@ -1026,6 +1026,7 @@ async def _hourly_check_active(
 
     entry["phase"] = "hourly_active"
     entry["last_updated"] = _now_utc()
+    _recompute_summary(entry)
     _save_log(log_data)
 
     if all_confirmed and not newly_confirmed:
@@ -1258,6 +1259,92 @@ def _get_sigma_spill(pdata: dict) -> int:
 def _get_strategies(pdata: dict) -> dict:
     """Extract strategies dict from prediction data."""
     return pdata.get("strategies", {})
+
+
+def _merge_predictions(existing: dict, new: dict) -> dict:
+    """Merge freshly generated predictions into existing predictions.
+
+    A re-run of hourly_active (or any BMA pass) must NOT clobber an
+    already-resolved city. For each city already present, we carry forward its
+    resolved ``result``/``actual_peak`` (and other resolution bookkeeping) while
+    still refreshing the non-resolution fields from the new prediction.
+    """
+    merged = dict(existing)
+    for city, new_pdata in new.items():
+        old_pdata = merged.get(city)
+        if not old_pdata:
+            merged[city] = new_pdata
+            continue
+
+        old_strategies = old_pdata.get("strategies", {}) or {}
+        new_strategies = new_pdata.get("strategies", {}) or {}
+        for sn in ("sigma", "p5", "mean"):
+            old_s = old_strategies.get(sn) or {}
+            new_s = new_strategies.get(sn) or {}
+            if old_s.get("result") in ("WIN", "LOSS"):
+                new_s["result"] = old_s["result"]
+                new_s["actual_peak"] = old_s.get("actual_peak", new_s.get("actual_peak"))
+            elif old_s.get("actual_peak") is not None:
+                new_s["actual_peak"] = old_s["actual_peak"]
+
+        # Carry forward resolution bookkeeping that a fresh prediction lacks.
+        for key in (
+            "peak_detected_at",
+            "recommendation",
+            "_market_resolved",
+            "_market_unit",
+            "_market_display",
+            "_peak_gap",
+            "_verdict",
+        ):
+            if old_pdata.get(key) is not None:
+                new_pdata[key] = old_pdata[key]
+
+        merged[city] = new_pdata
+    return merged
+
+
+def _recompute_summary(entry: dict) -> None:
+    """Recompute entry["summary"] from entry["predictions"] strategy results.
+
+    Keeps the summary consistent no matter which path (hourly_active,
+    rapid monitor, post-peak arbitrage or daily_close) resolved the cities.
+    """
+    sigma_wins = sigma_losses = 0
+    p5_wins = p5_losses = 0
+    mean_wins = mean_losses = 0
+    unresolved = 0
+
+    for pdata in (entry.get("predictions") or {}).values():
+        strategies = pdata.get("strategies", {}) or {}
+        for sn in ("sigma", "p5", "mean"):
+            res = strategies.get(sn, {}).get("result")
+            if res == "WIN":
+                if sn == "sigma":
+                    sigma_wins += 1
+                elif sn == "p5":
+                    p5_wins += 1
+                else:
+                    mean_wins += 1
+            elif res == "LOSS":
+                if sn == "sigma":
+                    sigma_losses += 1
+                elif sn == "p5":
+                    p5_losses += 1
+                else:
+                    mean_losses += 1
+        if strategies.get("sigma", {}).get("result") not in ("WIN", "LOSS"):
+            unresolved += 1
+
+    entry["summary"] = {
+        "sigma_wins": sigma_wins,
+        "sigma_losses": sigma_losses,
+        "p5_wins": p5_wins,
+        "p5_losses": p5_losses,
+        "mean_wins": mean_wins,
+        "mean_losses": mean_losses,
+        "unresolved": unresolved,
+    }
 
 
 # =============================================================================
@@ -1783,6 +1870,8 @@ async def _rapid_peak_monitor(
                 cities_in_window.remove(c)
 
         # Save progress
+        entry["predictions"] = predictions
+        _recompute_summary(entry)
         entry["phase"] = "rapid_peak_monitor"
         entry["last_updated"] = _now_utc()
         log_data = _load_log()
@@ -1790,6 +1879,7 @@ async def _rapid_peak_monitor(
             if e.get("run_date") == entry.get("run_date"):
                 e["predictions"] = predictions
                 e["observations"] = observations
+                e["summary"] = entry["summary"]
                 e["phase"] = "rapid_peak_monitor"
                 e["last_updated"] = _now_utc()
                 break
@@ -2006,6 +2096,7 @@ async def _post_peak_arbitrage_check(
         print(f"  📊 No post-peak arbitrage opportunities found.\n")
 
     entry["last_updated"] = _now_utc()
+    _recompute_summary(entry)
     _save_log(log_data)
 
     # Cross-reference our peaks with Polymarket resolved outcomes
@@ -2220,15 +2311,34 @@ async def daily_close_mode() -> None:
     entry["phase"] = "daily_close"
     entry["last_updated"] = _now_utc()
 
-    # Update cumulative
-    cum = log_data.setdefault("cumulative", {})
-    cum["total_days"] = len([r for r in log_data.get("runs", []) if r.get("phase") == "daily_close"])
-    cum["sigma_wins"] = cum.get("sigma_wins", 0) + sigma_wins
-    cum["sigma_losses"] = cum.get("sigma_losses", 0) + sigma_losses
-    cum["p5_wins"] = cum.get("p5_wins", 0) + p5_wins
-    cum["p5_losses"] = cum.get("p5_losses", 0) + p5_losses
-    cum["mean_wins"] = cum.get("mean_wins", 0) + mean_wins
-    cum["mean_losses"] = cum.get("mean_losses", 0) + mean_losses
+    # Update cumulative (idempotent — recomputed from every run's summary so a
+    # re-run of daily_close never double-counts and the totals always match the
+    # predictions-derived report numbers).
+    _c_sigma_w = _c_sigma_l = 0
+    _c_p5_w = _c_p5_l = 0
+    _c_mean_w = _c_mean_l = 0
+    _c_total_days = 0
+    _c_total_preds = 0
+    for _run in log_data.get("runs", []):
+        _c_total_days += 1
+        _c_total_preds += len(_run.get("predictions", {}) or {})
+        _s = _run.get("summary", {}) or {}
+        _c_sigma_w += _s.get("sigma_wins", 0)
+        _c_sigma_l += _s.get("sigma_losses", 0)
+        _c_p5_w += _s.get("p5_wins", 0)
+        _c_p5_l += _s.get("p5_losses", 0)
+        _c_mean_w += _s.get("mean_wins", 0)
+        _c_mean_l += _s.get("mean_losses", 0)
+    log_data["cumulative"] = {
+        "total_days": _c_total_days,
+        "total_predictions": _c_total_preds,
+        "sigma_wins": _c_sigma_w,
+        "sigma_losses": _c_sigma_l,
+        "p5_wins": _c_p5_w,
+        "p5_losses": _c_p5_l,
+        "mean_wins": _c_mean_w,
+        "mean_losses": _c_mean_l,
+    }
 
     _save_log(log_data)
 
@@ -3157,22 +3267,61 @@ def _resolved_log_entry_to_info(data: dict[str, Any]) -> dict[str, Any] | None:
                 value = (int(m.group(1)) + int(m.group(2))) / 2.0
     if value is None:
         return None
-    return {
+    info: dict[str, Any] = {
         "type": "point",
         "unit": unit,
         "value": float(value),
         "bucket": display,
     }
+    # Propagate native inclusive bucket bounds for °F bucket markets so
+    # consumers can compare against the °C range instead of a rounded midpoint.
+    if data.get("lo_c") is not None and data.get("hi_c") is not None:
+        info["lo_c"] = data.get("lo_c")
+        info["hi_c"] = data.get("hi_c")
+        if data.get("lo_f") is not None:
+            info["lo_f"] = data.get("lo_f")
+        if data.get("hi_f") is not None:
+            info["hi_f"] = data.get("hi_f")
+    return info
 
 
 def _load_market_resolved_details() -> dict[tuple[str, str], dict[str, Any]]:
     """Extract resolved market outcomes (unit-aware) from all sources.
 
     Returns {(city, date_iso): market_info}. Point markets carry a native-unit
-    numeric value; threshold markets carry lower_bound_c and are excluded from
-    point-value gap comparisons downstream.
+    numeric value. Threshold markets are NEVER included as point temperatures.
+
+    Source priority (most curated first):
+      1. _resolved_markets_log.json — the comprehensive collector with
+         explicit unit/type and inclusive bucket bounds.
+      2. _market_prices.json — active-market prices; only point markets with a
+         resolved YES outcome are used, thresholds are skipped.
+      3. _peak_verification_log.json — only unit-bearing entries (legacy
+         unit-less entries were °C-rounded and are ignored).
     """
     details: dict[tuple[str, str], dict[str, Any]] = {}
+
+    # 1. Comprehensive resolved-markets collector (most authoritative).
+    resolved_log = Path(_SCRIPT_DIR) / "_resolved_markets_log.json"
+    if resolved_log.exists():
+        try:
+            rl = json.loads(resolved_log.read_text(encoding="utf-8"))
+            for key_str, data in rl.get("markets", {}).items():
+                if "||" not in key_str:
+                    continue
+                city, date_str = key_str.split("||", 1)
+                info = _resolved_log_entry_to_info(data)
+                if info is None:
+                    continue
+                if info.get("type") == "threshold":
+                    continue
+                key = (city, date_str)
+                if key not in details:
+                    details[key] = info
+        except Exception:
+            pass
+
+    # 2. Active market prices (skip thresholds, never override the collector).
     market_path = Path(_SCRIPT_DIR) / "_market_prices.json"
     if market_path.exists():
         try:
@@ -3190,48 +3339,34 @@ def _load_market_resolved_details() -> dict[tuple[str, str], dict[str, Any]]:
             if not date_str:
                 continue
             for o in m.get("outcomes", []):
-                if o.get("price", 0) > 0.95 and o.get("label", "").lower() == "yes":
+                price = o.get("price", 0)
+                if price is None:
+                    price = 0.0
+                if float(price) > 0.95 and (o.get("label") or "").lower() == "yes":
                     info = _parse_market_question(m.get("question", ""))
-                    if info:
+                    if info and info.get("type") != "threshold" and info.get("value") is not None:
                         key = (city, date_str)
                         if key not in details:
                             details[key] = info
                     break
 
-    # Also merge from peak verification log
+    # 3. Peak-verification log — only unit-bearing entries (post-fix format).
     if PEAK_VERIFICATION_LOG.exists():
         try:
             pv = json.loads(PEAK_VERIFICATION_LOG.read_text(encoding="utf-8"))
             for city_key, entry in pv.get("verifications", {}).items():
                 mr = entry.get("market_resolved")
                 vdate = entry.get("date") or entry.get("run_date", "")
-                if mr is not None and vdate:
-                    key = (city_key, vdate)
-                    if key not in details:
-                        details[key] = {
-                            "type": "point",
-                            "unit": (entry.get("unit") or "C").upper(),
-                            "value": float(mr),
-                            "bucket": entry.get("market_display"),
-                        }
-        except Exception:
-            pass
-
-    # Also merge from resolved markets log (comprehensive collector)
-    resolved_log = Path(_SCRIPT_DIR) / "_resolved_markets_log.json"
-    if resolved_log.exists():
-        try:
-            rl = json.loads(resolved_log.read_text(encoding="utf-8"))
-            for key_str, data in rl.get("markets", {}).items():
-                if "||" not in key_str:
+                if mr is None or not vdate or not entry.get("unit"):
                     continue
-                city, date_str = key_str.split("||", 1)
-                info = _resolved_log_entry_to_info(data)
-                if info is None:
-                    continue
-                key = (city, date_str)
+                key = (city_key, vdate)
                 if key not in details:
-                    details[key] = info
+                    details[key] = {
+                        "type": "point",
+                        "unit": (entry.get("unit") or "C").upper(),
+                        "value": float(mr),
+                        "bucket": entry.get("market_display"),
+                    }
         except Exception:
             pass
 

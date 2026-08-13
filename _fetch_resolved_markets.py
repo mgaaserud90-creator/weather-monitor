@@ -204,6 +204,12 @@ def parse_temp_bracket(bracket: str, city: str, question: str = "") -> dict | No
                 "type": "point", "unit": "F",
                 "temp_f": midpoint, "value": midpoint,
                 "temp_c": round((midpoint - 32) * 5 / 9, 1),  # legacy field for old consumers
+                # Native inclusive bucket bounds, preserved so downstream
+                # consumers can compare against the °C range instead of a
+                # rounded midpoint.
+                "lo_f": lo, "hi_f": hi,
+                "lo_c": round((lo - 32) * 5 / 9, 1),
+                "hi_c": round((hi - 32) * 5 / 9, 1),
                 "bucket": m.group(0).strip(), "temp_display": bracket,
             }
         m = re.search(r'(\d+(?:\.\d+)?)\s*°\s*F', bracket, re.IGNORECASE)
@@ -459,10 +465,15 @@ def save_results(markets_map: dict, target_date: str) -> None:
         str_key = f"{city}||{date}"
         existing_markets[str_key] = val
 
+    # latest_date must reflect the newest market actually present in the merged
+    # log (not just the last date passed to this single invocation).
+    _dates = [str_key.split("||", 1)[1] for str_key in existing_markets if "||" in str_key]
+    latest_date = max(_dates) if _dates else target_date
+
     log = {
         "last_updated": datetime.now(timezone.utc).isoformat(),
         "total_markets": len(existing_markets),
-        "latest_date": target_date,
+        "latest_date": latest_date,
         "markets": existing_markets,
     }
     LOG_FILE.write_text(json.dumps(log, indent=2, ensure_ascii=False), encoding="utf-8")

@@ -30,13 +30,16 @@ def load_json(path: Path) -> dict:
 
 
 def compute_model_accuracy() -> dict:
-    """Compute per-city per-model accuracy from quality log predictions."""
+    """Compute per-city per-model accuracy from quality log predictions.
+
+    Rebuilt from scratch on every run and deduplicated by ``(city, date)`` so
+    repeated CI invocations never append the same prediction more than once.
+    """
     log = load_json(QUALITY_LOG)
     runs = log.get("runs", [])
 
-    # Load existing accuracy data
-    acc = load_json(ACCURACY_LOG)
-    tracked = acc.get("tracked_models", {})  # {model_name: {city: {error_sum, count, dates}}}
+    tracked = {}  # {model_name: {city: {errors, dates, count}}}
+    seen_pairs: set[tuple[str, str]] = set()
 
     for run in runs:
         run_date = run.get("run_date", "")
@@ -51,6 +54,11 @@ def compute_model_accuracy() -> dict:
             bma_mean = pdata.get("bma_mean")
             if bma_mean is None:
                 continue
+
+            pair = (city, run_date)
+            if pair in seen_pairs:
+                continue
+            seen_pairs.add(pair)
 
             # Per-model data would come from ensemble module
             # For now, track BMA aggregate accuracy
