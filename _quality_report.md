@@ -1,292 +1,149 @@
-════════════════════════════════════════════════════════════
-     MODELLKVALITET — KUMULATIV RAPPORT (MEAN-STRATEGI)
-════════════════════════════════════════════════════════════
-
-Generert: 2026-08-13
-
-Dager kjørt: 3
-Totalt by-prediksjoner: 153
-
-📊 RESULTATER (MEAN-BASERT):
-   📊 Mean-basert:    V:27 T:29  (48.2%)
-
-🏆 CITY SCOREBOARD — MEAN(ROUND) vs POLYMARKET (KUMULATIV):
-    #  By                            Poeng    V  Bets    Win%
-    1. Karachi, PK                       3    3     3  100.0%
-    2. Warsaw, PL                        3    3     3  100.0%
-    3. Mexico City, MX                   2    2     2  100.0%
-    4. Amsterdam, NL                     2    2     3   66.7%
-    5. Ankara, TR                        2    2     3   66.7%
-    6. Beijing, CN                       2    2     3   66.7%
-    7. Istanbul, TR                      2    2     3   66.7%
-    8. Lucknow, IN                       2    2     3   66.7%
-    9. Milan, IT                         2    2     3   66.7%
-   10. Paris, FR                         2    2     3   66.7%
-   11. Austin, US                        1    1     2   50.0%
-   12. Buenos Aires, AR                  1    1     2   50.0%
-   13. Chicago, US                       1    1     2   50.0%
-   14. Denver, US                        1    1     2   50.0%
-   15. Los Angeles, US                   1    1     2   50.0%
-   16. Tokyo, JP                         1    1     2   50.0%
-   17. Wellington, NZ                    1    1     2   50.0%
-   18. Chengdu, CN                       1    1     3   33.3%
-   19. Helsinki, FI                      1    1     3   33.3%
-   20. Jeddah, SA                        1    1     3   33.3%
-   21. London, UK                        1    1     3   33.3%
-   22. Manila, PH                        1    1     3   33.3%
-   23. Moscow, RU                        1    1     3   33.3%
-   24. Sao Paulo, BR                     1    1     3   33.3%
-   25. Singapore, SG                     1    1     3   33.3%
-   26. Tel Aviv, IL                      1    1     3   33.3%
-   27. Atlanta, US                       0    0     2    0.0%
-   28. Busan, KR                         0    0     2    0.0%
-   29. Cape Town, ZA                     0    0     3    0.0%
-   30. Chongqing, CN                     0    0     3    0.0%
-   31. Dallas, US                        0    0     2    0.0%
-   32. Guangzhou, CN                     0    0     3    0.0%
-   33. Hong Kong, HK                     0    0     3    0.0%
-   34. Houston, US                       0    0     2    0.0%
-   35. Kuala Lumpur, MY                  0    0     3    0.0%
-   36. Madrid, ES                        0    0     3    0.0%
-   37. Miami, US                         0    0     3    0.0%
-   38. Munich, DE                        0    0     3    0.0%
-   39. New York, US                      0    0     2    0.0%
-   40. Panama City, PA                   0    0     3    0.0%
-   41. Qingdao, CN                       0    0     3    0.0%
-   42. San Francisco, US                 0    0     2    0.0%
-   43. Seattle, US                       0    0     2    0.0%
-   44. Seoul (Incheon), KR               0    0     2    0.0%
-   45. Shanghai, CN                      0    0     3    0.0%
-   46. Shenzhen, CN                      0    0     3    0.0%
-   47. Taipei, TW                        0    0     3    0.0%
-   48. Toronto, CA                       0    0     2    0.0%
-   49. Wuhan, CN                         0    0     3    0.0%
-   50. Zhengzhou, CN                     0    0     3    0.0%
-   Totalt: 38 poeng / 133 resolvede spill (28.6% win rate).
-
-════════════════════════════════════════════════════════════
-💰 EDGE & PnL — MEAN(ROUND) vs POLYMARKET (PAPIR)
-════════════════════════════════════════════════════════════
-   Totalt PnL:   $-5700.00  (stake $13300.00)
-   ROI:          -42.86%
-   Snitt edge:   +10.31pp
-   ECE:          0.1691
-   Brier:        0.251
-   Resultat:     38W / 95L (28.6%)
-
-   By                            Bets    V    T       PnL      ROI
-   Karachi, PK                      3    3    0   +300.00  +100.0%
-   Warsaw, PL                       3    3    0   +300.00  +100.0%
-   Mexico City, MX                  2    2    0   +200.00  +100.0%
-   Amsterdam, NL                    3    2    1   +100.00   +33.3%
-   Ankara, TR                       3    2    1   +100.00   +33.3%
-   Beijing, CN                      3    2    1   +100.00   +33.3%
-   Istanbul, TR                     3    2    1   +100.00   +33.3%
-   Lucknow, IN                      3    2    1   +100.00   +33.3%
-   Milan, IT                        3    2    1   +100.00   +33.3%
-   Paris, FR                        3    2    1   +100.00   +33.3%
-   Austin, US                       2    1    1     +0.00    +0.0%
-   Buenos Aires, AR                 2    1    1     +0.00    +0.0%
-   Chicago, US                      2    1    1     +0.00    +0.0%
-   Denver, US                       2    1    1     +0.00    +0.0%
-   Los Angeles, US                  2    1    1     +0.00    +0.0%
-   Tokyo, JP                        2    1    1     +0.00    +0.0%
-   Wellington, NZ                   2    1    1     +0.00    +0.0%
-   Chengdu, CN                      3    1    2   -100.00   -33.3%
-   Helsinki, FI                     3    1    2   -100.00   -33.3%
-   Jeddah, SA                       3    1    2   -100.00   -33.3%
-   ... og 30 flere byer
-
-🏆 BESTE STRATEGI: Mean-basert (48.2%)
-
-🔍 BYER MED STRATEGI-FORSKJELLER (>20pp):
-   London, UK                     sigma=0% p5=0% mean=50% → Mean best
-   Moscow, RU                     sigma=33% p5=33% mean=67% → Mean best
-   Munich, DE                     sigma=0% p5=0% mean=50% → Mean best
+# Model Quality Report
 
-🔄 FLIP-ANBEFALINGER: 49 totalt (0 ville vært profitable via P5)
+**Generated:** 2026-08-13T23:29:25.193627+00:00
+**Days tracked:** 2
 
-────────────────────────────────────────────────────────────
-📋 PER DAG:
-────────────────────────────────────────────────────────────
-   2026-08-11  │   51 byer  │  sigma=4/47 (7.8%)  p5=1/50  mean=25/26
-   2026-08-12  │   51 byer  │  sigma=0/4 (0.0%)  p5=1/3  mean=1/3
-   2026-08-13  │   51 byer  │  sigma=0/1 (0.0%)  p5=0/1  mean=1/0
+## Today's Results — All 3 Strategies
 
-════════════════════════════════════════════════════════════
-     🎯 RESULTANT MONITOR — Mean-Strategy (Per City)
-════════════════════════════════════════════════════════════
+| # | City | Sigma Spill | P5 Spill | Mean Spill | Actual Peak | Sigma | P5 | Mean | Rec |
+|---|------|------------|---------|-----------|-------------|-------|----|------|-----|
+| 1 | Shanghai, CN | 27°C | 26°C | 27°C | None | ⏳ | ⏳ | ⏳ | — |
+| 2 | Sao Paulo, BR | 28°C | 28°C | 29°C | 28.7°C | ❌ | ❌ | ✅ | 🔴 SELG med tap — gå SHORT 28°C (peak=... |
+| 3 | Chongqing, CN | 33°C | 33°C | 34°C | None | ⏳ | ⏳ | ⏳ | — |
+| 4 | Dallas, US | 38°C | 38°C | 39°C | 38.9°C | ❌ | ❌ | ✅ | 🔴 SELG med tap — gå SHORT 38°C (peak=... |
+| 5 | Hong Kong, HK | 28°C | 28°C | 29°C | None | ⏳ | ⏳ | ⏳ | — |
 
-Byer med Mean som best:     26 (51.0%)
+**Today — Sigma:** 0W/3L (0.0%) | **P5:** 0W/3L (0.0%) | **Mean:** 3W/0L (100.0%)
 
-Samlet edge (Mean, hvis alle fulgte anbefalt): 48.2%
+## Cumulative Strategy Performance
 
-🏆 TOP 10 PER CITY (MEAN):
-    1. Guangzhou, CN                  → Mean (100.0%) [1 resolved]
-    2. Zhengzhou, CN                  → Mean (100.0%) [1 resolved]
-    3. Dallas, US                     → Mean (100.0%) [1 resolved]
-    4. Buenos Aires, AR               → Mean (100.0%) [1 resolved]
-    5. Qingdao, CN                    → Mean (100.0%) [1 resolved]
-    6. Manila, PH                     → Mean (100.0%) [1 resolved]
-    7. Helsinki, FI                   → Mean (100.0%) [1 resolved]
-    8. Austin, US                     → Mean (100.0%) [1 resolved]
-    9. Beijing, CN                    → Mean (100.0%) [1 resolved]
-   10. Shanghai, CN                   → Mean (100.0%) [1 resolved]
+| Strategy | Wins | Losses | Win Rate |
+|----------|------|--------|----------|
+| 🎯 Sigma (μ−kσ) | 4 | 54 | 6.9% |
+| 🛡️ P5-Basert | 2 | 56 | 3.4% |
+| 📊 Mean-Basert | 29 | 29 | 50.0% |
 
-────────────────────────────────────────────────────────────
-📊 PER-CITY STRATEGI-ANALYSE:
-────────────────────────────────────────────────────────────
-   📊 Moscow, RU — Strategi-analyse (3 resolved trades)
-      Mean:  2W/1L = 66.7%
+## Sigma Strategy by Confidence Tier
 
-   📊 Madrid, ES — Strategi-analyse (2 resolved trades)
-      Mean:  0W/2L = 0.0%
+| Tier | Positions | Wins | Losses | Win Rate |
+|------|-----------|------|--------|----------|
+| 🟢 >80% | 3 | 0 | 3 | 0.0% |
+| 🟠 70-80% | 7 | 1 | 6 | 14.3% |
+| 🔴 60-70% | 9 | 0 | 9 | 0.0% |
+| 🔴 <60% | 42 | 3 | 39 | 7.1% |
 
-   📊 London, UK — Strategi-analyse (2 resolved trades)
-      Mean:  1W/1L = 50.0%
+## Recent Daily Results
 
-   📊 Munich, DE — Strategi-analyse (2 resolved trades)
-      Mean:  1W/1L = 50.0%
+| Date | Sigma W/L | P5 W/L | Mean W/L |
+|------|-----------|--------|----------|
+| 2026-08-11 | 4/47 | 1/50 | 25/26 |
+| 2026-08-13 | 0/3 | 0/3 | 3/0 |
 
-   📊 Denver, US — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
+**Total flip recommendations (SHORT):** 54
 
-   📊 Guangzhou, CN — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
+## 🏆 Win Rate Per City — Sigma Strategy
 
-   📊 Zhengzhou, CN — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
+### 🏆 BESTE BYER
 
-   📊 Singapore, SG — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
+| # | City | Record | Win Rate |
+|---|---|---|---|
+| 1 | Moscow, RU | 1W/2L | 33.3% |
+| 2 | Madrid, ES | 0W/3L | 0.0% |
+| 3 | London, UK | 0W/2L | 0.0% |
+| 4 | Dallas, US | 0W/2L | 0.0% |
+| 5 | Buenos Aires, AR | 0W/2L | 0.0% |
+| 6 | Sao Paulo, BR | 0W/2L | 0.0% |
+| 7 | Munich, DE | 0W/2L | 0.0% |
+| 8 | Miami, US | 0W/2L | 0.0% |
 
-   📊 New York, US — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
+### 📉 SVESTE BYER
 
-   📊 Ankara, TR — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
+| # | City | Record | Win Rate |
+|---|---|---|---|
 
-   📊 Dallas, US — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
+## 📊 Model Agreement & Win Rate
 
-   📊 Buenos Aires, AR — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
+| Agreement | Positions | Record | Win Rate |
+|---|---|---|---|
+| 8/8 enige | 14 | 1W/13L | 7.1% |
+| 7/8 enige | 47 | 3W/44L | 6.4% |
+| 6/8 enige | 0 | 0W/0L | N/A |
+| <6 enige | 0 | 0W/0L | N/A |
 
-   📊 Qingdao, CN — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
+## 📏 P5-P95 Range & Accuracy
 
-   📊 Manila, PH — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
+| Range Size | Positions | Record | Win Rate |
+|---|---|---|---|
+| Smal (<2°C) | 0 | 0W/0L | N/A |
+| Medium (2-4°C) | 41 | 3W/38L | 7.3% |
+| Bred (>4°C) | 20 | 1W/19L | 5.0% |
 
-   📊 Helsinki, FI — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
+## 📊 Optimal Strategy by Confidence Level
 
-   📊 Tel Aviv, IL — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
+| Tier | 🎯 Sigma | 🛡️ P5 | 📊 Mean | 🏆 Best |
+|---|---|---|---|---|
+| 🟢 >80% | 0.0% | 0.0% | 66.7% | **Mean (66.7%)** |
+| 🟠 70-80% | 14.3% | 14.3% | 42.9% | **Mean (42.9%)** |
+| 🟡 60-70% | 0.0% | 0.0% | 55.6% | **Mean (55.6%)** |
+| 🔴 50-60% | 4.5% | 0.0% | 68.2% | **Mean (68.2%)** |
+| 🔴 <50% | 10.0% | 5.0% | 35.0% | **Mean (35.0%)** |
 
-   📊 Austin, US — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
+## 📈 Cumulative Edge Tracker
 
-   📊 Beijing, CN — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
+*Simulates betting $100 on each sigma-recommended position. Wins return $139 (odds ~1.39).*
 
-   📊 Shanghai, CN — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
+| Date | Sigma Record | Daily Edge | Cumulative |
+|---|---|---|---|
+| 2026-08-11 | 4W/47L | -4544 units | -4544 units |
+| 2026-08-12 | 0W/4L | -400 units | -4944 units |
+| 2026-08-13 | 0W/3L | -300 units | -5244 units |
 
-   📊 Sao Paulo, BR — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
-
-   📊 Seattle, US — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
-
-   📊 Shenzhen, CN — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
-
-   📊 Wellington, NZ — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
-
-   📊 Hong Kong, HK — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
-
-   📊 Paris, FR — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
-
-   📊 Amsterdam, NL — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
-
-   📊 Busan, KR — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
-
-   📊 Karachi, PK — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
-
-   📊 Milan, IT — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
-
-   📊 Toronto, CA — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
-
-   📊 Miami, US — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
-
-   📊 Jinan, CN — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
-
-   📊 Houston, US — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
-
-   📊 Taipei, TW — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
-
-   📊 Tokyo, JP — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
-
-   📊 Warsaw, PL — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
-
-   📊 Istanbul, TR — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
-
-   📊 Kuala Lumpur, MY — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
-
-   📊 Lucknow, IN — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
-
-   📊 Panama City, PA — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
-
-   📊 Chongqing, CN — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
-
-   📊 Wuhan, CN — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
-
-   📊 Cape Town, ZA — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
-
-   📊 Mexico City, MX — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
-
-   📊 Chengdu, CN — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
-
-   📊 Los Angeles, US — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
-
-   📊 Jeddah, SA — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
-
-   📊 Atlanta, US — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
-
-   📊 Chicago, US — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
-
-   📊 San Francisco, US — Strategi-analyse (1 resolved trades)
-      Mean:  1W/0L = 100.0%
-
-   📊 Seoul (Incheon), KR — Strategi-analyse (1 resolved trades)
-      Mean:  0W/1L = 0.0%
+## 💰 Arbitrage Stats
+
+| Action | Wins | Losses | Win Rate |
+|--------|------|--------|----------|
+| 🔴 SHORT | 7 | 0 | 100.0% |
+| 🟢 BUY   | 0 | 0 | 0.0% |
+| **Total** | **7** | **0** | **100.0%** |
+
+## 🌍 Region Performance
+
+| Region | Positions | Record | Win Rate |
+|---|---|---|---|
+| Americas | 20 | 2W/18L | 10.0% |
+| Europe | 17 | 1W/16L | 5.9% |
+| Asia | 22 | 1W/21L | 4.5% |
+| Oceania | 1 | 0W/1L | 0.0% |
+| Africa | 1 | 0W/1L | 0.0% |
+
+## 🏙️ UHI Adjustment Accuracy
+
+| UHI Category | Count | Avg BMA Error |
+|---|---|---|
+| High UHI cities (≥1.0°C) | 32 | 0.58°C |
+| Low UHI cities (≤0.5°C) | 17 | 0.78°C |
 
 ════════════════════════════════════════════════════════════
+📊 EDGE IMPACT ANALYSIS — Real vs Imagined
+════════════════════════════════════════════════════════════
+
+📏 SPREAD FILTERING:
+   Medium (2-4°C)       3W/38L = 7.3%
+   Wide (>4°C)          1W/19L = 5.0%
+
+🎯 DYNAMIC k:
+   With dynamic k (k>0.5):      3W/48L = 5.9%
+   Conservative k (≤0.5):       1W/9L = 10.0%
+   Impact: -4.1% → 🔴 IMAGINED / NOISE
+
+🏙️ UHI ADJUSTMENT:
+   UHI adjusted (≥0.5°C):       2W/42L = 4.5%
+   No UHI (<0.5°C):             2W/15L = 11.8%
+   Impact: -7.3% → 🔴 IMAGINED / NOISE
+
+🏆 BEST FEATURE COMBOS
+────────────────────────────────────────
+   Weights + UHI                       16.7% (1W/5L)
+   Weights + Dynamic k                 15.4% (2W/11L)
+   Weights + Dynamic k + UHI           2.6% (1W/37L)
+   Weights                             0.0% (0W/4L)
