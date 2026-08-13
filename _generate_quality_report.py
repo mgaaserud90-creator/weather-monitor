@@ -157,28 +157,90 @@ def _collect_mean_pm_winners(runs: list) -> dict[str, list]:
     return by_date
 
 
-def _build_mean_pm_winners_html(by_date: dict[str, list]) -> str:
-    """Render the mean(round)-vs-Polymarket winners as an HTML section."""
-    if not by_date:
+def _build_city_pm_scoreboard(runs: list) -> list[dict]:
+    """Build a cumulative per-city scoreboard: mean(round) vs Polymarket.
+
+    Aggregates every city's persisted ``pm_result`` across all runs. A WIN
+    earns 1 point; WIN+LOSS counts as a resolved bet. Sorted by points desc,
+    then win rate desc, then city name asc.
+    """
+    tally: dict[str, dict] = {}
+    for run in runs:
+        for city, pdata in run.get("predictions", {}).items():
+            mean = (pdata.get("strategies", {}) or {}).get("mean", {})
+            pm_result = mean.get("pm_result")
+            if pm_result not in ("WIN", "LOSS"):
+                continue
+            entry = tally.setdefault(city, {"wins": 0, "total_bets": 0})
+            entry["total_bets"] += 1
+            if pm_result == "WIN":
+                entry["wins"] += 1
+
+    scoreboard = []
+    for city, entry in tally.items():
+        total_bets = entry["total_bets"]
+        wins = entry["wins"]
+        scoreboard.append({
+            "city": city,
+            "points": wins,
+            "wins": wins,
+            "total_bets": total_bets,
+            "win_rate": round(wins / max(1, total_bets) * 100, 1),
+        })
+
+    scoreboard.sort(key=lambda d: (-d["points"], -d["win_rate"], d["city"]))
+    return scoreboard
+
+
+def _build_mean_pm_winners_html(scoreboard: list[dict]) -> str:
+    """Render the cumulative mean(round)-vs-Polymarket city leaderboard."""
+    if not scoreboard:
         return ""
-    total = sum(len(v) for v in by_date.values())
+    total_points = sum(d["points"] for d in scoreboard)
+    total_wins = sum(d["wins"] for d in scoreboard)
+    total_bets = sum(d["total_bets"] for d in scoreboard)
+    best_rate = max((d["win_rate"] for d in scoreboard), default=0.0)
+
     rows = ""
-    for d in sorted(by_date):
-        winners = by_date[d]
-        cities = " · ".join(w.get("city", "?") for w in winners)
-        rows += f"""
-      <div style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
-        <strong>{d}</strong> — {len(winners)} vinnere:<br/>
-        <span style="color: var(--green);">{cities}</span>
-      </div>"""
+    for i, d in enumerate(scoreboard, start=1):
+        rows += (
+            f'<tr><td>{i}</td><td><strong>{d["city"]}</strong></td>'
+            f'<td style="font-weight:600;">{d["points"]}</td>'
+            f'<td>{d["wins"]}</td><td>{d["total_bets"]}</td>'
+            f'<td>{d["win_rate"]}%</td></tr>'
+        )
+
     return f"""
    <div class="section">
-     <h2>🎯 MEAN(ROUND) vs POLYMARKET — VINNERBYER ({total} totalt)</h2>
+     <h2>🏆 CITY SCOREBOARD — Mean(round) vs Polymarket (kumulativ)</h2>
      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
-       Byer der mean(round)-strategien (int(round(bma_mean))) traff Polymarkets
-       faktiske resolusjon. US °F-buckets sjekkes mot sitt inklusive °C-område.
+       Kumulativ poengsum på tvers av alle dager: 1 poeng per WIN mot Polymarkets
+       faktiske resolusjon. Kun Mean-strategien vises.
      </p>
-     {rows}
+     <div class="card-grid">
+       <div class="card">
+         <div class="value" style="color: var(--green);">{total_points}</div>
+         <div class="label">Total Points (wins)</div>
+       </div>
+       <div class="card">
+         <div class="value" style="color: var(--blue);">{total_wins}</div>
+         <div class="label">Total Wins</div>
+       </div>
+       <div class="card">
+         <div class="value" style="color: var(--purple);">{total_bets}</div>
+         <div class="label">Total Bets</div>
+       </div>
+       <div class="card">
+         <div class="value" style="color: var(--orange);">{best_rate}%</div>
+         <div class="label">Best Win Rate</div>
+       </div>
+     </div>
+     <div style="max-height: 600px; overflow-y: auto;">
+     <table>
+       <thead><tr><th>#</th><th>City</th><th>Points</th><th>Wins</th><th>Total Bets</th><th>Win Rate</th></tr></thead>
+       <tbody>{rows}</tbody>
+     </table>
+     </div>
    </div>"""
 
 
@@ -191,7 +253,7 @@ def _generate_report() -> str:
     lines: list[str] = []
 
     lines.append("═" * 60)
-    lines.append("     MODELLKVALITET — KUMULATIV RAPPORT (3 STRATEGIER)")
+    lines.append("     MODELLKVALITET — KUMULATIV RAPPORT (MEAN-STRATEGI)")
     lines.append("═" * 60)
     lines.append("")
 
@@ -224,37 +286,30 @@ def _generate_report() -> str:
     lines.append(f"Totalt by-prediksjoner: {total_cities}")
     lines.append("")
 
-    lines.append("📊 PER-STRATEGI RESULTATER:")
-    lines.append(f"   🎯 Sigma (μ−kσ):  V:{sigma_wins} T:{sigma_losses}  "
-                 f"({round(sigma_wins/max(1,sigma_total)*100,1)}%)")
-    lines.append(f"   🛡️ P5-basert:      V:{p5_wins} T:{p5_losses}  "
-                 f"({round(p5_wins/max(1,p5_total)*100,1)}%)")
+    lines.append("📊 RESULTATER (MEAN-BASERT):")
     lines.append(f"   📊 Mean-basert:    V:{mean_wins} T:{mean_losses}  "
                  f"({round(mean_wins/max(1,mean_total)*100,1)}%)")
     lines.append("")
 
-    # Mean(round)-vs-Polymarket winners (per day).
-    mean_pm_by_date = _collect_mean_pm_winners(runs)
-    total_pm_wins = sum(len(v) for v in mean_pm_by_date.values())
-    lines.append("🎯 MEAN(ROUND) vs POLYMARKET — VINNERBYER:")
-    if total_pm_wins == 0:
-        lines.append("   Ingen vinnere registrert ennå.")
+    # Cumulative per-city scoreboard: Mean(round) vs Polymarket.
+    pm_scoreboard = _build_city_pm_scoreboard(runs)
+    total_pm_points = sum(d["points"] for d in pm_scoreboard)
+    total_pm_bets = sum(d["total_bets"] for d in pm_scoreboard)
+    lines.append("🏆 CITY SCOREBOARD — MEAN(ROUND) vs POLYMARKET (KUMULATIV):")
+    if not pm_scoreboard:
+        lines.append("   Ingen resolvede byer registrert ennå.")
     else:
-        for d in sorted(mean_pm_by_date):
-            winners = mean_pm_by_date[d]
-            city_names = ", ".join(w.get("city", "?") for w in winners)
-            lines.append(f"   {d}: {len(winners)} vinnere — {city_names}")
-        lines.append(f"   Totalt: {total_pm_wins} vinnere.")
+        lines.append(f"   {'#':>2s}  {'By':<28s} {'Poeng':>6s} {'V':>4s} {'Bets':>5s} {'Win%':>7s}")
+        for i, d in enumerate(pm_scoreboard, start=1):
+            lines.append(f"   {i:2d}. {d['city']:<28s} {d['points']:6d} "
+                         f"{d['wins']:4d} {d['total_bets']:5d} {d['win_rate']:6.1f}%")
+        lines.append(f"   Totalt: {total_pm_points} poeng / {total_pm_bets} resolvede spill "
+                     f"({round(total_pm_points/max(1,total_pm_bets)*100,1)}% win rate).")
     lines.append("")
 
-    # Best strategy
-    rates = {
-        "Sigma (μ−kσ)": round(sigma_wins / max(1, sigma_total) * 100, 1),
-        "P5-basert": round(p5_wins / max(1, p5_total) * 100, 1),
-        "Mean-basert": round(mean_wins / max(1, mean_total) * 100, 1),
-    }
-    best = max(rates, key=lambda k: rates[k])
-    lines.append(f"🏆 BESTE STRATEGI: {best} ({rates[best]}%)")
+    # Best strategy (mean-only presentation)
+    mean_rate_pct = round(mean_wins / max(1, mean_total) * 100, 1)
+    lines.append(f"🏆 BESTE STRATEGI: Mean-basert ({mean_rate_pct}%)")
     lines.append("")
 
     # Per-city stats across all strategies
@@ -416,69 +471,58 @@ def _build_resultant_monitor_lines(best_per_city: dict) -> list[str]:
     if not best_per_city:
         return lines
 
-    sigma_cities = [c for c, d in best_per_city.items() if d["best"] == "sigma"]
     mean_cities = [c for c, d in best_per_city.items() if d["best"] == "mean"]
-    p5_cities = [c for c, d in best_per_city.items() if d["best"] == "p5"]
 
     total_with_data = len(best_per_city)
 
-    # Calculate samplet edge if all followed recommended
+    # Sampled edge for the mean strategy (the only strategy shown).
     total_wins = 0
     total_positions = 0
     for city, d in best_per_city.items():
         if d["total_resolved"] > 0:
-            best_key = d["best"]
-            # Parse W/L for the best strategy
-            wl_str = d.get(f"{best_key}_wl", "0W/0L")
-            parts = wl_str.split("W/")
-            wins = int(parts[0]) if parts else 0
+            wl_str = d.get("mean_wl", "0W/0L")
+            parts = wl_str.replace("W/", " ").replace("L", "").split()
+            try:
+                wins = int(parts[0]) if parts else 0
+                losses = int(parts[1]) if len(parts) > 1 else 0
+            except ValueError:
+                wins, losses = 0, 0
             total_wins += wins
-            total_positions += d["total_resolved"]
+            total_positions += wins + losses
     edge = round(total_wins / max(1, total_positions) * 100, 1) if total_positions > 0 else 0
 
     lines.append("═" * 60)
-    lines.append("     🎯 RESULTANT MONITOR — Per-City Optimal Strategy")
+    lines.append("     🎯 RESULTANT MONITOR — Mean-Strategy (Per City)")
     lines.append("═" * 60)
     lines.append("")
 
-    sigma_pct = round(len(sigma_cities) / max(1, total_with_data) * 100, 1)
     mean_pct = round(len(mean_cities) / max(1, total_with_data) * 100, 1)
-    p5_pct = round(len(p5_cities) / max(1, total_with_data) * 100, 1)
 
-    lines.append(f"Byer med Sigma som best:   {len(sigma_cities):3d} ({sigma_pct}%)")
     lines.append(f"Byer med Mean som best:    {len(mean_cities):3d} ({mean_pct}%)")
-    lines.append(f"Byer med P5 som best:      {len(p5_cities):3d} ({p5_pct}%)")
     lines.append("")
-    lines.append(f"Samlet edge (hvis alle fulgte anbefalt): {edge}%")
+    lines.append(f"Samlet edge (Mean, hvis alle fulgte anbefalt): {edge}%")
     lines.append("")
 
-    # Top 10 cities with their recommended strategy (only resolved cities)
+    # Top 10 cities by mean win rate (only resolved cities)
     cities_with_data = [(c, d) for c, d in best_per_city.items() if d["total_resolved"] > 0]
-    sorted_cities = sorted(cities_with_data, key=lambda kv: kv[1][f"{kv[1]['best']}_rate"], reverse=True)
-    lines.append("🏆 TOP 10 PER CITY:")
+    sorted_cities = sorted(cities_with_data, key=lambda kv: kv[1]["mean_rate"], reverse=True)
+    lines.append("🏆 TOP 10 PER CITY (MEAN):")
     if sorted_cities:
         for i, (city, d) in enumerate(sorted_cities[:10]):
-            best_name = {"sigma": "Sigma", "p5": "P5", "mean": "Mean"}.get(d["best"], d["best"])
-            rate = d[f"{d['best']}_rate"]
-            lines.append(f"   {i+1:2d}. {city:<30s} → {best_name} ({rate}%) [{d['total_resolved']} resolved]")
+            lines.append(f"   {i+1:2d}. {city:<30s} → Mean ({d['mean_rate']}%) [{d['total_resolved']} resolved]")
     else:
         lines.append("   (ingen løste data ennå)")
     lines.append("")
 
-    # Per-city detailed breakdown
+    # Per-city detailed breakdown (mean-only)
     lines.append("─" * 60)
     lines.append("📊 PER-CITY STRATEGI-ANALYSE:")
     lines.append("─" * 60)
     for city, d in sorted(best_per_city.items(), key=lambda kv: kv[1]["total_resolved"], reverse=True):
         if d["total_resolved"] == 0:
             continue
-        sigma_mark = " ← ANBEFALT" if d["best"] == "sigma" else ""
-        p5_mark = " ← ANBEFALT" if d["best"] == "p5" else ""
-        mean_mark = " ← ANBEFALT" if d["best"] == "mean" else ""
         lines.append(f"   📊 {city} — Strategi-analyse ({d['total_resolved']} resolved trades)")
-        lines.append(f"      Sigma: {d['sigma_wl']} = {d['sigma_rate']}%{sigma_mark}")
-        lines.append(f"      P5:    {d['p5_wl']} = {d['p5_rate']}%{p5_mark}")
-        lines.append(f"      Mean:  {d['mean_wl']} = {d['mean_rate']}%{mean_mark}")
+        lines.append(f"      Mean:  {d['mean_wl']} = {d['mean_rate']}%")
         lines.append("")
     return lines
 
@@ -560,17 +604,9 @@ def _build_strat_rec_html_section(best_per_city: dict) -> str:
         Basert på historisk resolved data. Hver by får den strategien med høyest win rate.
       </p>
       <div class="card-grid" style="margin-bottom: 20px;">
-        <div class="card" style="{'border: 2px solid #3fb950;' if sigma_cities else ''}">
-          <div class="value" style="color: #3fb950;">{len(sigma_cities)}</div>
-          <div class="label">🎯 Sigma ({sigma_pct}%)</div>
-        </div>
         <div class="card" style="{'border: 2px solid #d2991d;' if mean_cities else ''}">
           <div class="value" style="color: #d2991d;">{len(mean_cities)}</div>
           <div class="label">📊 Mean ({mean_pct}%)</div>
-        </div>
-        <div class="card" style="{'border: 2px solid #58a6ff;' if p5_cities else ''}">
-          <div class="value" style="color: #58a6ff;">{len(p5_cities)}</div>
-          <div class="label">🛡️ P5 ({p5_pct}%)</div>
         </div>
         <div class="card">
           <div class="value" style="color: var(--purple);">{edge}%</div>
@@ -775,13 +811,8 @@ def _build_strategy_summary_cards(
     p5_wins: int, p5_losses: int,
     mean_wins: int, mean_losses: int,
 ) -> str:
-    """Build summary card grid for per-strategy performance."""
-    sigma_total = sigma_wins + sigma_losses
-    p5_total = p5_wins + p5_losses
+    """Build summary card grid for the mean strategy (mean-only presentation)."""
     mean_total = mean_wins + mean_losses
-
-    sigma_rate = round(sigma_wins / max(1, sigma_total) * 100, 1)
-    p5_rate = round(p5_wins / max(1, p5_total) * 100, 1)
     mean_rate = round(mean_wins / max(1, mean_total) * 100, 1)
 
     def _rate_color(r):
@@ -791,28 +822,11 @@ def _build_strategy_summary_cards(
             return "#d2991d"
         return "#f85149"
 
-    # Determine best strategy
-    rates = {"sigma": sigma_rate, "p5": p5_rate, "mean": mean_rate}
-    best_key = max(rates, key=lambda k: rates[k])
-    best_names = {"sigma": "Sigma (μ−kσ)", "p5": "P5-Basert", "mean": "Mean-Basert"}
-
     return f"""
    <div class="card-grid">
-     <div class="card" style="{'border: 2px solid #3fb950;' if best_key == 'sigma' else ''}">
-       <div class="value" style="color: {_rate_color(sigma_rate)};">{sigma_rate}%</div>
-       <div class="label">🎯 Sigma (μ−kσ)<br/>{sigma_wins}W / {sigma_losses}L</div>
-     </div>
-     <div class="card" style="{'border: 2px solid #3fb950;' if best_key == 'p5' else ''}">
-       <div class="value" style="color: {_rate_color(p5_rate)};">{p5_rate}%</div>
-       <div class="label">🛡️ P5-Basert<br/>{p5_wins}W / {p5_losses}L</div>
-     </div>
-     <div class="card" style="{'border: 2px solid #3fb950;' if best_key == 'mean' else ''}">
+     <div class="card">
        <div class="value" style="color: {_rate_color(mean_rate)};">{mean_rate}%</div>
        <div class="label">📊 Mean-Basert<br/>{mean_wins}W / {mean_losses}L</div>
-     </div>
-     <div class="card">
-       <div class="value" style="color: var(--purple);">🏆 {best_names.get(best_key, '—')}</div>
-       <div class="label">Best Strategy</div>
      </div>
    </div>"""
 
@@ -2447,7 +2461,7 @@ def _generate_html_report() -> str:
     sigma_total = sigma_wins + sigma_losses
     p5_total = p5_wins + p5_losses
     mean_total = mean_wins + mean_losses
-    overall_total = sigma_total  # We use sigma as the primary metric
+    overall_total = mean_total  # Mean is the only strategy shown
 
     # Count unique dates
     unique_dates = set()
@@ -2550,6 +2564,7 @@ def _generate_html_report() -> str:
     <div class="section">
       <h2>📅 TOP 5 — I DAG ({target_date})</h2>
       <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        Siste dags prediksjoner (ikke kumulativ) — kumulativ scoreboard vises øverst.
         All 3 strategies shown: 🎯 Sigma (μ−kσ, dynamic k), 🛡️ P5-Basert (ultra-conservative), 📊 Mean-Basert (50/50)
       </p>
       <div style="overflow-x: auto;">
@@ -2637,13 +2652,13 @@ def _generate_html_report() -> str:
         sigma_wins, sigma_losses, p5_wins, p5_losses, mean_wins, mean_losses
     )
 
-    # Mean(round)-vs-Polymarket winners section
-    mean_pm_section = _build_mean_pm_winners_html(_collect_mean_pm_winners(runs))
+    # Cumulative per-city scoreboard: Mean(round) vs Polymarket
+    mean_pm_section = _build_mean_pm_winners_html(_build_city_pm_scoreboard(runs))
 
-    # Overall win rate uses sigma strategy
-    overall_win_rate = round(sigma_wins / max(1, sigma_total) * 100, 1)
+    # Overall win rate uses the mean strategy (mean-only presentation)
+    overall_win_rate = round(mean_wins / max(1, mean_total) * 100, 1)
     win_color = "#4CAF50" if overall_win_rate >= 55 else ("#FF9800" if overall_win_rate >= 45 else "#F44336")
-    if sigma_total == 0:
+    if mean_total == 0:
         win_color = "#8b949e"
 
     deploy_time_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -2956,11 +2971,11 @@ function sortTable(colIdx) {{
     </div>
     <div class="card">
       <div class="value" style="color: var(--purple);">{overall_total}</div>
-      <div class="label">Total Resolved (Sigma)</div>
+      <div class="label">Total Resolved (Mean)</div>
     </div>
     <div class="card">
       <div class="value" style="color: {win_color};">{overall_win_rate}%</div>
-      <div class="label">Overall Win Rate (Sigma)</div>
+      <div class="label">Overall Win Rate (Mean)</div>
     </div>
     <div class="card">
       <div class="value" style="color: var(--text);">{avg_conf_w:.3f} / {avg_conf_l:.3f}</div>

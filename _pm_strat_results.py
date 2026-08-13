@@ -47,10 +47,7 @@ preds = latest.get("predictions", {})
 def best_spill(pdata):
     s = pdata.get("strategies", {})
     m = s.get("mean", {}).get("spill")
-    if m is not None:
-        return m, "mean"
-    sig = s.get("sigma", {}).get("spill")
-    return sig, "sigma"
+    return m, "mean"
 
 
 def market_label(info):
@@ -84,6 +81,12 @@ for city in sorted(preds):
     sigma = pdata.get("strategies", {}).get("sigma", {})
     our_peak = sigma.get("actual_peak")
     spill, strat = best_spill(pdata)
+
+    if spill is None:
+        # Mean strategy has no spill for this city — surface it as NA.
+        na_count += 1
+        na_cities.append(city)
+        continue
 
     if our_peak is None:
         # Market exists but the model produced no resolved peak.
