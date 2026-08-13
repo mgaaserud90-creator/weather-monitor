@@ -1,12 +1,20 @@
 name: Fetch Market Prices
 
-# Fetches Polymarket temperature market prices every 5 minutes.
-# Uses Polymarket CLOB + Gamma APIs (separate from Open-Meteo, no rate conflict).
-# Output: _market_prices.json
+# Base cadence: every 5 minutes — the maximum cron granularity on
+# GitHub-hosted runners ('*/5 * * * *').
+#
+# The optimized `_fetch_market_prices.py` (tag-slug primary + one fallback)
+# typically finishes in well under 1 minute, so a 4-minute timeout gives the
+# job ample headroom while still guaranteeing it is killed before the next
+# cron trigger. Sub-5-minute price updates are handled by the separate
+# `fetch_market_prices_rapid.yml` workflow (see that file); this workflow
+# remains the baseline/fallback cadence.
+#
+# Output: _market_prices.json (each commit re-triggers the Pages deploy).
 
 on:
   schedule:
-    - cron: '*/5 * * * *'     # Every 5 minutes
+    - cron: '*/5 * * * *'     # Every 5 minutes (cron max)
   workflow_dispatch:
 
 permissions:
@@ -19,10 +27,12 @@ concurrency:
 jobs:
   fetch:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 4
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -41,6 +51,9 @@ jobs:
           else
             echo "WARNING: _market_prices.json not generated (API may be rate-limited)"
           fi
+
+      - name: Sync before commit
+        run: git pull --rebase --autostash origin main || echo "pull failed (continuing)"
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
