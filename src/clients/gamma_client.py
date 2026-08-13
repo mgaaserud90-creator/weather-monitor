@@ -72,12 +72,60 @@ class GammaClient:
         limit: int = 500,
         offset: int = 0,
         active: bool = True,
+        closed: bool | None = None,
+        tag_slug: str | None = None,
     ) -> list[dict[str, Any]]:
-        """Fetch events from Gamma API."""
+        """Fetch events from Gamma API.
+
+        Args:
+            limit: Page size.
+            offset: Pagination offset.
+            active: Only active events (``active=true``).
+            closed: Explicitly include (``True`` → ``closed=true``) or
+                exclude (``False`` → ``closed=false``) closed events.
+                ``None`` omits the parameter entirely.
+            tag_slug: Filter by a tag slug (e.g. ``daily-temperature``).
+        """
         params: dict[str, Any] = {"limit": limit, "offset": offset}
         if active:
             params["active"] = "true"
+        if closed is not None:
+            params["closed"] = "true" if closed else "false"
+        if tag_slug:
+            params["tag_slug"] = tag_slug
         return await self._get("/events", params)
+
+    async def get_all_events_by_tag_slug(
+        self,
+        tag_slug: str,
+        page_size: int = 100,
+        max_pages: int = 10,
+        active: bool = True,
+        closed: bool = False,
+    ) -> list[dict[str, Any]]:
+        """Fetch ALL events for a tag slug using full pagination.
+
+        Loops ``limit=page_size`` with ``offset=0, page_size, ...`` until an
+        empty or partial page is returned, with a hard cap at ``max_pages``
+        to protect against runaway pagination.
+        """
+        events: list[dict[str, Any]] = []
+        offset = 0
+        for _ in range(max_pages):
+            batch = await self.get_events(
+                limit=page_size,
+                offset=offset,
+                active=active,
+                closed=closed,
+                tag_slug=tag_slug,
+            )
+            if not batch:
+                break
+            events.extend(batch)
+            if len(batch) < page_size:
+                break
+            offset += page_size
+        return events
 
     async def get_event(self, event_id: str) -> dict[str, Any]:
         """Fetch a single event by ID."""

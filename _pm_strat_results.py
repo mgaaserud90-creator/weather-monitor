@@ -52,15 +52,18 @@ for city in sorted(preds):
     pdata = preds[city]
     cb = city.split(",")[0].strip()
     pt = pm.get((city, target_date)) or pm.get((cb, target_date))
+    if pt is None:
+        # City has no resolved market for target_date — omit from the table.
+        na_count += 1
+        continue
+
     sigma = pdata.get("strategies", {}).get("sigma", {})
     our_peak = sigma.get("actual_peak")
     spill, strat = best_spill(pdata)
 
-    if pt is None or our_peak is None:
-        # No resolution yet — show NA
+    if our_peak is None:
+        # Market exists but the model produced no resolved peak — omit.
         na_count += 1
-        our_str = f"{round(our_peak)}C" if our_peak is not None else "—"
-        rows += f"<tr><td>{city}</td><td>{our_str}</td><td>NA</td><td>—</td><td>{spill or '—'}C ({strat})</td><td style='color:var(--text-dim);'>NA</td></tr>\n"
         continue
 
     our_round = round(our_peak)

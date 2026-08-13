@@ -12,13 +12,15 @@ IMPORTANT FINDINGS:
 - The CLOB API (clob.polymarket.com) does NOT support tag/category filtering.
 - The Gamma API (gamma-api.polymarket.com) `tag` parameter is ignored for
   non-standard tags like "temperature" or "weather".
-- Therefore, the crawler fetches all available markets from the public
-  CLOB API and filters by temperature-related keywords client-side.
+- The CORRECT discovery path is the Gamma EVENTS endpoint with a tag slug:
+  GET https://gamma-api.polymarket.com/events?tag_slug=daily-temperature&...
+  Each event's nested ``markets[]`` contains the real individual markets.
 
 Strategies (tried in order):
+  0. Gamma /events?tag_slug=daily-temperature (nested markets) — PRIMARY
   1. __NEXT_DATA__ embedded JSON (Next.js SSR) — NOT PRESENT on this page
   2. Inline script state (window.__INITIAL_STATE__ etc.) — NOT PRESENT
-  3. CLOB API + client-side keyword filter — PRIMARY STRATEGY
+  3. CLOB API + client-side keyword filter — FALLBACK
   4. Gamma API + client-side keyword filter — SECONDARY FALLBACK
   5. Regex brute-force JSON from HTML — LAST RESORT
 
@@ -37,7 +39,7 @@ import json
 import re
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
@@ -353,6 +355,128 @@ def strategy_gamma_api() -> Optional[list[dict]]:
         return temp_markets
 
     print("  [FAIL] No temperature markets in Gamma API results")
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Strategy 0: Gamma /events?tag_slug=daily-temperature (nested markets)
+# ---------------------------------------------------------------------------
+
+
+def _as_list(value: Any) -> list:
+    """Return ``value`` as a native list.
+
+    The Gamma /events nested-market schema returns ``outcomes``,
+    ``outcomePrices`` and ``clobTokenIds`` as JSON-encoded strings rather
+    than native arrays.
+    """
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    if isinstance(value, str):
+        try:
+            parsed = json.loads(value)
+            return parsed if isinstance(parsed, list) else []
+        except (json.JSONDecodeError, ValueError):
+            return []
+    return []
+
+
+def _today_highest_temp_tokens(today: date | None = None) -> list[str]:
+    """Build date-match tokens for "today" (slug and title spellings)."""
+    d = today or date.today()
+    month_full = d.strftime("%B").lower()  # "august"
+    month_abbr = d.strftime("%b").lower()  # "aug"
+    return [
+        f"on-{month_full}-{d.day}-{d.year}",
+        f"on-{month_abbr}-{d.day}-{d.year}",
+        f"on {month_full} {d.day}",
+        f"on {month_abbr} {d.day}",
+        f"{month_full} {d.day}, {d.year}",
+        f"{month_abbr} {d.day}, {d.year}",
+        f"{month_full} {d.day}",
+        f"{month_abbr} {d.day}",
+    ]
+
+
+def _is_today_highest_temperature_event(slug: str, title: str) -> bool:
+    """Match today's "Highest temperature" events by slug/title + date token."""
+    text = f"{slug or ''} {title or ''}".lower()
+    if "highest-temperature" not in text and "highest temperature" not in text:
+        return False
+    return any(token in text for token in _today_highest_temp_tokens())
+
+
+def strategy_gamma_tag_events() -> Optional[list[dict]]:
+    """
+    Primary strategy: fetch ALL events with ``tag_slug=daily-temperature``
+    from the Gamma /events endpoint, filter to today's "Highest temperature"
+    events, and flatten each event's nested ``markets[]`` into standardized
+    market dicts.
+    """
+    print("\n[Strategy 0] Trying Gamma /events?tag_slug=daily-temperature ...")
+
+    all_events: list[dict] = []
+    offset = 0
+    max_pages = 2  # known-good: 100 + 44 = 144 daily-temperature events
+
+    for _ in range(max_pages):
+        url = (
+            "https://gamma-api.polymarket.com/events"
+            f"?tag_slug=daily-temperature&active=true&closed=false&limit=100&offset={offset}"
+        )
+        data = fetch_api_json(url)
+        if data is None:
+            print(f"  [FAIL] Gamma events request failed (offset={offset})")
+            break
+
+        events = data if isinstance(data, list) else data.get("data", [])
+        if not events:
+            break
+
+        all_events.extend(events)
+        print(f"  offset={offset}: {len(events)} events (total {len(all_events)})")
+        if len(events) < 100:
+            break
+        offset += 100
+
+    if not all_events:
+        print("  [FAIL] No events returned by the tag-slug endpoint")
+        return None
+
+    print(f"  Total daily-temperature events: {len(all_events)}")
+
+    today_events = [
+        ev for ev in all_events
+        if _is_today_highest_temperature_event(
+            ev.get("slug", "") or "", ev.get("title", "") or ""
+        )
+    ]
+
+    if not today_events:
+        print("  [FAIL] No 'Highest temperature' events found for today")
+        return None
+
+    print(f"  Today's 'Highest temperature' events: {len(today_events)}")
+
+    markets: list[dict] = []
+    for ev in today_events:
+        for m in ev.get("markets", []):
+            # Normalize JSON-string arrays before standardizing
+            normalized = dict(m)
+            normalized["outcomes"] = _as_list(m.get("outcomes"))
+            normalized["outcomePrices"] = _as_list(m.get("outcomePrices"))
+            normalized["clobTokenIds"] = _as_list(m.get("clobTokenIds"))
+            parsed = _standardize_market(normalized)
+            if parsed:
+                markets.append(parsed)
+
+    if markets:
+        print(f"  [OK] Found {len(markets)} individual markets via tag-slug events")
+        return markets
+
+    print("  [FAIL] No individual markets found via tag-slug events")
     return None
 
 
@@ -680,6 +804,7 @@ def crawl() -> list[dict]:
 
     # --- Run strategies sequentially ---
     strategies: list[tuple[str, Any]] = [
+        ("Gamma /events?tag_slug=daily-temperature (Strategy 0)", strategy_gamma_tag_events),
         ("__NEXT_DATA__ (Strategy 1)", lambda: strategy_next_data(html) if html else None),
         ("Inline Script JSON (Strategy 2)", lambda: strategy_inline_scripts(html) if html else None),
         ("CLOB API + keyword filter (Strategy 3)", strategy_clob_api),

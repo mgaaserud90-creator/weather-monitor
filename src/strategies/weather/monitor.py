@@ -18,12 +18,19 @@ import structlog
 
 from src.clients.gamma_client import GammaClient, get_gamma_client
 from src.config.constants import (
+    WEATHER_EVENTS_MAX_PAGES,
+    WEATHER_EVENTS_PAGE_SIZE,
     WEATHER_MARKET_PAGE_SIZE,
     WEATHER_MARKET_SCAN_MAX,
     WEATHER_MIN_LIQUIDITY,
+    WEATHER_TAG_SLUG,
 )
 from src.config.loader import get_config
 from src.event_bus import get_event_bus
+from src.strategies.weather.discovery import (
+    is_today_highest_temperature_event,
+    local_today,
+)
 from src.strategies.weather.market_parser import (
     TemperatureBucket,
     WeatherMarket,
@@ -143,24 +150,26 @@ class WeatherMarketMonitor:
 
     async def _scan_for_new_markets(self) -> list[WeatherMarket]:
         """
-        Scan Gamma API for new weather-related markets.
+        Discover today's "Highest temperature" weather markets.
 
-        Strategy (dual-endpoint):
-        1. /markets — paginate ordered by ``liquidityNum`` descending so the
-           highest-liquidity markets are scanned first. Weather markets are a
-           tiny niche and never appear in the default first 100, so we scan up
-           to ``scan_max_markets`` across pages of ``scan_page_size``.
-           ``tag``/``search`` are NOT honored by the live Gamma API, so we rely
-           on pagination + client-side keyword + liquidity filtering.
-        2. Fall back to /events (nested markets) if /markets yields nothing.
-        3. Only generate synthetic test data in dev/paper mode.
+        Primary path (tag-slug events):
+        1. Fetch ALL events with ``tag_slug=daily-temperature`` (fully
+           paginated) from the Gamma ``/events`` endpoint.
+        2. Filter to today's "Highest temperature" events by matching the
+           event slug/title with ``highest-temperature`` AND today's date
+           token (e.g. ``on-august-12-2026``).
+        3. Flatten each event's nested ``markets[]`` (11 markets/event) into
+           ``WeatherMarket`` objects.
+
+        Fallback (only when the primary path finds nothing): the legacy
+        liquidity-ordered ``/markets`` scan. Synthetic test data is only used
+        in dev/paper mode when nothing is found.
         """
         markets: list[WeatherMarket] = []
 
         if self._gamma is None:
             logger.info("no_gamma_client_skipping_api_scan")
-            markets = self._generate_test_markets()
-            return markets
+            return self._generate_test_markets()
 
         app_config = get_config()
         weather_cfg = app_config.strategy_weather
@@ -168,200 +177,172 @@ class WeatherMarketMonitor:
         scan_max = int(getattr(weather_cfg, "scan_max_markets", WEATHER_MARKET_SCAN_MAX))
         page_size = int(getattr(weather_cfg, "scan_page_size", WEATHER_MARKET_PAGE_SIZE))
 
+        today = local_today()
+
         # =====================================================================
-        # Pass 1: /markets endpoint — paginate ordered by liquidityNum desc
+        # Primary: /events?tag_slug=daily-temperature (nested markets)
         # =====================================================================
         try:
-            offset = 0
-            total_scanned = 0
-            while total_scanned < scan_max:
-                batch = await self._gamma.get_markets(
-                    limit=page_size,
-                    offset=offset,
-                    active=True,
-                    order="liquidityNum",
-                    ascending=False,
+            events = await self._gamma.get_all_events_by_tag_slug(
+                tag_slug=WEATHER_TAG_SLUG,
+                page_size=WEATHER_EVENTS_PAGE_SIZE,
+                max_pages=WEATHER_EVENTS_MAX_PAGES,
+            )
+            logger.info(
+                "gamma_daily_temperature_events_fetched",
+                count=len(events),
+                tag_slug=WEATHER_TAG_SLUG,
+            )
+
+            today_events = [
+                event
+                for event in events
+                if is_today_highest_temperature_event(
+                    event.get("slug", "") or "",
+                    event.get("title", "") or "",
+                    today=today,
                 )
-                if not batch:
-                    break
+            ]
 
-                logger.info(
-                    "gamma_markets_fetched",
-                    count=len(batch),
-                    offset=offset,
-                )
+            event_market_counts: dict[str, int] = {}
+            for event in today_events:
+                event_id = str(event.get("id", ""))
+                title = event.get("title", "") or ""
+                nested = event.get("markets", [])
+                event_market_counts[title] = len(nested)
 
-                for m in batch:
-                    question = (m.get("question", "") or "")
-                    description = (m.get("description", "") or "")
-                    combined = (question + " " + description).lower()
+                for market_data in nested:
+                    market_id = str(market_data.get("id", ""))
+                    question = market_data.get("question", "") or title
 
-                    if not self._is_weather_event(combined):
-                        continue
-
-                    market_id = str(m.get("id", ""))
                     if market_id in self._known_markets or market_id in self._resolved_markets:
                         continue
 
-                    # Liquidity filter (liquidityNum is numeric on /markets)
-                    liquidity = self._safe_float(m.get("liquidityNum"))
-                    if liquidity is not None and liquidity < min_liquidity:
-                        logger.debug(
-                            "weather_market_below_min_liquidity",
-                            market_id=market_id,
-                            liquidity=liquidity,
-                            min_liquidity=min_liquidity,
-                        )
-                        continue
-
-                    logger.info(
-                        "new_weather_market_via_markets",
+                    parsed = self._parse_market_data(
+                        event_id=event_id,
                         market_id=market_id,
-                        question=question[:100],
-                        liquidity=liquidity,
+                        question=question,
+                        market_data=market_data,
                     )
-
-                    # Parse into WeatherMarket (pass outcomes for bucket derivation)
-                    outcomes = self._parse_json_array(m.get("outcomes"))
-                    parsed = self._parser.parse_question(question, outcomes=outcomes)
                     if parsed is None:
                         logger.debug("weather_parse_skipped", question=question[:80])
                         continue
 
-                    parsed.market_id = market_id
-
-                    # Map token IDs from clobTokenIds (JSON string array).
-                    # NOTE: /markets ALWAYS returns tokens:[]; real token IDs
-                    # live in clobTokenIds / outcomes / outcomePrices.
-                    clob_ids = self._parse_json_array(m.get("clobTokenIds"))
-                    parsed.token_ids = [str(t) for t in clob_ids]
-                    for i, bucket in enumerate(parsed.buckets):
-                        if i < len(clob_ids):
-                            bucket.token_id = str(clob_ids[i])
+                    logger.info(
+                        "new_weather_market_via_tag_events",
+                        event_id=event_id,
+                        market_id=market_id,
+                        question=question[:100],
+                    )
 
                     markets.append(parsed)
-
-                    self._known_markets[market_id] = {
-                        "event_id": "",
-                        "question": question,
-                        "market_data": m,
-                        "liquidity": liquidity,
-                        "best_bid": self._safe_float(m.get("bestBid")),
-                        "best_ask": self._safe_float(m.get("bestAsk")),
-                        "last_trade_price": self._safe_float(m.get("lastTradePrice")),
-                        "volume_24h": self._safe_float(m.get("volume24hr")),
-                        "discovered_at": datetime.now(timezone.utc),
-                        "parsed_market": parsed,
-                    }
-
-                    # Emit to event bus
-                    await self._event_bus.emit_gamma_market_new({
-                        "event_id": "",
-                        "market_id": market_id,
-                        "question": question,
-                        "category": "weather",
-                    })
-
-                    # Evaluate immediately
-                    await self._evaluate_market(market_id)
-
-                total_scanned += len(batch)
-                if len(batch) < page_size:
-                    break
-                offset += page_size
+                    await self._register_and_evaluate(
+                        event_id=event_id,
+                        market_id=market_id,
+                        question=question,
+                        market_data=market_data,
+                        parsed=parsed,
+                    )
 
             logger.info(
-                "gamma_markets_scan_complete",
-                total_scanned=total_scanned,
-                weather_found=len(markets),
+                "daily_temperature_discovery_complete",
+                highest_temperature_events=len(today_events),
+                individual_markets=sum(event_market_counts.values()),
+                new_markets=len(markets),
+                event_titles=list(event_market_counts.keys()),
+                event_market_counts=event_market_counts,
             )
 
         except Exception as exc:
-            logger.error("scan_markets_failed", error=str(exc))
+            logger.error("scan_daily_temperature_events_failed", error=str(exc))
 
         # =====================================================================
-        # Pass 2: /events endpoint (nested markets) — only if /markets found nothing
+        # Fallback: /markets endpoint — paginate ordered by liquidityNum desc
+        # (only used if the tag-slug events path found nothing)
         # =====================================================================
         if not markets:
             try:
-                events = await self._gamma.get_events(limit=100, active=True)
-                logger.info("gamma_events_fetched_fallback", count=len(events))
+                offset = 0
+                total_scanned = 0
+                while total_scanned < scan_max:
+                    batch = await self._gamma.get_markets(
+                        limit=page_size,
+                        offset=offset,
+                        active=True,
+                        order="liquidityNum",
+                        ascending=False,
+                    )
+                    if not batch:
+                        break
 
-                for event in events:
-                    title = event.get("title", "") or ""
-                    description = event.get("description", "") or ""
-                    combined = (title + " " + description).lower()
+                    logger.info(
+                        "gamma_markets_fetched",
+                        count=len(batch),
+                        offset=offset,
+                    )
 
-                    if not self._is_weather_event(combined):
-                        continue
+                    for m in batch:
+                        question = (m.get("question", "") or "")
+                        description = (m.get("description", "") or "")
+                        combined = (question + " " + description).lower()
 
-                    event_id = str(event.get("id", ""))
-
-                    # Check if there are active markets within this event
-                    event_markets = event.get("markets", [])
-                    for market_data in event_markets:
-                        if not market_data.get("active", False):
+                        if not self._is_weather_event(combined):
                             continue
 
-                        market_id = str(market_data.get("id", ""))
-                        question = market_data.get("question", "") or title
-
+                        market_id = str(m.get("id", ""))
                         if market_id in self._known_markets or market_id in self._resolved_markets:
                             continue
 
+                        # Liquidity filter (liquidityNum is numeric on /markets)
+                        liquidity = self._safe_float(m.get("liquidityNum"))
+                        if liquidity is not None and liquidity < min_liquidity:
+                            logger.debug(
+                                "weather_market_below_min_liquidity",
+                                market_id=market_id,
+                                liquidity=liquidity,
+                                min_liquidity=min_liquidity,
+                            )
+                            continue
+
                         logger.info(
-                            "new_weather_market_via_events",
-                            event_id=event_id,
+                            "new_weather_market_via_markets",
                             market_id=market_id,
                             question=question[:100],
+                            liquidity=liquidity,
                         )
 
-                        # Parse into WeatherMarket (pass outcomes for buckets)
-                        outcomes = self._parse_json_array(market_data.get("outcomes"))
-                        parsed = self._parser.parse_question(question, outcomes=outcomes)
+                        parsed = self._parse_market_data(
+                            event_id="",
+                            market_id=market_id,
+                            question=question,
+                            market_data=m,
+                        )
                         if parsed is None:
                             logger.debug("weather_parse_skipped", question=question[:80])
                             continue
 
-                        parsed.event_id = event_id
-                        parsed.market_id = market_id
-
-                        # Map clobTokenIds for buckets (JSON string array; may
-                        # be None on the reduced /events schema).
-                        clob_ids = self._parse_json_array(market_data.get("clobTokenIds"))
-                        parsed.token_ids = [str(t) for t in clob_ids]
-                        for i, bucket in enumerate(parsed.buckets):
-                            if i < len(clob_ids):
-                                bucket.token_id = str(clob_ids[i])
-
                         markets.append(parsed)
+                        await self._register_and_evaluate(
+                            event_id="",
+                            market_id=market_id,
+                            question=question,
+                            market_data=m,
+                            parsed=parsed,
+                        )
 
-                        self._known_markets[market_id] = {
-                            "event_id": event_id,
-                            "question": question,
-                            "market_data": market_data,
-                            "liquidity": self._safe_float(market_data.get("liquidityNum")),
-                            "best_bid": self._safe_float(market_data.get("bestBid")),
-                            "best_ask": self._safe_float(market_data.get("bestAsk")),
-                            "last_trade_price": self._safe_float(market_data.get("lastTradePrice")),
-                            "volume_24h": self._safe_float(market_data.get("volume24hr")),
-                            "discovered_at": datetime.now(timezone.utc),
-                            "parsed_market": parsed,
-                        }
+                    total_scanned += len(batch)
+                    if len(batch) < page_size:
+                        break
+                    offset += page_size
 
-                        # Emit to event bus
-                        await self._event_bus.emit_gamma_market_new({
-                            "event_id": event_id,
-                            "market_id": market_id,
-                            "question": question,
-                            "category": "weather",
-                        })
-
-                        # Evaluate immediately
-                        await self._evaluate_market(market_id)
+                logger.info(
+                    "gamma_markets_scan_complete",
+                    total_scanned=total_scanned,
+                    weather_found=len(markets),
+                )
 
             except Exception as exc:
-                logger.error("scan_events_failed", error=str(exc))
+                logger.error("scan_markets_failed", error=str(exc))
 
         # =====================================================================
         # Fallback: synthetic test data ONLY in dev/paper mode
@@ -379,6 +360,68 @@ class WeatherMarketMonitor:
                 )
 
         return markets
+
+    def _parse_market_data(
+        self,
+        *,
+        event_id: str,
+        market_id: str,
+        question: str,
+        market_data: dict[str, Any],
+    ) -> WeatherMarket | None:
+        """Normalize a raw Gamma market dict into a WeatherMarket.
+
+        ``market_data`` may come from the nested ``event.markets[]`` array or
+        from the top-level ``/markets`` endpoint. Both return ``outcomes`` and
+        ``clobTokenIds`` as JSON-encoded strings.
+        """
+        outcomes = self._parse_json_array(market_data.get("outcomes"))
+        parsed = self._parser.parse_question(question, outcomes=outcomes)
+        if parsed is None:
+            return None
+
+        parsed.event_id = event_id
+        parsed.market_id = market_id
+
+        clob_ids = self._parse_json_array(market_data.get("clobTokenIds"))
+        parsed.token_ids = [str(t) for t in clob_ids]
+        for i, bucket in enumerate(parsed.buckets):
+            if i < len(clob_ids):
+                bucket.token_id = str(clob_ids[i])
+
+        return parsed
+
+    async def _register_and_evaluate(
+        self,
+        *,
+        event_id: str,
+        market_id: str,
+        question: str,
+        market_data: dict[str, Any],
+        parsed: WeatherMarket,
+    ) -> None:
+        """Register a discovered market and kick off its first evaluation."""
+        self._known_markets[market_id] = {
+            "event_id": event_id,
+            "question": question,
+            "market_data": market_data,
+            "liquidity": self._safe_float(market_data.get("liquidityNum")),
+            "best_bid": self._safe_float(market_data.get("bestBid")),
+            "best_ask": self._safe_float(market_data.get("bestAsk")),
+            "last_trade_price": self._safe_float(market_data.get("lastTradePrice")),
+            "volume_24h": self._safe_float(market_data.get("volume24hr")),
+            "discovered_at": datetime.now(timezone.utc),
+            "parsed_market": parsed,
+        }
+
+        await self._event_bus.emit_gamma_market_new({
+            "event_id": event_id,
+            "market_id": market_id,
+            "question": question,
+            "category": "weather",
+        })
+
+        await self._evaluate_market(market_id)
 
     def _generate_test_markets(self) -> list[WeatherMarket]:
         """Generate synthetic weather markets for testing when Polymarket has none."""

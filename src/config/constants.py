@@ -112,9 +112,16 @@ STRATEGY_CRYPTO_UPDOWN = "crypto_updown"
 # =============================================================================
 # The Gamma /markets endpoint supports order=liquidityNum&ascending=false and
 # liquidity_num_min filtering. tag=/search= are NOT honored for weather.
+# The correct, reliable discovery path is the Gamma /events endpoint with the
+# ``daily-temperature`` tag slug (nested ``markets[]`` hold the real markets).
 WEATHER_MIN_LIQUIDITY: float = 1000.0       # Minimum liquidityNum to consider
 WEATHER_MARKET_SCAN_MAX: int = 1000         # Max markets to scan across pages
 WEATHER_MARKET_PAGE_SIZE: int = 100         # Markets per Gamma API page
+
+# Daily-temperature events discovery (tag-slug /events endpoint)
+WEATHER_TAG_SLUG: str = "daily-temperature"  # Gamma events tag slug
+WEATHER_EVENTS_PAGE_SIZE: int = 100          # Events per Gamma API page
+WEATHER_EVENTS_MAX_PAGES: int = 2            # Max pages (100 + 44 = 144 events)
 
 # =============================================================================
 # Rate limit windows
