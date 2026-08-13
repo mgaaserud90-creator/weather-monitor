@@ -5,12 +5,18 @@
 Generert: 2026-08-13
 
 Dager kjørt: 3
-Totalt by-prediksjoner: 148
+Totalt by-prediksjoner: 153
 
 📊 PER-STRATEGI RESULTATER:
    🎯 Sigma (μ−kσ):  V:4 T:51  (7.3%)
    🛡️ P5-basert:      V:2 T:53  (3.6%)
    📊 Mean-basert:    V:26 T:29  (47.3%)
+
+🎯 MEAN(ROUND) vs POLYMARKET — VINNERBYER:
+   2026-08-11: 13 vinnere — London, UK, Denver, US, Helsinki, FI, Beijing, CN, Wellington, NZ, Paris, FR, Amsterdam, NL, Karachi, PK, Milan, IT, Warsaw, PL, Lucknow, IN, Mexico City, MX, Los Angeles, US
+   2026-08-12: 15 vinnere — Tokyo, JP, Moscow, RU, Paris, FR, Ankara, TR, Singapore, SG, Warsaw, PL, Karachi, PK, Istanbul, TR, Jeddah, SA, Amsterdam, NL, Sao Paulo, BR, Buenos Aires, AR, Austin, US, Chicago, US, Mexico City, MX
+   2026-08-13: 10 vinnere — Ankara, TR, Tel Aviv, IL, Chengdu, CN, Manila, PH, Lucknow, IN, Karachi, PK, Tokyo, JP, Warsaw, PL, Istanbul, TR, Beijing, CN
+   Totalt: 38 vinnere.
 
 🏆 BESTE STRATEGI: Mean-basert (47.3%)
 
@@ -25,7 +31,7 @@ Totalt by-prediksjoner: 148
 ────────────────────────────────────────────────────────────
    2026-08-11  │   51 byer  │  sigma=4/47 (7.8%)  p5=1/50  mean=25/26
    2026-08-12  │   51 byer  │  sigma=0/4 (0.0%)  p5=1/3  mean=1/3
-   2026-08-13  │   46 byer  │  (ingen resultater)
+   2026-08-13  │   51 byer  │  (ingen resultater)
 
 ════════════════════════════════════════════════════════════
      🎯 RESULTANT MONITOR — Per-City Optimal Strategy

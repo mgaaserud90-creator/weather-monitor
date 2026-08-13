@@ -2311,12 +2311,18 @@ async def daily_close_mode() -> None:
     entry["phase"] = "daily_close"
     entry["last_updated"] = _now_utc()
 
+    # Cross-reference our peaks with Polymarket resolved outcomes (also logs
+    # mean(round)-vs-Polymarket pm_result / mean_pm_winners per city).
+    await _verify_peaks_vs_market(entry, predictions, log_data)
+
     # Update cumulative (idempotent — recomputed from every run's summary so a
     # re-run of daily_close never double-counts and the totals always match the
-    # predictions-derived report numbers).
+    # predictions-derived report numbers). Mean-vs-PM wins/losses are counted
+    # from each city's persisted pm_result.
     _c_sigma_w = _c_sigma_l = 0
     _c_p5_w = _c_p5_l = 0
     _c_mean_w = _c_mean_l = 0
+    _c_meanpm_w = _c_meanpm_l = 0
     _c_total_days = 0
     _c_total_preds = 0
     for _run in log_data.get("runs", []):
@@ -2329,6 +2335,12 @@ async def daily_close_mode() -> None:
         _c_p5_l += _s.get("p5_losses", 0)
         _c_mean_w += _s.get("mean_wins", 0)
         _c_mean_l += _s.get("mean_losses", 0)
+        for _p in (_run.get("predictions", {}) or {}).values():
+            _pmr = (_p.get("strategies", {}) or {}).get("mean", {}).get("pm_result")
+            if _pmr == "WIN":
+                _c_meanpm_w += 1
+            elif _pmr == "LOSS":
+                _c_meanpm_l += 1
     log_data["cumulative"] = {
         "total_days": _c_total_days,
         "total_predictions": _c_total_preds,
@@ -2338,12 +2350,11 @@ async def daily_close_mode() -> None:
         "p5_losses": _c_p5_l,
         "mean_wins": _c_mean_w,
         "mean_losses": _c_mean_l,
+        "mean_pm_wins": _c_meanpm_w,
+        "mean_pm_losses": _c_meanpm_l,
     }
 
     _save_log(log_data)
-
-    # Cross-reference our peaks with Polymarket resolved outcomes
-    await _verify_peaks_vs_market(entry, predictions, log_data)
 
     # Generate daily markdown report
     _generate_markdown_report(log_data, entry)
@@ -3480,6 +3491,29 @@ def _log_peak_verification(
                 break
 
 
+def _mean_pm_result(market_info: dict[str, Any] | None, mean_spill: float | int | None) -> str | None:
+    """Mean(round) strategy vs Polymarket resolution — unit-aware WIN/LOSS.
+
+    mean(round) = int(round(bma_mean)) = the stored ``strategies.mean.spill``.
+
+    - °C point market: WIN iff int(mean_spill) == int(round(value_c)).
+    - US °F bucket market (lo_c/hi_c): WIN iff lo_c <= mean_spill <= hi_c.
+    - Threshold markets are already excluded by _load_market_resolved_details().
+
+    Returns None when there is no resolvable numeric market value or no spill.
+    """
+    if not market_info or market_info.get("value") is None or mean_spill is None:
+        return None
+    lo_c = market_info.get("lo_c")
+    hi_c = market_info.get("hi_c")
+    if lo_c is not None and hi_c is not None:
+        return "WIN" if float(lo_c) <= float(mean_spill) <= float(hi_c) else "LOSS"
+    unit = (market_info.get("unit") or "C").upper()
+    value = float(market_info["value"])
+    value_c = value if unit == "C" else (value - 32.0) * 5.0 / 9.0
+    return "WIN" if int(mean_spill) == int(round(value_c)) else "LOSS"
+
+
 async def _verify_peaks_vs_market(
     entry: dict, predictions: list, log_data: dict,
 ) -> None:
@@ -3523,6 +3557,40 @@ async def _verify_peaks_vs_market(
             unit=unit,
             bucket=market_info.get("bucket"),
         )
+
+    # Mean(round) vs Polymarket — independent of the Open-Meteo peak resolution
+    # above, so cities that are predicted but not yet peak-resolved still get a
+    # pm_result once their Polymarket market has resolved.
+    for city, pdata in preds_dict.items():
+        mean = pdata.get("strategies", {}).get("mean", {})
+        mean_spill = mean.get("spill")
+        if mean_spill is None:
+            continue
+        city_target = pdata.get("_target_date", today)
+        city_base = city.split(",")[0].strip()
+        market_info = (
+            resolved_markets.get((city, city_target))
+            or resolved_markets.get((city_base, city_target))
+        )
+        pm_result = _mean_pm_result(market_info, mean_spill)
+        mean["pm_result"] = pm_result
+        if pm_result == "WIN" and market_info is not None:
+            winners = entry.setdefault("mean_pm_winners", [])
+            winner = {
+                "date": city_target,
+                "city": city,
+                "mean_spill": int(mean_spill),
+                "pm_value": market_info.get("value"),
+                "pm_unit": (market_info.get("unit") or "C").upper(),
+                "pm_bucket": market_info.get("bucket"),
+            }
+            if not any(
+                w.get("date") == winner["date"] and w.get("city") == winner["city"]
+                for w in winners
+            ):
+                winners.append(winner)
+
+    _save_log(log_data)
 
 
 def main() -> None:

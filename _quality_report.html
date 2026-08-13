@@ -161,7 +161,7 @@
 // No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-08-13T14:15:33Z');
+    var deployTime = new Date('2026-08-13T14:51:04Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {
@@ -286,6 +286,29 @@ function sortTable(colIdx) {
        <div class="value" style="color: var(--purple);">🏆 Mean-Basert</div>
        <div class="label">Best Strategy</div>
      </div>
+   </div>
+
+  <!-- MEAN(ROUND) VS POLYMARKET WINNERS -->
+  
+   <div class="section">
+     <h2>🎯 MEAN(ROUND) vs POLYMARKET — VINNERBYER (38 totalt)</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       Byer der mean(round)-strategien (int(round(bma_mean))) traff Polymarkets
+       faktiske resolusjon. US °F-buckets sjekkes mot sitt inklusive °C-område.
+     </p>
+     
+      <div style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <strong>2026-08-11</strong> — 13 vinnere:<br/>
+        <span style="color: var(--green);">London, UK · Denver, US · Helsinki, FI · Beijing, CN · Wellington, NZ · Paris, FR · Amsterdam, NL · Karachi, PK · Milan, IT · Warsaw, PL · Lucknow, IN · Mexico City, MX · Los Angeles, US</span>
+      </div>
+      <div style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <strong>2026-08-12</strong> — 15 vinnere:<br/>
+        <span style="color: var(--green);">Tokyo, JP · Moscow, RU · Paris, FR · Ankara, TR · Singapore, SG · Warsaw, PL · Karachi, PK · Istanbul, TR · Jeddah, SA · Amsterdam, NL · Sao Paulo, BR · Buenos Aires, AR · Austin, US · Chicago, US · Mexico City, MX</span>
+      </div>
+      <div style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <strong>2026-08-13</strong> — 10 vinnere:<br/>
+        <span style="color: var(--green);">Ankara, TR · Tel Aviv, IL · Chengdu, CN · Manila, PH · Lucknow, IN · Karachi, PK · Tokyo, JP · Warsaw, PL · Istanbul, TR · Beijing, CN</span>
+      </div>
    </div>
 
   <!-- TODAY VS TOMORROW SEPARATION -->
@@ -678,9 +701,13 @@ function sortTable(colIdx) {
   </p>
   <div class="card-grid" style="margin-bottom: 12px;">
     <div class="card" style="border: 1px solid var(--green);">
-      <div class="value" style="color: var(--green);">24.0%</div>
-      <div class="label">Win Rate vs PM (12W/38L)</div>
+      <div class="value" style="color: var(--green);">26.0%</div>
+      <div class="label">Win Rate vs PM (13W/37L)</div>
     </div>
+  </div>
+  <div style="margin: 12px 0; padding: 12px; border-radius: 8px; background: var(--bg-card); font-size: 0.9rem; line-height: 1.5;">
+    <strong>Vinnere vs Polymarket (13):</strong>
+    Amsterdam, NL, Beijing, CN, Denver, US, Helsinki, FI, Karachi, PK, London, UK, Los Angeles, US, Lucknow, IN, Mexico City, MX, Milan, IT, Paris, FR, Warsaw, PL, Wellington, NZ
   </div>
   <div style="max-height: 600px; overflow-y: auto;">
   <table>
@@ -732,7 +759,7 @@ function sortTable(colIdx) {
 <tr><td>Tokyo, JP</td><td>30C</td><td>32°C</td><td>-1.5C</td><td>30C (mean)</td><td style='color:var(--red);'>TAP</td></tr>
 <tr><td>Toronto, CA</td><td>29C</td><td>29°C</td><td>-0.2C</td><td>28C (mean)</td><td style='color:var(--red);'>TAP</td></tr>
 <tr><td>Warsaw, PL</td><td>22C</td><td>22°C</td><td>-0.5C</td><td>22C (mean)</td><td style='color:var(--green);'>WIN</td></tr>
-<tr><td>Wellington, NZ</td><td>11C</td><td>12°C</td><td>-0.6C</td><td>14C (mean)</td><td style='color:var(--red);'>TAP</td></tr>
+<tr><td>Wellington, NZ</td><td>11C</td><td>14°C</td><td>-2.6C</td><td>14C (mean)</td><td style='color:var(--green);'>WIN</td></tr>
 <tr><td>Wuhan, CN</td><td>31C</td><td>29°C</td><td>+1.6C</td><td>30C (mean)</td><td style='color:var(--red);'>TAP</td></tr>
 <tr><td>Zhengzhou, CN</td><td>25C</td><td>26°C</td><td>-0.8C</td><td>25C (mean)</td><td style='color:var(--red);'>TAP</td></tr>
 </tbody>
@@ -805,11 +832,11 @@ function sortTable(colIdx) {
                 <td>2026-08-13</td>
                 <td>14°C</td>
                 <td>21.5%</td>
-                <td>42.0%</td>
+                <td>76.5%</td>
                 <td style="color: var(--text-dim);">15.0°C</td>
                 <td style="color: var(--text-dim);">$6K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-moscow-ru-14" data-spill="14" data-market="42.0">⏳</td>
+                <td class="col-peak" id="peak-moscow-ru-14" data-spill="14" data-market="76.5">⏳</td>
                 <td class="col-trend" id="trend-moscow-ru-14">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
@@ -818,11 +845,11 @@ function sortTable(colIdx) {
                 <td>2026-08-13</td>
                 <td>15°C</td>
                 <td>54.4%</td>
-                <td>47.0%</td>
+                <td>19.5%</td>
                 <td style="color: var(--text-dim);">15.0°C</td>
                 <td style="color: var(--text-dim);">$5K</td>
-                <td><span style="color:var(--green);font-weight:600;">$35</span></td>
-                <td class="col-peak" id="peak-moscow-ru-15" data-spill="15" data-market="47.0">⏳</td>
+                <td><span style="color:var(--green);font-weight:600;">$108</span></td>
+                <td class="col-peak" id="peak-moscow-ru-15" data-spill="15" data-market="19.5">⏳</td>
                 <td class="col-trend" id="trend-moscow-ru-15">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
@@ -833,7 +860,7 @@ function sortTable(colIdx) {
                 <td>1.2%</td>
                 <td>0.1%</td>
                 <td style="color: var(--text-dim);">15.0°C</td>
-                <td style="color: var(--text-dim);">$7K</td>
+                <td style="color: var(--text-dim);">$8K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
                 <td class="col-peak" id="peak-moscow-ru-13" data-spill="13" data-market="0.1">⏳</td>
                 <td class="col-trend" id="trend-moscow-ru-13">—</td>
@@ -870,11 +897,11 @@ function sortTable(colIdx) {
                 <td>2026-08-13</td>
                 <td>16°C</td>
                 <td>21.5%</td>
-                <td>5.5%</td>
+                <td>2.5%</td>
                 <td style="color: var(--text-dim);">15.0°C</td>
                 <td style="color: var(--text-dim);">$4K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-moscow-ru-16" data-spill="16" data-market="5.5">⏳</td>
+                <td class="col-peak" id="peak-moscow-ru-16" data-spill="16" data-market="2.5">⏳</td>
                 <td class="col-trend" id="trend-moscow-ru-16">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
@@ -946,27 +973,27 @@ function sortTable(colIdx) {
                 <td>12</td>
                 <td><strong>Madrid, ES</strong></td>
                 <td>2026-08-13</td>
-                <td>40°C</td>
-                <td>7.8%</td>
-                <td>32.0%</td>
+                <td>39°C</td>
+                <td>48.2%</td>
+                <td>77.0%</td>
                 <td style="color: var(--text-dim);">38.6°C</td>
-                <td style="color: var(--text-dim);">$18K</td>
+                <td style="color: var(--text-dim);">$9K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-madrid-es-40" data-spill="40" data-market="32.0">⏳</td>
-                <td class="col-trend" id="trend-madrid-es-40">—</td>
+                <td class="col-peak" id="peak-madrid-es-39" data-spill="39" data-market="77.0">⏳</td>
+                <td class="col-trend" id="trend-madrid-es-39">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
                 <td>13</td>
                 <td><strong>Madrid, ES</strong></td>
                 <td>2026-08-13</td>
-                <td>39°C</td>
-                <td>48.2%</td>
-                <td>68.0%</td>
+                <td>40°C</td>
+                <td>7.8%</td>
+                <td>24.0%</td>
                 <td style="color: var(--text-dim);">38.6°C</td>
-                <td style="color: var(--text-dim);">$9K</td>
+                <td style="color: var(--text-dim);">$18K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-madrid-es-39" data-spill="39" data-market="68.0">⏳</td>
-                <td class="col-trend" id="trend-madrid-es-39">—</td>
+                <td class="col-peak" id="peak-madrid-es-40" data-spill="40" data-market="24.0">⏳</td>
+                <td class="col-trend" id="trend-madrid-es-40">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
                 <td>14</td>
@@ -1039,11 +1066,11 @@ function sortTable(colIdx) {
                 <td>2026-08-13</td>
                 <td>42°C</td>
                 <td>0.0%</td>
-                <td>0.2%</td>
+                <td>0.1%</td>
                 <td style="color: var(--text-dim);">38.6°C</td>
                 <td style="color: var(--text-dim);">$1K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-madrid-es-42" data-spill="42" data-market="0.2">⏳</td>
+                <td class="col-peak" id="peak-madrid-es-42" data-spill="42" data-market="0.1">⏳</td>
                 <td class="col-trend" id="trend-madrid-es-42">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
@@ -1219,11 +1246,11 @@ function sortTable(colIdx) {
                 <td>2026-08-13</td>
                 <td>30°C</td>
                 <td>0.4%</td>
-                <td>93.5%</td>
+                <td>92.0%</td>
                 <td style="color: var(--text-dim);">32.1°C</td>
                 <td style="color: var(--text-dim);">$14K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-hong-kong-hk-30" data-spill="30" data-market="93.5">⏳</td>
+                <td class="col-peak" id="peak-hong-kong-hk-30" data-spill="30" data-market="92.0">⏳</td>
                 <td class="col-trend" id="trend-hong-kong-hk-30">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
@@ -1232,11 +1259,11 @@ function sortTable(colIdx) {
                 <td>2026-08-13</td>
                 <td>29°C</td>
                 <td>0.0%</td>
-                <td>7.0%</td>
+                <td>5.0%</td>
                 <td style="color: var(--text-dim);">32.1°C</td>
                 <td style="color: var(--text-dim);">$9K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-hong-kong-hk-29" data-spill="29" data-market="7.0">⏳</td>
+                <td class="col-peak" id="peak-hong-kong-hk-29" data-spill="29" data-market="5.0">⏳</td>
                 <td class="col-trend" id="trend-hong-kong-hk-29">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
@@ -1245,11 +1272,11 @@ function sortTable(colIdx) {
                 <td>2026-08-13</td>
                 <td>26°C</td>
                 <td>0.0%</td>
-                <td>0.9%</td>
+                <td>0.5%</td>
                 <td style="color: var(--text-dim);">32.1°C</td>
-                <td style="color: var(--text-dim);">$7K</td>
+                <td style="color: var(--text-dim);">$8K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-hong-kong-hk-26" data-spill="26" data-market="0.9">⏳</td>
+                <td class="col-peak" id="peak-hong-kong-hk-26" data-spill="26" data-market="0.5">⏳</td>
                 <td class="col-trend" id="trend-hong-kong-hk-26">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
@@ -1267,15 +1294,15 @@ function sortTable(colIdx) {
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
                 <td>16</td>
-                <td><strong>Hong Kong, HK</strong> <span style="color: var(--green); font-size: 0.75rem;" title="Peak window has passed, market is resolved">✅</span></td>
+                <td><strong>Hong Kong, HK</strong></td>
                 <td>2026-08-13</td>
                 <td>28°C</td>
                 <td>0.0%</td>
-                <td>0.9%</td>
+                <td>1.0%</td>
                 <td style="color: var(--text-dim);">32.1°C</td>
                 <td style="color: var(--text-dim);">$7K</td>
                 <td><span style="color:var(--text-dim);">—</span></td>
-                <td class="col-peak" id="peak-hong-kong-hk-28" data-spill="28" data-market="0.9">⏳</td>
+                <td class="col-peak" id="peak-hong-kong-hk-28" data-spill="28" data-market="1.0">⏳</td>
                 <td class="col-trend" id="trend-hong-kong-hk-28">—</td>
                 <td class="col-spark">⚡ —</td>
             </tr><tr>
@@ -1349,7 +1376,7 @@ function sortTable(colIdx) {
             <td><span class="expand-icon">▶</span></td>
             <td><strong>Amsterdam</strong></td>
             <td>11 buckets</td>
-            <td>$57K</td>
+            <td>$60K</td>
             <td>8/11 resolved</td>
         </tr><tr class="mkt-bucket amsterdam" style="color:var(--red);">
             <td></td>
@@ -1385,19 +1412,19 @@ function sortTable(colIdx) {
             <td></td>
             <td>32°C</td>
             <td>BMA: 18.4%</td>
-            <td>Mkt: 68.5%</td>
+            <td>Mkt: 75.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket amsterdam">
             <td></td>
             <td>33°C</td>
             <td>BMA: 15.5%</td>
-            <td>Mkt: 25.5%</td>
+            <td>Mkt: 21.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket amsterdam">
             <td></td>
             <td>34°C</td>
             <td>BMA: 10.5%</td>
-            <td>Mkt: 4.0%</td>
+            <td>Mkt: 3.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket amsterdam" style="color:var(--red);">
             <td></td>
@@ -1451,13 +1478,13 @@ function sortTable(colIdx) {
             <td></td>
             <td>30°C</td>
             <td>BMA: 47.0%</td>
-            <td>Mkt: 96.5%</td>
+            <td>Mkt: 97.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket ankara">
             <td></td>
             <td>31°C</td>
             <td>BMA: 8.7%</td>
-            <td>Mkt: 3.0%</td>
+            <td>Mkt: 2.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket ankara" style="color:var(--red);">
             <td></td>
@@ -1493,7 +1520,7 @@ function sortTable(colIdx) {
             <td><span class="expand-icon">▶</span></td>
             <td><strong>Atlanta</strong></td>
             <td>9 buckets</td>
-            <td>$16K</td>
+            <td>$17K</td>
             <td>4/9 resolved</td>
         </tr><tr class="mkt-bucket atlanta" style="color:var(--red);">
             <td></td>
@@ -1505,25 +1532,25 @@ function sortTable(colIdx) {
             <td></td>
             <td>89.6°F</td>
             <td>BMA: 12.0%</td>
-            <td>Mkt: 4.5%</td>
+            <td>Mkt: 5.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket atlanta">
             <td></td>
             <td>91.4°F</td>
             <td>BMA: 22.0%</td>
-            <td>Mkt: 22.5%</td>
+            <td>Mkt: 19.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket atlanta">
             <td></td>
             <td>93.2°F</td>
             <td>BMA: 26.2%</td>
-            <td>Mkt: 58.0%</td>
+            <td>Mkt: 62.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket atlanta">
             <td></td>
             <td>96.8°F</td>
             <td>BMA: 10.1%</td>
-            <td>Mkt: 8.5%</td>
+            <td>Mkt: 13.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket atlanta">
             <td></td>
@@ -1577,19 +1604,19 @@ function sortTable(colIdx) {
             <td></td>
             <td>98.6°F</td>
             <td>BMA: 29.9%</td>
-            <td>Mkt: 4.5%</td>
+            <td>Mkt: 5.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket austin">
             <td></td>
             <td>100.4°F</td>
             <td>BMA: 43.3%</td>
-            <td>Mkt: 70.0%</td>
+            <td>Mkt: 70.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket austin">
             <td></td>
             <td>102.2°F</td>
             <td>BMA: 18.2%</td>
-            <td>Mkt: 20.5%</td>
+            <td>Mkt: 17.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket austin">
             <td></td>
@@ -1709,13 +1736,13 @@ function sortTable(colIdx) {
             <td></td>
             <td>10°C</td>
             <td>BMA: 44.1%</td>
-            <td>Mkt: 26.5%</td>
+            <td>Mkt: 27.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket buenos-aires">
             <td></td>
             <td>11°C</td>
             <td>BMA: 26.9%</td>
-            <td>Mkt: 60.5%</td>
+            <td>Mkt: 62.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket buenos-aires">
             <td></td>
@@ -1973,7 +2000,7 @@ function sortTable(colIdx) {
             <td><span class="expand-icon">▶</span></td>
             <td><strong>Chicago</strong></td>
             <td>9 buckets</td>
-            <td>$40K</td>
+            <td>$41K</td>
             <td>3/9 resolved</td>
         </tr><tr class="mkt-bucket chicago" style="color:var(--red);">
             <td></td>
@@ -2009,25 +2036,25 @@ function sortTable(colIdx) {
             <td></td>
             <td>78.8°F</td>
             <td>BMA: 29.6%</td>
-            <td>Mkt: 38.5%</td>
+            <td>Mkt: 39.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket chicago">
             <td></td>
             <td>80.6°F</td>
             <td>BMA: 26.4%</td>
-            <td>Mkt: 43.0%</td>
+            <td>Mkt: 41.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket chicago">
             <td></td>
             <td>82.4°F</td>
             <td>BMA: 13.1%</td>
-            <td>Mkt: 7.8%</td>
+            <td>Mkt: 7.2%</td>
             <td></td>
         </tr><tr class="mkt-bucket chicago">
             <td></td>
             <td>84.2°F</td>
             <td>BMA: 3.7%</td>
-            <td>Mkt: 1.5%</td>
+            <td>Mkt: 1.2%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('chongqing')">
             <td><span class="expand-icon">▶</span></td>
@@ -2117,19 +2144,19 @@ function sortTable(colIdx) {
             <td></td>
             <td>98.6°F</td>
             <td>BMA: 2.8%</td>
-            <td>Mkt: 11.5%</td>
+            <td>Mkt: 10.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket dallas">
             <td></td>
             <td>100.4°F</td>
             <td>BMA: 23.5%</td>
-            <td>Mkt: 69.0%</td>
+            <td>Mkt: 68.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket dallas">
             <td></td>
             <td>102.2°F</td>
             <td>BMA: 47.3%</td>
-            <td>Mkt: 15.0%</td>
+            <td>Mkt: 15.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket dallas" style="color:var(--red);">
             <td></td>
@@ -2171,31 +2198,31 @@ function sortTable(colIdx) {
             <td></td>
             <td>75.2°F</td>
             <td>BMA: 7.7%</td>
-            <td>Mkt: 8.5%</td>
+            <td>Mkt: 9.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket denver">
             <td></td>
             <td>78.8°F</td>
             <td>BMA: 27.3%</td>
-            <td>Mkt: 35.0%</td>
+            <td>Mkt: 40.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket denver">
             <td></td>
             <td>80.6°F</td>
             <td>BMA: 24.8%</td>
-            <td>Mkt: 36.0%</td>
+            <td>Mkt: 37.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket denver">
             <td></td>
             <td>82.4°F</td>
             <td>BMA: 13.8%</td>
-            <td>Mkt: 17.0%</td>
+            <td>Mkt: 12.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket denver">
             <td></td>
             <td>84.2°F</td>
             <td>BMA: 4.7%</td>
-            <td>Mkt: 3.5%</td>
+            <td>Mkt: 3.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket denver" style="color:var(--red);">
             <td></td>
@@ -2327,19 +2354,19 @@ function sortTable(colIdx) {
             <td></td>
             <td>19°C</td>
             <td>BMA: 30.6%</td>
-            <td>Mkt: 94.5%</td>
+            <td>Mkt: 96.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket helsinki">
             <td></td>
             <td>20°C</td>
             <td>BMA: 36.7%</td>
-            <td>Mkt: 5.5%</td>
+            <td>Mkt: 2.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket helsinki" style="color:var(--red);">
             <td></td>
             <td>21°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 17.6%</td>
-            <td>Mkt: 0.4%</td>
+            <td>Mkt: 0.3%</td>
             <td></td>
         </tr><tr class="mkt-bucket helsinki" style="color:var(--red);">
             <td></td>
@@ -2370,7 +2397,7 @@ function sortTable(colIdx) {
             <td><strong>Hong Kong</strong> <span style="color:#3fb950;font-size:0.7rem;">✅ → 33°C</span></td>
             <td>22 buckets</td>
             <td>$171K</td>
-            <td>20/22 resolved</td>
+            <td>19/22 resolved</td>
         </tr><tr class="mkt-bucket hong-kong" style="color:var(--red);">
             <td></td>
             <td>22°C <span style="color:#3fb950;">✅</span></td>
@@ -2399,7 +2426,7 @@ function sortTable(colIdx) {
             <td></td>
             <td>26°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 0.0%</td>
-            <td>Mkt: 0.9%</td>
+            <td>Mkt: 0.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket hong-kong" style="color:var(--red);">
             <td></td>
@@ -2413,11 +2440,11 @@ function sortTable(colIdx) {
             <td>BMA: 0.0%</td>
             <td>Mkt: 0.1%</td>
             <td></td>
-        </tr><tr class="mkt-bucket hong-kong" style="color:var(--red);">
+        </tr><tr class="mkt-bucket hong-kong">
             <td></td>
-            <td>28°C <span style="color:#3fb950;">✅</span></td>
+            <td>28°C</td>
             <td>BMA: 0.0%</td>
-            <td>Mkt: 0.9%</td>
+            <td>Mkt: 1.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket hong-kong" style="color:var(--red);">
             <td></td>
@@ -2429,7 +2456,7 @@ function sortTable(colIdx) {
             <td></td>
             <td>29°C</td>
             <td>BMA: 0.0%</td>
-            <td>Mkt: 7.0%</td>
+            <td>Mkt: 5.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket hong-kong" style="color:var(--red);">
             <td></td>
@@ -2441,7 +2468,7 @@ function sortTable(colIdx) {
             <td></td>
             <td>30°C</td>
             <td>BMA: 0.4%</td>
-            <td>Mkt: 93.5%</td>
+            <td>Mkt: 92.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket hong-kong" style="color:var(--red);">
             <td></td>
@@ -2507,7 +2534,7 @@ function sortTable(colIdx) {
             <td><span class="expand-icon">▶</span></td>
             <td><strong>Houston</strong></td>
             <td>9 buckets</td>
-            <td>$20K</td>
+            <td>$21K</td>
             <td>4/9 resolved</td>
         </tr><tr class="mkt-bucket houston" style="color:var(--red);">
             <td></td>
@@ -2555,7 +2582,7 @@ function sortTable(colIdx) {
             <td></td>
             <td>98.6°F</td>
             <td>BMA: 12.7%</td>
-            <td>Mkt: 6.5%</td>
+            <td>Mkt: 6.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket houston">
             <td></td>
@@ -2597,13 +2624,13 @@ function sortTable(colIdx) {
             <td></td>
             <td>27°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 30.9%</td>
-            <td>Mkt: 99.2%</td>
+            <td>Mkt: 99.6%</td>
             <td></td>
         </tr><tr class="mkt-bucket istanbul" style="color:var(--red);">
             <td></td>
             <td>28°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 18.6%</td>
-            <td>Mkt: 0.5%</td>
+            <td>Mkt: 0.3%</td>
             <td></td>
         </tr><tr class="mkt-bucket istanbul" style="color:var(--red);">
             <td></td>
@@ -2639,8 +2666,8 @@ function sortTable(colIdx) {
             <td><span class="expand-icon">▶</span></td>
             <td><strong>Jeddah</strong></td>
             <td>11 buckets</td>
-            <td>$29K</td>
-            <td>8/11 resolved</td>
+            <td>$33K</td>
+            <td>9/11 resolved</td>
         </tr><tr class="mkt-bucket jeddah" style="color:var(--red);">
             <td></td>
             <td>31°C <span style="color:#3fb950;">✅</span></td>
@@ -2693,19 +2720,19 @@ function sortTable(colIdx) {
             <td></td>
             <td>39°C</td>
             <td>BMA: 17.0%</td>
-            <td>Mkt: 92.5%</td>
+            <td>Mkt: 95.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket jeddah">
             <td></td>
             <td>40°C</td>
             <td>BMA: 17.0%</td>
-            <td>Mkt: 5.5%</td>
+            <td>Mkt: 3.0%</td>
             <td></td>
-        </tr><tr class="mkt-bucket jeddah">
+        </tr><tr class="mkt-bucket jeddah" style="color:var(--red);">
             <td></td>
-            <td>41°C</td>
+            <td>41°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 33.0%</td>
-            <td>Mkt: 4.0%</td>
+            <td>Mkt: 0.7%</td>
             <td></td>
         </tr><tr class="mkt-group" onclick="toggleMarketBuckets('jinan')">
             <td><span class="expand-icon">▶</span></td>
@@ -2927,7 +2954,7 @@ function sortTable(colIdx) {
             <td><span class="expand-icon">▶</span></td>
             <td><strong>London</strong> <span style="color:#3fb950;font-size:0.7rem;">✅ → 18°C</span></td>
             <td>22 buckets</td>
-            <td>$178K</td>
+            <td>$179K</td>
             <td>19/22 resolved</td>
         </tr><tr class="mkt-bucket london" style="color:var(--red);">
             <td></td>
@@ -3023,25 +3050,25 @@ function sortTable(colIdx) {
             <td></td>
             <td>34°C</td>
             <td>BMA: 15.1%</td>
-            <td>Mkt: 38.0%</td>
+            <td>Mkt: 49.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket london">
             <td></td>
             <td>35°C</td>
             <td>BMA: 43.2%</td>
-            <td>Mkt: 59.0%</td>
+            <td>Mkt: 45.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket london">
             <td></td>
             <td>36°C</td>
             <td>BMA: 33.2%</td>
-            <td>Mkt: 5.5%</td>
+            <td>Mkt: 5.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket london" style="color:var(--red);">
             <td></td>
             <td>37°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 6.8%</td>
-            <td>Mkt: 0.7%</td>
+            <td>Mkt: 0.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket london" style="color:var(--red);">
             <td></td>
@@ -3065,7 +3092,7 @@ function sortTable(colIdx) {
             <td><span class="expand-icon">▶</span></td>
             <td><strong>Los Angeles</strong></td>
             <td>9 buckets</td>
-            <td>$30K</td>
+            <td>$31K</td>
             <td>4/9 resolved</td>
         </tr><tr class="mkt-bucket los-angeles" style="color:var(--red);">
             <td></td>
@@ -3089,13 +3116,13 @@ function sortTable(colIdx) {
             <td></td>
             <td>75.2°F</td>
             <td>BMA: 11.3%</td>
-            <td>Mkt: 64.0%</td>
+            <td>Mkt: 66.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket los-angeles">
             <td></td>
             <td>78.8°F</td>
             <td>BMA: 21.6%</td>
-            <td>Mkt: 15.5%</td>
+            <td>Mkt: 17.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket los-angeles">
             <td></td>
@@ -3107,7 +3134,7 @@ function sortTable(colIdx) {
             <td></td>
             <td>82.4°F <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 12.7%</td>
-            <td>Mkt: 0.4%</td>
+            <td>Mkt: 0.2%</td>
             <td></td>
         </tr><tr class="mkt-bucket los-angeles" style="color:var(--red);">
             <td></td>
@@ -3197,7 +3224,7 @@ function sortTable(colIdx) {
             <td><span class="expand-icon">▶</span></td>
             <td><strong>Madrid</strong></td>
             <td>11 buckets</td>
-            <td>$53K</td>
+            <td>$54K</td>
             <td>9/11 resolved</td>
         </tr><tr class="mkt-bucket madrid" style="color:var(--red);">
             <td></td>
@@ -3227,13 +3254,13 @@ function sortTable(colIdx) {
             <td></td>
             <td>39°C</td>
             <td>BMA: 48.2%</td>
-            <td>Mkt: 68.0%</td>
+            <td>Mkt: 77.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket madrid">
             <td></td>
             <td>40°C</td>
             <td>BMA: 7.8%</td>
-            <td>Mkt: 32.0%</td>
+            <td>Mkt: 24.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket madrid" style="color:var(--red);">
             <td></td>
@@ -3245,7 +3272,7 @@ function sortTable(colIdx) {
             <td></td>
             <td>42°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 0.0%</td>
-            <td>Mkt: 0.2%</td>
+            <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-bucket madrid" style="color:var(--red);">
             <td></td>
@@ -3371,7 +3398,7 @@ function sortTable(colIdx) {
             <td></td>
             <td>23°C</td>
             <td>BMA: 2.1%</td>
-            <td>Mkt: 3.7%</td>
+            <td>Mkt: 3.9%</td>
             <td></td>
         </tr><tr class="mkt-bucket mexico-city">
             <td></td>
@@ -3383,19 +3410,19 @@ function sortTable(colIdx) {
             <td></td>
             <td>25°C</td>
             <td>BMA: 34.1%</td>
-            <td>Mkt: 44.5%</td>
+            <td>Mkt: 46.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket mexico-city">
             <td></td>
             <td>26°C</td>
             <td>BMA: 34.1%</td>
-            <td>Mkt: 32.0%</td>
+            <td>Mkt: 31.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket mexico-city">
             <td></td>
             <td>27°C</td>
             <td>BMA: 13.6%</td>
-            <td>Mkt: 6.5%</td>
+            <td>Mkt: 8.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket mexico-city" style="color:var(--red);">
             <td></td>
@@ -3491,25 +3518,25 @@ function sortTable(colIdx) {
             <td></td>
             <td>87.8°F <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 12.6%</td>
-            <td>Mkt: 0.5%</td>
+            <td>Mkt: 0.3%</td>
             <td></td>
         </tr><tr class="mkt-bucket miami">
             <td></td>
             <td>89.6°F</td>
             <td>BMA: 31.3%</td>
-            <td>Mkt: 9.5%</td>
+            <td>Mkt: 10.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket miami">
             <td></td>
             <td>91.4°F</td>
             <td>BMA: 34.0%</td>
-            <td>Mkt: 73.5%</td>
+            <td>Mkt: 73.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket miami">
             <td></td>
             <td>93.2°F</td>
             <td>BMA: 16.1%</td>
-            <td>Mkt: 18.5%</td>
+            <td>Mkt: 20.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket miami" style="color:var(--red);">
             <td></td>
@@ -3527,8 +3554,8 @@ function sortTable(colIdx) {
             <td><span class="expand-icon">▶</span></td>
             <td><strong>Milan</strong></td>
             <td>11 buckets</td>
-            <td>$38K</td>
-            <td>8/11 resolved</td>
+            <td>$39K</td>
+            <td>9/11 resolved</td>
         </tr><tr class="mkt-bucket milan" style="color:var(--red);">
             <td></td>
             <td>29°C <span style="color:#3fb950;">✅</span></td>
@@ -3569,19 +3596,19 @@ function sortTable(colIdx) {
             <td></td>
             <td>35°C</td>
             <td>BMA: 23.1%</td>
-            <td>Mkt: 79.0%</td>
+            <td>Mkt: 86.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket milan">
             <td></td>
             <td>36°C</td>
             <td>BMA: 18.9%</td>
-            <td>Mkt: 21.0%</td>
+            <td>Mkt: 16.0%</td>
             <td></td>
-        </tr><tr class="mkt-bucket milan">
+        </tr><tr class="mkt-bucket milan" style="color:var(--red);">
             <td></td>
-            <td>37°C</td>
+            <td>37°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 11.0%</td>
-            <td>Mkt: 1.4%</td>
+            <td>Mkt: 0.7%</td>
             <td></td>
         </tr><tr class="mkt-bucket milan" style="color:var(--red);">
             <td></td>
@@ -3599,7 +3626,7 @@ function sortTable(colIdx) {
             <td><span class="expand-icon">▶</span></td>
             <td><strong>Moscow</strong></td>
             <td>11 buckets</td>
-            <td>$36K</td>
+            <td>$37K</td>
             <td>8/11 resolved</td>
         </tr><tr class="mkt-bucket moscow" style="color:var(--red);">
             <td></td>
@@ -3617,19 +3644,19 @@ function sortTable(colIdx) {
             <td></td>
             <td>14°C</td>
             <td>BMA: 21.5%</td>
-            <td>Mkt: 42.0%</td>
+            <td>Mkt: 76.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket moscow">
             <td></td>
             <td>15°C</td>
             <td>BMA: 54.4%</td>
-            <td>Mkt: 47.0%</td>
+            <td>Mkt: 19.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket moscow">
             <td></td>
             <td>16°C</td>
             <td>BMA: 21.5%</td>
-            <td>Mkt: 5.5%</td>
+            <td>Mkt: 2.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket moscow" style="color:var(--red);">
             <td></td>
@@ -3719,7 +3746,7 @@ function sortTable(colIdx) {
             <td></td>
             <td>31°C</td>
             <td>BMA: 5.1%</td>
-            <td>Mkt: 98.5%</td>
+            <td>Mkt: 98.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket munich">
             <td></td>
@@ -3743,7 +3770,7 @@ function sortTable(colIdx) {
             <td><span class="expand-icon">▶</span></td>
             <td><strong>New York</strong></td>
             <td>18 buckets</td>
-            <td>$48K</td>
+            <td>$49K</td>
             <td>11/18 resolved</td>
         </tr><tr class="mkt-bucket new-york" style="color:var(--red);">
             <td></td>
@@ -3827,7 +3854,7 @@ function sortTable(colIdx) {
             <td></td>
             <td>84.2°F</td>
             <td>BMA: 23.9%</td>
-            <td>Mkt: 16.5%</td>
+            <td>Mkt: 15.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket new-york">
             <td></td>
@@ -3839,7 +3866,7 @@ function sortTable(colIdx) {
             <td></td>
             <td>87.8°F</td>
             <td>BMA: 23.9%</td>
-            <td>Mkt: 18.5%</td>
+            <td>Mkt: 21.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket new-york">
             <td></td>
@@ -3869,7 +3896,7 @@ function sortTable(colIdx) {
             <td></td>
             <td>29°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: 7.9%</td>
-            <td>Mkt: 0.5%</td>
+            <td>Mkt: 0.1%</td>
             <td></td>
         </tr><tr class="mkt-bucket panama-city">
             <td></td>
@@ -3887,19 +3914,19 @@ function sortTable(colIdx) {
             <td></td>
             <td>32°C</td>
             <td>BMA: 21.5%</td>
-            <td>Mkt: 52.5%</td>
+            <td>Mkt: 53.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket panama-city">
             <td></td>
             <td>33°C</td>
             <td>BMA: 16.3%</td>
-            <td>Mkt: 31.0%</td>
+            <td>Mkt: 30.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket panama-city">
             <td></td>
             <td>34°C</td>
             <td>BMA: 9.2%</td>
-            <td>Mkt: 6.5%</td>
+            <td>Mkt: 7.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket panama-city">
             <td></td>
@@ -3929,7 +3956,7 @@ function sortTable(colIdx) {
             <td><span class="expand-icon">▶</span></td>
             <td><strong>Paris</strong> <span style="color:#3fb950;font-size:0.7rem;">✅ → 19°C</span></td>
             <td>22 buckets</td>
-            <td>$71K</td>
+            <td>$73K</td>
             <td>19/22 resolved</td>
         </tr><tr class="mkt-bucket paris" style="color:var(--red);">
             <td></td>
@@ -4031,19 +4058,19 @@ function sortTable(colIdx) {
             <td></td>
             <td>37°C</td>
             <td>BMA: 29.6%</td>
-            <td>Mkt: 23.0%</td>
+            <td>Mkt: 64.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket paris">
             <td></td>
             <td>38°C</td>
             <td>BMA: 18.6%</td>
-            <td>Mkt: 79.5%</td>
+            <td>Mkt: 37.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket paris">
             <td></td>
             <td>39°C</td>
             <td>BMA: 6.5%</td>
-            <td>Mkt: 2.5%</td>
+            <td>Mkt: 1.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket paris" style="color:var(--red);">
             <td></td>
@@ -4169,19 +4196,19 @@ function sortTable(colIdx) {
             <td></td>
             <td>66.2°F</td>
             <td>BMA: 24.5%</td>
-            <td>Mkt: 8.0%</td>
+            <td>Mkt: 11.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket san-francisco">
             <td></td>
             <td>68.0°F</td>
             <td>BMA: 23.5%</td>
-            <td>Mkt: 41.0%</td>
+            <td>Mkt: 44.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket san-francisco">
             <td></td>
             <td>69.8°F</td>
             <td>BMA: 15.1%</td>
-            <td>Mkt: 43.5%</td>
+            <td>Mkt: 37.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket san-francisco">
             <td></td>
@@ -4235,13 +4262,13 @@ function sortTable(colIdx) {
             <td></td>
             <td>29°C</td>
             <td>BMA: 32.5%</td>
-            <td>Mkt: 38.0%</td>
+            <td>Mkt: 39.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket sao-paulo">
             <td></td>
             <td>30°C</td>
             <td>BMA: 16.6%</td>
-            <td>Mkt: 40.5%</td>
+            <td>Mkt: 46.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket sao-paulo">
             <td></td>
@@ -4367,7 +4394,7 @@ function sortTable(colIdx) {
             <td></td>
             <td>23°C <span style="color:#3fb950;">✅</span></td>
             <td>BMA: —</td>
-            <td>Mkt: 99.6%</td>
+            <td>Mkt: 100.0%</td>
             <td></td>
         </tr><tr class="mkt-bucket seoul" style="color:var(--red);">
             <td></td>
@@ -4523,7 +4550,7 @@ function sortTable(colIdx) {
             <td></td>
             <td>26°C</td>
             <td>BMA: 1.8%</td>
-            <td>Mkt: 98.0%</td>
+            <td>Mkt: 97.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket shanghai" style="color:var(--red);">
             <td></td>
@@ -4679,7 +4706,7 @@ function sortTable(colIdx) {
             <td><span class="expand-icon">▶</span></td>
             <td><strong>Singapore</strong> <span style="color:#3fb950;font-size:0.7rem;">✅ → 32°C</span></td>
             <td>11 buckets</td>
-            <td>$62K</td>
+            <td>$63K</td>
             <td>11/11 resolved</td>
         </tr><tr class="mkt-bucket singapore" style="color:var(--red);">
             <td></td>
@@ -4943,7 +4970,7 @@ function sortTable(colIdx) {
             <td></td>
             <td>24°C</td>
             <td>BMA: 1.1%</td>
-            <td>Mkt: 98.0%</td>
+            <td>Mkt: 98.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket tokyo" style="color:var(--red);">
             <td></td>
@@ -5063,31 +5090,31 @@ function sortTable(colIdx) {
             <td></td>
             <td>25°C</td>
             <td>BMA: 3.0%</td>
-            <td>Mkt: 1.5%</td>
+            <td>Mkt: 1.4%</td>
             <td></td>
         </tr><tr class="mkt-bucket toronto">
             <td></td>
             <td>26°C</td>
             <td>BMA: 17.3%</td>
-            <td>Mkt: 4.0%</td>
+            <td>Mkt: 3.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket toronto">
             <td></td>
             <td>27°C</td>
             <td>BMA: 37.7%</td>
-            <td>Mkt: 16.0%</td>
+            <td>Mkt: 13.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket toronto">
             <td></td>
             <td>28°C</td>
             <td>BMA: 31.0%</td>
-            <td>Mkt: 69.5%</td>
+            <td>Mkt: 71.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket toronto">
             <td></td>
             <td>29°C</td>
             <td>BMA: 9.6%</td>
-            <td>Mkt: 13.0%</td>
+            <td>Mkt: 12.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket toronto">
             <td></td>
@@ -5105,7 +5132,7 @@ function sortTable(colIdx) {
             <td><span class="expand-icon">▶</span></td>
             <td><strong>Warsaw</strong></td>
             <td>11 buckets</td>
-            <td>$30K</td>
+            <td>$31K</td>
             <td>9/11 resolved</td>
         </tr><tr class="mkt-bucket warsaw" style="color:var(--red);">
             <td></td>
@@ -5129,13 +5156,13 @@ function sortTable(colIdx) {
             <td></td>
             <td>23°C</td>
             <td>BMA: 35.2%</td>
-            <td>Mkt: 98.5%</td>
+            <td>Mkt: 95.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket warsaw">
             <td></td>
             <td>24°C</td>
             <td>BMA: 22.0%</td>
-            <td>Mkt: 2.0%</td>
+            <td>Mkt: 4.5%</td>
             <td></td>
         </tr><tr class="mkt-bucket warsaw" style="color:var(--red);">
             <td></td>

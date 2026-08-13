@@ -114,6 +114,74 @@ def _pick_most_resolved_run(runs: list) -> dict:
     return best
 
 
+def _collect_mean_pm_winners(runs: list) -> dict[str, list]:
+    """Return per-date mean(round)-vs-Polymarket winner entries.
+
+    Prefers each run's persisted ``mean_pm_winners`` list; when absent it
+    recomputes from the predictions + _load_market_resolved_details() so the
+    report stays correct for logs that predate the field.
+    """
+    from _model_quality_tracker import (  # local import keeps report module light
+        _load_market_resolved_details,
+        _mean_pm_result,
+    )
+
+    by_date: dict[str, list] = {}
+    resolved_markets = _load_market_resolved_details()
+    for run in runs:
+        date = run.get("run_date") or run.get("target_date") or "?"
+        stored = run.get("mean_pm_winners")
+        if stored:
+            by_date.setdefault(date, []).extend(stored)
+            continue
+        for city, pdata in run.get("predictions", {}).items():
+            mean = (pdata.get("strategies", {}) or {}).get("mean", {})
+            mean_spill = mean.get("spill")
+            if mean_spill is None:
+                continue
+            city_target = pdata.get("_target_date", date)
+            city_base = city.split(",")[0].strip()
+            market_info = (
+                resolved_markets.get((city, city_target))
+                or resolved_markets.get((city_base, city_target))
+            )
+            if _mean_pm_result(market_info, mean_spill) == "WIN" and market_info is not None:
+                by_date.setdefault(date, []).append({
+                    "date": city_target,
+                    "city": city,
+                    "mean_spill": int(mean_spill),
+                    "pm_value": market_info.get("value"),
+                    "pm_unit": (market_info.get("unit") or "C").upper(),
+                    "pm_bucket": market_info.get("bucket"),
+                })
+    return by_date
+
+
+def _build_mean_pm_winners_html(by_date: dict[str, list]) -> str:
+    """Render the mean(round)-vs-Polymarket winners as an HTML section."""
+    if not by_date:
+        return ""
+    total = sum(len(v) for v in by_date.values())
+    rows = ""
+    for d in sorted(by_date):
+        winners = by_date[d]
+        cities = " · ".join(w.get("city", "?") for w in winners)
+        rows += f"""
+      <div style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <strong>{d}</strong> — {len(winners)} vinnere:<br/>
+        <span style="color: var(--green);">{cities}</span>
+      </div>"""
+    return f"""
+   <div class="section">
+     <h2>🎯 MEAN(ROUND) vs POLYMARKET — VINNERBYER ({total} totalt)</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       Byer der mean(round)-strategien (int(round(bma_mean))) traff Polymarkets
+       faktiske resolusjon. US °F-buckets sjekkes mot sitt inklusive °C-område.
+     </p>
+     {rows}
+   </div>"""
+
+
 def _generate_report() -> str:
     """Generate the full report string."""
     log_data = _load_log()
@@ -163,6 +231,20 @@ def _generate_report() -> str:
                  f"({round(p5_wins/max(1,p5_total)*100,1)}%)")
     lines.append(f"   📊 Mean-basert:    V:{mean_wins} T:{mean_losses}  "
                  f"({round(mean_wins/max(1,mean_total)*100,1)}%)")
+    lines.append("")
+
+    # Mean(round)-vs-Polymarket winners (per day).
+    mean_pm_by_date = _collect_mean_pm_winners(runs)
+    total_pm_wins = sum(len(v) for v in mean_pm_by_date.values())
+    lines.append("🎯 MEAN(ROUND) vs POLYMARKET — VINNERBYER:")
+    if total_pm_wins == 0:
+        lines.append("   Ingen vinnere registrert ennå.")
+    else:
+        for d in sorted(mean_pm_by_date):
+            winners = mean_pm_by_date[d]
+            city_names = ", ".join(w.get("city", "?") for w in winners)
+            lines.append(f"   {d}: {len(winners)} vinnere — {city_names}")
+        lines.append(f"   Totalt: {total_pm_wins} vinnere.")
     lines.append("")
 
     # Best strategy
@@ -2555,6 +2637,9 @@ def _generate_html_report() -> str:
         sigma_wins, sigma_losses, p5_wins, p5_losses, mean_wins, mean_losses
     )
 
+    # Mean(round)-vs-Polymarket winners section
+    mean_pm_section = _build_mean_pm_winners_html(_collect_mean_pm_winners(runs))
+
     # Overall win rate uses sigma strategy
     overall_win_rate = round(sigma_wins / max(1, sigma_total) * 100, 1)
     win_color = "#4CAF50" if overall_win_rate >= 55 else ("#FF9800" if overall_win_rate >= 45 else "#F44336")
@@ -2885,6 +2970,9 @@ function sortTable(colIdx) {{
 
   <!-- PER-STRATEGY PERFORMANCE CARDS -->
   {strategy_cards}
+
+  <!-- MEAN(ROUND) VS POLYMARKET WINNERS -->
+  {mean_pm_section}
 
   <!-- TODAY VS TOMORROW SEPARATION -->
   {today_tomorrow_section}

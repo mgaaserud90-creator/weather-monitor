@@ -67,10 +67,14 @@ def market_label(info):
 rows = ""
 wins = losses = na_count = 0
 na_cities = []
+winner_cities = []
 for city in sorted(preds):
     pdata = preds[city]
     cb = city.split(",")[0].strip()
-    info = pm.get((city, target_date)) or pm.get((cb, target_date))
+    # Match each city against its own target date (timezone-shifted cities such
+    # as Wellington target the following day), falling back to the run date.
+    city_target = pdata.get("_target_date", target_date)
+    info = pm.get((city, city_target)) or pm.get((cb, city_target))
     if info is None or info.get("value") is None:
         # City has no resolved POINT market for target_date — surface it.
         na_count += 1
@@ -101,6 +105,7 @@ for city in sorted(preds):
 
     if is_win:
         wins += 1
+        winner_cities.append(city)
     else:
         losses += 1
 
@@ -133,6 +138,10 @@ html = f"""<div class="section" style="border-color: rgba(210,153,29,0.4);">
       <div class="value" style="color: var(--green);">{rate}%</div>
       <div class="label">Win Rate vs PM ({wins}W/{losses}L)</div>
     </div>
+  </div>
+  <div style="margin: 12px 0; padding: 12px; border-radius: 8px; background: var(--bg-card); font-size: 0.9rem; line-height: 1.5;">
+    <strong>Vinnere vs Polymarket ({len(winner_cities)}):</strong>
+    {", ".join(winner_cities) if winner_cities else "—"}
   </div>
   <div style="max-height: 600px; overflow-y: auto;">
   <table>
