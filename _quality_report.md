@@ -22,12 +22,12 @@ Totalt by-prediksjoner: 153
     8. Lucknow, IN                       2    2     3   66.7%
     9. Milan, IT                         2    2     3   66.7%
    10. Paris, FR                         2    2     3   66.7%
-   11. Tokyo, JP                         2    2     3   66.7%
-   12. Austin, US                        1    1     2   50.0%
-   13. Buenos Aires, AR                  1    1     2   50.0%
-   14. Chicago, US                       1    1     2   50.0%
-   15. Denver, US                        1    1     2   50.0%
-   16. Los Angeles, US                   1    1     2   50.0%
+   11. Austin, US                        1    1     2   50.0%
+   12. Buenos Aires, AR                  1    1     2   50.0%
+   13. Chicago, US                       1    1     2   50.0%
+   14. Denver, US                        1    1     2   50.0%
+   15. Los Angeles, US                   1    1     2   50.0%
+   16. Tokyo, JP                         1    1     2   50.0%
    17. Wellington, NZ                    1    1     2   50.0%
    18. Chengdu, CN                       1    1     3   33.3%
    19. Helsinki, FI                      1    1     3   33.3%
@@ -39,7 +39,7 @@ Totalt by-prediksjoner: 153
    25. Singapore, SG                     1    1     3   33.3%
    26. Tel Aviv, IL                      1    1     3   33.3%
    27. Atlanta, US                       0    0     2    0.0%
-   28. Busan, KR                         0    0     3    0.0%
+   28. Busan, KR                         0    0     2    0.0%
    29. Cape Town, ZA                     0    0     3    0.0%
    30. Chongqing, CN                     0    0     3    0.0%
    31. Dallas, US                        0    0     2    0.0%
@@ -55,14 +55,47 @@ Totalt by-prediksjoner: 153
    41. Qingdao, CN                       0    0     3    0.0%
    42. San Francisco, US                 0    0     2    0.0%
    43. Seattle, US                       0    0     2    0.0%
-   44. Seoul (Incheon), KR               0    0     3    0.0%
+   44. Seoul (Incheon), KR               0    0     2    0.0%
    45. Shanghai, CN                      0    0     3    0.0%
    46. Shenzhen, CN                      0    0     3    0.0%
    47. Taipei, TW                        0    0     3    0.0%
    48. Toronto, CA                       0    0     2    0.0%
    49. Wuhan, CN                         0    0     3    0.0%
    50. Zhengzhou, CN                     0    0     3    0.0%
-   Totalt: 39 poeng / 136 resolvede spill (28.7% win rate).
+   Totalt: 38 poeng / 133 resolvede spill (28.6% win rate).
+
+════════════════════════════════════════════════════════════
+💰 EDGE & PnL — MEAN(ROUND) vs POLYMARKET (PAPIR)
+════════════════════════════════════════════════════════════
+   Totalt PnL:   $-5700.00  (stake $13300.00)
+   ROI:          -42.86%
+   Snitt edge:   +10.31pp
+   ECE:          0.1691
+   Brier:        0.251
+   Resultat:     38W / 95L (28.6%)
+
+   By                            Bets    V    T       PnL      ROI
+   Karachi, PK                      3    3    0   +300.00  +100.0%
+   Warsaw, PL                       3    3    0   +300.00  +100.0%
+   Mexico City, MX                  2    2    0   +200.00  +100.0%
+   Amsterdam, NL                    3    2    1   +100.00   +33.3%
+   Ankara, TR                       3    2    1   +100.00   +33.3%
+   Beijing, CN                      3    2    1   +100.00   +33.3%
+   Istanbul, TR                     3    2    1   +100.00   +33.3%
+   Lucknow, IN                      3    2    1   +100.00   +33.3%
+   Milan, IT                        3    2    1   +100.00   +33.3%
+   Paris, FR                        3    2    1   +100.00   +33.3%
+   Austin, US                       2    1    1     +0.00    +0.0%
+   Buenos Aires, AR                 2    1    1     +0.00    +0.0%
+   Chicago, US                      2    1    1     +0.00    +0.0%
+   Denver, US                       2    1    1     +0.00    +0.0%
+   Los Angeles, US                  2    1    1     +0.00    +0.0%
+   Tokyo, JP                        2    1    1     +0.00    +0.0%
+   Wellington, NZ                   2    1    1     +0.00    +0.0%
+   Chengdu, CN                      3    1    2   -100.00   -33.3%
+   Helsinki, FI                     3    1    2   -100.00   -33.3%
+   Jeddah, SA                       3    1    2   -100.00   -33.3%
+   ... og 30 flere byer
 
 🏆 BESTE STRATEGI: Mean-basert (48.2%)
 

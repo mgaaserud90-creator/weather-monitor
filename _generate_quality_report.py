@@ -58,6 +58,18 @@ try:
 except ImportError:
     HAS_MARKET_EDGE = False
 
+# PnL / edge ledger (P6) — built idempotently from the quality log.
+try:
+    from _pnl_tracker import (  # type: ignore[import-not-found]
+        build_ledger_from_quality_log,
+        compute_metrics,
+        per_city_pnl,
+        DEFAULT_STAKE_USD,
+    )
+    HAS_PNL = True
+except ImportError:
+    HAS_PNL = False
+
 
 def _load_log() -> dict:
     """Load existing quality log or return empty structure."""
@@ -163,18 +175,29 @@ def _build_city_pm_scoreboard(runs: list) -> list[dict]:
     Aggregates every city's persisted ``pm_result`` across all runs. A WIN
     earns 1 point; WIN+LOSS counts as a resolved bet. Sorted by points desc,
     then win rate desc, then city name asc.
+
+    De-duplicates by (date, city): the same city/date can appear in two runs
+    (a lead_days=1 forecast from the day before and the lead_days=0 same-day
+    forecast) and must count as a single bet. The latest run wins so the
+    same-day (final) prediction is the authoritative one. This keeps the
+    scoreboard totals identical to the PnL ledger (which upserts by date/city).
     """
-    tally: dict[str, dict] = {}
+    latest: dict[tuple[str, str], str] = {}
     for run in runs:
         for city, pdata in run.get("predictions", {}).items():
             mean = (pdata.get("strategies", {}) or {}).get("mean", {})
             pm_result = mean.get("pm_result")
             if pm_result not in ("WIN", "LOSS"):
                 continue
-            entry = tally.setdefault(city, {"wins": 0, "total_bets": 0})
-            entry["total_bets"] += 1
-            if pm_result == "WIN":
-                entry["wins"] += 1
+            date_str = str(pdata.get("_target_date") or run.get("run_date") or "")
+            latest[(date_str, city)] = pm_result
+
+    tally: dict[str, dict] = {}
+    for (_date_str, city), pm_result in latest.items():
+        entry = tally.setdefault(city, {"wins": 0, "total_bets": 0})
+        entry["total_bets"] += 1
+        if pm_result == "WIN":
+            entry["wins"] += 1
 
     scoreboard = []
     for city, entry in tally.items():
@@ -244,6 +267,161 @@ def _build_mean_pm_winners_html(scoreboard: list[dict]) -> str:
    </div>"""
 
 
+def _pnl_markdown_section(runs: list) -> list[str]:
+    """Markdown lines for the 💰 Edge & PnL section (P6)."""
+    if not HAS_PNL:
+        return []
+    try:
+        records = build_ledger_from_quality_log()
+        metrics = compute_metrics(records)
+    except Exception:
+        return []
+
+    lines: list[str] = []
+    lines.append("═" * 60)
+    lines.append("💰 EDGE & PnL — MEAN(ROUND) vs POLYMARKET (PAPIR)")
+    lines.append("═" * 60)
+    if not records:
+        lines.append("   Ingen resolvede spill registrert ennå.")
+        lines.append("")
+        return lines
+
+    avg_edge = metrics["avg_edge"]
+    lines.append(f"   Totalt PnL:   ${metrics['total_pnl']:+.2f}  "
+                 f"(stake ${metrics['total_stake']:.2f})")
+    lines.append(f"   ROI:          {metrics['roi'] * 100:+.2f}%")
+    lines.append(f"   Snitt edge:   {avg_edge * 100:+.2f}pp" if avg_edge is not None
+                 else "   Snitt edge:   n/a")
+    lines.append(f"   ECE:          {metrics['ece'] if metrics['ece'] is not None else 'n/a'}")
+    lines.append(f"   Brier:        {metrics['brier'] if metrics['brier'] is not None else 'n/a'}")
+    lines.append(f"   Resultat:     {metrics['wins']}W / {metrics['losses']}L "
+                 f"({metrics['win_rate'] * 100:.1f}%)")
+    lines.append("")
+
+    city_rows = per_city_pnl(records)
+    lines.append(f"   {'By':<28s} {'Bets':>5s} {'V':>4s} {'T':>4s} {'PnL':>9s} {'ROI':>8s}")
+    for r in city_rows[:20]:
+        lines.append(f"   {r['city']:<28s} {r['bets']:5d} {r['wins']:4d} {r['losses']:4d} "
+                     f"{r['pnl']:+9.2f} {r['roi'] * 100:+7.1f}%")
+    if len(city_rows) > 20:
+        lines.append(f"   ... og {len(city_rows) - 20} flere byer")
+    lines.append("")
+    return lines
+
+
+def _build_pnl_html_section(runs: list) -> str:
+    """HTML section for the 💰 Edge & PnL ledger (P6)."""
+    if not HAS_PNL:
+        return ""
+    try:
+        records = build_ledger_from_quality_log()
+        metrics = compute_metrics(records)
+    except Exception:
+        return ""
+    if not records:
+        return ""
+
+    avg_edge = metrics["avg_edge"]
+    edge_str = f"{avg_edge * 100:+.2f}pp" if avg_edge is not None else "n/a"
+    ece_str = f"{metrics['ece']:.4f}" if metrics["ece"] is not None else "n/a"
+    brier_str = f"{metrics['brier']:.4f}" if metrics["brier"] is not None else "n/a"
+    pnl_color = "var(--green)" if metrics["total_pnl"] >= 0 else "var(--red)"
+    roi_color = "var(--green)" if metrics["roi"] >= 0 else "var(--red)"
+    stake_usd = float(DEFAULT_STAKE_USD) if HAS_PNL else 100.0
+
+    rows_html = ""
+    for r in per_city_pnl(records)[:25]:
+        c = "var(--green)" if r["pnl"] >= 0 else "var(--red)"
+        rows_html += (
+            f'<tr><td><strong>{r["city"]}</strong></td>'
+            f'<td>{r["bets"]}</td><td>{r["wins"]}</td><td>{r["losses"]}</td>'
+            f'<td style="color:{c};font-weight:600;">{r["pnl"]:+.2f}</td>'
+            f'<td style="color:{c};">{r["roi"] * 100:+.1f}%</td></tr>'
+        )
+
+    return f"""
+   <div class="section">
+     <h2>💰 EDGE & PnL — Mean(round) vs Polymarket (papir)</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       Kumulativt resultat for Mean-strategien mot Polymarkets faktiske resolusjon.
+       Flat ${stake_usd:.0f} stake per spill, even-money oppgjør (1.0 på WIN, 0 på LOSS).
+     </p>
+     <div class="card-grid">
+       <div class="card">
+         <div class="value" style="color: {pnl_color};">${metrics['total_pnl']:+.2f}</div>
+         <div class="label">Total PnL</div>
+       </div>
+       <div class="card">
+         <div class="value" style="color: {roi_color};">{metrics['roi'] * 100:+.2f}%</div>
+         <div class="label">ROI</div>
+       </div>
+       <div class="card">
+         <div class="value" style="color: var(--blue);">{edge_str}</div>
+         <div class="label">Snitt Edge</div>
+       </div>
+       <div class="card">
+         <div class="value" style="color: var(--purple);">{ece_str}</div>
+         <div class="label">ECE</div>
+       </div>
+       <div class="card">
+         <div class="value" style="color: var(--orange);">{brier_str}</div>
+         <div class="label">Brier</div>
+       </div>
+       <div class="card">
+         <div class="value" style="color: var(--text);">{metrics['wins']}/{metrics['losses']}</div>
+         <div class="label">Wins / Losses</div>
+       </div>
+     </div>
+     <div style="max-height: 500px; overflow-y: auto;">
+     <table>
+       <thead><tr><th>By</th><th>Bets</th><th>V</th><th>T</th><th>PnL ($)</th><th>ROI</th></tr></thead>
+       <tbody>{rows_html}</tbody>
+     </table>
+     </div>
+   </div>"""
+
+
+def _build_eligible_bets_html_section() -> str:
+    """HTML 'GODE ODDS' table — P1-eligible Mean(round) bets (edge ≥ threshold)."""
+    if not HAS_MARKET_EDGE:
+        return ""
+    try:
+        from _compute_market_edge import compute_eligible_bets  # type: ignore
+        bets = compute_eligible_bets()
+    except Exception:
+        return ""
+    if not bets:
+        return ""
+
+    rows = ""
+    for i, b in enumerate(bets, start=1):
+        edge_c = "var(--green)" if b["edge"] >= 0 else "var(--red)"
+        rows += (
+            f'<tr><td>{i}</td><td><strong>{b["city_display"]}</strong></td>'
+            f'<td>{b["bucket_label"]}</td>'
+            f'<td style="font-weight:600;">{b["bma_prob"] * 100:.1f}%</td>'
+            f'<td>{b["market_price"] * 100:.1f}%</td>'
+            f'<td style="color:{edge_c};font-weight:700;">{b["edge"] * 100:+.1f}pp</td>'
+            f'<td style="color:var(--green);font-weight:600;">${b["kelly"]:.0f}</td>'
+            f'<td style="color:var(--text-dim);">{b.get("volume_display", "")}</td></tr>'
+        )
+
+    return f"""
+   <div class="section" style="border-color: rgba(63,185,80,0.5);">
+     <h2>🎯 GODE ODDS — Kvalifiserte spill (edge ≥ 5pp, quarter-Kelly > 0)</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       Mean-strategiens spill der modellens sannsynlighet slår markedsprisen med minst
+       5 prosentpoeng og quarter-Kelly er positiv. Rask oversikt over byer med gode odds.
+     </p>
+     <div style="overflow-x: auto;">
+     <table>
+       <thead><tr><th>#</th><th>By</th><th>Spill</th><th>Modell Sanns.</th><th>Marked</th><th>Edge</th><th>Kelly ($)</th><th>Volum</th></tr></thead>
+       <tbody>{rows}</tbody>
+     </table>
+     </div>
+   </div>"""
+
+
 def _generate_report() -> str:
     """Generate the full report string."""
     log_data = _load_log()
@@ -306,6 +484,9 @@ def _generate_report() -> str:
         lines.append(f"   Totalt: {total_pm_points} poeng / {total_pm_bets} resolvede spill "
                      f"({round(total_pm_points/max(1,total_pm_bets)*100,1)}% win rate).")
     lines.append("")
+
+    # 💰 Edge & PnL ledger (P6)
+    lines.extend(_pnl_markdown_section(runs))
 
     # Best strategy (mean-only presentation)
     mean_rate_pct = round(mean_wins / max(1, mean_total) * 100, 1)
@@ -2655,6 +2836,10 @@ def _generate_html_report() -> str:
     # Cumulative per-city scoreboard: Mean(round) vs Polymarket
     mean_pm_section = _build_mean_pm_winners_html(_build_city_pm_scoreboard(runs))
 
+    # 💰 Edge & PnL ledger (P6) + 🎯 GODE ODDS eligible bets (P1)
+    pnl_section = _build_pnl_html_section(runs)
+    eligible_bets_section = _build_eligible_bets_html_section()
+
     # Overall win rate uses the mean strategy (mean-only presentation)
     overall_win_rate = round(mean_wins / max(1, mean_total) * 100, 1)
     win_color = "#4CAF50" if overall_win_rate >= 55 else ("#FF9800" if overall_win_rate >= 45 else "#F44336")
@@ -2988,6 +3173,12 @@ function sortTable(colIdx) {{
 
   <!-- MEAN(ROUND) VS POLYMARKET WINNERS -->
   {mean_pm_section}
+
+  <!-- EDGE & PNL LEDGER -->
+  {pnl_section}
+
+  <!-- GODE ODDS: ELIGIBLE BETS -->
+  {eligible_bets_section}
 
   <!-- TODAY VS TOMORROW SEPARATION -->
   {today_tomorrow_section}

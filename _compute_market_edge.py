@@ -458,6 +458,10 @@ def build_market_lookup() -> dict[tuple[str, int], float]:
 DEFAULT_BANKROLL = 1000.0  # USD
 KELLY_FRACTION = 0.25       # Quarter-Kelly (conservative)
 
+# P1 — Market-price gate: only bet when BMA_prob − market_price ≥ threshold.
+# Configurable via the EDGE_THRESHOLD environment variable (default 5pp).
+EDGE_THRESHOLD = float(os.environ.get("EDGE_THRESHOLD", "0.05"))
+
 
 def compute_kelly_size(
     bma_win_prob: float,      # BMA win probability (0-1)
@@ -585,14 +589,28 @@ def compute_edges(
         p5_spill = strategies.get("p5", {}).get("spill", "?")
         mean_spill = strategies.get("mean", {}).get("spill", "?")
 
-        # Compute edge internally (not displayed, used for legacy sorting)
+        # Edge: raw BMA probability minus market implied probability.
+        # Legacy `edge` stays in percentage points for backwards compatibility;
+        # the new `edge_frac` (0-1) feeds the P1 price gate.
+        market_price = market_prob / 100.0
+        bma_prob_frac = bma_prob / 100.0
+        edge_frac = bma_prob_frac - market_price
         if 15 < market_prob < 85:
             edge = round(bma_prob - market_prob, 1)
         else:
             edge = 0
 
         # Kelly sizing
-        kelly = compute_kelly_size(bma_prob / 100.0, market_prob / 100.0)
+        kelly = compute_kelly_size(bma_prob_frac, market_price)
+
+        # P1 market-price gate: eligible only when edge beats the threshold,
+        # quarter-Kelly is positive, and the market is not already resolved.
+        eligible = bool(
+            not opp.get("is_resolved", False)
+            and edge_frac >= EDGE_THRESHOLD
+            and kelly.get("is_valid", False)
+            and kelly.get("recommended", 0) > 0
+        )
 
         results.append({
             "city": city,
@@ -602,6 +620,10 @@ def compute_edges(
             "bma_prob": bma_prob,
             "market_prob": market_prob,
             "edge": edge,
+            "edge_frac": round(edge_frac, 4),
+            "market_price": round(market_price, 4),
+            "eligible": eligible,
+            "kelly": kelly["recommended"],
             "bma_mean": round(mean_c, 1),
             "bma_std": round(std_c, 2),
             "confidence": bma.get("confidence", 0),
@@ -629,6 +651,244 @@ def compute_edges(
     # Sort by BMA confidence descending (primary), then edge descending (secondary)
     results.sort(key=lambda x: (x["confidence"], abs(x["edge"])), reverse=True)
     return results
+
+
+# ---------------------------------------------------------------------------
+# P1 + P3 — Market-type-aware Mean(round) bucket picker and price gate
+# ---------------------------------------------------------------------------
+
+def _f_bucket_bounds(opp: dict) -> tuple[float, float] | None:
+    """Extract native inclusive °F bucket bounds [lo_f, hi_f] from an opportunity."""
+    q = str(opp.get("question", ""))
+    m = re.search(r'(\d+)\s*[-–]\s*(\d+)\s*°\s*F', q, re.IGNORECASE)
+    if m:
+        return float(m.group(1)), float(m.group(2))
+    m2 = re.search(r'(\d+)\s*°\s*F', q, re.IGNORECASE)
+    if m2:
+        v = float(m2.group(1))
+        return v - 0.5, v + 0.5
+    return None
+
+
+def _bucket_label(opp: dict) -> str:
+    """Native bucket label for an opportunity (e.g. "86-87°F", "35°C")."""
+    q = str(opp.get("question", ""))
+    m = re.search(r'(\d+)\s*[-–]\s*(\d+)\s*°\s*F', q, re.IGNORECASE)
+    if m:
+        return f"{m.group(1)}-{m.group(2)}°F"
+    m2 = re.search(r'(\d+)\s*°\s*F', q, re.IGNORECASE)
+    if m2:
+        return f"{m2.group(1)}°F"
+    m3 = re.search(r'(\d+)\s*°\s*C', q, re.IGNORECASE)
+    if m3:
+        return f"{m3.group(1)}°C"
+    return fmt_temp(opp.get("temp", "?"), opp.get("city", ""))
+
+
+def _normalize_base(city: str) -> str:
+    """Normalize a city key to its base name for matching (strip country/parens)."""
+    base = city.strip().lower().split(",")[0].strip()
+    return re.sub(r"\s*\(.*?\)\s*", "", base).strip()
+
+
+def compute_kelly_fraction(bma_win_prob: float, market_price_yes: float) -> float:
+    """Standard full-Kelly fraction: f* = (p·b − q)/b with b = (1−price)/price.
+
+    Returns 0.0 when the bet has no positive expectation (p ≤ price).
+    Unlike the legacy `compute_kelly_size`, this does NOT reject p < 0.5 —
+    a low-probability bet can still have positive expectation at a low price.
+    """
+    price = max(0.01, min(0.99, market_price_yes))
+    p = max(0.0, min(1.0, bma_win_prob))
+    q = 1.0 - p
+    b = (1.0 - price) / price
+    if b <= 0:
+        return 0.0
+    f = (p * b - q) / b
+    return max(0.0, f)
+
+
+def pick_bucket(mean_c: float, std_c: float, market_opps: list[dict]) -> dict | None:
+    """Pick the single market bucket the Mean(round) strategy should bet on.
+
+    Market-type aware (P3):
+      - The highest-temperature market is preferred; fall back to other
+        question types when a city only has lowest/unknown markets.
+      - US °F bucket markets → the native 1°F bucket whose inclusive
+        [lo_f, hi_f] range contains the forecast converted to °F
+        (fallback: bucket whose midpoint is nearest the °F forecast).
+      - exact °C point markets → argmax bucket mass ≈ int(round(mean_c)).
+      - threshold markets → only used when no exact bucket exists.
+    Returns the chosen market opportunity dict, or None when nothing matches.
+    """
+    if not market_opps:
+        return None
+
+    preferred = [o for o in market_opps if o.get("question_type") == "highest"]
+    pool = preferred or list(market_opps)
+
+    # Native °F bucket markets first (US cities).
+    f_buckets = [o for o in pool if _f_bucket_bounds(o) is not None]
+    if f_buckets:
+        f_mean = c_to_f(mean_c)
+        best = None
+        best_dist = float("inf")
+        for o in f_buckets:
+            bounds = _f_bucket_bounds(o)
+            if bounds is None:
+                continue
+            lo, hi = bounds
+            if lo <= f_mean <= hi:
+                return o
+            mid = (lo + hi) / 2.0
+            dist = abs(mid - f_mean)
+            if dist < best_dist:
+                best_dist = dist
+                best = o
+        return best
+
+    # Exact °C point markets → nearest integer bucket to the mean.
+    exact = [o for o in pool if o.get("type") in ("exact", None)]
+    if exact:
+        target = int(round(mean_c))
+        best = None
+        best_dist = float("inf")
+        for o in exact:
+            try:
+                temp = int(o.get("temp", 0))
+            except (TypeError, ValueError):
+                continue
+            dist = abs(temp - target)
+            if dist < best_dist:
+                best_dist = dist
+                best = o
+        return best
+
+    # Threshold markets (only when no exact bucket exists) → max tail probability.
+    threshold = [o for o in pool if o.get("type") in ("higher", "below")]
+    if threshold:
+        best = None
+        best_prob = -1.0
+        for o in threshold:
+            prob = compute_bma_prob(mean_c, std_c, o.get("temp", 0), o.get("type", "exact"))
+            if prob > best_prob:
+                best_prob = prob
+                best = o
+        return best
+
+    # Last resort: nearest bucket in the full pool.
+    target = int(round(mean_c))
+    best = None
+    best_dist = float("inf")
+    for o in pool:
+        try:
+            temp = int(o.get("temp", 0))
+        except (TypeError, ValueError):
+            continue
+        dist = abs(temp - target)
+        if dist < best_dist:
+            best_dist = dist
+            best = o
+    return best
+
+
+def compute_mean_spill_bets(
+    market_opps: list[dict],
+    bma_preds: dict[str, dict],
+) -> list[dict]:
+    """Compute candidate Mean(round) bets with P1 price gating.
+
+    For each matched city, pick the market-type-aware bucket (P3), compute
+    edge = bma_prob − market_price, quarter-Kelly sizing, and mark eligible
+    (edge ≥ EDGE_THRESHOLD and quarter-Kelly > 0 and market not resolved).
+    """
+    by_city: dict[str, list[dict]] = {}
+    for opp in market_opps:
+        base = _normalize_base(str(opp.get("city", "")))
+        if base:
+            by_city.setdefault(base, []).append(opp)
+
+    bets: list[dict] = []
+    for bma_city, bma in bma_preds.items():
+        base = _normalize_base(bma_city)
+        opps = by_city.get(base)
+        if not opps:
+            # Fuzzy containment match (e.g. "Kuala Lumpur" ↔ "Kuala Lumpur, MY").
+            for mbase, mlist in by_city.items():
+                if base and (base in mbase or mbase in base):
+                    opps = mlist
+                    break
+        if not opps:
+            continue
+
+        strategies = bma.get("strategies", {}) or {}
+        mean = strategies.get("mean", {}) or {}
+        mean_spill = mean.get("spill")
+        if mean_spill is None:
+            continue
+
+        mean_c = bma.get("bma_mean", 0)
+        std_c = bma.get("bma_std", 1.0)
+
+        chosen = pick_bucket(mean_c, std_c, opps)
+        if chosen is None:
+            continue
+
+        stored_win_prob = mean.get("win_prob")
+        if isinstance(stored_win_prob, (int, float)):
+            bma_prob = max(0.0, min(1.0, float(stored_win_prob)))
+        else:
+            bma_prob = compute_bma_prob(
+                mean_c, std_c,
+                chosen.get("temp", int(round(mean_c))),
+                chosen.get("type", "exact"),
+            ) / 100.0
+
+        market_prob = chosen.get("market_prob", 0)  # percentage points (0-100)
+        market_price = market_prob / 100.0
+        edge = bma_prob - market_price
+        kelly_frac = compute_kelly_fraction(bma_prob, market_price)
+        quarter_kelly_stake = round(kelly_frac * KELLY_FRACTION * DEFAULT_BANKROLL, 2)
+        eligible = bool(
+            not chosen.get("is_resolved", False)
+            and edge >= EDGE_THRESHOLD
+            and kelly_frac > 0
+        )
+
+        bets.append({
+            "city": bma_city,
+            "city_display": bma_city.split(",")[0].strip(),
+            "spill": mean_spill,
+            "bucket_label": _bucket_label(chosen),
+            "qtype": chosen.get("type"),
+            "question_type": chosen.get("question_type", "unknown"),
+            "bma_prob": round(bma_prob, 4),
+            "market_price": round(market_price, 4),
+            "edge": round(edge, 4),
+            "kelly": quarter_kelly_stake,
+            "kelly_fraction": round(kelly_frac, 4),
+            "eligible": eligible,
+            "volume": chosen.get("volume", 0),
+            "volume_display": chosen.get("volume_display", ""),
+            "date": chosen.get("date", ""),
+            "is_resolved": chosen.get("is_resolved", False),
+            "bma_mean": round(mean_c, 1),
+        })
+
+    bets.sort(key=lambda b: (-int(b["eligible"]), -b["edge"], b["city"]))
+    return bets
+
+
+def compute_eligible_bets() -> list[dict]:
+    """Load data and return only the P1-eligible Mean(round) bets (GODE ODDS)."""
+    market_opps, _ = load_market_prices()
+    if not market_opps:
+        return []
+    bma_preds = load_bma_predictions()
+    if not bma_preds:
+        return []
+    bets = compute_mean_spill_bets(market_opps, bma_preds)
+    return [b for b in bets if b.get("eligible")]
 
 
 # ---------------------------------------------------------------------------
