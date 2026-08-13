@@ -30,6 +30,9 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install dependencies
+        run: pip install httpx structlog tenacity pydantic pydantic-settings python-dotenv orjson redis
+
       - name: Verify peaks vs Polymarket
         run: |
           set -x

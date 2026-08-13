@@ -13,6 +13,8 @@ if RLOG.exists():
     rl = json.loads(RLOG.read_text(encoding="utf-8"))
     for k, v in rl.get("markets", {}).items():
         if "||" in k:
+            if v.get("type") == "threshold" or "temp_c" not in v:
+                continue
             city, date_str = k.split("||", 1)
             pm[(city, date_str)] = float(v["temp_c"])
 

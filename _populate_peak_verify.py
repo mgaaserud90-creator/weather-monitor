@@ -1,8 +1,11 @@
 """Populate _peak_verification_log.json by comparing our archive peaks to Polymarket resolved outcomes."""
 import json, sys, os
+from datetime import datetime, timedelta, timezone
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from _model_quality_tracker import _load_market_resolved_temps, _load_log, _log_peak_verification
+
+target_date = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
 
 resolved = _load_market_resolved_temps()
 print(f"Polymarket resolved markets (with dates): {len(resolved)}")
@@ -13,12 +16,12 @@ log = _load_log()
 runs = log.get("runs", [])
 entry = None
 for r in runs:
-    if r.get("run_date") == "2026-08-11":
+    if r.get("run_date") == target_date:
         entry = r
         break
 
 if not entry:
-    print("No entry for 2026-08-11")
+    print(f"No entry for {target_date}")
     sys.exit(1)
 
 preds = entry.get("predictions", {})
@@ -29,7 +32,7 @@ for city, pdata in sorted(preds.items()):
     if actual is None:
         continue
     city_base = city.split(",")[0].strip()
-    target = pdata.get("_target_date", "2026-08-11")
+    target = pdata.get("_target_date", target_date)
     mt = resolved.get((city, target)) or resolved.get((city_base, target))
     if mt is None:
         continue
