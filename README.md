@@ -45,7 +45,7 @@ Dashboardet oppdateres automatisk hvert 5. minutt og viser:
 | `_model_quality_tracker.py` | Pipeline (daily_bma, hourly_check, daily_close) |
 | `_generate_quality_report.py` | Dashboard-generator (HTML + MD) |
 | `_backtest_30days.py` | Historisk validering (30 dager) |
-| `_crawl_temperature_markets.py` | Polymarket crawler |
+| `_fetch_market_prices.py` | Henter Polymarket markedspriser |
 
 ## 🔧 Krav
 

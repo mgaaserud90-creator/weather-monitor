@@ -4,7 +4,7 @@
 Compares each city's recommended spill against Polymarket's resolved market
 using the unit-aware loader from _model_quality_tracker. Threshold markets are
 never treated as point temperatures, US °F bucket markets are compared against
-their inclusive °C range (not a rounded midpoint), and cities that were
+their inclusive native °F range (not a rounded midpoint), and cities that were
 predicted but have no resolvable market are surfaced explicitly as NA.
 """
 import json
@@ -96,9 +96,14 @@ for city in sorted(preds):
     value_c = value if unit == "C" else (value - 32) * 5 / 9
     lo_c = info.get("lo_c")
     hi_c = info.get("hi_c")
+    lo_f = info.get("lo_f")
+    hi_f = info.get("hi_f")
 
-    if lo_c is not None and hi_c is not None:
-        # Compare against the bucket's inclusive °C range.
+    if lo_f is not None and hi_f is not None:
+        # Compare in native °F against the bucket's inclusive range.
+        is_win = lo_f <= float(spill) * 9.0 / 5.0 + 32.0 <= hi_f
+    elif lo_c is not None and hi_c is not None:
+        # Fall back to the bucket's inclusive °C range.
         is_win = float(lo_c) <= float(spill) <= float(hi_c)
     else:
         is_win = int(spill) == int(round(value_c))

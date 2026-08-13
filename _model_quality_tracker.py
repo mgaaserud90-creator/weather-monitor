@@ -3497,7 +3497,8 @@ def _mean_pm_result(market_info: dict[str, Any] | None, mean_spill: float | int 
     mean(round) = int(round(bma_mean)) = the stored ``strategies.mean.spill``.
 
     - °C point market: WIN iff int(mean_spill) == int(round(value_c)).
-    - US °F bucket market (lo_c/hi_c): WIN iff lo_c <= mean_spill <= hi_c.
+    - US °F bucket market: WIN iff lo_f <= spill(°F) <= hi_f (native bounds),
+      falling back to lo_c <= mean_spill <= hi_c when °F bounds are missing.
     - Threshold markets are already excluded by _load_market_resolved_details().
 
     Returns None when there is no resolvable numeric market value or no spill.
@@ -3506,6 +3507,10 @@ def _mean_pm_result(market_info: dict[str, Any] | None, mean_spill: float | int 
         return None
     lo_c = market_info.get("lo_c")
     hi_c = market_info.get("hi_c")
+    lo_f = market_info.get("lo_f")
+    hi_f = market_info.get("hi_f")
+    if lo_f is not None and hi_f is not None:
+        return "WIN" if lo_f <= float(mean_spill) * 9.0 / 5.0 + 32.0 <= hi_f else "LOSS"
     if lo_c is not None and hi_c is not None:
         return "WIN" if float(lo_c) <= float(mean_spill) <= float(hi_c) else "LOSS"
     unit = (market_info.get("unit") or "C").upper()

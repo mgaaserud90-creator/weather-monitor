@@ -186,8 +186,6 @@ vær monitor/
 │
 ├── 📄 _fetch_market_prices.py             🕷️ Henter Polymarket markedspriser
 │
-├── 📄 _crawl_temperature_markets.py       🕷️ Polymarket crawler (5 strategier)
-│
 ├── 📄 _backtest_30days.py                 🔬 Historisk validering
 │
 ├── 📄 _sms_alert.py                       📱 Twilio SMS-varsler
@@ -208,7 +206,6 @@ vær monitor/
 ├── 📁 .github/workflows/
 │   ├── model_quality_pipeline.yml         🔄 Hoved-pipeline (2 cron triggere)
 │   ├── deploy_dashboard.yml               🚀 GitHub Pages deployment
-│   ├── daily_analysis.yml                 ⚠️ DEPRECATED (erstattet av pipeline)
 │   └── test_smoke.yml                     🧪 Smoke test (manuell trigger)
 │
 ├── 📁 src/
