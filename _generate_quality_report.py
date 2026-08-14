@@ -584,6 +584,14 @@ def _generate_report() -> str:
 
         g = peak_dev.get("global", {})
         lines.append("📈 AVVIKSSTATISTIKK (KUMULATIV) — VAR PEAK vs POLYMARKET:")
+        try:
+            overall_mae = f"{float(g.get('mae_c', 0)):.2f}"
+        except (TypeError, ValueError):
+            overall_mae = "—"
+        lines.append(
+            f"   OVERALL DEVIATION FACTOR (MAE, alle dager): {overall_mae}°C "
+            f"(bias {_d(g.get('bias_c'))}°C, n={g.get('n', 0)})"
+        )
         lines.append(
             f"   n={g.get('n', 0)}  bias/snitt={_d(g.get('bias_c'))}°C  "
             f"std={_d(g.get('std_gap_c'))}°C  MAE={_d(g.get('mae_c'))}°C  "
@@ -2211,6 +2219,36 @@ def _build_peak_verification_html_section() -> str:
     if not verifications:
         return ""
 
+    # ── OVERALL DEVIATION FACTOR (across ALL logged days) ──
+    # The headline factor is the global Mean Absolute Deviation (°C) computed
+    # from the append-only ``_peak_deviation_log.json`` sample history. The
+    # supporting context (signed bias, std, RMSE, n) is shown on the same card.
+    deviation = _load_peak_deviation_data()
+    global_stats = deviation.get("global", {})
+
+    def _fmt_g(value, signed: bool = False) -> str:
+        try:
+            v = float(value)
+            return f"{v:+.2f}" if signed else f"{v:.2f}"
+        except (TypeError, ValueError):
+            return "—"
+
+    g_n = int(global_stats.get("n", 0) or 0)
+    overall_factor_html = ""
+    if g_n > 0:
+        g_mae = _fmt_g(global_stats.get("mae_c"))
+        g_bias = _fmt_g(global_stats.get("bias_c"), signed=True)
+        g_std = _fmt_g(global_stats.get("std_gap_c"))
+        g_rmse = _fmt_g(global_stats.get("rmse_c"))
+        overall_factor_html = f"""
+      <div class="card" style="border: 1px solid var(--blue); grid-column: 1 / -1; text-align: left; padding: 16px 20px;">
+        <div class="label" style="font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--blue); font-weight: 700;">Overall Deviation Factor — alle dager</div>
+        <div class="value" style="font-size: 1.7rem; color: var(--blue);">Overall avvik (MAE, alle dager): {g_mae} °C</div>
+        <div class="label" style="margin-top: 8px; font-size: 0.9rem;">
+          Bias (systematisk offset): <strong>{g_bias} °C</strong> &nbsp;·&nbsp; Std: {g_std} °C &nbsp;·&nbsp; RMSE: {g_rmse} °C &nbsp;·&nbsp; n = {g_n}
+        </div>
+      </div>"""
+
     rows = ""
     for city, v in sorted(verifications.items()):
         our_peak = v.get("our_peak", "?")
@@ -2261,6 +2299,7 @@ def _build_peak_verification_html_section() -> str:
         OK = within 1.0°C | MINOR = 1.0–2.0°C (edge-affecting) | STASJONSFEIL = >2.0°C (likely wrong station). US (°F) markets are shown in °F.
       </p>
       <div class="card-grid" style="margin-bottom: 16px;">
+        {overall_factor_html}
         <div class="card" style="border: 1px solid #3fb950;">
           <div class="value" style="color: #3fb950;">{ok_count}</div>
           <div class="label">OK</div>
