@@ -572,6 +572,36 @@ def _generate_report() -> str:
 
     lines.append("")
 
+    # ── Peak Verification: latest day (Var vs Polymarket) ──
+    peak_verifications = _load_peak_verification_data()
+    if peak_verifications:
+        peak_cities = _load_peak_deviation_data().get("cities", {})
+        lines.append("📋 PEAK VERIFICATION — SISTE DAG (VAR vs POLYMARKET):")
+        lines.append(
+            f"   {'By':<26s} {'Var':>8s} {'Marked':>10s} {'Gap':>8s} "
+            f"{'Status':<17s} {'Korr.faktor':>16s}"
+        )
+        for city, v in sorted(peak_verifications.items()):
+            our_peak = v.get("our_peak", "?")
+            market = v.get("market_resolved", "?")
+            market_display = v.get("market_display") or v.get("bucket")
+            gap = v.get("gap", 0)
+            verdict = v.get("verdict", "?")
+            unit = (v.get("unit") or "C").upper()
+            unit_suffix = "°F" if unit == "F" else "°C"
+            our_str = f"{our_peak}{unit_suffix}" if isinstance(our_peak, (int, float)) else str(our_peak)
+            if market_display:
+                market_str = str(market_display)
+            else:
+                market_str = f"{market}{unit_suffix}" if isinstance(market, (int, float)) else str(market)
+            gap_str = f"{gap:+.1f}{unit_suffix}" if isinstance(gap, (int, float)) else str(gap)
+            corr_str = _format_city_correction(city, peak_cities)
+            lines.append(
+                f"   {city:<26s} {our_str:>8s} {market_str:>10s} {gap_str:>8s} "
+                f"{verdict:<17s} {corr_str:>16s}"
+            )
+        lines.append("")
+
     # ── Peak deviation statistics (cumulative) ──
     peak_dev = _load_peak_deviation_data()
     peak_samples = peak_dev.get("samples", [])
@@ -2213,6 +2243,25 @@ def _load_peak_deviation_data() -> dict:
     return {}
 
 
+def _format_city_correction(city: str, cities_stats: dict) -> str:
+    """Format a city's cumulative correction factor (signed bias_c) compactly.
+
+    Returns e.g. ``-0.57 °C (n=3)``, or ``—`` when the city has no samples.
+    """
+    cstats = cities_stats.get(city) or {}
+    try:
+        n = int(cstats.get("n", 0) or 0)
+    except (TypeError, ValueError):
+        n = 0
+    if n < 1:
+        return "—"
+    try:
+        bias = float(cstats.get("bias_c"))
+    except (TypeError, ValueError):
+        return "—"
+    return f"{bias:+.2f} °C (n={n})"
+
+
 def _build_peak_verification_html_section() -> str:
     """Build HTML section: PEAK VERIFICATION - Var vs Polymarket."""
     verifications = _load_peak_verification_data()
@@ -2225,6 +2274,7 @@ def _build_peak_verification_html_section() -> str:
     # supporting context (signed bias, std, RMSE, n) is shown on the same card.
     deviation = _load_peak_deviation_data()
     global_stats = deviation.get("global", {})
+    cities_stats = deviation.get("cities", {})
 
     def _fmt_g(value, signed: bool = False) -> str:
         try:
@@ -2278,6 +2328,7 @@ def _build_peak_verification_html_section() -> str:
         else:
             market_str = f"{market}{unit_suffix}" if isinstance(market, (int, float)) else str(market)
         gap_str = f"{gap:+.1f}{unit_suffix}" if isinstance(gap, (int, float)) else str(gap)
+        corr_str = _format_city_correction(city, cities_stats)
 
         rows += f"""<tr>
             <td><strong>{city}</strong></td>
@@ -2285,6 +2336,7 @@ def _build_peak_verification_html_section() -> str:
             <td>{market_str}</td>
             <td style="color:{status_color};font-weight:600;">{gap_str}</td>
             <td style="color:{status_color};font-weight:700;">{status_icon}</td>
+            <td>{corr_str}</td>
         </tr>"""
 
     ok_count = sum(1 for v in verifications.values() if v.get("verdict") == "OK")
@@ -2314,7 +2366,7 @@ def _build_peak_verification_html_section() -> str:
         </div>
       </div>
       <table>
-        <thead><tr><th>By</th><th>Var Peak</th><th>Marked</th><th>Gap</th><th>Status</th></tr></thead>
+        <thead><tr><th>By</th><th>Var Peak</th><th>Marked</th><th>Gap</th><th>Status</th><th>Korr.faktor (kumulativ)</th></tr></thead>
         <tbody>{rows}</tbody>
       </table>
     </div>"""
