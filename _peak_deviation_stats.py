@@ -46,6 +46,8 @@ from typing import Any
 BASE_DIR = Path(__file__).resolve().parent
 PEAK_VERIFICATION_LOG = BASE_DIR / "_peak_verification_log.json"
 PEAK_DEVIATION_LOG = BASE_DIR / "_peak_deviation_log.json"
+MODEL_QUALITY_LOG = BASE_DIR / "_model_quality_log.json"
+RESOLVED_MARKETS_LOG = BASE_DIR / "_resolved_markets_log.json"
 
 # Rounding precision for stored floats (°C / °C-deltas).
 ROUND_NDIGITS = 4
@@ -144,6 +146,128 @@ def sample_from_verification_entry(city: str, entry: dict[str, Any]) -> dict | N
         gap=gap,
         verdict=verdict,
     )
+
+
+def _to_native(value_c: float, unit: str) -> float:
+    """Convert an always-°C peak to the market's native unit."""
+    unit = (unit or "C").upper()
+    if unit == "F":
+        return value_c * 9.0 / 5.0 + 32.0
+    return value_c
+
+
+def _load_quality_log_runs() -> list[dict]:
+    """Return the append-only ``_model_quality_log.json`` runs (or [])."""
+    if not MODEL_QUALITY_LOG.exists():
+        return []
+    try:
+        data = load_json(MODEL_QUALITY_LOG)
+    except (json.JSONDecodeError, OSError):
+        return []
+    return data.get("runs", []) or []
+
+
+def _load_resolved_markets() -> dict:
+    """Return the ``_resolved_markets_log.json`` markets dict (or {})."""
+    if not RESOLVED_MARKETS_LOG.exists():
+        return {}
+    try:
+        data = load_json(RESOLVED_MARKETS_LOG)
+    except (json.JSONDecodeError, OSError):
+        return {}
+    return data.get("markets", {}) or {}
+
+
+def _backfill_from_quality_log(samples_by_key: dict) -> tuple[int, int]:
+    """Reconstruct all historical ``(city, day)`` samples from the append-only
+    model quality log and upsert them into ``samples_by_key``.
+
+    ``_peak_verification_log.json`` is wiped every 30 minutes and collapses to
+    one latest entry per city, so without this backfill most cities never grow
+    past ``n=1``. Here we replay every run → city prediction:
+
+      - actual   = ``strategies.sigma.actual_peak`` (always °C, even for US).
+      - target   = ``_target_date`` or the run's ``run_date``.
+      - Priority 1: in-run ``_market_resolved`` (native unit) with
+        ``_market_unit``, ``_peak_gap`` and ``_verdict``.
+      - Priority 2: fall back to ``resolved[city||target]`` from
+        ``_resolved_markets_log.json`` (native ``unit`` + ``value``).
+
+    Idempotent: upserts by ``(city, date)`` so existing samples are never
+    duplicated or wiped. Returns ``(merged_count, skipped_count)``.
+    """
+    runs = _load_quality_log_runs()
+    if not runs:
+        return 0, 0
+
+    resolved = _load_resolved_markets()
+
+    merged_count = 0
+    skipped_count = 0
+    for run in runs:
+        run_date = run.get("run_date")
+        predictions = run.get("predictions", {}) or {}
+        for city, pdata in predictions.items():
+            if not isinstance(pdata, dict):
+                skipped_count += 1
+                continue
+
+            sigma = (pdata.get("strategies") or {}).get("sigma") or {}
+            actual = sigma.get("actual_peak")
+            if actual is None:
+                skipped_count += 1
+                continue
+            try:
+                actual_c = float(actual)
+            except (TypeError, ValueError):
+                skipped_count += 1
+                continue
+
+            target = pdata.get("_target_date") or run_date
+            if not target:
+                skipped_count += 1
+                continue
+
+            # Priority 1: in-run resolution (native unit + gap + verdict).
+            market_resolved = pdata.get("_market_resolved")
+            unit = (pdata.get("_market_unit") or "C").upper()
+            gap = pdata.get("_peak_gap")
+            verdict = pdata.get("_verdict")
+
+            if market_resolved is None:
+                # Priority 2: resolved-markets log keyed "City, CC||YYYY-MM-DD".
+                entry = resolved.get(f"{city}||{target}")
+                if not isinstance(entry, dict):
+                    skipped_count += 1
+                    continue
+                if (entry.get("type") or "").lower() == "threshold":
+                    skipped_count += 1
+                    continue
+                value = entry.get("value")
+                if value is None:
+                    skipped_count += 1
+                    continue
+                market_resolved = value
+                unit = (entry.get("unit") or "C").upper()
+                gap = None
+                verdict = None
+
+            sample = build_sample(
+                city=city,
+                date_str=target,
+                our_peak=_to_native(actual_c, unit),
+                market_resolved=market_resolved,
+                unit=unit,
+                gap=gap,
+                verdict=verdict,
+            )
+            if sample is None:
+                skipped_count += 1
+                continue
+            samples_by_key[(sample["city"], sample["date"])] = sample
+            merged_count += 1
+
+    return merged_count, skipped_count
 
 
 def load_existing_samples() -> dict:
@@ -330,6 +454,8 @@ def main() -> None:
             samples_by_key[key] = sample
             merged_count += 1
 
+    backfill_merged, backfill_skipped = _backfill_from_quality_log(samples_by_key)
+
     output = _recompute_and_write(samples_by_key)
     global_stats = output["global"]
     cities = output["cities"]
@@ -338,7 +464,8 @@ def main() -> None:
         "Peak deviation stats — "
         f"{len(output['samples'])} samples, {len(cities)} cities "
         f"(added this run: {added_count}, merged: {merged_count}, "
-        f"skipped: {skipped_count})"
+        f"skipped: {skipped_count}, backfilled: {backfill_merged}, "
+        f"backfill skipped: {backfill_skipped})"
     )
     print(
         f"global: n={global_stats['n']} "

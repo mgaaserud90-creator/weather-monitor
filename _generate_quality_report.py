@@ -2246,7 +2246,10 @@ def _load_peak_deviation_data() -> dict:
 def _format_city_correction(city: str, cities_stats: dict) -> str:
     """Format a city's cumulative correction factor (signed bias_c) compactly.
 
-    Returns e.g. ``-0.57 °C (n=3)``, or ``—`` when the city has no samples.
+    Aggregates are stored in °C internally; only per-city display converts to
+    the city's native unit. A °F city therefore gets a delta conversion
+    (×9/5, no -32 offset). Returns e.g. ``-0.57 °C (n=3)`` /
+    ``+1.03 °F (n=5)``, or ``—`` when the city has no samples.
     """
     cstats = cities_stats.get(city) or {}
     try:
@@ -2259,6 +2262,10 @@ def _format_city_correction(city: str, cities_stats: dict) -> str:
         bias = float(cstats.get("bias_c"))
     except (TypeError, ValueError):
         return "—"
+    unit = (cstats.get("unit") or "C").upper()
+    if unit == "F":
+        bias_f = bias * 9.0 / 5.0
+        return f"{bias_f:+.2f} °F (n={n})"
     return f"{bias:+.2f} °C (n={n})"
 
 
@@ -2267,6 +2274,13 @@ def _build_peak_verification_html_section() -> str:
     verifications = _load_peak_verification_data()
     if not verifications:
         return ""
+
+    # ── LATEST DAY (for the OK/MINOR/STASJONSFEIL cards and table rows) ──
+    # Derived from the data (max date present), not datetime.now(), so the
+    # cards auto-update as new resolutions land.
+    verif_dates = [v.get("date") for v in verifications.values() if v.get("date")]
+    latest_date = max(verif_dates) if verif_dates else None
+    day_label = f"Siste dag ({latest_date})" if latest_date else "Siste dag"
 
     # ── OVERALL DEVIATION FACTOR (across ALL logged days) ──
     # The headline factor is the global Mean Absolute Deviation (°C) computed
@@ -2301,6 +2315,8 @@ def _build_peak_verification_html_section() -> str:
 
     rows = ""
     for city, v in sorted(verifications.items()):
+        if latest_date is not None and v.get("date") != latest_date:
+            continue
         our_peak = v.get("our_peak", "?")
         market = v.get("market_resolved", "?")
         market_display = v.get("market_display") or v.get("bucket")
@@ -2339,9 +2355,14 @@ def _build_peak_verification_html_section() -> str:
             <td>{corr_str}</td>
         </tr>"""
 
-    ok_count = sum(1 for v in verifications.values() if v.get("verdict") == "OK")
-    minor_count = sum(1 for v in verifications.values() if v.get("verdict") == "MINOR")
-    mismatch_count = sum(1 for v in verifications.values() if v.get("verdict") == "STATION_MISMATCH")
+    latest_verifications = (
+        {k: v for k, v in verifications.items() if v.get("date") == latest_date}
+        if latest_date is not None
+        else verifications
+    )
+    ok_count = sum(1 for v in latest_verifications.values() if v.get("verdict") == "OK")
+    minor_count = sum(1 for v in latest_verifications.values() if v.get("verdict") == "MINOR")
+    mismatch_count = sum(1 for v in latest_verifications.values() if v.get("verdict") == "STATION_MISMATCH")
 
     return f"""
     <div class="section" style="border-color: rgba(188, 140, 255, 0.3);">
@@ -2354,15 +2375,15 @@ def _build_peak_verification_html_section() -> str:
         {overall_factor_html}
         <div class="card" style="border: 1px solid #3fb950;">
           <div class="value" style="color: #3fb950;">{ok_count}</div>
-          <div class="label">OK</div>
+          <div class="label">OK · {day_label}</div>
         </div>
         <div class="card" style="border: 1px solid #d2991d;">
           <div class="value" style="color: #d2991d;">{minor_count}</div>
-          <div class="label">MINOR</div>
+          <div class="label">MINOR · {day_label}</div>
         </div>
         <div class="card" style="border: 1px solid #f85149;">
           <div class="value" style="color: #f85149;">{mismatch_count}</div>
-          <div class="label">STASJONSFEIL</div>
+          <div class="label">STASJONSFEIL · {day_label}</div>
         </div>
       </div>
       <table>
