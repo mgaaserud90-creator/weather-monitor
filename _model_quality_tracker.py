@@ -3467,6 +3467,25 @@ def _log_peak_verification(
         "gap": gap, "unit": unit_label,
         "verdict": verdict, "note": note, "logged_at": _now_utc(),
     }
+
+    # Accumulate into the persistent daily peak-deviation tracker so the
+    # daily-close path also builds history even when the stats script does
+    # not run. Exception-safe: peak verification must never crash because of
+    # tracker issues.
+    try:
+        import _peak_deviation_stats  # type: ignore[import-not-found]  # local import — same directory as tracker
+        _peak_deviation_stats.upsert_peak_sample(
+            city=city,
+            date_str=date_str,
+            our_peak=round(our_native, 1),
+            market_resolved=round(market_native, 1),
+            unit=unit_label,
+            gap=gap,
+            verdict=verdict,
+        )
+    except Exception:
+        pass
+
     existing = verifications.get(city, {})
     if not (existing.get("date") == date_str and existing.get("our_peak") == round(our_native, 1)):
         verifications[city] = entry

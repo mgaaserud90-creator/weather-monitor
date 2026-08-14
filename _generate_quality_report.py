@@ -43,6 +43,7 @@ HTML_REPORT_FILE = Path(_SCRIPT_DIR) / "_quality_report.html"
 INDEX_FILE = Path(_SCRIPT_DIR) / "index.html"
 PEAK_DETECTION_FILE = Path(_SCRIPT_DIR) / "_peak_detection.html"
 PEAK_VERIFICATION_LOG = Path(_SCRIPT_DIR) / "_peak_verification_log.json"
+PEAK_DEVIATION_LOG = Path(_SCRIPT_DIR) / "_peak_deviation_log.json"
 
 # Market edge computation (BMA vs Polymarket)
 try:
@@ -570,6 +571,37 @@ def _generate_report() -> str:
             lines.append(f"   {rd}  │  {npred:3d} byer  │  (ingen resultater)")
 
     lines.append("")
+
+    # ── Peak deviation statistics (cumulative) ──
+    peak_dev = _load_peak_deviation_data()
+    peak_samples = peak_dev.get("samples", [])
+    if peak_samples:
+        def _d(value) -> str:
+            try:
+                return f"{float(value):+.2f}"
+            except (TypeError, ValueError):
+                return "—"
+
+        g = peak_dev.get("global", {})
+        lines.append("📈 AVVIKSSTATISTIKK (KUMULATIV) — VAR PEAK vs POLYMARKET:")
+        lines.append(
+            f"   n={g.get('n', 0)}  bias/snitt={_d(g.get('bias_c'))}°C  "
+            f"std={_d(g.get('std_gap_c'))}°C  MAE={_d(g.get('mae_c'))}°C  "
+            f"RMSE={_d(g.get('rmse_c'))}°C"
+        )
+        peak_cities = peak_dev.get("cities", {})
+        if peak_cities:
+            lines.append(
+                f"   {'By':<28s} {'n':>4s} {'Bias°C':>9s} {'Std':>7s} "
+                f"{'Min':>7s} {'Max':>7s} {'Siste':>7s}"
+            )
+            for city, c in sorted(peak_cities.items()):
+                lines.append(
+                    f"   {city:<28s} {c.get('n', 0):4d} {_d(c.get('bias_c')):>9s} "
+                    f"{_d(c.get('std_gap_c')):>7s} {_d(c.get('min_gap_c')):>7s} "
+                    f"{_d(c.get('max_gap_c')):>7s} {_d(c.get('last_gap_c')):>7s}"
+                )
+        lines.append("")
 
     # ── Per-city strategy recommendation + Resultant Monitor ──
     best_per_city = _get_best_strategy_per_city(runs)
@@ -2163,6 +2195,16 @@ def _load_peak_verification_data() -> dict:
     return {}
 
 
+def _load_peak_deviation_data() -> dict:
+    """Load the persistent peak-deviation statistics log (or an empty dict)."""
+    if PEAK_DEVIATION_LOG.exists():
+        try:
+            return json.loads(PEAK_DEVIATION_LOG.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, KeyError):
+            pass
+    return {}
+
+
 def _build_peak_verification_html_section() -> str:
     """Build HTML section: PEAK VERIFICATION - Var vs Polymarket."""
     verifications = _load_peak_verification_data()
@@ -2236,6 +2278,89 @@ def _build_peak_verification_html_section() -> str:
         <thead><tr><th>By</th><th>Var Peak</th><th>Marked</th><th>Gap</th><th>Status</th></tr></thead>
         <tbody>{rows}</tbody>
       </table>
+    </div>"""
+
+
+def _build_peak_deviation_html_section() -> str:
+    """Build HTML section: AVVIKSSTATISTIKK (kumulativ) — peak-deviation stats."""
+    data = _load_peak_deviation_data()
+    samples = data.get("samples", [])
+    cities = data.get("cities", {})
+    global_stats = data.get("global", {})
+    if not samples:
+        return ""
+
+    # Rolling mean = mean of the last 3 normalized gaps (°C) per city.
+    by_city: dict[str, list[dict]] = {}
+    for sample in samples:
+        city = sample.get("city", "?")
+        by_city.setdefault(city, []).append(sample)
+    rolling: dict[str, float] = {}
+    for city, city_samples in by_city.items():
+        ordered = sorted(
+            city_samples, key=lambda s: (s.get("date", ""), s.get("city", ""))
+        )
+        last3 = [s["gap_c"] for s in ordered[-3:]]
+        rolling[city] = sum(last3) / len(last3)
+
+    def _fmt(value) -> str:
+        try:
+            return f"{float(value):+.2f}"
+        except (TypeError, ValueError):
+            return "—"
+
+    g_n = int(global_stats.get("n", 0) or 0)
+    rows = ""
+    for city, stats in sorted(cities.items()):
+        roll = rolling.get(city)
+        rows += (
+            f"<tr><td><strong>{city}</strong></td>"
+            f"<td>{stats.get('n', 0)}</td>"
+            f"<td>{_fmt(stats.get('bias_c'))}</td>"
+            f"<td>{_fmt(stats.get('std_gap_c'))}</td>"
+            f"<td>{_fmt(stats.get('min_gap_c'))}</td>"
+            f"<td>{_fmt(stats.get('max_gap_c'))}</td>"
+            f"<td>{_fmt(stats.get('last_gap_c'))}</td>"
+            f"<td>{_fmt(roll) if roll is not None else '—'}</td></tr>"
+        )
+
+    return f"""
+    <div class="section" style="border-color: rgba(88, 166, 255, 0.3);">
+      <h2>AVVIKSSTATISTIKK (kumulativ) — Var Peak vs Polymarket</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        Kumulativ daglig avvik mellom vår arkiv-peak og Polymarkets resolusjon.
+        Gap normaliseres til °C (F-gap × 5/9) slik at byer kan aggregeres på tvers
+        av enheter. Bias = gjennomsnittlig signert gap (systematisk offset som kan
+        trekkes fra vår peak for korreksjon).
+      </p>
+      <div class="card-grid" style="margin-bottom: 16px;">
+        <div class="card">
+          <div class="value" style="color: var(--blue);">{g_n}</div>
+          <div class="label">Samples</div>
+        </div>
+        <div class="card">
+          <div class="value" style="color: var(--purple);">{_fmt(global_stats.get('bias_c'))}</div>
+          <div class="label">Bias (snitt gap °C)</div>
+        </div>
+        <div class="card">
+          <div class="value">{_fmt(global_stats.get('std_gap_c'))}</div>
+          <div class="label">Std °C</div>
+        </div>
+        <div class="card">
+          <div class="value">{_fmt(global_stats.get('mae_c'))}</div>
+          <div class="label">MAE °C</div>
+        </div>
+        <div class="card">
+          <div class="value">{_fmt(global_stats.get('rmse_c'))}</div>
+          <div class="label">RMSE °C</div>
+        </div>
+      </div>
+      <div style="max-height: 600px; overflow-y: auto;">
+      <table>
+        <thead><tr><th>By</th><th>n</th><th>Bias °C</th><th>Std</th><th>Min</th><th>Max</th><th>Siste</th><th>Rullende snitt (3)</th></tr></thead>
+        <tbody>{rows}</tbody>
+      </table>
+      </div>
     </div>"""
 
 
@@ -2896,6 +3021,9 @@ def _generate_html_report() -> str:
     # ── Peak Verification: Var vs Polymarket ──
     peak_verification_section = _build_peak_verification_html_section()
 
+    # ── Peak Deviation Statistics (cumulative) ──
+    peak_deviation_section = _build_peak_deviation_html_section()
+
     # ── PM Strategy Results: Anbefalt Spill vs Polymarket ──
     pm_strategy_section = _build_pm_strategy_html_section()
 
@@ -3191,6 +3319,9 @@ function sortTable(colIdx) {{
 
   <!-- PEAK VERIFICATION: Var vs Polymarket -->
   {peak_verification_section}
+
+  <!-- PEAK DEVIATION STATISTICS: Cumulative -->
+  {peak_deviation_section}
 
   <!-- PM STRATEGY RESULTS: Anbefalt Spill vs Polymarket -->
   {pm_strategy_section}

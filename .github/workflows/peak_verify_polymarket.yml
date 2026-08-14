@@ -47,8 +47,11 @@ jobs:
             echo "No verification data generated."
           fi
 
+      - name: Peak deviation stats (cumulative)
+        run: python3 _peak_deviation_stats.py
+
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Auto: peak verification vs Polymarket $(date -u +%Y-%m-%dT%H:%M)"
-          file_pattern: '_peak_verification_log.json'
+          file_pattern: '_peak_verification_log.json _peak_deviation_log.json'
           push_options: '--force-with-lease'
