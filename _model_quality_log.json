@@ -23704,9 +23704,9 @@
     {
       "run_date": "2026-08-14",
       "target_date": "2026-08-14",
-      "phase": "hourly_active",
+      "phase": "daily_close",
       "run_started": "2026-08-14T00:57:07.582557+00:00",
-      "last_updated": "2026-08-14T22:13:33.962107+00:00",
+      "last_updated": "2026-08-14T23:10:11.352602+00:00",
       "top_5_confidence": [
         "Guangzhou, CN",
         "Buenos Aires, AR",
@@ -24606,7 +24606,7 @@
               "win_prob": 0.339,
               "result": null,
               "actual_peak": null,
-              "pm_result": null
+              "pm_result": "LOSS"
             }
           },
           "peak_detected_at": null,
@@ -24910,7 +24910,7 @@
               "win_prob": 0.289,
               "result": null,
               "actual_peak": null,
-              "pm_result": null
+              "pm_result": "LOSS"
             }
           },
           "peak_detected_at": null,
@@ -25158,7 +25158,7 @@
               "win_prob": 0.285,
               "result": null,
               "actual_peak": null,
-              "pm_result": null
+              "pm_result": "WIN"
             }
           },
           "peak_detected_at": null,
@@ -26416,27 +26416,27 @@
               "spill": 12,
               "k": 0.7,
               "win_prob": 0.216,
-              "result": null,
-              "actual_peak": null
+              "result": "LOSS",
+              "actual_peak": 13.7
             },
             "p5": {
               "spill": 12,
               "k": null,
               "win_prob": 0.216,
-              "result": null,
-              "actual_peak": null
+              "result": "LOSS",
+              "actual_peak": 13.7
             },
             "mean": {
               "spill": 13,
               "k": 0.0,
               "win_prob": 0.414,
-              "result": null,
-              "actual_peak": null,
+              "result": "LOSS",
+              "actual_peak": 13.7,
               "pm_result": "LOSS"
             }
           },
-          "peak_detected_at": null,
-          "recommendation": null,
+          "peak_detected_at": "2026-08-14T23:10:10.067705+00:00",
+          "recommendation": "🔴 SELG med tap — gå SHORT 12°C (peak=13.7°C → round=14 ≠ 12)",
           "_lat": -34.8222,
           "_lon": -58.5358,
           "_tz": "America/Argentina/Buenos_Aires",
@@ -26478,27 +26478,27 @@
               "spill": 23,
               "k": 0.7,
               "win_prob": 0.121,
-              "result": null,
-              "actual_peak": null
+              "result": "LOSS",
+              "actual_peak": 25.1
             },
             "p5": {
               "spill": 22,
               "k": null,
               "win_prob": 0.045,
-              "result": null,
-              "actual_peak": null
+              "result": "LOSS",
+              "actual_peak": 25.1
             },
             "mean": {
               "spill": 25,
               "k": 0.0,
               "win_prob": 0.257,
-              "result": null,
-              "actual_peak": null,
+              "result": "WIN",
+              "actual_peak": 25.1,
               "pm_result": "LOSS"
             }
           },
-          "peak_detected_at": null,
-          "recommendation": null,
+          "peak_detected_at": "2026-08-14T23:10:10.711485+00:00",
+          "recommendation": "🔴 SELG med tap — gå SHORT 23°C (peak=25.1°C → round=25 ≠ 23) | Alt. ville vunnet: Mean@25°C",
           "_lat": -23.4356,
           "_lon": -46.4731,
           "_tz": "America/Sao_Paulo",
@@ -26538,27 +26538,27 @@
               "spill": 32,
               "k": 0.7,
               "win_prob": 0.196,
-              "result": null,
-              "actual_peak": null
+              "result": "LOSS",
+              "actual_peak": 32.7
             },
             "p5": {
               "spill": 32,
               "k": null,
               "win_prob": 0.196,
-              "result": null,
-              "actual_peak": null
+              "result": "LOSS",
+              "actual_peak": 32.7
             },
             "mean": {
               "spill": 33,
               "k": 0.0,
               "win_prob": 0.385,
-              "result": null,
-              "actual_peak": null,
+              "result": "WIN",
+              "actual_peak": 32.7,
               "pm_result": "LOSS"
             }
           },
-          "peak_detected_at": null,
-          "recommendation": null,
+          "peak_detected_at": "2026-08-14T23:10:11.352510+00:00",
+          "recommendation": "🔴 SELG med tap — gå SHORT 32°C (peak=32.7°C → round=33 ≠ 32) | Alt. ville vunnet: Mean@33°C",
           "_lat": 25.7959,
           "_lon": -80.287,
           "_tz": "America/New_York",
@@ -29241,13 +29241,13 @@
         }
       },
       "summary": {
-        "sigma_wins": 1,
-        "sigma_losses": 1,
-        "p5_wins": 1,
-        "p5_losses": 1,
-        "mean_wins": 1,
+        "sigma_wins": 0,
+        "sigma_losses": 3,
+        "p5_wins": 0,
+        "p5_losses": 3,
+        "mean_wins": 2,
         "mean_losses": 1,
-        "unresolved": 49
+        "unresolved": 48
       },
       "utc_hour": 22,
       "active_regions": [
@@ -31510,20 +31510,29 @@
           "pm_value": 27.0,
           "pm_unit": "C",
           "pm_bucket": "27°C"
+        },
+        {
+          "date": "2026-08-14",
+          "city": "Mexico City, MX",
+          "mean_spill": 26,
+          "pm_value": 26.0,
+          "pm_unit": "C",
+          "pm_bucket": "26°C"
         }
       ]
     }
   ],
   "cumulative": {
-    "total_days": 3,
-    "total_predictions": 153,
+    "total_days": 4,
+    "total_predictions": 204,
     "sigma_wins": 4,
-    "sigma_losses": 54,
+    "sigma_losses": 57,
     "p5_wins": 2,
-    "p5_losses": 56,
-    "mean_wins": 29,
-    "mean_losses": 29,
-    "mean_pm_wins": 40,
-    "mean_pm_losses": 90
+    "p5_losses": 59,
+    "mean_wins": 31,
+    "mean_losses": 30,
+    "mean_pm_wins": 49,
+    "mean_pm_losses": 112,
+    "mean_pm_bets": 161
   }
 }
