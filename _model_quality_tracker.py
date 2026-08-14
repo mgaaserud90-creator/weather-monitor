@@ -2341,6 +2341,7 @@ async def daily_close_mode() -> None:
                 _c_meanpm_w += 1
             elif _pmr == "LOSS":
                 _c_meanpm_l += 1
+    _c_meanpm_bets = _c_meanpm_w + _c_meanpm_l
     log_data["cumulative"] = {
         "total_days": _c_total_days,
         "total_predictions": _c_total_preds,
@@ -2352,6 +2353,7 @@ async def daily_close_mode() -> None:
         "mean_losses": _c_mean_l,
         "mean_pm_wins": _c_meanpm_w,
         "mean_pm_losses": _c_meanpm_l,
+        "mean_pm_bets": _c_meanpm_bets,
     }
 
     _save_log(log_data)
@@ -3516,7 +3518,7 @@ def _mean_pm_result(market_info: dict[str, Any] | None, mean_spill: float | int 
     unit = (market_info.get("unit") or "C").upper()
     value = float(market_info["value"])
     value_c = value if unit == "C" else (value - 32.0) * 5.0 / 9.0
-    return "WIN" if int(mean_spill) == int(round(value_c)) else "LOSS"
+    return "WIN" if float(mean_spill) == float(value_c) else "LOSS"
 
 
 async def _verify_peaks_vs_market(
@@ -3569,14 +3571,19 @@ async def _verify_peaks_vs_market(
     for city, pdata in preds_dict.items():
         mean = pdata.get("strategies", {}).get("mean", {})
         mean_spill = mean.get("spill")
-        if mean_spill is None:
-            continue
         city_target = pdata.get("_target_date", today)
         city_base = city.split(",")[0].strip()
         market_info = (
             resolved_markets.get((city, city_target))
             or resolved_markets.get((city_base, city_target))
         )
+        if mean_spill is None:
+            # Market resolved but the strategy had no spill — the bet still
+            # happened, so count it as a LOSS. Leave pm_result unset only when
+            # there is genuinely no resolvable market resolution.
+            if market_info is not None and market_info.get("value") is not None:
+                mean["pm_result"] = "LOSS"
+            continue
         pm_result = _mean_pm_result(market_info, mean_spill)
         mean["pm_result"] = pm_result
         if pm_result == "WIN" and market_info is not None:

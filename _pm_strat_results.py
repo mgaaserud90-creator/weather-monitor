@@ -109,7 +109,7 @@ for city in sorted(preds):
         # Fall back to the bucket's inclusive °C range.
         is_win = float(lo_c) <= float(spill) <= float(hi_c)
     else:
-        is_win = int(spill) == int(round(value_c))
+        is_win = (float(spill) == float(value_c))
 
     if is_win:
         wins += 1

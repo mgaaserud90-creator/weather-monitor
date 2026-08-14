@@ -2,9 +2,10 @@ name: Model Quality Pipeline
 
 # Lightweight pipeline — minimal API calls.
 #
-# Two cron triggers:
-#   0 * * * *       → hourly_active  — Simple BMA + peak check once per hour.
+# Three cron triggers:
+#   0 0-22 * * *    → hourly_active  — Simple BMA + peak check once per hour.
 #                                      No rapid monitoring. ~50 API calls per run.
+#   0 2 * * *       → daily_close    — Second close for Americas (resolve ~01:00 UTC).
 #   0 23 * * *      → daily_close    — Resolve today's predictions against archive data.
 #
 # Push to main → trigger deploy_dashboard.yml for GitHub Pages
@@ -14,6 +15,7 @@ on:
     branches: ["main", "master"]
   schedule:
     - cron: '0 0-22 * * *'    # Hourly (00:00-22:00 UTC): simple BMA + peak check
+    - cron: '0 2 * * *'       # Second daily close at 02:00 UTC (Americas resolve ~01:00 UTC)
     - cron: '0 23 * * *'      # Daily close at 23:00 UTC (NO hourly at 23:00 to avoid conflict)
   workflow_dispatch:
     inputs:
@@ -67,7 +69,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
             HOUR=$(date +%H)
-            if [ "$HOUR" = "23" ]; then
+            if [ "$HOUR" = "23" ] || [ "$HOUR" = "02" ]; then
               MODE="daily_close"
             else
               MODE="hourly_active"
