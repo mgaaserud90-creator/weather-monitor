@@ -572,33 +572,23 @@ def _generate_report() -> str:
 
     lines.append("")
 
-    # ── Peak Verification: latest day (Var vs Polymarket) ──
-    peak_verifications = _load_peak_verification_data()
-    if peak_verifications:
-        peak_cities = _load_peak_deviation_data().get("cities", {})
-        lines.append("📋 PEAK VERIFICATION — SISTE DAG (VAR vs POLYMARKET):")
+    # ── Peak Verification: all cities (Var vs Polymarket) ──
+    peak_today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    peak_rows, peak_counts = _build_peak_verification_table(peak_today)
+    if peak_rows:
+        lines.append(f"📋 PEAK VERIFICATION — I DAG ({peak_today}) (VAR vs POLYMARKET):")
+        lines.append(
+            f"   OK: {peak_counts['OK']}  MINOR: {peak_counts['MINOR']}  "
+            f"STASJONSFEIL: {peak_counts['STASJONSFEIL']}  Venter: {peak_counts['Venter']}"
+        )
         lines.append(
             f"   {'By':<26s} {'Var':>8s} {'Marked':>10s} {'Gap':>8s} "
             f"{'Status':<17s} {'Korr.faktor':>16s}"
         )
-        for city, v in sorted(peak_verifications.items()):
-            our_peak = v.get("our_peak", "?")
-            market = v.get("market_resolved", "?")
-            market_display = v.get("market_display") or v.get("bucket")
-            gap = v.get("gap", 0)
-            verdict = v.get("verdict", "?")
-            unit = (v.get("unit") or "C").upper()
-            unit_suffix = "°F" if unit == "F" else "°C"
-            our_str = f"{our_peak}{unit_suffix}" if isinstance(our_peak, (int, float)) else str(our_peak)
-            if market_display:
-                market_str = str(market_display)
-            else:
-                market_str = f"{market}{unit_suffix}" if isinstance(market, (int, float)) else str(market)
-            gap_str = f"{gap:+.1f}{unit_suffix}" if isinstance(gap, (int, float)) else str(gap)
-            corr_str = _format_city_correction(city, peak_cities)
+        for r in peak_rows:
             lines.append(
-                f"   {city:<26s} {our_str:>8s} {market_str:>10s} {gap_str:>8s} "
-                f"{verdict:<17s} {corr_str:>16s}"
+                f"   {r['city']:<26s} {r['our_str']:>8s} {r['market_str']:>10s} {r['gap_str']:>8s} "
+                f"{r['status']:<17s} {r['corr_str']:>16s}"
             )
         lines.append("")
 
@@ -2269,18 +2259,213 @@ def _format_city_correction(city: str, cities_stats: dict) -> str:
     return f"{bias:+.2f} °C (n={n})"
 
 
+def _load_resolved_markets_log() -> dict:
+    """Load ``_resolved_markets_log.json`` markets (keyed ``City, CC||YYYY-MM-DD``)."""
+    path = Path(_SCRIPT_DIR) / "_resolved_markets_log.json"
+    if path.exists():
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            return data.get("markets", {}) or {}
+        except (json.JSONDecodeError, OSError):
+            pass
+    return {}
+
+
+def _load_default_city_names() -> list[str]:
+    """Return the default city names from ``weather_monitor_defaults.json``."""
+    path = Path(_SCRIPT_DIR) / "weather_monitor_defaults.json"
+    names: list[str] = []
+    if path.exists():
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            for loc in data.get("default_locations", []):
+                name = loc.get("name", "")
+                if name:
+                    names.append(name)
+        except (json.JSONDecodeError, OSError):
+            pass
+    return names
+
+
+def _load_latest_run_predictions() -> dict:
+    """Return the latest run's ``predictions`` dict from ``_model_quality_log.json``."""
+    data = _load_log()
+    runs = data.get("runs", []) or []
+    if not runs:
+        return {}
+    return runs[-1].get("predictions", {}) or {}
+
+
+def _peak_is_us_city(city: str) -> bool:
+    """Return True for US market city names (native unit °F)."""
+    c = (city or "").strip()
+    return c.upper().endswith(", US") or c.upper().endswith(" US")
+
+
+def _peak_verdict_from_gap(gap: float, unit: str) -> str:
+    """Re-derive the OK/MINOR/STATION_MISMATCH verdict from a native-unit gap."""
+    unit = (unit or "C").upper()
+    ok_t = 1.8 if unit == "F" else 1.0
+    minor_t = 3.6 if unit == "F" else 2.0
+    abs_gap = abs(float(gap))
+    if abs_gap <= ok_t:
+        return "OK"
+    if abs_gap <= minor_t:
+        return "MINOR"
+    return "STATION_MISMATCH"
+
+
+def _peak_status_display(verdict: str) -> tuple[str, str]:
+    """Map a raw verdict to (display label, HTML color)."""
+    if verdict == "OK":
+        return "OK", "#3fb950"
+    if verdict == "MINOR":
+        return "MINOR", "#d2991d"
+    if verdict == "THRESHOLD_MARKET":
+        return "THRESHOLD_MARKET", "#8b949e"
+    if verdict == "STATION_MISMATCH":
+        return "STASJONSFEIL", "#f85149"
+    return str(verdict), "#8b949e"
+
+
+def _peak_fmt_temp(value, unit_suffix: str) -> str:
+    """Format a temperature value with its unit suffix, or '—'."""
+    if isinstance(value, (int, float)):
+        return f"{value}{unit_suffix}"
+    if value is None:
+        return "—"
+    return str(value)
+
+
+def _peak_fmt_gap(value, unit_suffix: str) -> str:
+    """Format a native-unit gap with its sign and unit suffix, or '—'."""
+    if isinstance(value, (int, float)):
+        return f"{value:+.1f}{unit_suffix}"
+    return "—"
+
+
+def _build_peak_verification_table(today: str) -> tuple[list[dict], dict]:
+    """Build display-ready PEAK VERIFICATION rows for every city.
+
+    Returns ``(rows, counts)``. Every default city (plus any city present in
+    the latest predictions) gets a row; cities without a resolution for
+    ``today`` are shown as pending ("Venter") with ``Marked``/``Gap`` = "—".
+    """
+    verifications = _load_peak_verification_data()
+    resolved_markets = _load_resolved_markets_log()
+    latest_predictions = _load_latest_run_predictions()
+    cities_stats = _load_peak_deviation_data().get("cities", {})
+
+    city_names = _load_default_city_names()
+    for city in latest_predictions:
+        if city not in city_names:
+            city_names.append(city)
+    city_names = sorted(set(city_names))
+
+    counts = {"OK": 0, "MINOR": 0, "STASJONSFEIL": 0, "Venter": 0}
+    rows: list[dict] = []
+
+    def _latest_known_peak(city: str, unit: str):
+        """Latest archive/prediction peak for a city in the given native unit."""
+        v = verifications.get(city)
+        if isinstance(v, dict) and v.get("our_peak") is not None:
+            try:
+                return float(v.get("our_peak"))
+            except (TypeError, ValueError):
+                pass
+        p = latest_predictions.get(city)
+        if isinstance(p, dict):
+            val = p.get("bma_mean")
+            if val is None:
+                val = (p.get("strategies") or {}).get("sigma", {}).get("actual_peak")
+            if val is not None:
+                try:
+                    val_f = float(val)
+                except (TypeError, ValueError):
+                    return "—"
+                if unit == "F":
+                    return round(val_f * 9.0 / 5.0 + 32.0, 1)
+                return round(val_f, 1)
+        return "—"
+
+    for city in city_names:
+        v_today = verifications.get(city)
+        if not (isinstance(v_today, dict) and v_today.get("date") == today):
+            v_today = None
+
+        corr_str = _format_city_correction(city, cities_stats)
+
+        if v_today is not None:
+            unit = (v_today.get("unit") or "C").upper()
+            unit_suffix = "°F" if unit == "F" else "°C"
+            our_str = _peak_fmt_temp(v_today.get("our_peak"), unit_suffix)
+            market_display = v_today.get("market_display") or v_today.get("bucket")
+            market_str = str(market_display) if market_display else _peak_fmt_temp(v_today.get("market_resolved"), unit_suffix)
+            gap_str = _peak_fmt_gap(v_today.get("gap"), unit_suffix)
+            status, status_color = _peak_status_display(v_today.get("verdict", "?"))
+        else:
+            rm = resolved_markets.get(f"{city}||{today}")
+            is_point = (
+                isinstance(rm, dict)
+                and (rm.get("type") or "").lower() != "threshold"
+                and rm.get("value") is not None
+            )
+            unit = "C"
+            if isinstance(rm, dict) and rm.get("unit"):
+                unit = (rm.get("unit") or "C").upper()
+            elif _peak_is_us_city(city):
+                unit = "F"
+            v_any = verifications.get(city)
+            if isinstance(v_any, dict) and v_any.get("unit"):
+                unit = (v_any.get("unit") or "C").upper()
+            unit_suffix = "°F" if unit == "F" else "°C"
+
+            if is_point and isinstance(rm, dict):
+                market_val = rm.get("value")
+                market_display = rm.get("temp_display") or rm.get("bucket")
+                market_str = str(market_display) if market_display else _peak_fmt_temp(market_val, unit_suffix)
+                our_peak = _latest_known_peak(city, unit)
+                our_str = _peak_fmt_temp(our_peak, unit_suffix)
+                if isinstance(our_peak, (int, float)) and isinstance(market_val, (int, float)):
+                    gap = round(float(our_peak) - float(market_val), 1)
+                    gap_str = _peak_fmt_gap(gap, unit_suffix)
+                    status, status_color = _peak_status_display(_peak_verdict_from_gap(gap, unit))
+                else:
+                    gap_str = "—"
+                    status, status_color = "Venter", "#8b949e"
+            else:
+                our_peak = _latest_known_peak(city, unit)
+                our_str = _peak_fmt_temp(our_peak, unit_suffix)
+                market_str = "—"
+                gap_str = "—"
+                status, status_color = "Venter", "#8b949e"
+
+        if status == "OK":
+            counts["OK"] += 1
+        elif status == "MINOR":
+            counts["MINOR"] += 1
+        elif status == "STASJONSFEIL":
+            counts["STASJONSFEIL"] += 1
+        else:
+            counts["Venter"] += 1
+
+        rows.append({
+            "city": city,
+            "our_str": our_str,
+            "market_str": market_str,
+            "gap_str": gap_str,
+            "status": status,
+            "status_color": status_color,
+            "corr_str": corr_str,
+        })
+
+    return rows, counts
+
+
 def _build_peak_verification_html_section() -> str:
     """Build HTML section: PEAK VERIFICATION - Var vs Polymarket."""
-    verifications = _load_peak_verification_data()
-    if not verifications:
-        return ""
-
-    # ── LATEST DAY (for the OK/MINOR/STASJONSFEIL cards and table rows) ──
-    # Derived from the data (max date present), not datetime.now(), so the
-    # cards auto-update as new resolutions land.
-    verif_dates = [v.get("date") for v in verifications.values() if v.get("date")]
-    latest_date = max(verif_dates) if verif_dates else None
-    day_label = f"Siste dag ({latest_date})" if latest_date else "Siste dag"
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    day_label = f"I DAG ({today})"
 
     # ── OVERALL DEVIATION FACTOR (across ALL logged days) ──
     # The headline factor is the global Mean Absolute Deviation (°C) computed
@@ -2288,7 +2473,6 @@ def _build_peak_verification_html_section() -> str:
     # supporting context (signed bias, std, RMSE, n) is shown on the same card.
     deviation = _load_peak_deviation_data()
     global_stats = deviation.get("global", {})
-    cities_stats = deviation.get("cities", {})
 
     def _fmt_g(value, signed: bool = False) -> str:
         try:
@@ -2313,56 +2497,23 @@ def _build_peak_verification_html_section() -> str:
         </div>
       </div>"""
 
+    table_rows, counts = _build_peak_verification_table(today)
+
     rows = ""
-    for city, v in sorted(verifications.items()):
-        if latest_date is not None and v.get("date") != latest_date:
-            continue
-        our_peak = v.get("our_peak", "?")
-        market = v.get("market_resolved", "?")
-        market_display = v.get("market_display") or v.get("bucket")
-        gap = v.get("gap", 0)
-        verdict = v.get("verdict", "?")
-        unit = (v.get("unit") or "C").upper()
-        unit_suffix = "°F" if unit == "F" else "°C"
-
-        if verdict == "OK":
-            status_icon = "OK"
-            status_color = "#3fb950"
-        elif verdict == "MINOR":
-            status_icon = "MINOR"
-            status_color = "#d2991d"
-        elif verdict == "THRESHOLD_MARKET":
-            status_icon = "THRESHOLD_MARKET"
-            status_color = "#8b949e"
-        else:
-            status_icon = "STASJONSFEIL"
-            status_color = "#f85149"
-
-        our_str = f"{our_peak}{unit_suffix}" if isinstance(our_peak, (int, float)) else str(our_peak)
-        if market_display:
-            market_str = str(market_display)
-        else:
-            market_str = f"{market}{unit_suffix}" if isinstance(market, (int, float)) else str(market)
-        gap_str = f"{gap:+.1f}{unit_suffix}" if isinstance(gap, (int, float)) else str(gap)
-        corr_str = _format_city_correction(city, cities_stats)
-
+    for r in table_rows:
         rows += f"""<tr>
-            <td><strong>{city}</strong></td>
-            <td>{our_str}</td>
-            <td>{market_str}</td>
-            <td style="color:{status_color};font-weight:600;">{gap_str}</td>
-            <td style="color:{status_color};font-weight:700;">{status_icon}</td>
-            <td>{corr_str}</td>
+            <td><strong>{r['city']}</strong></td>
+            <td>{r['our_str']}</td>
+            <td>{r['market_str']}</td>
+            <td style="color:{r['status_color']};font-weight:600;">{r['gap_str']}</td>
+            <td style="color:{r['status_color']};font-weight:700;">{r['status']}</td>
+            <td>{r['corr_str']}</td>
         </tr>"""
 
-    latest_verifications = (
-        {k: v for k, v in verifications.items() if v.get("date") == latest_date}
-        if latest_date is not None
-        else verifications
-    )
-    ok_count = sum(1 for v in latest_verifications.values() if v.get("verdict") == "OK")
-    minor_count = sum(1 for v in latest_verifications.values() if v.get("verdict") == "MINOR")
-    mismatch_count = sum(1 for v in latest_verifications.values() if v.get("verdict") == "STATION_MISMATCH")
+    ok_count = counts["OK"]
+    minor_count = counts["MINOR"]
+    mismatch_count = counts["STASJONSFEIL"]
+    venter_count = counts["Venter"]
 
     return f"""
     <div class="section" style="border-color: rgba(188, 140, 255, 0.3);">
@@ -2384,6 +2535,10 @@ def _build_peak_verification_html_section() -> str:
         <div class="card" style="border: 1px solid #f85149;">
           <div class="value" style="color: #f85149;">{mismatch_count}</div>
           <div class="label">STASJONSFEIL · {day_label}</div>
+        </div>
+        <div class="card" style="border: 1px solid #8b949e;">
+          <div class="value" style="color: #8b949e;">{venter_count}</div>
+          <div class="label">Venter · {day_label}</div>
         </div>
       </div>
       <table>
