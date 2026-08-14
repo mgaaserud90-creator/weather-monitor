@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-14T16:22:04.397174+00:00",
+  "updated": "2026-08-14T16:41:12.066215+00:00",
   "samples": [
     {
       "city": "Amsterdam, NL",
@@ -549,7 +549,7 @@
       "unit": "C",
       "gap": -0.4,
       "gap_c": -0.4,
-      "verdict": "OK"
+      "verdict": "?"
     },
     {
       "city": "Dallas, US",
@@ -558,8 +558,8 @@
       "market_resolved": 100.5,
       "unit": "F",
       "gap": 1.5,
-      "gap_c": 0.8333,
-      "verdict": "OK"
+      "gap_c": 0.8444,
+      "verdict": "?"
     },
     {
       "city": "Madrid, ES",
@@ -569,7 +569,7 @@
       "unit": "C",
       "gap": -0.8,
       "gap_c": -0.8,
-      "verdict": "OK"
+      "verdict": "?"
     },
     {
       "city": "Miami, US",
@@ -578,8 +578,8 @@
       "market_resolved": 94.5,
       "unit": "F",
       "gap": -3.3,
-      "gap_c": -1.8333,
-      "verdict": "MINOR"
+      "gap_c": -1.8222,
+      "verdict": "?"
     },
     {
       "city": "Moscow, RU",
@@ -589,7 +589,7 @@
       "unit": "C",
       "gap": 1.0,
       "gap_c": 1.0,
-      "verdict": "OK"
+      "verdict": "?"
     },
     {
       "city": "Sao Paulo, BR",
@@ -599,7 +599,17 @@
       "unit": "C",
       "gap": -1.3,
       "gap_c": -1.3,
-      "verdict": "MINOR"
+      "verdict": "?"
+    },
+    {
+      "city": "Tel Aviv, IL",
+      "date": "2026-08-14",
+      "our_peak": 31.9,
+      "market_resolved": 32.0,
+      "unit": "C",
+      "gap": -0.1,
+      "gap_c": -0.1,
+      "verdict": "?"
     },
     {
       "city": "Zhengzhou, CN",
@@ -609,7 +619,7 @@
       "unit": "C",
       "gap": -2.2,
       "gap_c": -2.2,
-      "verdict": "STATION_MISMATCH"
+      "verdict": "?"
     }
   ],
   "cities": {
@@ -651,14 +661,14 @@
     },
     "Dallas, US": {
       "n": 2,
-      "mean_gap_c": 0.8889,
-      "bias_c": 0.8889,
-      "std_gap_c": 0.0786,
-      "mae_c": 0.8889,
-      "rmse_c": 0.8906,
-      "min_gap_c": 0.8333,
+      "mean_gap_c": 0.8944,
+      "bias_c": 0.8944,
+      "std_gap_c": 0.0707,
+      "mae_c": 0.8944,
+      "rmse_c": 0.8958,
+      "min_gap_c": 0.8444,
       "max_gap_c": 0.9444,
-      "last_gap_c": 0.8333,
+      "last_gap_c": 0.8444,
       "unit": "F"
     },
     "London, UK": {
@@ -675,14 +685,14 @@
     },
     "Miami, US": {
       "n": 2,
-      "mean_gap_c": -1.1666,
-      "bias_c": -1.1666,
-      "std_gap_c": 0.9428,
-      "mae_c": 1.1666,
-      "rmse_c": 1.3437,
-      "min_gap_c": -1.8333,
+      "mean_gap_c": -1.1611,
+      "bias_c": -1.1611,
+      "std_gap_c": 0.9349,
+      "mae_c": 1.1611,
+      "rmse_c": 1.3361,
+      "min_gap_c": -1.8222,
       "max_gap_c": -0.5,
-      "last_gap_c": -1.8333,
+      "last_gap_c": -1.8222,
       "unit": "F"
     },
     "Munich, DE": {
@@ -707,6 +717,18 @@
       "min_gap_c": -1.3,
       "max_gap_c": -0.9,
       "last_gap_c": -1.3,
+      "unit": "C"
+    },
+    "Tel Aviv, IL": {
+      "n": 2,
+      "mean_gap_c": -0.15,
+      "bias_c": -0.15,
+      "std_gap_c": 0.0707,
+      "mae_c": 0.15,
+      "rmse_c": 0.1581,
+      "min_gap_c": -0.2,
+      "max_gap_c": -0.1,
+      "last_gap_c": -0.1,
       "unit": "C"
     },
     "Zhengzhou, CN": {
@@ -1141,18 +1163,6 @@
       "last_gap_c": -2.1,
       "unit": "C"
     },
-    "Tel Aviv, IL": {
-      "n": 1,
-      "mean_gap_c": -0.2,
-      "bias_c": -0.2,
-      "std_gap_c": 0.0,
-      "mae_c": 0.2,
-      "rmse_c": 0.2,
-      "min_gap_c": -0.2,
-      "max_gap_c": -0.2,
-      "last_gap_c": -0.2,
-      "unit": "C"
-    },
     "Tokyo, JP": {
       "n": 1,
       "mean_gap_c": -1.5,
@@ -1215,12 +1225,12 @@
     }
   },
   "global": {
-    "n": 61,
-    "mean_gap_c": -0.5929,
-    "bias_c": -0.5929,
-    "std_gap_c": 1.1283,
-    "mae_c": 0.9903,
-    "rmse_c": 1.2664,
+    "n": 62,
+    "mean_gap_c": -0.5846,
+    "bias_c": -0.5846,
+    "std_gap_c": 1.1208,
+    "mae_c": 0.976,
+    "rmse_c": 1.2561,
     "min_gap_c": -4.0,
     "max_gap_c": 1.6
   }
