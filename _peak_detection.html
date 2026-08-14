@@ -193,17 +193,10 @@ const ALL_CITIES = [
   {name: "Panama City, PA", lat: 8.9733, lon: -79.5556, tz: "America/Panama", peakStart: 14, peakEnd: 17},
   {name: "Jinan, CN", lat: 36.8572, lon: 117.2158, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16}
 ];
-const ACTUAL_PEAK_DATA = {
-  "Madrid, ES": {actual_peak: 39.2, peak_detected_at: "2026-08-13T19:51:59.417053+00:00", recommendation: "🔴 SELG med tap — gå SHORT 38°C (peak=39.2°C → round=39 ≠ 38) | Alt. ville vunnet: Mean@39°C", spill: 38},
-  "Moscow, RU": {actual_peak: 15.0, peak_detected_at: "2026-08-13T17:49:59.647796+00:00", recommendation: "🔴 SELG med tap — gå SHORT 14°C (peak=15.0°C → round=15 ≠ 14) | Alt. ville vunnet: Mean@15°C", spill: 14},
-  "Buenos Aires, AR": {actual_peak: 9.6, peak_detected_at: "2026-08-13T23:29:21.931854+00:00", recommendation: "🔴 SELG med tap — gå SHORT 9°C (peak=9.6°C → round=10 ≠ 9) | Alt. ville vunnet: Mean@10°C", spill: 9},
-  "Sao Paulo, BR": {actual_peak: 28.7, peak_detected_at: "2026-08-13T23:29:24.253407+00:00", recommendation: "🔴 SELG med tap — gå SHORT 28°C (peak=28.7°C → round=29 ≠ 28) | Alt. ville vunnet: Mean@29°C", spill: 28},
-  "Dallas, US": {actual_peak: 38.9, peak_detected_at: "2026-08-13T15:45:00", recommendation: "🔴 SELG med tap — gå SHORT 38°C (peak=38.9°C → round=39 ≠ 38) | Alt. ville vunnet: Mean@39°C", spill: 38},
-  "Miami, US": {actual_peak: 32.9, peak_detected_at: "2026-08-13T23:29:24.903780+00:00", recommendation: "🔴 SELG med tap — gå SHORT 32°C (peak=32.9°C → round=33 ≠ 32) | Alt. ville vunnet: Mean@33°C", spill: 32}
-};
+const ACTUAL_PEAK_DATA = {};
 const MARKET_PRICES = {};
-const AUTO_SELECT_CITIES = ["Los Angeles, US", "Dallas, US", "Houston, US", "Chicago, US", "Austin, US", "Denver, US", "San Francisco, US", "Mexico City, MX", "Seattle, US", "Panama City, PA"];
-const AUTO_SELECT_GENERATED = "2026-08-13 23:56:24 UTC";
+const AUTO_SELECT_CITIES = ["Wellington, NZ", "Los Angeles, US", "San Francisco, US", "Seattle, US"];
+const AUTO_SELECT_GENERATED = "2026-08-14 01:47:24 UTC";
 
 // ---- State ----
 const activeCities = new Set();  // city names currently monitored
