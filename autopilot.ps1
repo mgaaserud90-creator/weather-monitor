@@ -21,6 +21,7 @@
         python _city_deviation_stats.py
         python _populate_peak_verify.py
         python _summarize_peak_verify.py
+        python _peak_deviation_stats.py
         python _compute_market_edge.py
         python _pnl_tracker.py
         python _consolidate_trading_data.py
@@ -193,6 +194,7 @@ Invoke-Step "4/7 PM strategy results"           python @("_pm_strat_results.py")
 Invoke-Step "4/7 Per-city deviation stats"      python @("_city_deviation_stats.py")
 Invoke-Step "4/7 Populate peak verification"    python @("_populate_peak_verify.py")
 Invoke-Step "4/7 Summarize peak verification"   python @("_summarize_peak_verify.py")
+Invoke-Step "4/7 Peak deviation stats"          python @("_peak_deviation_stats.py")
 Invoke-Step "4/7 Compute market edge"           python @("_compute_market_edge.py")
 Invoke-Step "4/7 PnL ledger"                    python @("_pnl_tracker.py")
 Invoke-Step "4/7 Consolidate trading data"      python @("_consolidate_trading_data.py")
