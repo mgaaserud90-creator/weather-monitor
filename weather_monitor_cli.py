@@ -1191,8 +1191,8 @@ class WeatherAnalyzer:
             elapsed = time.perf_counter() - t0
             return AnalysisResult(location=loc, ensemble=cached, elapsed_seconds=elapsed)
 
-        # Use location's local timezone for date calculation
-        target_date = loc.local_date_for_lead(lead_days)
+        # Anchor to the UTC market date (not city-local) so _target_date == run_date
+        target_date = date.today() + timedelta(days=lead_days)
 
         try:
             ensemble = await self._bma.fetch_all_models(
@@ -1388,7 +1388,7 @@ class WeatherAnalyzer:
                         "lon": loc.lon,
                         "tz": loc.tz,
                         "lead_days": lead_days,
-                        "target_date": loc.local_date_for_lead(lead_days).isoformat(),
+                        "target_date": (date.today() + timedelta(days=lead_days)).isoformat(),
                         "mean_c": round(mean_c, 1),
                         "p5_c": round(p5_c, 1),
                         "p95_c": round(p95_c, 1),

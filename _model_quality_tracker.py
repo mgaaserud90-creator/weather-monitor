@@ -906,7 +906,10 @@ async def _hourly_check_active(
                 except (ValueError, TypeError):
                     pass
 
-            target_date_obj = date.today()
+            try:
+                target_date_obj = date.fromisoformat(pdata.get("_target_date") or "")
+            except (ValueError, TypeError):
+                target_date_obj = date.today()
             today_obs = [(dt, t) for dt, t in obs_history if dt.date() == target_date_obj]
             today_max: tuple[float, datetime] | None = None
             if today_obs:
@@ -1276,6 +1279,12 @@ def _merge_predictions(existing: dict, new: dict) -> dict:
             merged[city] = new_pdata
             continue
 
+        # Never carry a resolved result/peak across different market days:
+        # a day-N resolution must not leak onto a day-N±1 prediction.
+        if old_pdata.get("_target_date") != new_pdata.get("_target_date"):
+            merged[city] = new_pdata
+            continue
+
         old_strategies = old_pdata.get("strategies", {}) or {}
         new_strategies = new_pdata.get("strategies", {}) or {}
         for sn in ("sigma", "p5", "mean"):
@@ -1442,7 +1451,10 @@ async def hourly_check_mode() -> None:
                     pass
 
             # Compute today's max
-            target_date_obj = date.today()
+            try:
+                target_date_obj = date.fromisoformat(pdata.get("_target_date") or "")
+            except (ValueError, TypeError):
+                target_date_obj = date.today()
             today_obs = [(dt, t) for dt, t in obs_history if dt.date() == target_date_obj]
             today_max: tuple[float, datetime] | None = None
             if today_obs:
@@ -1721,7 +1733,10 @@ async def _rapid_peak_monitor(
                     pass
 
             # Compute today's max
-            target_date_obj = date.today()
+            try:
+                target_date_obj = date.fromisoformat(pdata.get("_target_date") or "")
+            except (ValueError, TypeError):
+                target_date_obj = date.today()
             today_obs = [(dt, t) for dt, t in obs_history if dt.date() == target_date_obj]
             today_max: tuple[float, datetime] | None = None
             if today_obs:
