@@ -89,7 +89,7 @@
 <body>
 <header>
   <h1>🌍 ALLE 51 BYER — BMA Ensemble</h1>
-  <div class="subtitle">Generert: 2026-08-15 00:34:34 UTC | Multi-Strategy: 🎯 Sigma · 🛡️ P5 · 📊 Mean</div>
+  <div class="subtitle">Generert: 2026-08-15 02:06:55 UTC | Multi-Strategy: 🎯 Sigma · 🛡️ P5 · 📊 Mean</div>
 </header>
 <div class="live-bar">
   <button class="live-btn" onclick="fetchLivePeak()" id="fetch-btn">🔄 Hent Nåværende Temperatur & Døgnmaks</button>
@@ -106,6 +106,20 @@
     </div>
 
   
+      <div class="section" style="max-width: 900px; margin: 0 auto 20px;">
+        <h2>📊 Today Win Rates (Resolved)</h2>
+        <div class="grid-2">
+          <div>
+            <h3 style="color: var(--green); font-size: 0.9rem;">📊 TODAY (lead_days=0)</h3>
+        <table><thead><tr><th>Strategy</th><th>W/L</th><th>Rate</th></tr></thead>
+        <tbody>
+          <tr><td>Sigma</td><td>1W/8L</td><td>11.1%</td></tr>
+          <tr><td>P5</td><td>1W/8L</td><td>11.1%</td></tr>
+          <tr><td>Mean</td><td>2W/7L</td><td>22.2%</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+  </div>
 
   <div class="date-bar" id="dateBar">
     <button class="date-btn active" onclick="switchDate(0)" id="btn-0">I DAG<br/><small>2026-08-15</small></button>
@@ -146,18 +160,18 @@
             <td class="col-city">Austin, US</td>
             <td class="col-bma">35.5 <span class="dim">σ=1.1</span></td>
             <td class="col-range">34-34°C</td>
-            <td class="col-sigma">34°C ⏳</td>
-            <td class="col-p5">34°C ⏳</td>
-            <td class="col-mean">36°C ⏳</td>
+            <td class="col-sigma">34°C ❌</td>
+            <td class="col-p5">34°C ❌</td>
+            <td class="col-mean">36°C ✅</td>
             <td class="col-conf conf-low">🔴 56%</td>
             <td class="col-models">8/8</td>
-            <td class="col-peak" id="peak-Austin__US">⏳</td>
+            <td class="col-peak" id="peak-Austin__US">📡 35.5°C ✅</td>
             <td class="col-trend" id="trend-Austin__US">—</td>
             <td class="col-live" id="live-Austin__US">—</td>
             <td class="col-market">1.3%</td>
-            <td class="col-rec ">—</td>
+            <td class="col-rec rec-sell">🔴 SELG med tap — gå SHORT 34°C (peak=35.5°C → round=36 ≠ 34) | Alt. ville vunnet: Mean@36°C</td>
             <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">19:34</td>
+            <td class="col-local">21:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Beijing, CN" data-conf="0.494">
             <td class="col-rank"></td>
@@ -172,10 +186,10 @@
             <td class="col-peak" id="peak-Beijing__CN">⏳</td>
             <td class="col-trend" id="trend-Beijing__CN">—</td>
             <td class="col-live" id="live-Beijing__CN">—</td>
-            <td class="col-market">9.9%</td>
+            <td class="col-market">19.6%</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">08:34</td>
+            <td class="col-local">10:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Busan, KR" data-conf="0.523">
             <td class="col-rank"></td>
@@ -190,10 +204,10 @@
             <td class="col-peak" id="peak-Busan__KR">⏳</td>
             <td class="col-trend" id="trend-Busan__KR">—</td>
             <td class="col-live" id="live-Busan__KR">—</td>
-            <td class="col-market">2.2%</td>
+            <td class="col-market">0.4%</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">09:34</td>
+            <td class="col-local">11:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Chengdu, CN" data-conf="0.459">
             <td class="col-rank"></td>
@@ -208,28 +222,28 @@
             <td class="col-peak" id="peak-Chengdu__CN">⏳</td>
             <td class="col-trend" id="trend-Chengdu__CN">—</td>
             <td class="col-live" id="live-Chengdu__CN">—</td>
-            <td class="col-market">0.7%</td>
+            <td class="col-market">0.5%</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">08:34</td>
+            <td class="col-local">10:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Chicago, US" data-conf="0.517">
             <td class="col-rank"></td>
             <td class="col-city">Chicago, US</td>
             <td class="col-bma">25.9 <span class="dim">σ=1.0</span></td>
             <td class="col-range">24-25°C</td>
-            <td class="col-sigma">25°C ⏳</td>
-            <td class="col-p5">24°C ⏳</td>
-            <td class="col-mean">26°C ⏳</td>
+            <td class="col-sigma">25°C ❌</td>
+            <td class="col-p5">24°C ❌</td>
+            <td class="col-mean">26°C ✅</td>
             <td class="col-conf conf-low">🔴 52%</td>
             <td class="col-models">8/8</td>
-            <td class="col-peak" id="peak-Chicago__US">⏳</td>
+            <td class="col-peak" id="peak-Chicago__US">📡 26.5°C ✅</td>
             <td class="col-trend" id="trend-Chicago__US">—</td>
             <td class="col-live" id="live-Chicago__US">—</td>
             <td class="col-market">—</td>
-            <td class="col-rec ">—</td>
-            <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">19:34</td>
+            <td class="col-rec rec-sell">🔴 SELG med tap — gå SHORT 25°C (peak=26.5°C → round=26 ≠ 25) | Alt. ville vunnet: Mean@26°C</td>
+            <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (50.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
+            <td class="col-local">21:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Chongqing, CN" data-conf="0.461">
             <td class="col-rank"></td>
@@ -247,43 +261,43 @@
             <td class="col-market">0.1%</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">08:34</td>
+            <td class="col-local">10:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Dallas, US" data-conf="0.594">
             <td class="col-rank"></td>
             <td class="col-city">Dallas, US</td>
             <td class="col-bma">38.5 <span class="dim">σ=0.8</span></td>
             <td class="col-range">37-37°C</td>
-            <td class="col-sigma">37°C ⏳</td>
-            <td class="col-p5">37°C ⏳</td>
-            <td class="col-mean">38°C ⏳</td>
+            <td class="col-sigma">37°C ❌</td>
+            <td class="col-p5">37°C ❌</td>
+            <td class="col-mean">38°C ❌</td>
             <td class="col-conf conf-low">🔴 59%</td>
             <td class="col-models">8/8</td>
-            <td class="col-peak" id="peak-Dallas__US">⏳</td>
+            <td class="col-peak" id="peak-Dallas__US">📡 38.9°C ✅</td>
             <td class="col-trend" id="trend-Dallas__US">—</td>
             <td class="col-live" id="live-Dallas__US">—</td>
             <td class="col-market">28.5%</td>
-            <td class="col-rec ">—</td>
-            <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">19:34</td>
+            <td class="col-rec rec-sell">🔴 SELG med tap — gå SHORT 37°C (peak=38.9°C → round=39 ≠ 37)</td>
+            <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (66.7%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
+            <td class="col-local">21:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Denver, US" data-conf="0.510">
             <td class="col-rank"></td>
             <td class="col-city">Denver, US</td>
             <td class="col-bma">28.6 <span class="dim">σ=1.0</span></td>
             <td class="col-range">27-27°C</td>
-            <td class="col-sigma">27°C ⏳</td>
-            <td class="col-p5">27°C ⏳</td>
-            <td class="col-mean">29°C ⏳</td>
+            <td class="col-sigma">27°C ❌</td>
+            <td class="col-p5">27°C ❌</td>
+            <td class="col-mean">29°C ❌</td>
             <td class="col-conf conf-low">🔴 51%</td>
             <td class="col-models">8/8</td>
-            <td class="col-peak" id="peak-Denver__US">⏳</td>
+            <td class="col-peak" id="peak-Denver__US">📡 30.0°C ✅</td>
             <td class="col-trend" id="trend-Denver__US">—</td>
             <td class="col-live" id="live-Denver__US">—</td>
             <td class="col-market">34.5%</td>
-            <td class="col-rec ">—</td>
+            <td class="col-rec rec-sell">🔴 SELG med tap — gå SHORT 27°C (peak=30.0°C → round=30 ≠ 27)</td>
             <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">18:34</td>
+            <td class="col-local">20:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Guangzhou, CN" data-conf="0.724">
             <td class="col-rank"></td>
@@ -298,10 +312,10 @@
             <td class="col-peak" id="peak-Guangzhou__CN">⏳</td>
             <td class="col-trend" id="trend-Guangzhou__CN">—</td>
             <td class="col-live" id="live-Guangzhou__CN">—</td>
-            <td class="col-market">2.5%</td>
+            <td class="col-market">0.7%</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">08:34</td>
+            <td class="col-local">10:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Hong Kong, HK" data-conf="0.436">
             <td class="col-rank"></td>
@@ -319,25 +333,25 @@
             <td class="col-market">0.1%</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">08:34</td>
+            <td class="col-local">10:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Houston, US" data-conf="0.568">
             <td class="col-rank"></td>
             <td class="col-city">Houston, US</td>
             <td class="col-bma">33.7 <span class="dim">σ=1.0</span></td>
             <td class="col-range">32-32°C</td>
-            <td class="col-sigma">32°C ⏳</td>
-            <td class="col-p5">32°C ⏳</td>
-            <td class="col-mean">34°C ⏳</td>
+            <td class="col-sigma">32°C ❌</td>
+            <td class="col-p5">32°C ❌</td>
+            <td class="col-mean">34°C ❌</td>
             <td class="col-conf conf-low">🔴 57%</td>
             <td class="col-models">8/8</td>
-            <td class="col-peak" id="peak-Houston__US">⏳</td>
+            <td class="col-peak" id="peak-Houston__US">📡 33.4°C ✅</td>
             <td class="col-trend" id="trend-Houston__US">—</td>
             <td class="col-live" id="live-Houston__US">—</td>
             <td class="col-market">0.8%</td>
-            <td class="col-rec ">—</td>
-            <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">19:34</td>
+            <td class="col-rec rec-sell">🔴 SELG med tap — gå SHORT 32°C (peak=33.4°C → round=33 ≠ 32)</td>
+            <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (50.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
+            <td class="col-local">21:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Jinan, CN" data-conf="0.436">
             <td class="col-rank"></td>
@@ -355,7 +369,7 @@
             <td class="col-market">—</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">08:34</td>
+            <td class="col-local">10:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Karachi, PK" data-conf="0.562">
             <td class="col-rank"></td>
@@ -370,10 +384,10 @@
             <td class="col-peak" id="peak-Karachi__PK">⏳</td>
             <td class="col-trend" id="trend-Karachi__PK">—</td>
             <td class="col-live" id="live-Karachi__PK">—</td>
-            <td class="col-market">18.5%</td>
+            <td class="col-market">19.0%</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">05:34</td>
+            <td class="col-local">07:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Kuala Lumpur, MY" data-conf="0.417">
             <td class="col-rank"></td>
@@ -388,28 +402,28 @@
             <td class="col-peak" id="peak-Kuala_Lumpur__MY">⏳</td>
             <td class="col-trend" id="trend-Kuala_Lumpur__MY">—</td>
             <td class="col-live" id="live-Kuala_Lumpur__MY">—</td>
-            <td class="col-market">1.1%</td>
+            <td class="col-market">0.4%</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">08:34</td>
+            <td class="col-local">10:06</td>
         </tr>
-<tr class="city-row row-loss" data-lead="0" data-city="Los Angeles, US" data-conf="0.503">
+<tr class="city-row row-win" data-lead="0" data-city="Los Angeles, US" data-conf="0.503">
             <td class="col-rank"></td>
             <td class="col-city">Los Angeles, US</td>
             <td class="col-bma">26.0 <span class="dim">σ=1.5</span></td>
             <td class="col-range">24-24°C</td>
-            <td class="col-sigma">24°C ⏳</td>
-            <td class="col-p5">24°C ⏳</td>
-            <td class="col-mean">26°C ⏳</td>
+            <td class="col-sigma">24°C ✅</td>
+            <td class="col-p5">24°C ✅</td>
+            <td class="col-mean">26°C ❌</td>
             <td class="col-conf conf-low">🔴 50%</td>
             <td class="col-models">8/8</td>
-            <td class="col-peak" id="peak-Los_Angeles__US">⏳</td>
+            <td class="col-peak" id="peak-Los_Angeles__US">📡 23.5°C ✅</td>
             <td class="col-trend" id="trend-Los_Angeles__US">—</td>
             <td class="col-live" id="live-Los_Angeles__US">—</td>
-            <td class="col-market">52.5%</td>
-            <td class="col-rec ">—</td>
-            <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">17:34</td>
+            <td class="col-market">50.0%</td>
+            <td class="col-rec rec-hold">✅ HOLD — bet vinner (round(23.5°C) == 24°C)</td>
+            <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (50.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
+            <td class="col-local">19:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Lucknow, IN" data-conf="0.452">
             <td class="col-rank"></td>
@@ -424,10 +438,10 @@
             <td class="col-peak" id="peak-Lucknow__IN">⏳</td>
             <td class="col-trend" id="trend-Lucknow__IN">—</td>
             <td class="col-live" id="live-Lucknow__IN">—</td>
-            <td class="col-market">5.0%</td>
+            <td class="col-market">4.5%</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">06:04</td>
+            <td class="col-local">07:36</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Manila, PH" data-conf="0.511">
             <td class="col-rank"></td>
@@ -445,25 +459,25 @@
             <td class="col-market">0.1%</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">08:34</td>
+            <td class="col-local">10:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Mexico City, MX" data-conf="0.445">
             <td class="col-rank"></td>
             <td class="col-city">Mexico City, MX</td>
             <td class="col-bma">25.6 <span class="dim">σ=1.3</span></td>
             <td class="col-range">23-24°C</td>
-            <td class="col-sigma">24°C ⏳</td>
-            <td class="col-p5">23°C ⏳</td>
-            <td class="col-mean">26°C ⏳</td>
+            <td class="col-sigma">24°C ❌</td>
+            <td class="col-p5">23°C ❌</td>
+            <td class="col-mean">26°C ❌</td>
             <td class="col-conf conf-low">🔴 44%</td>
             <td class="col-models">7/8</td>
-            <td class="col-peak" id="peak-Mexico_City__MX">⏳</td>
+            <td class="col-peak" id="peak-Mexico_City__MX">📡 25.0°C ✅</td>
             <td class="col-trend" id="trend-Mexico_City__MX">—</td>
             <td class="col-live" id="live-Mexico_City__MX">—</td>
-            <td class="col-market">1.2%</td>
-            <td class="col-rec ">—</td>
-            <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">18:34</td>
+            <td class="col-market">1.9%</td>
+            <td class="col-rec rec-sell">🔴 SELG med tap — gå SHORT 24°C (peak=25.0°C → round=25 ≠ 24)</td>
+            <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (50.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
+            <td class="col-local">20:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Qingdao, CN" data-conf="0.544">
             <td class="col-rank"></td>
@@ -478,46 +492,46 @@
             <td class="col-peak" id="peak-Qingdao__CN">⏳</td>
             <td class="col-trend" id="trend-Qingdao__CN">—</td>
             <td class="col-live" id="live-Qingdao__CN">—</td>
-            <td class="col-market">9.5%</td>
+            <td class="col-market">8.0%</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">08:34</td>
+            <td class="col-local">10:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="San Francisco, US" data-conf="0.436">
             <td class="col-rank"></td>
             <td class="col-city">San Francisco, US</td>
             <td class="col-bma">19.4 <span class="dim">σ=1.2</span></td>
             <td class="col-range">17-18°C</td>
-            <td class="col-sigma">18°C ⏳</td>
-            <td class="col-p5">17°C ⏳</td>
-            <td class="col-mean">19°C ⏳</td>
+            <td class="col-sigma">18°C ❌</td>
+            <td class="col-p5">17°C ❌</td>
+            <td class="col-mean">19°C ❌</td>
             <td class="col-conf conf-low">🔴 44%</td>
             <td class="col-models">8/8</td>
-            <td class="col-peak" id="peak-San_Francisco__US">⏳</td>
+            <td class="col-peak" id="peak-San_Francisco__US">📡 19.8°C ✅</td>
             <td class="col-trend" id="trend-San_Francisco__US">—</td>
             <td class="col-live" id="live-San_Francisco__US">—</td>
             <td class="col-market">5.5%</td>
-            <td class="col-rec ">—</td>
-            <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">17:34</td>
+            <td class="col-rec rec-sell">🔴 SELG med tap — gå SHORT 18°C (peak=19.8°C → round=20 ≠ 18)</td>
+            <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (50.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
+            <td class="col-local">19:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Seattle, US" data-conf="0.474">
             <td class="col-rank"></td>
             <td class="col-city">Seattle, US</td>
             <td class="col-bma">26.0 <span class="dim">σ=1.3</span></td>
             <td class="col-range">24-25°C</td>
-            <td class="col-sigma">25°C ⏳</td>
-            <td class="col-p5">24°C ⏳</td>
-            <td class="col-mean">26°C ⏳</td>
+            <td class="col-sigma">25°C ❌</td>
+            <td class="col-p5">24°C ❌</td>
+            <td class="col-mean">26°C ❌</td>
             <td class="col-conf conf-low">🔴 47%</td>
             <td class="col-models">8/8</td>
-            <td class="col-peak" id="peak-Seattle__US">⏳</td>
+            <td class="col-peak" id="peak-Seattle__US">📡 27.2°C ✅</td>
             <td class="col-trend" id="trend-Seattle__US">—</td>
             <td class="col-live" id="live-Seattle__US">—</td>
             <td class="col-market">—</td>
-            <td class="col-rec ">—</td>
+            <td class="col-rec rec-sell">🔴 SELG med tap — gå SHORT 25°C (peak=27.2°C → round=27 ≠ 25)</td>
             <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">17:34</td>
+            <td class="col-local">19:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Seoul (Incheon), KR" data-conf="0.666">
             <td class="col-rank"></td>
@@ -532,10 +546,10 @@
             <td class="col-peak" id="peak-Seoul__Incheon___KR">⏳</td>
             <td class="col-trend" id="trend-Seoul__Incheon___KR">—</td>
             <td class="col-live" id="live-Seoul__Incheon___KR">—</td>
-            <td class="col-market">62.0%</td>
+            <td class="col-market">48.5%</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">09:34</td>
+            <td class="col-local">11:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Shanghai, CN" data-conf="0.547">
             <td class="col-rank"></td>
@@ -553,7 +567,7 @@
             <td class="col-market">0.1%</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">08:34</td>
+            <td class="col-local">10:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Shenzhen, CN" data-conf="0.483">
             <td class="col-rank"></td>
@@ -568,10 +582,10 @@
             <td class="col-peak" id="peak-Shenzhen__CN">⏳</td>
             <td class="col-trend" id="trend-Shenzhen__CN">—</td>
             <td class="col-live" id="live-Shenzhen__CN">—</td>
-            <td class="col-market">13.0%</td>
+            <td class="col-market">14.5%</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">08:34</td>
+            <td class="col-local">10:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Singapore, SG" data-conf="0.565">
             <td class="col-rank"></td>
@@ -586,10 +600,10 @@
             <td class="col-peak" id="peak-Singapore__SG">⏳</td>
             <td class="col-trend" id="trend-Singapore__SG">—</td>
             <td class="col-live" id="live-Singapore__SG">—</td>
-            <td class="col-market">2.5%</td>
+            <td class="col-market">1.0%</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">08:34</td>
+            <td class="col-local">10:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Taipei, TW" data-conf="0.476">
             <td class="col-rank"></td>
@@ -604,10 +618,10 @@
             <td class="col-peak" id="peak-Taipei__TW">⏳</td>
             <td class="col-trend" id="trend-Taipei__TW">—</td>
             <td class="col-live" id="live-Taipei__TW">—</td>
-            <td class="col-market">0.2%</td>
+            <td class="col-market">0.1%</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">08:34</td>
+            <td class="col-local">10:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Tokyo, JP" data-conf="0.457">
             <td class="col-rank"></td>
@@ -625,7 +639,7 @@
             <td class="col-market">0.1%</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">09:34</td>
+            <td class="col-local">11:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Wellington, NZ" data-conf="0.527">
             <td class="col-rank"></td>
@@ -640,10 +654,10 @@
             <td class="col-peak" id="peak-Wellington__NZ">⏳</td>
             <td class="col-trend" id="trend-Wellington__NZ">—</td>
             <td class="col-live" id="live-Wellington__NZ">—</td>
-            <td class="col-market">20.0%</td>
+            <td class="col-market">91.0%</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">12:34</td>
+            <td class="col-local">14:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Wuhan, CN" data-conf="0.558">
             <td class="col-rank"></td>
@@ -658,10 +672,10 @@
             <td class="col-peak" id="peak-Wuhan__CN">⏳</td>
             <td class="col-trend" id="trend-Wuhan__CN">—</td>
             <td class="col-live" id="live-Wuhan__CN">—</td>
-            <td class="col-market">2.5%</td>
+            <td class="col-market">2.0%</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#3fb950;font-weight:600;">🎯 Sigma (0.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">08:34</td>
+            <td class="col-local">10:06</td>
         </tr>
 <tr class="city-row row-loss" data-lead="0" data-city="Zhengzhou, CN" data-conf="0.582">
             <td class="col-rank"></td>
@@ -676,10 +690,10 @@
             <td class="col-peak" id="peak-Zhengzhou__CN">⏳</td>
             <td class="col-trend" id="trend-Zhengzhou__CN">—</td>
             <td class="col-live" id="live-Zhengzhou__CN">—</td>
-            <td class="col-market">46.5%</td>
+            <td class="col-market">46.0%</td>
             <td class="col-rec ">—</td>
             <td class="col-strat"><span style="color:#d2991d;font-weight:600;">📊 Mean (100.0%)</span> <span style="color:var(--text-dim);font-size:0.7rem;">← BEST</span></td>
-            <td class="col-local">08:34</td>
+            <td class="col-local">10:06</td>
         </tr>
 
       </tbody>
