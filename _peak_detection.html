@@ -202,11 +202,14 @@ const ACTUAL_PEAK_DATA = {
   "Los Angeles, US": {actual_peak: 23.5, peak_detected_at: "2026-08-15T02:06:51.775013+00:00", recommendation: "✅ HOLD — bet vinner (round(23.5°C) == 24°C)", spill: 24},
   "Seattle, US": {actual_peak: 27.2, peak_detected_at: "2026-08-15T02:06:52.234680+00:00", recommendation: "🔴 SELG med tap — gå SHORT 25°C (peak=27.2°C → round=27 ≠ 25)", spill: 22},
   "Mexico City, MX": {actual_peak: 25.0, peak_detected_at: "2026-08-15T02:06:52.705073+00:00", recommendation: "🔴 SELG med tap — gå SHORT 24°C (peak=25.0°C → round=25 ≠ 24)", spill: 25},
-  "San Francisco, US": {actual_peak: 19.8, peak_detected_at: "2026-08-15T02:06:53.180923+00:00", recommendation: "🔴 SELG med tap — gå SHORT 18°C (peak=19.8°C → round=20 ≠ 18)", spill: 18}
+  "San Francisco, US": {actual_peak: 19.8, peak_detected_at: "2026-08-15T02:06:53.180923+00:00", recommendation: "🔴 SELG med tap — gå SHORT 18°C (peak=19.8°C → round=20 ≠ 18)", spill: 18},
+  "Buenos Aires, AR": {actual_peak: 16.4, peak_detected_at: "2026-08-15T23:09:30.355572+00:00", recommendation: "🔴 SELG med tap — gå SHORT 13°C (peak=16.4°C → round=16 ≠ 13) | Alt. ville vunnet: Mean@16°C", spill: 13},
+  "Sao Paulo, BR": {actual_peak: 22.7, peak_detected_at: "2026-08-15T23:09:32.540184+00:00", recommendation: "🔴 SELG med tap — gå SHORT 21°C (peak=22.7°C → round=23 ≠ 21) | Alt. ville vunnet: Mean@23°C", spill: 21},
+  "Miami, US": {actual_peak: 33.3, peak_detected_at: "2026-08-15T23:09:33.097245+00:00", recommendation: "🔴 SELG med tap — gå SHORT 31°C (peak=33.3°C → round=33 ≠ 31) | Alt. ville vunnet: Mean@33°C", spill: 31}
 };
 const MARKET_PRICES = {};
-const AUTO_SELECT_CITIES = ["New York, US", "Los Angeles, US", "Dallas, US", "Houston, US", "Atlanta, US", "Chicago, US", "Toronto, CA", "Austin, US", "Miami, US", "Denver, US", "San Francisco, US", "Mexico City, MX", "Seattle, US", "Panama City, PA"];
-const AUTO_SELECT_GENERATED = "2026-08-15 22:55:27 UTC";
+const AUTO_SELECT_CITIES = ["Los Angeles, US", "Dallas, US", "Houston, US", "Chicago, US", "Austin, US", "Denver, US", "San Francisco, US", "Mexico City, MX", "Seattle, US", "Panama City, PA"];
+const AUTO_SELECT_GENERATED = "2026-08-15 23:15:09 UTC";
 
 // ---- State ----
 const activeCities = new Set();  // city names currently monitored
