@@ -149,7 +149,7 @@ def fetch_json(url: str) -> dict | list | None:
         try:
             req = Request(url, headers={"User-Agent": "WeatherMonitor/2.0"})
             with _OPENER.open(req, timeout=15) as resp:
-                return json.loads(resp.read().decode())
+                return json.loads(resp.read().decode("utf-8", errors="replace"))
         except Exception:
             if attempt == 2:
                 return None
@@ -169,6 +169,10 @@ def parse_temp_bracket(bracket: str, city: str, question: str = "") -> dict | No
     """
     bracket = (bracket or "").strip()
     question = (question or "").strip()
+    # Gamma sometimes returns a mangled degree sign (U+FFFD) in groupItemTitle.
+    # Normalize it so stored buckets/display labels render as "98-99°F".
+    bracket = bracket.replace("\ufffd", "°")
+    question = question.replace("\ufffd", "°")
     text = f"{question} {bracket}".strip()
 
     # Threshold markets: "X°C or higher" / "at least" / "or above" / "≥" / "or below".
@@ -200,6 +204,7 @@ def parse_temp_bracket(bracket: str, city: str, question: str = "") -> dict | No
         if m:
             lo, hi = int(m.group(1)), int(m.group(2))
             midpoint = (lo + hi) / 2.0
+            label = f"{lo}-{hi}°F"
             return {
                 "type": "point", "unit": "F",
                 "temp_f": midpoint, "value": midpoint,
@@ -210,16 +215,17 @@ def parse_temp_bracket(bracket: str, city: str, question: str = "") -> dict | No
                 "lo_f": lo, "hi_f": hi,
                 "lo_c": round((lo - 32) * 5 / 9, 1),
                 "hi_c": round((hi - 32) * 5 / 9, 1),
-                "bucket": m.group(0).strip(), "temp_display": bracket,
+                "bucket": label, "temp_display": label,
             }
         m = re.search(r'(\d+(?:\.\d+)?)\s*°\s*F', bracket, re.IGNORECASE)
         if m:
             val = float(m.group(1))
+            label = f"{val}°F"
             return {
                 "type": "point", "unit": "F",
                 "temp_f": val, "value": val,
                 "temp_c": round((val - 32) * 5 / 9, 1),
-                "bucket": m.group(0).strip(), "temp_display": bracket,
+                "bucket": label, "temp_display": label,
             }
 
     # °C point markets.
@@ -227,10 +233,11 @@ def parse_temp_bracket(bracket: str, city: str, question: str = "") -> dict | No
         m = re.search(r'(\d+(?:\.\d+)?)\s*°\s*C', bracket, re.IGNORECASE)
         if m:
             val = float(m.group(1))
+            label = f"{val}°C"
             return {
                 "type": "point", "unit": "C",
                 "temp_c": val, "value": val,
-                "bucket": m.group(0).strip(), "temp_display": bracket,
+                "bucket": label, "temp_display": label,
             }
     return None
 

@@ -954,12 +954,12 @@ async def _hourly_check_active(
                         and not pdata.get("peak_detected_at")):
                     pdata["peak_detected_at"] = confirmed_time.isoformat()
 
+                    # Record OUR observed peak (📡) only. WIN/LOSS is decided by
+                    # Polymarket resolution, never by round(live peak) == spill.
                     for strat_name in ("sigma", "p5", "mean"):
                         strat = strategies.get(strat_name, {})
-                        spill = strat.get("spill", 0)
-                        is_win = round(confirmed_temp) == spill
-                        strat["result"] = "WIN" if is_win else "LOSS"
                         strat["actual_peak"] = round(confirmed_temp, 1)
+                    _resolve_strategies_vs_polymarket(pdata, city)
 
                     _update_recommendation(pdata)
 
@@ -982,7 +982,10 @@ async def _hourly_check_active(
                             sigma_result2,
                         )
 
-                    result_icon = "✅ WIN" if sigma_result2 == "WIN" else "❌ LOSS"
+                    result_icon = (
+                        "✅ WIN" if sigma_result2 == "WIN"
+                        else ("❌ LOSS" if sigma_result2 == "LOSS" else "⏳ ULAVKLART")
+                    )
                     print(f"\n  ╔{'═'*58}╗")
                     print(f"  ║  {result_icon}: {city}")
                     print(f"  ║  Spill (sigma): BUY {suggested_spill}°C")
@@ -1026,6 +1029,12 @@ async def _hourly_check_active(
             utc_hour_now = datetime.now(timezone.utc).hour
             if 10 <= utc_hour_now <= 18:
                 cities_for_rapid.append(city)
+
+    # Re-resolve every city against Polymarket outcomes so the dashboard shows
+    # the true WIN/LOSS as soon as a market resolves (not only at daily_close).
+    resolved_markets = _load_market_resolved_details()
+    for city, pdata in entry.get("predictions", {}).items():
+        _resolve_strategies_vs_polymarket(pdata, city, resolved_markets)
 
     entry["phase"] = "hourly_active"
     entry["last_updated"] = _now_utc()
@@ -1504,20 +1513,21 @@ async def hourly_check_mode() -> None:
                         and not pdata.get("peak_detected_at")):
                     pdata["peak_detected_at"] = confirmed_time.isoformat()
 
-                    # Resolve ALL 3 strategies against the actual peak
-                    # Polymarket resolves to the EXACT rounded temperature bucket
+                    # Record OUR observed peak (📡) only. WIN/LOSS is decided by
+                    # Polymarket resolution, never by round(live peak) == spill.
                     for strat_name in ("sigma", "p5", "mean"):
                         strat = strategies.get(strat_name, {})
-                        spill = strat.get("spill", 0)
-                        is_win = round(confirmed_temp) == spill
-                        strat["result"] = "WIN" if is_win else "LOSS"
                         strat["actual_peak"] = round(confirmed_temp, 1)
+                    _resolve_strategies_vs_polymarket(pdata, city)
 
                     # Generate recommendation based on sigma strategy
                     _update_recommendation(pdata)
 
                     sigma_result = strategies.get("sigma", {}).get("result", "?")
-                    result_icon = "✅ WIN" if sigma_result == "WIN" else "❌ LOSS"
+                    result_icon = (
+                        "✅ WIN" if sigma_result == "WIN"
+                        else ("❌ LOSS" if sigma_result == "LOSS" else "⏳ ULAVKLART")
+                    )
                     print(f"\n  ╔{'═'*58}╗")
                     print(f"  ║  {result_icon}: {city}")
                     print(f"  ║  Spill (sigma): BUY {suggested_spill}°C")
@@ -1835,14 +1845,12 @@ async def _rapid_peak_monitor(
                         and not pdata.get("peak_detected_at")):
                     pdata["peak_detected_at"] = confirmed_time.isoformat()
 
-                    # Resolve ALL 3 strategies against the actual peak
-                    # Polymarket resolves to the EXACT rounded temperature bucket
+                    # Record OUR observed peak (📡) only. WIN/LOSS is decided by
+                    # Polymarket resolution, never by round(live peak) == spill.
                     for strat_name in ("sigma", "p5", "mean"):
                         strat = strategies.get(strat_name, {})
-                        spill = strat.get("spill", 0)
-                        is_win = round(confirmed_temp) == spill
-                        strat["result"] = "WIN" if is_win else "LOSS"
                         strat["actual_peak"] = round(confirmed_temp, 1)
+                    _resolve_strategies_vs_polymarket(pdata, city)
 
                     # Generate recommendation
                     _update_recommendation(pdata)
@@ -1865,7 +1873,10 @@ async def _rapid_peak_monitor(
                             sigma_result,
                         )
 
-                    result_icon = "✅ WIN" if sigma_result == "WIN" else "❌ LOSS"
+                    result_icon = (
+                        "✅ WIN" if sigma_result == "WIN"
+                        else ("❌ LOSS" if sigma_result == "LOSS" else "⏳ ULAVKLART")
+                    )
                     print(f"\n  ╔{'═'*64}╗")
                     print(f"  ║  🎯 RAPID PEAK CONFIRMED: {result_icon} — {city}")
                     print(f"  ║  Spill (sigma): BUY {suggested_spill}°C")
@@ -2079,14 +2090,13 @@ async def _post_peak_arbitrage_check(
         print(f"  📡 {city:<30s}: archive max={archive_max:.1f}°C "
               f"(local {local_hour:02d}:00, window ended at {active_until:02d}:00)")
 
-        # Resolve strategies
+        # Record OUR observed peak (📡) only. WIN/LOSS is decided by
+        # Polymarket resolution, never by round(archive) == spill.
         pdata["peak_detected_at"] = _now_utc()
         for strat_name in ("sigma", "p5", "mean"):
             strat = strategies.get(strat_name, {})
-            spill = strat.get("spill", 0)
-            is_win = round(archive_max) == spill
-            strat["result"] = "WIN" if is_win else "LOSS"
             strat["actual_peak"] = round(archive_max, 1)
+        _resolve_strategies_vs_polymarket(pdata, city)
 
         _update_recommendation(pdata)
 
@@ -2280,13 +2290,12 @@ async def daily_close_mode() -> None:
         if archive_max is not None:
             pdata["peak_detected_at"] = _now_utc()
 
-            # Resolve ALL 3 strategies using Polymarket rounding rule
+            # Record OUR observed peak (📡) only. WIN/LOSS is decided by
+            # Polymarket resolution, never by round(archive) == spill.
             for strat_name in ("sigma", "p5", "mean"):
                 strat = strategies.get(strat_name, {})
-                spill = strat.get("spill", 0)
-                is_win = round(archive_max) == spill
-                strat["result"] = "WIN" if is_win else "LOSS"
                 strat["actual_peak"] = round(archive_max, 1)
+            _resolve_strategies_vs_polymarket(pdata, city)
 
             # Generate recommendation
             _update_recommendation(pdata)
@@ -2297,11 +2306,12 @@ async def daily_close_mode() -> None:
             mean_res = strategies.get("mean", {}).get("result", "")
 
             if sigma_res == "WIN": sigma_wins += 1
-            else: sigma_losses += 1
+            elif sigma_res == "LOSS": sigma_losses += 1
+            else: unresolved += 1
             if p5_res == "WIN": p5_wins += 1
-            else: p5_losses += 1
+            elif p5_res == "LOSS": p5_losses += 1
             if mean_res == "WIN": mean_wins += 1
-            else: mean_losses += 1
+            elif mean_res == "LOSS": mean_losses += 1
 
             sigma_spill = strategies.get("sigma", {}).get("spill", "?")
             result_icon = "✅" if sigma_res == "WIN" else "❌"
@@ -3527,32 +3537,74 @@ def _log_peak_verification(
                 break
 
 
-def _mean_pm_result(market_info: dict[str, Any] | None, mean_spill: float | int | None) -> str | None:
-    """Mean(round) strategy vs Polymarket resolution — unit-aware WIN/LOSS.
+def _spill_vs_polymarket_result(
+    spill_c: float | int | None, market_info: dict[str, Any] | None
+) -> str | None:
+    """Resolve a strategy bucket (stored in °C) against a Polymarket outcome.
 
-    mean(round) = int(round(bma_mean)) = the stored ``strategies.mean.spill``.
+    The ONLY valid definition of WIN is: our bucket equals Polymarket's
+    resolved bucket. It is never ``round(our live peak) == spill``.
 
-    - °C point market: WIN iff int(mean_spill) == int(round(value_c)).
-    - US °F bucket market: WIN iff lo_f <= spill(°F) <= hi_f (native bounds),
-      falling back to lo_c <= mean_spill <= hi_c when °F bounds are missing.
-    - Threshold markets are already excluded by _load_market_resolved_details().
+    - °F bucket market (US): WIN iff lo_f <= spill(°F) <= hi_f (native bounds).
+    - °C bucket market:       WIN iff lo_c <= spill(°C) <= hi_c.
+    - °C point market:        WIN iff round(spill) == round(resolved °C value).
+    - °F point market (rare): the resolved °F value is converted to °C first.
 
-    Returns None when there is no resolvable numeric market value or no spill.
+    Returns None when there is no resolvable numeric market outcome or no spill
+    (the bet stays unresolved — never WIN/LOSS on a missing market).
     """
-    if not market_info or market_info.get("value") is None or mean_spill is None:
+    if spill_c is None or not market_info or market_info.get("value") is None:
         return None
     lo_c = market_info.get("lo_c")
     hi_c = market_info.get("hi_c")
     lo_f = market_info.get("lo_f")
     hi_f = market_info.get("hi_f")
     if lo_f is not None and hi_f is not None:
-        return "WIN" if lo_f <= float(mean_spill) * 9.0 / 5.0 + 32.0 <= hi_f else "LOSS"
+        return "WIN" if lo_f <= float(spill_c) * 9.0 / 5.0 + 32.0 <= hi_f else "LOSS"
     if lo_c is not None and hi_c is not None:
-        return "WIN" if float(lo_c) <= float(mean_spill) <= float(hi_c) else "LOSS"
+        return "WIN" if float(lo_c) <= float(spill_c) <= float(hi_c) else "LOSS"
     unit = (market_info.get("unit") or "C").upper()
     value = float(market_info["value"])
     value_c = value if unit == "C" else (value - 32.0) * 5.0 / 9.0
-    return "WIN" if float(mean_spill) == float(value_c) else "LOSS"
+    return "WIN" if int(round(float(spill_c))) == int(round(value_c)) else "LOSS"
+
+
+def _mean_pm_result(market_info: dict[str, Any] | None, mean_spill: float | int | None) -> str | None:
+    """Backward-compatible wrapper: mean(round) strategy vs Polymarket resolution."""
+    return _spill_vs_polymarket_result(mean_spill, market_info)
+
+
+def _resolve_strategies_vs_polymarket(
+    pdata: dict, city: str, resolved_markets: dict | None = None
+) -> None:
+    """Set sigma/p5/mean ``result`` + ``pm_result`` from Polymarket resolution.
+
+    WIN/LOSS is written only when a resolvable Polymarket outcome exists for
+    (city, target_date); otherwise the strategies stay unresolved. This is the
+    single source of truth for market-based resolution and is safe to call
+    repeatedly (idempotent).
+    """
+    if resolved_markets is None:
+        resolved_markets = _load_market_resolved_details()
+    if not resolved_markets:
+        return
+    city_target = pdata.get("_target_date") or _today_iso()
+    city_base = city.split(",")[0].strip()
+    market_info = (
+        resolved_markets.get((city, city_target))
+        or resolved_markets.get((city_base, city_target))
+    )
+    if market_info is None or market_info.get("value") is None:
+        return
+    strategies = _get_strategies(pdata)
+    for sn in ("sigma", "p5", "mean"):
+        strat = strategies.get(sn, {})
+        if not strat:
+            continue
+        res = _spill_vs_polymarket_result(strat.get("spill"), market_info)
+        strat["pm_result"] = res
+        if res is not None:
+            strat["result"] = res
 
 
 async def _verify_peaks_vs_market(
@@ -3599,10 +3651,13 @@ async def _verify_peaks_vs_market(
             bucket=market_info.get("bucket"),
         )
 
-    # Mean(round) vs Polymarket — independent of the Open-Meteo peak resolution
+    # Strategy-vs-Polymarket — independent of the Open-Meteo peak resolution
     # above, so cities that are predicted but not yet peak-resolved still get a
-    # pm_result once their Polymarket market has resolved.
+    # result/pm_result once their Polymarket market has resolved. Resolves all
+    # three strategies (sigma/p5/mean) — never round(live peak) == spill.
     for city, pdata in preds_dict.items():
+        _resolve_strategies_vs_polymarket(pdata, city, resolved_markets)
+
         mean = pdata.get("strategies", {}).get("mean", {})
         mean_spill = mean.get("spill")
         city_target = pdata.get("_target_date", today)
@@ -3618,8 +3673,7 @@ async def _verify_peaks_vs_market(
             if market_info is not None and market_info.get("value") is not None:
                 mean["pm_result"] = "LOSS"
             continue
-        pm_result = _mean_pm_result(market_info, mean_spill)
-        mean["pm_result"] = pm_result
+        pm_result = mean.get("pm_result")
         if pm_result == "WIN" and market_info is not None:
             winners = entry.setdefault("mean_pm_winners", [])
             winner = {

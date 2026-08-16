@@ -71,6 +71,16 @@ try:
 except ImportError:
     HAS_PNL = False
 
+# Polymarket resolution helpers (unit-aware WIN/LOSS + resolved outcome lookup).
+try:
+    from _model_quality_tracker import (  # type: ignore[import-not-found]
+        _load_market_resolved_details,
+        _spill_vs_polymarket_result,
+    )
+    HAS_PM_RESOLUTION = True
+except ImportError:
+    HAS_PM_RESOLUTION = False
+
 
 def _load_log() -> dict:
     """Load existing quality log or return empty structure."""
@@ -125,6 +135,96 @@ def _pick_most_resolved_run(runs: list) -> dict:
     if best is None:
         return runs[-1] if runs else {}
     return best
+
+
+def _load_pm_resolved_details() -> dict:
+    """Return {(city, date_iso): market_info} from the authoritative source."""
+    if not HAS_PM_RESOLUTION:
+        return {}
+    try:
+        return _load_market_resolved_details()
+    except Exception:
+        return {}
+
+
+def _pm_market_info_for_city(city: str, target_date: str, resolved_markets: dict) -> dict | None:
+    """Look up a city's resolved market info, with (city,date) then base-city fallback."""
+    if not resolved_markets:
+        return None
+    city_base = city.split(",")[0].strip()
+    return (
+        resolved_markets.get((city, target_date))
+        or resolved_markets.get((city_base, target_date))
+    )
+
+
+def _pm_market_display(market_info: dict | None) -> str:
+    """Format the resolved Polymarket bucket/temp for the 'Marked' column."""
+    if not market_info or market_info.get("value") is None:
+        return "—"
+    unit = (market_info.get("unit") or "C").upper()
+    if unit == "F" and market_info.get("lo_f") is not None and market_info.get("hi_f") is not None:
+        return f"{int(market_info['lo_f'])}-{int(market_info['hi_f'])}°F"
+    if unit == "F":
+        return f'{market_info["value"]}°F'
+    bucket = market_info.get("bucket") or ""
+    return bucket or f'{market_info["value"]}°C'
+
+
+def _spill_pm_result(spill, market_info: dict | None) -> str | None:
+    """Resolve one strategy bucket against Polymarket (None when unresolved)."""
+    if not HAS_PM_RESOLUTION or spill is None:
+        return None
+    try:
+        return _spill_vs_polymarket_result(spill, market_info)
+    except Exception:
+        return None
+
+
+def _pick_latest_resolved_run(runs: list) -> dict:
+    """Return the run for the LATEST market day. All days are logged but only
+    the most recent day's resolved results are shown."""
+    best = None
+    best_date = ""
+    for run in runs:
+        target = run.get("target_date") or run.get("run_date") or ""
+        if target >= best_date:
+            best_date = target
+            best = run
+    if best is None:
+        return runs[-1] if runs else {}
+    return best
+
+
+def _tally_strategy_city_record(runs: list, sn: str) -> dict[str, dict]:
+    """Cumulative per-city W/L for one strategy, resolved vs Polymarket.
+
+    Deduplicates by (date, city) so a lead_days=1 + lead_days=0 pair counts as
+    one bet; the latest run wins. Returns {city: {"wins": n, "losses": n}}.
+    """
+    resolved_markets = _load_pm_resolved_details()
+    latest: dict[tuple[str, str], tuple[str, str]] = {}
+    for run in runs:
+        for city, pdata in run.get("predictions", {}).items():
+            strat = (pdata.get("strategies", {}) or {}).get(sn, {}) or {}
+            spill = strat.get("spill")
+            if spill is None:
+                continue
+            date_str = str(pdata.get("_target_date") or run.get("run_date") or "")
+            target = str(pdata.get("_target_date") or date_str)
+            market_info = _pm_market_info_for_city(city, target, resolved_markets)
+            res = _spill_pm_result(spill, market_info)
+            if res not in ("WIN", "LOSS"):
+                continue
+            latest[(date_str, city)] = (city, res)
+    tally: dict[str, dict] = {}
+    for (city, res) in latest.values():
+        entry = tally.setdefault(city, {"wins": 0, "losses": 0})
+        if res == "WIN":
+            entry["wins"] += 1
+        else:
+            entry["losses"] += 1
+    return tally
 
 
 def _collect_mean_pm_winners(runs: list) -> dict[str, list]:
@@ -573,10 +673,9 @@ def _generate_report() -> str:
     lines.append("")
 
     # ── Peak Verification: all cities (Var vs Polymarket) ──
-    peak_today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    peak_rows, peak_counts = _build_peak_verification_table(peak_today)
+    peak_rows, peak_counts, peak_show_date = _build_peak_verification_table()
     if peak_rows:
-        lines.append(f"📋 PEAK VERIFICATION — I DAG ({peak_today}) (VAR vs POLYMARKET):")
+        lines.append(f"📋 PEAK VERIFICATION — SISTE DAG ({peak_show_date}) (VAR vs POLYMARKET):")
         lines.append(
             f"   OK: {peak_counts['OK']}  MINOR: {peak_counts['MINOR']}  "
             f"STASJONSFEIL: {peak_counts['STASJONSFEIL']}  Venter: {peak_counts['Venter']}"
@@ -870,7 +969,7 @@ def _build_top5_rows_html(predictions: dict, top5_cities: list[str], peak_data: 
     """Build HTML table rows for top 5 cities with all 3 strategy results."""
     if peak_data is None:
         peak_data = {}
-    resolved_market = _load_resolved_market_outcomes()
+    resolved_markets = _load_pm_resolved_details()
     rows = ""
     for i, city in enumerate(top5_cities):
         pdata = predictions.get(city, {})
@@ -898,6 +997,13 @@ def _build_top5_rows_html(predictions: dict, top5_cities: list[str], peak_data: 
         mean_spill = means.get("spill", "?")
         mean_result = means.get("result", "")
 
+        # WIN/LOSS = our bucket == Polymarket resolution (never round(actual)).
+        target = pdata.get("_target_date") or ""
+        market_info = _pm_market_info_for_city(city, target, resolved_markets)
+        sigma_dyn = _spill_pm_result(sigma.get("spill"), market_info)
+        p5_dyn = _spill_pm_result(p5s.get("spill"), market_info)
+        mean_dyn = _spill_pm_result(means.get("spill"), market_info)
+
         rec = pdata.get("recommendation", "—") or "—"
 
         # Confidence color
@@ -915,9 +1021,9 @@ def _build_top5_rows_html(predictions: dict, top5_cities: list[str], peak_data: 
                 return '<span class="badge-loss">❌ LOSS</span>'
             return '<span style="color:#8b949e;">⏳</span>'
 
-        sigma_badge = _res_badge(sigma_result)
-        p5_badge = _res_badge(p5_result)
-        mean_badge = _res_badge(mean_result)
+        sigma_badge = _res_badge(sigma_dyn)
+        p5_badge = _res_badge(p5_dyn)
+        mean_badge = _res_badge(mean_dyn)
 
         bma_str = f"{bma_mean:.1f}°C" if isinstance(bma_mean, (int, float)) else str(bma_mean)
         std_str = f"{bma_std:.1f}" if isinstance(bma_std, (int, float)) else str(bma_std)
@@ -931,19 +1037,22 @@ def _build_top5_rows_html(predictions: dict, top5_cities: list[str], peak_data: 
         # Build market peak cell from pipeline peak data or archive data
         effective_actual = pipeline_actual if isinstance(pipeline_actual, (int, float)) else sigma_actual
         market_peak_str = actual_str
-        city_base = city.split(",")[0].strip()
-        market_temp = resolved_market.get(city_base) or resolved_market.get(city)
-        if market_temp is not None and isinstance(effective_actual, (int, float)):
-            gap = round(effective_actual - market_temp, 1)
-            gap_color = "#f85149" if abs(gap) > 2.0 else ("#d2991d" if abs(gap) > 1.0 else "#3fb950")
-            avvik_icon = "⚠️" if abs(gap) > 2.0 else ("🟡" if abs(gap) > 1.0 else "✅")
-            market_peak_str = (
-                f'📡 {actual_str} | Marked: {market_temp}°C '
-                f'<span style="color:{gap_color};font-weight:600;">'
-                f'{avvik_icon} {gap:+.1f}°C</span>'
-            )
-        elif market_temp is not None:
-            market_peak_str = f'📡 {actual_str} | Marked: {market_temp}°C'
+        market_display = _pm_market_display(market_info)
+        if market_info is not None and market_info.get("value") is not None:
+            unit = (market_info.get("unit") or "C").upper()
+            value = float(market_info["value"])
+            value_c = value if unit == "C" else (value - 32.0) * 5.0 / 9.0
+            if isinstance(effective_actual, (int, float)):
+                gap = round(effective_actual - value_c, 1)
+                gap_color = "#f85149" if abs(gap) > 2.0 else ("#d2991d" if abs(gap) > 1.0 else "#3fb950")
+                avvik_icon = "⚠️" if abs(gap) > 2.0 else ("🟡" if abs(gap) > 1.0 else "✅")
+                market_peak_str = (
+                    f'📡 {actual_str} | Marked: {market_display} '
+                    f'<span style="color:{gap_color};font-weight:600;">'
+                    f'{avvik_icon} {gap:+.1f}°C</span>'
+                )
+            else:
+                market_peak_str = f'📡 {actual_str} | Marked: {market_display}'
         elif isinstance(pipeline_actual, (int, float)):
             market_peak_str = f'📡 {actual_str} ✅'
 
@@ -1320,76 +1429,73 @@ def _tz_to_region(tz: str) -> str:
 
 
 def _build_city_win_rate_section(runs: list) -> str:
-   """Section 1: Win Rate Per City sorted by win rate (sigma strategy)."""
-   city_wl: dict[str, dict] = {}
-   for run in runs:
-       for city, pdata in run.get("predictions", {}).items():
-           sigma = pdata.get("strategies", {}).get("sigma", {})
-           result = sigma.get("result", "")
-           if result not in ("WIN", "LOSS"):
-               continue
-           if city not in city_wl:
-               city_wl[city] = {"wins": 0, "losses": 0}
-           if result == "WIN":
-               city_wl[city]["wins"] += 1
-           else:
-               city_wl[city]["losses"] += 1
+    """Section 1: Win Rate Per City sorted by win rate (sigma strategy).
 
-   city_rates: list[tuple] = []
-   for city, wl in city_wl.items():
-       total = wl["wins"] + wl["losses"]
-       if total >= 2:
-           rate = round(wl["wins"] / total * 100, 1)
-           city_rates.append((city, wl["wins"], wl["losses"], rate, total))
+    Cumulative across all logged days and resolved against Polymarket outcomes
+    (WIN = our bucket == Polymarket resolution), never archive round(actual).
+    """
+    city_wl = _tally_strategy_city_record(runs, "sigma")
 
-   city_rates.sort(key=lambda x: x[3], reverse=True)
-   if not city_rates:
-       return ""
+    city_rates: list[tuple] = []
+    for city, wl in city_wl.items():
+        total = wl["wins"] + wl["losses"]
+        if total >= 2:
+            rate = round(wl["wins"] / total * 100, 1)
+            city_rates.append((city, wl["wins"], wl["losses"], rate, total))
 
-   best_rows = ""
-   for i, (city, w, l, rate, total) in enumerate(city_rates[:10]):
-       icon = "🥇" if i == 0 else ("🥈" if i == 1 else ("🥉" if i == 2 else f"{i+1}."))
-       rate_color = "#3fb950" if rate >= 60 else ("#d2991d" if rate >= 40 else "#f85149")
-       best_rows += (
-           f'<tr><td>{icon}</td><td><strong>{city}</strong></td>'
-           f'<td>{w}W/{l}L</td>'
-           f'<td style="color:{rate_color};font-weight:600;">{rate}%</td></tr>'
-       )
+    city_rates.sort(key=lambda x: (-x[3], -x[4], x[0]))
+    if not city_rates:
+        return ""
 
-   worst = city_rates[-10:] if len(city_rates) >= 10 else []
-   worst_rows = ""
-   for i, (city, w, l, rate, total) in enumerate(reversed(worst)):
-       rank = len(city_rates) - len(worst) + i + 1
-       rate_color = "#f85149" if rate < 40 else "#d2991d"
-       worst_rows += (
-           f'<tr><td>{rank}.</td><td><strong>{city}</strong></td>'
-           f'<td>{w}W/{l}L</td>'
-           f'<td style="color:{rate_color};font-weight:600;">{rate}%</td></tr>'
-       )
+    rank_of = {c: i + 1 for i, (c, *_rest) in enumerate(city_rates)}
 
-   return f"""
-   <div class="section">
-     <h2>🏆 Win Rate Per City — Sigma Strategy</h2>
-     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
-       Sorted by sigma strategy win rate. Only cities with ≥2 resolved predictions shown.
-     </p>
-     <div class="grid-2">
-       <div>
-         <h3 style="color: var(--green); font-size: 1rem; margin-bottom: 8px;">🏆 BESTE BYER</h3>
-         <table>
-           <thead><tr><th>#</th><th>City</th><th>Record</th><th>Win Rate</th></tr></thead>
-           <tbody>{best_rows}</tbody>
-         </table>
-       </div>
-       <div>
-         <h3 style="color: var(--red); font-size: 1rem; margin-bottom: 8px;">📉 SVESTE BYER</h3>
-         <table>
-           <thead><tr><th>#</th><th>City</th><th>Record</th><th>Win Rate</th></tr></thead>
-           <tbody>{worst_rows}</tbody>
-         </table>
-       </div>
-     </div>
-   </div>"""
+    best = city_rates[:10]
+    best_rows = ""
+    for i, (city, w, l, rate, total) in enumerate(best):
+        icon = "🥇" if i == 0 else ("🥈" if i == 1 else ("🥉" if i == 2 else f"{i+1}."))
+        rate_color = "#3fb950" if rate >= 60 else ("#d2991d" if rate >= 40 else "#f85149")
+        best_rows += (
+            f'<tr><td>{icon}</td><td><strong>{city}</strong></td>'
+            f'<td>{w}W/{l}L</td>'
+            f'<td style="color:{rate_color};font-weight:600;">{rate}%</td></tr>'
+        )
+
+    best_cities = {c for c, *_rest in best}
+    worst = [x for x in reversed(city_rates[-10:]) if x[0] not in best_cities]
+    worst_rows = ""
+    for (city, w, l, rate, total) in worst:
+        rank = rank_of[city]
+        rate_color = "#f85149" if rate < 40 else "#d2991d"
+        worst_rows += (
+            f'<tr><td>{rank}.</td><td><strong>{city}</strong></td>'
+            f'<td>{w}W/{l}L</td>'
+            f'<td style="color:{rate_color};font-weight:600;">{rate}%</td></tr>'
+        )
+
+    return f"""
+    <div class="section">
+      <h2>🏆 Win Rate Per City — Sigma Strategy</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        Kumulativ på tvers av alle loggede dager. WIN = vår bøtte == Polymarkets resolusjon.
+        Kun byer med ≥2 avgjorte prediksjoner vises.
+      </p>
+      <div class="grid-2">
+        <div>
+          <h3 style="color: var(--green); font-size: 1rem; margin-bottom: 8px;">🏆 BESTE BYER</h3>
+          <table>
+            <thead><tr><th>#</th><th>City</th><th>Record</th><th>Win Rate</th></tr></thead>
+            <tbody>{best_rows}</tbody>
+          </table>
+        </div>
+        <div>
+          <h3 style="color: var(--red); font-size: 1rem; margin-bottom: 8px;">📉 SVESTE BYER</h3>
+          <table>
+            <thead><tr><th>#</th><th>City</th><th>Record</th><th>Win Rate</th></tr></thead>
+            <tbody>{worst_rows}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>"""
 
 
 def _build_model_agreement_section(runs: list) -> str:
@@ -2344,101 +2450,86 @@ def _peak_fmt_gap(value, unit_suffix: str) -> str:
     return "—"
 
 
-def _build_peak_verification_table(today: str) -> tuple[list[dict], dict]:
-    """Build display-ready PEAK VERIFICATION rows for every city.
+def _build_peak_verification_table() -> tuple[list[dict], dict, str]:
+    """Build display-ready PEAK VERIFICATION rows for the LATEST day.
 
-    Returns ``(rows, counts)``. Every default city (plus any city present in
-    the latest predictions) gets a row; cities without a resolution for
-    ``today`` are shown as pending ("Venter") with ``Marked``/``Gap`` = "—".
+    Actual peaks are read from the append-only quality log (one run per day,
+    ``strategies.sigma.actual_peak`` in °C) and matched to Polymarket
+    resolutions for the SAME (city, date). A stale peak is never compared
+    against a different day's market outcome.
+
+    Returns ``(rows, counts, show_date)``.
     """
-    verifications = _load_peak_verification_data()
-    resolved_markets = _load_resolved_markets_log()
-    latest_predictions = _load_latest_run_predictions()
+    resolved_markets = _load_pm_resolved_details()
+    peaks_by_day: dict[tuple[str, str], float] = {}
+    data = _load_log()
+    for run in data.get("runs", []):
+        run_date = run.get("run_date") or run.get("target_date") or ""
+        for city, pdata in run.get("predictions", {}).items():
+            actual = (pdata.get("strategies", {}) or {}).get("sigma", {}).get("actual_peak")
+            if actual is None:
+                continue
+            target = pdata.get("_target_date") or run_date
+            try:
+                peaks_by_day[(city, target)] = float(actual)
+            except (TypeError, ValueError):
+                continue
+
+    default_names = _load_default_city_names()
+    base_to_full: dict[str, str] = {}
+    for n in default_names:
+        base_to_full[n.split(",")[0].strip().lower()] = n
+
+    def _canon(city: str) -> str:
+        return base_to_full.get(city.split(",")[0].strip().lower(), city)
+
+    city_names = set(_canon(n) for n in default_names)
+    all_dates: set[str] = set()
+    for (city, d) in resolved_markets:
+        city_names.add(_canon(city))
+        all_dates.add(d)
+    for (city, d) in peaks_by_day:
+        city_names.add(_canon(city))
+        all_dates.add(d)
+    city_names = sorted(city_names)
+
+    # Show the LATEST day that has data (peaks or market resolutions).
+    show_date = max(all_dates) if all_dates else datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
     cities_stats = _load_peak_deviation_data().get("cities", {})
-
-    city_names = _load_default_city_names()
-    for city in latest_predictions:
-        if city not in city_names:
-            city_names.append(city)
-    city_names = sorted(set(city_names))
-
     counts = {"OK": 0, "MINOR": 0, "STASJONSFEIL": 0, "Venter": 0}
     rows: list[dict] = []
 
-    def _latest_known_peak(city: str, unit: str):
-        """Latest archive/prediction peak for a city in the given native unit."""
-        v = verifications.get(city)
-        if isinstance(v, dict) and v.get("our_peak") is not None:
-            try:
-                return float(v.get("our_peak"))
-            except (TypeError, ValueError):
-                pass
-        p = latest_predictions.get(city)
-        if isinstance(p, dict):
-            val = p.get("bma_mean")
-            if val is None:
-                val = (p.get("strategies") or {}).get("sigma", {}).get("actual_peak")
-            if val is not None:
-                try:
-                    val_f = float(val)
-                except (TypeError, ValueError):
-                    return "—"
-                if unit == "F":
-                    return round(val_f * 9.0 / 5.0 + 32.0, 1)
-                return round(val_f, 1)
-        return "—"
-
     for city in city_names:
-        v_today = verifications.get(city)
-        if not (isinstance(v_today, dict) and v_today.get("date") == today):
-            v_today = None
+        city_base = city.split(",")[0].strip()
+        mi = resolved_markets.get((city, show_date)) or resolved_markets.get((city_base, show_date))
+        unit = (mi.get("unit") or "").upper() if mi else ""
+        if not unit:
+            unit = "F" if _peak_is_us_city(city) else "C"
+        unit_suffix = "°F" if unit == "F" else "°C"
 
-        corr_str = _format_city_correction(city, cities_stats)
-
-        if v_today is not None:
-            unit = (v_today.get("unit") or "C").upper()
-            unit_suffix = "°F" if unit == "F" else "°C"
-            our_str = _peak_fmt_temp(v_today.get("our_peak"), unit_suffix)
-            market_display = v_today.get("market_display") or v_today.get("bucket")
-            market_str = str(market_display) if market_display else _peak_fmt_temp(v_today.get("market_resolved"), unit_suffix)
-            gap_str = _peak_fmt_gap(v_today.get("gap"), unit_suffix)
-            status, status_color = _peak_status_display(v_today.get("verdict", "?"))
+        our_peak_c = peaks_by_day.get((city, show_date))
+        if our_peak_c is not None:
+            our_native = round(our_peak_c * 9.0 / 5.0 + 32.0, 1) if unit == "F" else round(our_peak_c, 1)
+            our_str = _peak_fmt_temp(our_native, unit_suffix)
         else:
-            rm = resolved_markets.get(f"{city}||{today}")
-            is_point = (
-                isinstance(rm, dict)
-                and (rm.get("type") or "").lower() != "threshold"
-                and rm.get("value") is not None
-            )
-            unit = "C"
-            if isinstance(rm, dict) and rm.get("unit"):
-                unit = (rm.get("unit") or "C").upper()
-            elif _peak_is_us_city(city):
-                unit = "F"
-            v_any = verifications.get(city)
-            if isinstance(v_any, dict) and v_any.get("unit"):
-                unit = (v_any.get("unit") or "C").upper()
-            unit_suffix = "°F" if unit == "F" else "°C"
+            our_native = None
+            our_str = "—"
 
-            if is_point and isinstance(rm, dict):
-                market_val = rm.get("value")
-                market_display = rm.get("temp_display") or rm.get("bucket")
-                market_str = str(market_display) if market_display else _peak_fmt_temp(market_val, unit_suffix)
-                our_peak = _latest_known_peak(city, unit)
-                our_str = _peak_fmt_temp(our_peak, unit_suffix)
-                if isinstance(our_peak, (int, float)) and isinstance(market_val, (int, float)):
-                    gap = round(float(our_peak) - float(market_val), 1)
-                    gap_str = _peak_fmt_gap(gap, unit_suffix)
-                    status, status_color = _peak_status_display(_peak_verdict_from_gap(gap, unit))
-                else:
-                    gap_str = "—"
-                    status, status_color = "Venter", "#8b949e"
+        if mi is not None and mi.get("value") is not None:
+            market_val = float(mi["value"])
+            market_str = _pm_market_display(mi)
+            if our_native is not None:
+                gap = round(our_native - market_val, 1)
+                gap_str = _peak_fmt_gap(gap, unit_suffix)
+                status, status_color = _peak_status_display(_peak_verdict_from_gap(gap, unit))
             else:
-                our_peak = _latest_known_peak(city, unit)
-                our_str = _peak_fmt_temp(our_peak, unit_suffix)
-                market_str = "—"
                 gap_str = "—"
                 status, status_color = "Venter", "#8b949e"
+        else:
+            market_str = "—"
+            gap_str = "—"
+            status, status_color = "Venter", "#8b949e"
 
         if status == "OK":
             counts["OK"] += 1
@@ -2456,16 +2547,16 @@ def _build_peak_verification_table(today: str) -> tuple[list[dict], dict]:
             "gap_str": gap_str,
             "status": status,
             "status_color": status_color,
-            "corr_str": corr_str,
+            "corr_str": _format_city_correction(city, cities_stats),
         })
 
-    return rows, counts
+    return rows, counts, show_date
 
 
 def _build_peak_verification_html_section() -> str:
     """Build HTML section: PEAK VERIFICATION - Var vs Polymarket."""
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    day_label = f"I DAG ({today})"
+    table_rows, counts, show_date = _build_peak_verification_table()
+    day_label = f"SISTE DAG ({show_date})"
 
     # ── OVERALL DEVIATION FACTOR (across ALL logged days) ──
     # The headline factor is the global Mean Absolute Deviation (°C) computed
@@ -2497,7 +2588,7 @@ def _build_peak_verification_html_section() -> str:
         </div>
       </div>"""
 
-    table_rows, counts = _build_peak_verification_table(today)
+    # (table_rows/counts/show_date already computed above)
 
     rows = ""
     for r in table_rows:
@@ -3114,9 +3205,9 @@ def _generate_html_report() -> str:
     predictions_html = ""
     latest_run = runs[-1] if runs else {}
 
-    # The "AVGJORTE RESULTATER" table must use the run with the most resolved
-    # predictions (ground-truth outcomes), not the most recent run.
-    resolved_run = _pick_most_resolved_run(runs)
+    # The "AVGJORTE RESULTATER" table shows ONLY the latest day. Every day is
+    # still logged in _model_quality_log.json (one run per day).
+    resolved_run = _pick_latest_resolved_run(runs)
 
     if latest_run:
         top5_cities = latest_run.get("top_5_confidence", [])
@@ -3152,8 +3243,8 @@ def _generate_html_report() -> str:
     {divergence_section}
     {strategy_comparison}"""
 
-        # ── RESOLVED RESULTS section (show all 51 cities' outcomes) ──
-        resolved_market_outcomes = _load_resolved_market_outcomes()
+        # ── RESOLVED RESULTS section (show all cities' outcomes for the LATEST day) ──
+        resolved_markets = _load_pm_resolved_details()
         resolved_rows = ""
         resolved_cities = []
         for city, pdata in sorted(resolved_preds.items()):
@@ -3161,45 +3252,53 @@ def _generate_html_report() -> str:
             sigma = strategies.get("sigma", {})
             p5s = strategies.get("p5", {})
             means = strategies.get("mean", {})
-            sigma_result = sigma.get("result", "")
-            if sigma_result in ("WIN", "LOSS"):
-                resolved_cities.append((city, sigma, p5s, means))
+            target = pdata.get("_target_date") or resolved_target_date
+            market_info = _pm_market_info_for_city(city, target, resolved_markets)
+            resolved_cities.append((city, sigma, p5s, means, market_info))
 
         if resolved_cities:
-            for city, sigma, p5s, means in resolved_cities:
+            for city, sigma, p5s, means, market_info in resolved_cities:
                 def _ri(r):
-                    return "✅ WIN" if r == "WIN" else ("❌ LOSS" if r == "LOSS" else "⏳")
+                    if r == "WIN":
+                        return "✅ WIN"
+                    if r == "LOSS":
+                        return "❌ LOSS"
+                    return "⏳ ULAVKLART"
 
                 sigma_spill = sigma.get("spill", "?")
                 p5_spill = p5s.get("spill", "?")
                 mean_spill = means.get("spill", "?")
                 actual = sigma.get("actual_peak")
                 actual_str = f"{actual:.1f}°C" if isinstance(actual, (int, float)) else "—"
+                actual_suffix = f" ({actual_str})" if isinstance(actual, (int, float)) else ""
+
+                # WIN/LOSS = our bucket == Polymarket resolution (never round(actual)).
+                sigma_res = _spill_pm_result(sigma.get("spill"), market_info)
+                p5_res = _spill_pm_result(p5s.get("spill"), market_info)
+                mean_res = _spill_pm_result(means.get("spill"), market_info)
 
                 # Market deviation: compare our live peak with Polymarket resolved outcome
-                market_cell = "—"
+                market_cell = _pm_market_display(market_info)
                 avvik_cell = "—"
-                city_base = city.split(",")[0].strip()  # "Taipei, TW" → "Taipei"
-                market_temp = resolved_market_outcomes.get(city_base) or resolved_market_outcomes.get(city)
-                if market_temp is not None and isinstance(actual, (int, float)):
-                    market_cell = f'{market_temp}°C'
-                    gap = round(actual - market_temp, 1)
-                    gap_color = "#f85149" if abs(gap) > 2.0 else ("#d2991d" if abs(gap) > 1.0 else "#3fb950")
-                    avvik_icon = "⚠️" if abs(gap) > 2.0 else ("🟡" if abs(gap) > 1.0 else "✅")
-                    avvik_cell = f'<span style="color:{gap_color};font-weight:600;">{avvik_icon} {gap:+.1f}°C</span>'
-                elif market_temp is not None:
-                    market_cell = f'{market_temp}°C'
-                    avvik_cell = '<span style="color:var(--text-dim);">—</span>'
+                if market_info is not None and market_info.get("value") is not None:
+                    unit = (market_info.get("unit") or "C").upper()
+                    value = float(market_info["value"])
+                    value_c = value if unit == "C" else (value - 32.0) * 5.0 / 9.0
+                    if isinstance(actual, (int, float)):
+                        gap = round(actual - value_c, 1)
+                        gap_color = "#f85149" if abs(gap) > 2.0 else ("#d2991d" if abs(gap) > 1.0 else "#3fb950")
+                        avvik_icon = "⚠️" if abs(gap) > 2.0 else ("🟡" if abs(gap) > 1.0 else "✅")
+                        avvik_cell = f'<span style="color:{gap_color};font-weight:600;">{avvik_icon} {gap:+.1f}°C</span>'
 
                 resolved_rows += f"""
                 <tr>
                     <td><strong>{city}</strong></td>
                     <td>{sigma_spill}°C</td>
-                    <td>{_ri(sigma.get('result', ''))} ({actual_str})</td>
+                    <td>{_ri(sigma_res)}{actual_suffix}</td>
                     <td>{p5_spill}°C</td>
-                    <td>{_ri(p5s.get('result', ''))}</td>
+                    <td>{_ri(p5_res)}</td>
                     <td>{mean_spill}°C</td>
-                    <td>{_ri(means.get('result', ''))}</td>
+                    <td>{_ri(mean_res)}</td>
                     <td>{market_cell}</td>
                     <td>{avvik_cell}</td>
                 </tr>"""
@@ -3208,7 +3307,7 @@ def _generate_html_report() -> str:
    <div class="section">
       <h2>📊 AVGJORTE RESULTATER ({len(resolved_cities)} byer, {resolved_target_date})</h2>
       <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
-        Resolved against archive data. ✅ WIN = round(actual peak) == spill bucket.
+        Kun siste dag vises (alle dager logges). ✅ WIN = vår bøtte == Polymarkets resolusjon.
         📡 = vår live peak | Marked = Polymarket utfall | ⚠️ Avvik = stasjonsfeil hvis >2°C
       </p>
      <div style="max-height: 600px; overflow-y: auto;">
