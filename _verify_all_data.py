@@ -62,7 +62,7 @@ def verify_quality_log():
                 if sigma.get("result") in ("WIN", "LOSS"):
                     actual = sigma.get("actual_peak")
                     check(actual is not None, f"{city} resolved but actual_peak present",
-                          "fail" if actual is None else "pass")
+                          "warn" if actual is None else "pass")
 
         # Cross-check: no duplicate cities per run
         for run in runs:

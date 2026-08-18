@@ -515,22 +515,26 @@ def _format_active_summary(active: list["SavedLocation"], utc_hour: int) -> str:
 
 
 def _find_or_create_today_entry(log_data: dict) -> dict:
-    """Find today's run entry in the log, or create a new one.
+    """Find today's run entry in the log, or create a new one."""
+    return _find_or_create_entry(log_data, _today_iso())
+
+
+def _find_or_create_entry(log_data: dict, run_date: str) -> dict:
+    """Find a run entry for ``run_date`` in the log, or create a new one.
 
     Returns the entry dict (mutated in place within log_data).
     """
-    today = _today_iso()
     runs = log_data.setdefault("runs", [])
 
-    # Look for an existing entry for today
+    # Look for an existing entry for the requested date
     for entry in runs:
-        if entry.get("run_date") == today:
+        if entry.get("run_date") == run_date:
             return entry
 
-    # Create new entry: predict TODAY → resolve TODAY
+    # Create new entry: predict run_date → resolve run_date
     entry = {
-        "run_date": today,
-        "target_date": today,
+        "run_date": run_date,
+        "target_date": run_date,
         "phase": "daily_bma",
         "run_started": _now_utc(),
         "last_updated": _now_utc(),
@@ -1170,7 +1174,40 @@ def _get_yesterday_top5() -> list[str]:
     return []
 
 
-async def daily_bma_mode() -> None:
+async def _backfill_bma_for_date(
+    analyzer: WeatherAnalyzer,
+    locations: list[SavedLocation],
+    target_date: str,
+) -> None:
+    """Regenerate BMA predictions for a specific date and store a run entry.
+
+    Backfill path for missed days whose ``hourly_active`` predictions were
+    never committed. ``lead_days`` is derived relative to today so the target
+    date labels are correct; the forecast data itself is whatever the live
+    model APIs return now (exact for today, approximate for past dates).
+    Idempotent: reuses an existing run entry for ``target_date`` and merges
+    predictions so a resolved day is never wiped out.
+    """
+    target = date.fromisoformat(target_date)
+    lead_days = (target - date.today()).days
+    print(f"\n   🎯 BACKFILL BMA (target: {target_date}, lead_days={lead_days})\n")
+
+    predictions = await run_bma_for_all(analyzer, locations, lead_days=lead_days)
+
+    log_data = _load_log()
+    entry = _find_or_create_entry(log_data, target_date)
+    entry["phase"] = "daily_bma"
+    entry["last_updated"] = _now_utc()
+    entry["target_date"] = target_date
+    entry["top_5_confidence"] = [p.city for p in select_top_n(predictions, 5)]
+    new_preds = _preds_to_dict(predictions, locations, lead_days=lead_days)
+    entry["predictions"] = _merge_predictions(entry.get("predictions", {}), new_preds)
+    _save_log(log_data)
+
+    print(f"\n  ✅ Backfill BMA fullført — {len(predictions)} predictions for {target_date}\n")
+
+
+async def daily_bma_mode(target_date: str | None = None) -> None:
     """Run BMA for ALL 51 cities with lead_days=0 (today) + lead_days=1 (tomorrow). Semaphore protects against rate limits."""
     print("╔══════════════════════════════════════════════════╗")
     print("║   MODELLKVALITET — DAGLIG BMA (06:00 UTC)       ║")
@@ -1187,6 +1224,9 @@ async def daily_bma_mode() -> None:
     await analyzer.initialize()
 
     try:
+        if target_date:
+            await _backfill_bma_for_date(analyzer, locations, target_date)
+            return
         today_date = date.today()
         tomorrow_date = today_date + timedelta(days=1)
         today_str = today_date.isoformat()
@@ -2189,7 +2229,7 @@ def _summarize_arbitrage(runs: list[dict]) -> dict:
 # --mode daily_close
 # =============================================================================
 
-async def daily_close_mode() -> None:
+async def daily_close_mode(target_date: str | None = None) -> None:
     """Finalize daily results for ALL 51 cities, compare all 3 strategies, generate report.
 
     Resolves cities as soon as their peak window has passed (peak_end + 2h local).
@@ -2207,8 +2247,10 @@ async def daily_close_mode() -> None:
 
     log_data = _load_log()
 
-    # Resolve TODAY's predictions against TODAY's archive data
-    today = date.today().isoformat()
+    # Resolve predictions against archive data. ``target_date`` overrides the
+    # date being resolved (used for backfilling missed days); defaults to today.
+    today = target_date or date.today().isoformat()
+    real_today = date.today().isoformat()
 
     entry = None
     for e in log_data.get("runs", []):
@@ -2249,7 +2291,7 @@ async def daily_close_mode() -> None:
         #   Americas (peak ~23 UTC) → resolved by 01:00 UTC next day
         # ═══════════════════════════════════════════════════════════════
         now_utc_dt = datetime.now(timezone.utc)
-        if city_target >= today:
+        if city_target >= real_today:
             ph_end = pdata.get("_peak_hour_end", 16)
             tz_city = pdata.get("_tz", "UTC")
             offset = _get_utc_offset_for_city(city, tz_city)
@@ -2338,7 +2380,7 @@ async def daily_close_mode() -> None:
 
     # Cross-reference our peaks with Polymarket resolved outcomes (also logs
     # mean(round)-vs-Polymarket pm_result / mean_pm_winners per city).
-    await _verify_peaks_vs_market(entry, predictions, log_data)
+    await _verify_peaks_vs_market(entry, predictions, log_data, today)
 
     # Update cumulative (idempotent — recomputed from every run's summary so a
     # re-run of daily_close never double-counts and the totals always match the
@@ -3609,6 +3651,7 @@ def _resolve_strategies_vs_polymarket(
 
 async def _verify_peaks_vs_market(
     entry: dict, predictions: list, log_data: dict,
+    target_date: str | None = None,
 ) -> None:
     """Cross-reference our resolved peaks with Polymarket outcomes.
     Called after archive max is fetched in daily_close / post-peak.
@@ -3616,7 +3659,7 @@ async def _verify_peaks_vs_market(
     resolved_markets = _load_market_resolved_details()
     if not resolved_markets:
         return
-    today = _today_iso()
+    today = target_date or _today_iso()
     preds_dict = entry.get("predictions", {})
     for city, pdata in preds_dict.items():
         strategies = pdata.get("strategies", {})
@@ -3703,17 +3746,23 @@ def main() -> None:
         choices=["daily_bma", "hourly_check", "hourly_active", "daily_close", "full_report"],
         help="Run mode for GitHub Actions pipeline",
     )
+    parser.add_argument(
+        "--date",
+        default=None,
+        metavar="YYYY-MM-DD",
+        help="Override the target date for daily_bma/daily_close (backfill support)",
+    )
 
     args = parser.parse_args()
 
     if args.mode == "hourly_active":
         asyncio.run(hourly_active_mode())
     elif args.mode == "daily_bma":
-        asyncio.run(daily_bma_mode())
+        asyncio.run(daily_bma_mode(target_date=args.date))
     elif args.mode == "hourly_check":
         asyncio.run(hourly_check_mode())
     elif args.mode == "daily_close":
-        asyncio.run(daily_close_mode())
+        asyncio.run(daily_close_mode(target_date=args.date))
     elif args.mode == "full_report":
         full_report_mode()
 
