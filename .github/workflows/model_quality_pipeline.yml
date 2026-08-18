@@ -42,6 +42,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -140,10 +142,17 @@ jobs:
           TWILIO_FROM: ${{ secrets.TWILIO_FROM }}
         run: python _sms_alert.py --check-and-send
 
+      - name: Sync before commit
+        env:
+          GIT_TERMINAL_PROMPT: '0'
+        run: git -c core.askPass=true pull --rebase --autostash origin main
+
       - uses: stefanzweifel/git-auto-commit-action@v5
+        continue-on-error: true
         with:
           commit_message: "Auto: ${{ steps.mode.outputs.mode }} $(date -Iminutes)"
           file_pattern: '_model_quality_log.json _quality_report.md _quality_report.html _all_cities.html _market_prices.json _trading_data.csv _strategy_summary.csv _model_accuracy_log.json _model_accuracy.csv _peak_verification_log.json _resolved_markets_log.json _resolved_markets.csv _pm_strat_section.html _city_deviation_log.json _peak_deviation_log.json _pnl_log.json'
+          push_options: '--force-with-lease'
 
       - name: Trigger deploy to GitHub Pages
         if: success()

@@ -23,6 +23,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -47,7 +49,14 @@ jobs:
             echo "Resolved markets collected: $COUNT"
           fi
 
+      - name: Sync before commit
+        env:
+          GIT_TERMINAL_PROMPT: '0'
+        run: git -c core.askPass=true pull --rebase --autostash origin main
+
       - uses: stefanzweifel/git-auto-commit-action@v5
+        continue-on-error: true
         with:
           commit_message: "Auto: resolved markets $(date -u +%Y-%m-%dT%H:%M)"
           file_pattern: '_resolved_markets_log.json _resolved_markets.csv'
+          push_options: '--force-with-lease'
