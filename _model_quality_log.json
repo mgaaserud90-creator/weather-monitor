@@ -54639,9 +54639,9 @@
     {
       "run_date": "2026-08-19",
       "target_date": "2026-08-19",
-      "phase": "hourly_active",
+      "phase": "daily_close",
       "run_started": "2026-08-19T00:33:03.088716+00:00",
-      "last_updated": "2026-08-19T00:35:13.234128+00:00",
+      "last_updated": "2026-08-19T02:10:33.848455+00:00",
       "top_5_confidence": [
         "Tokyo, JP",
         "Wellington, NZ",
@@ -56053,26 +56053,29 @@
               "spill": 24,
               "k": 1.4,
               "win_prob": 0.124,
-              "result": null,
-              "actual_peak": null
+              "result": "LOSS",
+              "actual_peak": 27.3,
+              "pm_result": "LOSS"
             },
             "p5": {
               "spill": 24,
               "k": null,
               "win_prob": 0.124,
-              "result": null,
-              "actual_peak": null
+              "result": "LOSS",
+              "actual_peak": 27.3,
+              "pm_result": "LOSS"
             },
             "mean": {
               "spill": 26,
               "k": 0.0,
               "win_prob": 0.317,
-              "result": null,
-              "actual_peak": null
+              "result": "WIN",
+              "actual_peak": 27.3,
+              "pm_result": "WIN"
             }
           },
-          "peak_detected_at": null,
-          "recommendation": null,
+          "peak_detected_at": "2026-08-19T02:10:33.810227+00:00",
+          "recommendation": "🔴 SELG med tap — gå SHORT 24°C (peak=27.3°C → round=27 ≠ 24) | Alt. ville vunnet: Mean@26°C",
           "_lat": 47.4502,
           "_lon": -122.3088,
           "_tz": "America/Los_Angeles",
@@ -56612,12 +56615,12 @@
       "arbitrage_results": {},
       "summary": {
         "sigma_wins": 1,
-        "sigma_losses": 7,
+        "sigma_losses": 8,
         "p5_wins": 2,
-        "p5_losses": 6,
-        "mean_wins": 3,
+        "p5_losses": 7,
+        "mean_wins": 4,
         "mean_losses": 5,
-        "unresolved": 22
+        "unresolved": 21
       },
       "utc_hour": 0,
       "active_regions": [
@@ -58472,21 +58475,29 @@
           "pm_value": 68.5,
           "pm_unit": "F",
           "pm_bucket": "68-69°F"
+        },
+        {
+          "date": "2026-08-18",
+          "city": "Seattle, US",
+          "mean_spill": 26,
+          "pm_value": 78.5,
+          "pm_unit": "F",
+          "pm_bucket": "78-79°F"
         }
       ]
     }
   ],
   "cumulative": {
-    "total_days": 8,
-    "total_predictions": 408,
-    "sigma_wins": 11,
-    "sigma_losses": 86,
-    "p5_wins": 8,
-    "p5_losses": 89,
-    "mean_wins": 41,
-    "mean_losses": 56,
-    "mean_pm_wins": 88,
-    "mean_pm_losses": 213,
-    "mean_pm_bets": 301
+    "total_days": 9,
+    "total_predictions": 438,
+    "sigma_wins": 12,
+    "sigma_losses": 94,
+    "p5_wins": 10,
+    "p5_losses": 96,
+    "mean_wins": 45,
+    "mean_losses": 61,
+    "mean_pm_wins": 92,
+    "mean_pm_losses": 218,
+    "mean_pm_bets": 310
   }
 }
