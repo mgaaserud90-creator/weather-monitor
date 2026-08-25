@@ -194,11 +194,12 @@ const ALL_CITIES = [
   {name: "Jinan, CN", lat: 36.8572, lon: 117.2158, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16}
 ];
 const ACTUAL_PEAK_DATA = {
-  "Ankara, TR": {actual_peak: 29.1, peak_detected_at: "2026-08-25T16:30:00", recommendation: "⏳ AVVENT — temp nærmer seg spill (gap=-1.1°C)", spill: 28}
+  "Ankara, TR": {actual_peak: 29.1, peak_detected_at: "2026-08-25T16:30:00", recommendation: "⏳ AVVENT — temp nærmer seg spill (gap=-1.1°C)", spill: 28},
+  "London, UK": {actual_peak: 24.3, peak_detected_at: "2026-08-25T14:30:00", recommendation: "🔴 SELG med tap — gå SHORT 23°C (peak=24.3°C → round=24 ≠ 23) | Alt. ville vunnet: Mean@24°C", spill: 23}
 };
 const MARKET_PRICES = {};
 const AUTO_SELECT_CITIES = ["Madrid, ES", "Paris, FR", "Munich, DE", "London, UK", "Milan, IT", "Helsinki, FI", "Amsterdam, NL", "Warsaw, PL", "Cape Town, ZA", "Buenos Aires, AR", "Sao Paulo, BR", "Moscow, RU"];
-const AUTO_SELECT_GENERATED = "2026-08-25 16:09:27 UTC";
+const AUTO_SELECT_GENERATED = "2026-08-25 16:53:07 UTC";
 
 // ---- State ----
 const activeCities = new Set();  // city names currently monitored
