@@ -1,36 +1,36 @@
 # Model Quality Report
 
-**Generated:** 2026-08-25T02:52:27.269064+00:00
+**Generated:** 2026-08-25T23:15:09.641191+00:00
 **Days tracked:** 13
 
 ## Today's Results — All 3 Strategies
 
 | # | City | Sigma Spill | P5 Spill | Mean Spill | Actual Peak | Sigma | P5 | Mean | Rec |
 |---|------|------------|---------|-----------|-------------|-------|----|------|-----|
-| 1 | Hong Kong, HK | 30°C | 30°C | 31°C | None | ⏳ | ⏳ | ⏳ | — |
-| 2 | Wellington, NZ | 14°C | 14°C | 15°C | None | ❌ | ❌ | ❌ | — |
-| 3 | Austin, US | 38°C | 38°C | 39°C | None | ❌ | ❌ | ❌ | — |
-| 4 | Houston, US | 37°C | 36°C | 37°C | None | ✅ | ❌ | ✅ | — |
-| 5 | Dallas, US | 42°C | 40°C | 42°C | None | ❌ | ❌ | ❌ | — |
+| 1 | Wellington, NZ | 14°C | 14°C | 15°C | None | ⏳ | ⏳ | ⏳ | — |
+| 2 | Buenos Aires, AR | 13°C | 13°C | 14°C | None | ❌ | ❌ | ✅ | — |
+| 3 | Wuhan, CN | 36°C | 35°C | 36°C | None | ⏳ | ⏳ | ⏳ | — |
+| 4 | Chicago, US | 26°C | 25°C | 27°C | None | ❌ | ❌ | ✅ | — |
+| 5 | Shanghai, CN | 30°C | 29°C | 30°C | None | ⏳ | ⏳ | ⏳ | — |
 
-**Today — Sigma:** 1W/8L (11.1%) | **P5:** 0W/9L (0.0%) | **Mean:** 2W/7L (22.2%)
+**Today — Sigma:** 0W/3L (0.0%) | **P5:** 0W/3L (0.0%) | **Mean:** 1W/2L (33.3%)
 
 ## Cumulative Strategy Performance
 
 | Strategy | Wins | Losses | Win Rate |
 |----------|------|--------|----------|
-| 🎯 Sigma (μ−kσ) | 12 | 112 | 9.7% |
-| 🛡️ P5-Basert | 8 | 116 | 6.5% |
-| 📊 Mean-Basert | 47 | 77 | 37.9% |
+| 🎯 Sigma (μ−kσ) | 11 | 107 | 9.3% |
+| 🛡️ P5-Basert | 8 | 110 | 6.8% |
+| 📊 Mean-Basert | 46 | 72 | 39.0% |
 
 ## Sigma Strategy by Confidence Tier
 
 | Tier | Positions | Wins | Losses | Win Rate |
 |------|-----------|------|--------|----------|
-| 🟢 >80% | 16 | 2 | 14 | 12.5% |
-| 🟠 70-80% | 40 | 8 | 32 | 20.0% |
-| 🔴 60-70% | 88 | 5 | 83 | 5.7% |
-| 🔴 <60% | 200 | 18 | 182 | 9.0% |
+| 🟢 >80% | 17 | 2 | 15 | 11.8% |
+| 🟠 70-80% | 40 | 7 | 33 | 17.5% |
+| 🔴 60-70% | 92 | 5 | 87 | 5.4% |
+| 🔴 <60% | 216 | 22 | 194 | 10.2% |
 
 ## Recent Daily Results
 
@@ -45,9 +45,9 @@
 | 2026-08-22 | 0/3 | 0/3 | 0/3 |
 | 2026-08-23 | 0/3 | 0/3 | 2/1 |
 | 2026-08-24 | 0/3 | 0/3 | 2/1 |
-| 2026-08-25 | 1/8 | 0/9 | 2/7 |
+| 2026-08-25 | 0/3 | 0/3 | 1/2 |
 
-**Total flip recommendations (SHORT):** 108
+**Total flip recommendations (SHORT):** 111
 
 ## 🏆 Win Rate Per City — Sigma Strategy
 
@@ -55,16 +55,16 @@
 
 | # | City | Record | Win Rate |
 |---|---|---|---|
-| 1 | Tel Aviv, IL | 8W/2L | 80.0% |
+| 1 | Tel Aviv, IL | 9W/2L | 81.8% |
 | 2 | Houston, US | 7W/4L | 63.6% |
 | 3 | Guangzhou, CN | 1W/1L | 50.0% |
 | 4 | Dallas, US | 4W/7L | 36.4% |
-| 5 | Mexico City, MX | 3W/8L | 27.3% |
-| 6 | New York, US | 2W/7L | 22.2% |
-| 7 | Cape Town, ZA | 2W/7L | 22.2% |
-| 8 | Moscow, RU | 2W/9L | 18.2% |
-| 9 | Milan, IT | 1W/7L | 12.5% |
-| 10 | Los Angeles, US | 1W/9L | 10.0% |
+| 5 | Mexico City, MX | 4W/7L | 36.4% |
+| 6 | New York, US | 2W/8L | 20.0% |
+| 7 | Cape Town, ZA | 2W/8L | 20.0% |
+| 8 | Los Angeles, US | 2W/8L | 20.0% |
+| 9 | Moscow, RU | 2W/10L | 16.7% |
+| 10 | Milan, IT | 1W/8L | 11.1% |
 
 ### 📉 SVESTE BYER
 
@@ -72,21 +72,21 @@
 |---|---|---|---|
 | 41 | Seoul (Incheon), KR | 0W/2L | 0.0% |
 | 42 | San Francisco, US | 0W/9L | 0.0% |
-| 43 | Atlanta, US | 0W/9L | 0.0% |
-| 44 | Jeddah, SA | 0W/8L | 0.0% |
+| 43 | Atlanta, US | 0W/10L | 0.0% |
+| 44 | Jeddah, SA | 0W/9L | 0.0% |
 | 45 | Chengdu, CN | 0W/2L | 0.0% |
 | 46 | Wuhan, CN | 0W/2L | 0.0% |
 | 47 | Chongqing, CN | 0W/2L | 0.0% |
-| 48 | Panama City, PA | 0W/9L | 0.0% |
-| 49 | Lucknow, IN | 0W/8L | 0.0% |
+| 48 | Panama City, PA | 0W/10L | 0.0% |
+| 49 | Lucknow, IN | 0W/9L | 0.0% |
 | 50 | Kuala Lumpur, MY | 0W/2L | 0.0% |
 
 ## 📊 Model Agreement & Win Rate
 
 | Agreement | Positions | Record | Win Rate |
 |---|---|---|---|
-| 8/8 enige | 117 | 16W/101L | 13.7% |
-| 7/8 enige | 227 | 17W/210L | 7.5% |
+| 8/8 enige | 120 | 17W/103L | 14.2% |
+| 7/8 enige | 245 | 19W/226L | 7.8% |
 | 6/8 enige | 0 | 0W/0L | N/A |
 | <6 enige | 0 | 0W/0L | N/A |
 
@@ -95,18 +95,18 @@
 | Range Size | Positions | Record | Win Rate |
 |---|---|---|---|
 | Smal (<2°C) | 8 | 0W/8L | 0.0% |
-| Medium (2-4°C) | 228 | 27W/201L | 11.8% |
-| Bred (>4°C) | 108 | 6W/102L | 5.6% |
+| Medium (2-4°C) | 239 | 27W/212L | 11.3% |
+| Bred (>4°C) | 118 | 9W/109L | 7.6% |
 
 ## 📊 Optimal Strategy by Confidence Level
 
 | Tier | 🎯 Sigma | 🛡️ P5 | 📊 Mean | 🏆 Best |
 |---|---|---|---|---|
-| 🟢 >80% | 12.5% | 12.5% | 31.2% | **Mean (31.2%)** |
-| 🟠 70-80% | 20.0% | 20.0% | 25.0% | **Mean (25.0%)** |
-| 🟡 60-70% | 5.7% | 3.4% | 34.1% | **Mean (34.1%)** |
-| 🔴 50-60% | 11.0% | 4.6% | 42.2% | **Mean (42.2%)** |
-| 🔴 <50% | 6.6% | 2.2% | 30.8% | **Mean (30.8%)** |
+| 🟢 >80% | 11.8% | 11.8% | 35.3% | **Mean (35.3%)** |
+| 🟠 70-80% | 17.5% | 20.0% | 27.5% | **Mean (27.5%)** |
+| 🟡 60-70% | 5.4% | 3.3% | 34.8% | **Mean (34.8%)** |
+| 🔴 50-60% | 12.5% | 4.2% | 41.7% | **Mean (41.7%)** |
+| 🔴 <50% | 7.3% | 2.1% | 29.2% | **Mean (29.2%)** |
 
 ## 📈 Cumulative Edge Tracker
 
@@ -127,32 +127,32 @@
 | 2026-08-22 | 0W/3L | -300 units | -9371 units |
 | 2026-08-23 | 0W/3L | -300 units | -9671 units |
 | 2026-08-24 | 0W/3L | -300 units | -9971 units |
-| 2026-08-25 | 1W/8L | -761 units | -10732 units |
+| 2026-08-25 | 0W/3L | -300 units | -10271 units |
 
 ## 💰 Arbitrage Stats
 
 | Action | Wins | Losses | Win Rate |
 |--------|------|--------|----------|
-| 🔴 SHORT | 11 | 0 | 100.0% |
+| 🔴 SHORT | 14 | 0 | 100.0% |
 | 🟢 BUY   | 2 | 0 | 100.0% |
-| **Total** | **13** | **0** | **100.0%** |
+| **Total** | **16** | **0** | **100.0%** |
 
 ## 🌍 Region Performance
 
 | Region | Positions | Record | Win Rate |
 |---|---|---|---|
-| Africa | 9 | 2W/7L | 22.2% |
-| Asia | 69 | 9W/60L | 13.0% |
-| Americas | 161 | 19W/142L | 11.8% |
-| Europe | 102 | 3W/99L | 2.9% |
-| Oceania | 3 | 0W/3L | 0.0% |
+| Africa | 10 | 2W/8L | 20.0% |
+| Asia | 73 | 10W/63L | 13.7% |
+| Americas | 167 | 21W/146L | 12.6% |
+| Europe | 113 | 3W/110L | 2.7% |
+| Oceania | 2 | 0W/2L | 0.0% |
 
 ## 🏙️ UHI Adjustment Accuracy
 
 | UHI Category | Count | Avg BMA Error |
 |---|---|---|
 | High UHI cities (≥1.0°C) | 48 | 0.75°C |
-| Low UHI cities (≤0.5°C) | 61 | 1.03°C |
+| Low UHI cities (≤0.5°C) | 65 | 1.0°C |
 
 ════════════════════════════════════════════════════════════
 📊 EDGE IMPACT ANALYSIS — Real vs Imagined
@@ -160,27 +160,27 @@
 
 📏 SPREAD FILTERING:
    Narrow (<2°C)        0W/8L = 0.0%
-   Medium (2-4°C)       27W/201L = 11.8%
-   Wide (>4°C)          6W/102L = 5.6%
-   All spreads:                 33W/311L = 9.6%
-   Narrow Impact: -9.6% → 🔴 IMAGINED / NOISE
+   Medium (2-4°C)       27W/212L = 11.3%
+   Wide (>4°C)          9W/109L = 7.6%
+   All spreads:                 36W/329L = 9.9%
+   Narrow Impact: -9.9% → 🔴 IMAGINED / NOISE
 
 🎯 DYNAMIC k:
-   With dynamic k (k>0.5):      13W/264L = 4.7%
-   Conservative k (≤0.5):       20W/47L = 29.9%
-   Impact: -25.2% → 🔴 IMAGINED / NOISE
+   With dynamic k (k>0.5):      14W/282L = 4.7%
+   Conservative k (≤0.5):       22W/47L = 31.9%
+   Impact: -27.2% → 🔴 IMAGINED / NOISE
 
 🏙️ UHI ADJUSTMENT:
-   UHI adjusted (≥0.5°C):       14W/130L = 9.7%
-   No UHI (<0.5°C):             19W/181L = 9.5%
-   Impact: +0.2% → 🔴 IMAGINED / NOISE
+   UHI adjusted (≥0.5°C):       16W/134L = 10.7%
+   No UHI (<0.5°C):             20W/195L = 9.3%
+   Impact: +1.4% → 🟡 MARGINAL
 
 🏆 BEST FEATURE COMBOS
 ────────────────────────────────────────
-   Weights                             43.3% (13W/17L)
-   Weights + UHI                       20.0% (7W/28L)
-   Weights + Dynamic k + UHI           6.5% (7W/101L)
-   Weights + Dynamic k                 3.7% (6W/157L)
+   Weights                             45.2% (14W/17L)
+   Weights + UHI                       22.2% (8W/28L)
+   Weights + Dynamic k + UHI           7.1% (8W/105L)
+   Weights + Dynamic k                 3.4% (6W/171L)
    Weights + Narrow spread + Dynamic k + UHI 0.0% (0W/1L)
    Weights + Narrow spread             0.0% (0W/2L)
    Weights + Narrow spread + Dynamic k 0.0% (0W/5L)
