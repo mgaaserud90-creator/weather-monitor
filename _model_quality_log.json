@@ -168286,13 +168286,13 @@
       "target_date": "2026-09-05",
       "phase": "hourly_active",
       "run_started": "2026-09-05T00:27:56.626262+00:00",
-      "last_updated": "2026-09-05T08:38:09.519163+00:00",
+      "last_updated": "2026-09-05T09:10:03.166534+00:00",
       "top_5_confidence": [
         "Amsterdam, NL",
         "Buenos Aires, AR",
         "Shanghai, CN",
-        "Moscow, RU",
-        "Lucknow, IN"
+        "Chicago, US",
+        "Moscow, RU"
       ],
       "predictions": {
         "Denver, US": {
@@ -168412,6 +168412,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 30.2,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -168474,6 +168476,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 29.0,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -168533,6 +168537,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 31.2,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -168595,6 +168601,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 28.1,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -168657,6 +168665,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 30.2,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -168718,6 +168728,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 31.8,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -168746,12 +168758,12 @@
           },
           "strategies": {
             "sigma": {
-              "spill": 24,
-              "k": 0.64,
-              "win_prob": 0.22,
-              "result": "LOSS",
+              "spill": 25,
+              "k": 0.54,
+              "win_prob": 0.36,
+              "result": "WIN",
               "actual_peak": null,
-              "pm_result": "LOSS"
+              "pm_result": "WIN"
             },
             "p5": {
               "spill": 23,
@@ -168780,6 +168792,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.5,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 25.1,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -168810,7 +168824,7 @@
           "strategies": {
             "sigma": {
               "spill": 31,
-              "k": 1.29,
+              "k": 1.3,
               "win_prob": 0.103,
               "result": "LOSS",
               "actual_peak": null,
@@ -168843,6 +168857,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.3,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 32.8,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -168966,6 +168982,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.8,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 32.3,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -169089,6 +169107,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 32.1,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -169097,48 +169117,45 @@
           }
         },
         "Dallas, US": {
-          "bma_mean": 36.3,
-          "bma_std": 0.97,
-          "p5": 34.7,
-          "p95": 37.9,
-          "confidence": 0.574,
+          "bma_mean": 37.1,
+          "bma_std": 0.88,
+          "p5": 35.7,
+          "p95": 38.6,
+          "confidence": 0.589,
           "models": 8,
           "bma_probs": {
-            "31": 0.0,
             "32": 0.0,
-            "33": 0.2,
-            "34": 3.0,
-            "35": 17.3,
-            "36": 37.7,
-            "37": 31.0,
-            "38": 9.6,
-            "39": 1.1,
-            "40": 0.0
+            "33": 0.0,
+            "34": 0.2,
+            "35": 3.3,
+            "36": 21.3,
+            "37": 42.8,
+            "38": 26.9,
+            "39": 5.3,
+            "40": 0.3,
+            "41": 0.0
           },
           "strategies": {
             "sigma": {
               "spill": 36,
-              "k": 0.14,
-              "win_prob": 0.376,
-              "result": "LOSS",
-              "actual_peak": null,
-              "pm_result": "LOSS"
+              "k": 0.59,
+              "win_prob": 0.4,
+              "result": null,
+              "actual_peak": null
             },
             "p5": {
               "spill": 35,
               "k": null,
-              "win_prob": 0.173,
-              "result": "LOSS",
-              "actual_peak": null,
-              "pm_result": "LOSS"
+              "win_prob": 0.15,
+              "result": null,
+              "actual_peak": null
             },
             "mean": {
               "spill": 36,
               "k": 0.0,
-              "win_prob": 0.376,
-              "result": "LOSS",
-              "actual_peak": null,
-              "pm_result": "LOSS"
+              "win_prob": 0.4,
+              "result": null,
+              "actual_peak": null
             }
           },
           "peak_detected_at": null,
@@ -169148,9 +169165,11 @@
           "_tz": "America/Chicago",
           "_peak_hour_start": 15,
           "_peak_hour_end": 17,
-          "_target_date": "2026-09-04",
+          "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.0,
           "_lead_days": 0,
+          "_bias_correction": 0.752,
+          "_mean_corrected": 36.3,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -169211,6 +169230,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 2.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 29.9,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -169338,6 +169359,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.7,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 27.8,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -169397,6 +169420,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 27.9,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -169460,6 +169485,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 2.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 29.4,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -169523,6 +169550,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 30.4,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -169583,6 +169612,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.7,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 33.8,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -169645,6 +169676,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.8,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 31.0,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -169653,49 +169686,45 @@
           }
         },
         "Houston, US": {
-          "bma_mean": 32.2,
-          "bma_std": 1.34,
-          "p5": 30.0,
-          "p95": 34.4,
-          "confidence": 0.523,
+          "bma_mean": 32.9,
+          "bma_std": 0.97,
+          "p5": 31.3,
+          "p95": 34.5,
+          "confidence": 0.574,
           "models": 8,
           "bma_probs": {
-            "27": 0.0,
-            "28": 0.3,
-            "29": 1.9,
-            "30": 8.0,
-            "31": 19.8,
-            "32": 28.8,
-            "33": 24.5,
-            "34": 12.3,
-            "35": 3.6,
-            "36": 0.6,
-            "37": 0.1
+            "28": 0.0,
+            "29": 0.0,
+            "30": 0.6,
+            "31": 6.8,
+            "32": 26.6,
+            "33": 39.2,
+            "34": 21.9,
+            "35": 4.6,
+            "36": 0.4,
+            "37": 0.0
           },
           "strategies": {
             "sigma": {
               "spill": 32,
-              "k": 0.1,
-              "win_prob": 0.288,
-              "result": "LOSS",
-              "actual_peak": null,
-              "pm_result": "LOSS"
+              "k": 0.49,
+              "win_prob": 0.265,
+              "result": null,
+              "actual_peak": null
             },
             "p5": {
-              "spill": 30,
+              "spill": 31,
               "k": null,
-              "win_prob": 0.08,
-              "result": "LOSS",
-              "actual_peak": null,
-              "pm_result": "LOSS"
+              "win_prob": 0.068,
+              "result": null,
+              "actual_peak": null
             },
             "mean": {
-              "spill": 32,
+              "spill": 33,
               "k": 0.0,
-              "win_prob": 0.288,
-              "result": "LOSS",
-              "actual_peak": null,
-              "pm_result": "LOSS"
+              "win_prob": 0.391,
+              "result": null,
+              "actual_peak": null
             }
           },
           "peak_detected_at": null,
@@ -169705,13 +169734,15 @@
           "_tz": "America/Chicago",
           "_peak_hour_start": 14,
           "_peak_hour_end": 17,
-          "_target_date": "2026-09-04",
+          "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 32.9,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
-            "spread_filter": "wide",
+            "spread_filter": "medium",
             "uhi_adjusted": false
           }
         },
@@ -169768,6 +169799,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 32.6,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -169828,6 +169861,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 31.4,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -169888,6 +169923,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 32.8,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -169896,51 +169933,46 @@
           }
         },
         "Austin, US": {
-          "bma_mean": 33.5,
-          "bma_std": 1.76,
-          "p5": 30.6,
-          "p95": 36.4,
-          "confidence": 0.471,
+          "bma_mean": 34.9,
+          "bma_std": 1.25,
+          "p5": 32.8,
+          "p95": 36.9,
+          "confidence": 0.586,
           "models": 8,
           "bma_probs": {
-            "27": 0.0,
-            "28": 0.2,
-            "29": 0.9,
-            "30": 3.3,
-            "31": 8.4,
-            "32": 15.7,
-            "33": 21.5,
-            "34": 21.5,
-            "35": 15.7,
-            "36": 8.4,
-            "37": 3.3,
-            "38": 0.9,
+            "29": 0.0,
+            "30": 0.0,
+            "31": 0.3,
+            "32": 2.4,
+            "33": 10.4,
+            "34": 24.3,
+            "35": 31.0,
+            "36": 21.5,
+            "37": 8.2,
+            "38": 1.7,
             "39": 0.2
           },
           "strategies": {
             "sigma": {
-              "spill": 31,
+              "spill": 33,
               "k": 1.4,
-              "win_prob": 0.084,
-              "result": "LOSS",
-              "actual_peak": null,
-              "pm_result": "LOSS"
+              "win_prob": 0.104,
+              "result": null,
+              "actual_peak": null
             },
             "p5": {
-              "spill": 31,
+              "spill": 33,
               "k": null,
-              "win_prob": 0.084,
-              "result": "LOSS",
-              "actual_peak": null,
-              "pm_result": "LOSS"
+              "win_prob": 0.104,
+              "result": null,
+              "actual_peak": null
             },
             "mean": {
-              "spill": 34,
+              "spill": 35,
               "k": 0.0,
-              "win_prob": 0.215,
-              "result": "LOSS",
-              "actual_peak": null,
-              "pm_result": "LOSS"
+              "win_prob": 0.311,
+              "result": null,
+              "actual_peak": null
             }
           },
           "peak_detected_at": null,
@@ -169950,9 +169982,11 @@
           "_tz": "America/Chicago",
           "_peak_hour_start": 15,
           "_peak_hour_end": 17,
-          "_target_date": "2026-09-04",
+          "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 34.9,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -169961,50 +169995,45 @@
           }
         },
         "Chicago, US": {
-          "bma_mean": 32.7,
-          "bma_std": 1.49,
-          "p5": 30.3,
-          "p95": 35.2,
-          "confidence": 0.455,
+          "bma_mean": 26.9,
+          "bma_std": 0.79,
+          "p5": 25.6,
+          "p95": 28.2,
+          "confidence": 0.72,
           "models": 8,
           "bma_probs": {
-            "27": 0.0,
-            "28": 0.2,
-            "29": 1.3,
-            "30": 5.4,
-            "31": 14.0,
-            "32": 23.6,
-            "33": 25.8,
-            "34": 18.2,
-            "35": 8.3,
-            "36": 2.5,
-            "37": 0.5,
-            "38": 0.1
+            "22": 0.0,
+            "23": 0.0,
+            "24": 0.1,
+            "25": 3.7,
+            "26": 26.8,
+            "27": 47.0,
+            "28": 20.2,
+            "29": 2.1,
+            "30": 0.0,
+            "31": 0.0
           },
           "strategies": {
             "sigma": {
-              "spill": 31,
-              "k": 1.14,
-              "win_prob": 0.14,
-              "result": "LOSS",
-              "actual_peak": null,
-              "pm_result": "LOSS"
+              "spill": 26,
+              "k": 0.88,
+              "win_prob": 0.268,
+              "result": null,
+              "actual_peak": null
             },
             "p5": {
-              "spill": 30,
+              "spill": 26,
               "k": null,
-              "win_prob": 0.054,
-              "result": "LOSS",
-              "actual_peak": null,
-              "pm_result": "LOSS"
+              "win_prob": 0.268,
+              "result": null,
+              "actual_peak": null
             },
             "mean": {
-              "spill": 33,
+              "spill": 27,
               "k": 0.0,
-              "win_prob": 0.258,
-              "result": "LOSS",
-              "actual_peak": null,
-              "pm_result": "LOSS"
+              "win_prob": 0.47,
+              "result": null,
+              "actual_peak": null
             }
           },
           "peak_detected_at": null,
@@ -170014,13 +170043,15 @@
           "_tz": "America/Chicago",
           "_peak_hour_start": 14,
           "_peak_hour_end": 17,
-          "_target_date": "2026-09-04",
+          "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.7,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 26.9,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
-            "spread_filter": "wide",
+            "spread_filter": "medium",
             "uhi_adjusted": true
           }
         },
@@ -170205,6 +170236,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 17.8,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -170233,23 +170266,23 @@
           },
           "strategies": {
             "sigma": {
-              "spill": 17,
-              "k": 0.82,
-              "win_prob": 0.336,
+              "spill": 18,
+              "k": 0.87,
+              "win_prob": 0.455,
               "result": null,
               "actual_peak": null
             },
             "p5": {
-              "spill": 16,
+              "spill": 17,
               "k": null,
-              "win_prob": 0.062,
+              "win_prob": 0.163,
               "result": null,
               "actual_peak": null
             },
             "mean": {
               "spill": 18,
               "k": 0.0,
-              "win_prob": 0.444,
+              "win_prob": 0.455,
               "result": null,
               "actual_peak": null
             }
@@ -170264,6 +170297,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.5,
           "_lead_days": 0,
+          "_bias_correction": -0.533,
+          "_mean_corrected": 18.2,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -170323,6 +170358,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 32.3,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -170382,6 +170419,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 28.0,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -170444,6 +170483,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 26.6,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -170506,6 +170547,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 37.6,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -170564,6 +170607,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 18.5,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -170623,6 +170668,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 20.9,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -170682,6 +170729,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 23.9,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -170711,22 +170760,22 @@
           "strategies": {
             "sigma": {
               "spill": 21,
-              "k": 1.03,
-              "win_prob": 0.227,
+              "k": 1.23,
+              "win_prob": 0.154,
               "result": null,
               "actual_peak": null
             },
             "p5": {
               "spill": 21,
               "k": null,
-              "win_prob": 0.227,
+              "win_prob": 0.154,
               "result": null,
               "actual_peak": null
             },
             "mean": {
               "spill": 22,
               "k": 0.0,
-              "win_prob": 0.507,
+              "win_prob": 0.488,
               "result": null,
               "actual_peak": null
             }
@@ -170741,6 +170790,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
+          "_bias_correction": -0.217,
+          "_mean_corrected": 22.2,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -170801,6 +170852,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.5,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 23.6,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -170831,21 +170884,21 @@
             "sigma": {
               "spill": 36,
               "k": 1.4,
-              "win_prob": 0.242,
+              "win_prob": 0.095,
               "result": null,
               "actual_peak": null
             },
             "p5": {
-              "spill": 35,
+              "spill": 36,
               "k": null,
-              "win_prob": 0.056,
+              "win_prob": 0.095,
               "result": null,
               "actual_peak": null
             },
             "mean": {
-              "spill": 37,
+              "spill": 38,
               "k": 0.0,
-              "win_prob": 0.393,
+              "win_prob": 0.377,
               "result": null,
               "actual_peak": null
             }
@@ -170860,6 +170913,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
+          "_bias_correction": -0.713,
+          "_mean_corrected": 37.7,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -170920,6 +170975,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 32.4,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -170981,6 +171038,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 23.2,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -171009,22 +171068,22 @@
           "strategies": {
             "sigma": {
               "spill": 12,
-              "k": 0.54,
-              "win_prob": 0.433,
+              "k": 0.53,
+              "win_prob": 0.365,
               "result": null,
               "actual_peak": null
             },
             "p5": {
-              "spill": 11,
+              "spill": 12,
               "k": null,
-              "win_prob": 0.066,
+              "win_prob": 0.365,
               "result": null,
               "actual_peak": null
             },
             "mean": {
-              "spill": 12,
+              "spill": 13,
               "k": 0.0,
-              "win_prob": 0.433,
+              "win_prob": 0.489,
               "result": null,
               "actual_peak": null
             }
@@ -171039,6 +171098,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.8,
           "_lead_days": 0,
+          "_bias_correction": -0.157,
+          "_mean_corrected": 12.7,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -171068,22 +171129,22 @@
           "strategies": {
             "sigma": {
               "spill": 30,
-              "k": 1.34,
-              "win_prob": 0.202,
+              "k": 1.33,
+              "win_prob": 0.108,
               "result": null,
               "actual_peak": null
             },
             "p5": {
               "spill": 30,
               "k": null,
-              "win_prob": 0.202,
+              "win_prob": 0.108,
               "result": null,
               "actual_peak": null
             },
             "mean": {
               "spill": 31,
               "k": 0.0,
-              "win_prob": 0.47,
+              "win_prob": 0.411,
               "result": null,
               "actual_peak": null
             }
@@ -171098,6 +171159,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
+          "_bias_correction": -0.348,
+          "_mean_corrected": 31.4,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -171156,6 +171219,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.5,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 26.5,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -171215,6 +171280,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 36.0,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -171275,6 +171342,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 23.7,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -171306,23 +171375,23 @@
           },
           "strategies": {
             "sigma": {
-              "spill": 21,
-              "k": 1.24,
-              "win_prob": 0.108,
+              "spill": 22,
+              "k": 1.25,
+              "win_prob": 0.125,
               "result": null,
               "actual_peak": null
             },
             "p5": {
-              "spill": 20,
+              "spill": 21,
               "k": null,
-              "win_prob": 0.051,
+              "win_prob": 0.064,
               "result": null,
               "actual_peak": null
             },
             "mean": {
-              "spill": 23,
+              "spill": 24,
               "k": 0.0,
-              "win_prob": 0.208,
+              "win_prob": 0.209,
               "result": null,
               "actual_peak": null
             }
@@ -171337,11 +171406,78 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.0,
           "_lead_days": 0,
+          "_bias_correction": -0.733,
+          "_mean_corrected": 23.9,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
             "spread_filter": "wide",
             "uhi_adjusted": true
+          }
+        },
+        "Panama City, PA": {
+          "bma_mean": 31.2,
+          "bma_std": 2.1,
+          "p5": 27.8,
+          "p95": 34.7,
+          "confidence": 0.373,
+          "models": 7,
+          "bma_probs": {
+            "24": 0.1,
+            "25": 0.3,
+            "26": 0.9,
+            "27": 2.6,
+            "28": 6.0,
+            "29": 11.0,
+            "30": 16.0,
+            "31": 18.7,
+            "32": 17.5,
+            "33": 13.1,
+            "34": 7.9,
+            "35": 3.8,
+            "36": 1.4,
+            "37": 0.4
+          },
+          "strategies": {
+            "sigma": {
+              "spill": 28,
+              "k": 1.4,
+              "win_prob": 0.06,
+              "result": null,
+              "actual_peak": null
+            },
+            "p5": {
+              "spill": 28,
+              "k": null,
+              "win_prob": 0.06,
+              "result": null,
+              "actual_peak": null
+            },
+            "mean": {
+              "spill": 31,
+              "k": 0.0,
+              "win_prob": 0.188,
+              "result": null,
+              "actual_peak": null
+            }
+          },
+          "peak_detected_at": null,
+          "recommendation": null,
+          "_lat": 8.9733,
+          "_lon": -79.5556,
+          "_tz": "America/Panama",
+          "_peak_hour_start": 13,
+          "_peak_hour_end": 16,
+          "_target_date": "2026-09-05",
+          "_uhi_adjustment": 0.3,
+          "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 31.2,
+          "_features": {
+            "model_weighting": true,
+            "dynamic_k": true,
+            "spread_filter": "wide",
+            "uhi_adjusted": false
           }
         }
       },
@@ -171422,6 +171558,11 @@
             "time": "2026-09-05T14:00:00",
             "temp_c": 31.1,
             "peak_state": "peak_window"
+          },
+          {
+            "time": "2026-09-05T14:30:00",
+            "temp_c": 30.8,
+            "peak_state": "peak_window"
           }
         ],
         "Busan, KR": [
@@ -171468,6 +171609,11 @@
             "time": "2026-09-05T16:30:00",
             "temp_c": 31.1,
             "peak_state": "rising"
+          },
+          {
+            "time": "2026-09-05T17:00:00",
+            "temp_c": 30.6,
+            "peak_state": "post_peak"
           }
         ],
         "Tokyo, JP": [
@@ -171652,6 +171798,11 @@
             "time": "2026-09-05T13:30:00",
             "temp_c": 31.1,
             "peak_state": "peak_window"
+          },
+          {
+            "time": "2026-09-05T14:00:00",
+            "temp_c": 30.7,
+            "peak_state": "peak_window"
           }
         ],
         "Chengdu, CN": [
@@ -171669,6 +171820,11 @@
             "time": "2026-09-05T16:30:00",
             "temp_c": 31.9,
             "peak_state": "rising"
+          },
+          {
+            "time": "2026-09-05T17:00:00",
+            "temp_c": 31.6,
+            "peak_state": "post_peak"
           }
         ],
         "Austin, US": [
@@ -171683,6 +171839,11 @@
             "time": "2026-09-04T19:30:00",
             "temp_c": 31.0,
             "peak_state": "post_peak"
+          },
+          {
+            "time": "2026-09-05T04:00:00",
+            "temp_c": 24.6,
+            "peak_state": "pre_peak"
           }
         ],
         "San Francisco, US": [
@@ -171719,6 +171880,11 @@
             "time": "2026-09-05T11:30:00",
             "temp_c": 14.6,
             "peak_state": "pre_peak"
+          },
+          {
+            "time": "2026-09-05T12:00:00",
+            "temp_c": 15.7,
+            "peak_state": "pre_peak"
           }
         ],
         "Moscow, RU": [
@@ -171740,6 +171906,11 @@
           {
             "time": "2026-09-05T11:30:00",
             "temp_c": 14.8,
+            "peak_state": "pre_peak"
+          },
+          {
+            "time": "2026-09-05T12:00:00",
+            "temp_c": 15.1,
             "peak_state": "pre_peak"
           }
         ],
@@ -171765,6 +171936,11 @@
             "time": "2026-09-05T09:30:00",
             "temp_c": 21.1,
             "peak_state": "pre_peak"
+          },
+          {
+            "time": "2026-09-05T12:00:00",
+            "temp_c": 25.8,
+            "peak_state": "pre_peak"
           }
         ],
         "Istanbul, TR": [
@@ -171787,6 +171963,11 @@
             "time": "2026-09-05T11:30:00",
             "temp_c": 25.8,
             "peak_state": "pre_peak"
+          },
+          {
+            "time": "2026-09-05T12:00:00",
+            "temp_c": 26.2,
+            "peak_state": "pre_peak"
           }
         ],
         "Jeddah, SA": [
@@ -171804,6 +171985,11 @@
             "time": "2026-09-05T11:30:00",
             "temp_c": 37.1,
             "peak_state": "pre_peak"
+          },
+          {
+            "time": "2026-09-05T12:00:00",
+            "temp_c": 37.3,
+            "peak_state": "peak_window"
           }
         ],
         "Amsterdam, NL": [
@@ -171820,6 +172006,11 @@
           {
             "time": "2026-09-05T10:30:00",
             "temp_c": 18.6,
+            "peak_state": "pre_peak"
+          },
+          {
+            "time": "2026-09-05T11:00:00",
+            "temp_c": 19.3,
             "peak_state": "pre_peak"
           }
         ],
@@ -171838,12 +172029,22 @@
             "time": "2026-09-05T10:30:00",
             "temp_c": 17.1,
             "peak_state": "pre_peak"
+          },
+          {
+            "time": "2026-09-05T11:00:00",
+            "temp_c": 17.0,
+            "peak_state": "pre_peak"
           }
         ],
         "Munich, DE": [
           {
             "time": "2026-09-05T08:30:00",
             "temp_c": 16.3,
+            "peak_state": "pre_peak"
+          },
+          {
+            "time": "2026-09-05T11:00:00",
+            "temp_c": 16.6,
             "peak_state": "pre_peak"
           }
         ],
@@ -171870,6 +172071,11 @@
           {
             "time": "2026-09-05T10:30:00",
             "temp_c": 26.4,
+            "peak_state": "pre_peak"
+          },
+          {
+            "time": "2026-09-05T11:00:00",
+            "temp_c": 28.3,
             "peak_state": "pre_peak"
           }
         ],
@@ -171900,12 +172106,22 @@
             "time": "2026-09-05T10:30:00",
             "temp_c": 18.9,
             "peak_state": "pre_peak"
+          },
+          {
+            "time": "2026-09-05T11:00:00",
+            "temp_c": 20.0,
+            "peak_state": "pre_peak"
           }
         ],
         "Buenos Aires, AR": [
           {
             "time": "2026-09-05T05:30:00",
             "temp_c": 5.9,
+            "peak_state": "pre_peak"
+          },
+          {
+            "time": "2026-09-05T06:00:00",
+            "temp_c": 5.6,
             "peak_state": "pre_peak"
           }
         ],
@@ -171914,12 +172130,22 @@
             "time": "2026-09-05T04:30:00",
             "temp_c": 26.8,
             "peak_state": "pre_peak"
+          },
+          {
+            "time": "2026-09-05T05:00:00",
+            "temp_c": 26.4,
+            "peak_state": "pre_peak"
           }
         ],
         "New York, US": [
           {
             "time": "2026-09-05T04:30:00",
             "temp_c": 21.8,
+            "peak_state": "pre_peak"
+          },
+          {
+            "time": "2026-09-05T05:00:00",
+            "temp_c": 21.2,
             "peak_state": "pre_peak"
           }
         ],
@@ -171936,20 +172162,32 @@
             "time": "2026-09-05T05:30:00",
             "temp_c": 14.9,
             "peak_state": "pre_peak"
+          },
+          {
+            "time": "2026-09-05T06:00:00",
+            "temp_c": 15.0,
+            "peak_state": "pre_peak"
+          }
+        ],
+        "Panama City, PA": [
+          {
+            "time": "2026-09-05T04:00:00",
+            "temp_c": 25.0,
+            "peak_state": "pre_peak"
           }
         ]
       },
       "arbitrage_results": {},
       "summary": {
-        "sigma_wins": 0,
-        "sigma_losses": 23,
+        "sigma_wins": 1,
+        "sigma_losses": 18,
         "p5_wins": 0,
-        "p5_losses": 23,
+        "p5_losses": 19,
         "mean_wins": 5,
-        "mean_losses": 18,
-        "unresolved": 27
+        "mean_losses": 14,
+        "unresolved": 32
       },
-      "utc_hour": 8,
+      "utc_hour": 9,
       "active_regions": [
         "AFRICA",
         "AMERICAS",
@@ -171958,7 +172196,7 @@
         "MIDDLE_EAST",
         "SOUTH_AM"
       ],
-      "active_city_count": 40,
+      "active_city_count": 45,
       "all_city_count": 51,
       "predictions_active": {
         "Amsterdam, NL": {
@@ -172012,6 +172250,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 18.5,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -172040,22 +172280,22 @@
           "strategies": {
             "sigma": {
               "spill": 12,
-              "k": 0.54,
-              "win_prob": 0.433,
+              "k": 0.53,
+              "win_prob": 0.365,
               "result": null,
               "actual_peak": null
             },
             "p5": {
-              "spill": 11,
+              "spill": 12,
               "k": null,
-              "win_prob": 0.066,
+              "win_prob": 0.365,
               "result": null,
               "actual_peak": null
             },
             "mean": {
-              "spill": 12,
+              "spill": 13,
               "k": 0.0,
-              "win_prob": 0.433,
+              "win_prob": 0.489,
               "result": null,
               "actual_peak": null
             }
@@ -172070,6 +172310,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.8,
           "_lead_days": 0,
+          "_bias_correction": -0.157,
+          "_mean_corrected": 12.7,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -172132,6 +172374,69 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 29.0,
+          "_features": {
+            "model_weighting": true,
+            "dynamic_k": true,
+            "spread_filter": "medium",
+            "uhi_adjusted": true
+          }
+        },
+        "Chicago, US": {
+          "bma_mean": 26.9,
+          "bma_std": 0.79,
+          "p5": 25.6,
+          "p95": 28.2,
+          "confidence": 0.72,
+          "models": 8,
+          "bma_probs": {
+            "22": 0.0,
+            "23": 0.0,
+            "24": 0.1,
+            "25": 3.7,
+            "26": 26.8,
+            "27": 47.0,
+            "28": 20.2,
+            "29": 2.1,
+            "30": 0.0,
+            "31": 0.0
+          },
+          "strategies": {
+            "sigma": {
+              "spill": 26,
+              "k": 0.88,
+              "win_prob": 0.268,
+              "result": null,
+              "actual_peak": null
+            },
+            "p5": {
+              "spill": 26,
+              "k": null,
+              "win_prob": 0.268,
+              "result": null,
+              "actual_peak": null
+            },
+            "mean": {
+              "spill": 27,
+              "k": 0.0,
+              "win_prob": 0.47,
+              "result": null,
+              "actual_peak": null
+            }
+          },
+          "peak_detected_at": null,
+          "recommendation": null,
+          "_lat": 41.9742,
+          "_lon": -87.9073,
+          "_tz": "America/Chicago",
+          "_peak_hour_start": 14,
+          "_peak_hour_end": 17,
+          "_target_date": "2026-09-05",
+          "_uhi_adjustment": 0.7,
+          "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 26.9,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -172160,23 +172465,23 @@
           },
           "strategies": {
             "sigma": {
-              "spill": 17,
-              "k": 0.82,
-              "win_prob": 0.336,
+              "spill": 18,
+              "k": 0.87,
+              "win_prob": 0.455,
               "result": null,
               "actual_peak": null
             },
             "p5": {
-              "spill": 16,
+              "spill": 17,
               "k": null,
-              "win_prob": 0.062,
+              "win_prob": 0.163,
               "result": null,
               "actual_peak": null
             },
             "mean": {
               "spill": 18,
               "k": 0.0,
-              "win_prob": 0.444,
+              "win_prob": 0.455,
               "result": null,
               "actual_peak": null
             }
@@ -172191,6 +172496,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.5,
           "_lead_days": 0,
+          "_bias_correction": -0.533,
+          "_mean_corrected": 18.2,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -172250,6 +172557,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 31.2,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -172279,22 +172588,22 @@
           "strategies": {
             "sigma": {
               "spill": 30,
-              "k": 1.34,
-              "win_prob": 0.202,
+              "k": 1.33,
+              "win_prob": 0.108,
               "result": null,
               "actual_peak": null
             },
             "p5": {
               "spill": 30,
               "k": null,
-              "win_prob": 0.202,
+              "win_prob": 0.108,
               "result": null,
               "actual_peak": null
             },
             "mean": {
               "spill": 31,
               "k": 0.0,
-              "win_prob": 0.47,
+              "win_prob": 0.411,
               "result": null,
               "actual_peak": null
             }
@@ -172309,6 +172618,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
+          "_bias_correction": -0.348,
+          "_mean_corrected": 31.4,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -172367,6 +172678,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.5,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 26.5,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -172429,6 +172742,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 28.1,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -172488,6 +172803,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 17.8,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -172550,6 +172867,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.8,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 31.0,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -172612,6 +172931,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 30.2,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -172672,6 +172993,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 2.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 29.9,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -172733,6 +173056,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 31.8,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -172763,21 +173088,21 @@
             "sigma": {
               "spill": 36,
               "k": 1.4,
-              "win_prob": 0.242,
+              "win_prob": 0.095,
               "result": null,
               "actual_peak": null
             },
             "p5": {
-              "spill": 35,
+              "spill": 36,
               "k": null,
-              "win_prob": 0.056,
+              "win_prob": 0.095,
               "result": null,
               "actual_peak": null
             },
             "mean": {
-              "spill": 37,
+              "spill": 38,
               "k": 0.0,
-              "win_prob": 0.393,
+              "win_prob": 0.377,
               "result": null,
               "actual_peak": null
             }
@@ -172792,6 +173117,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
+          "_bias_correction": -0.713,
+          "_mean_corrected": 37.7,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -172851,6 +173178,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 20.9,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -172910,6 +173239,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 28.0,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -172938,25 +173269,28 @@
           },
           "strategies": {
             "sigma": {
-              "spill": 24,
-              "k": 0.64,
-              "win_prob": 0.22,
-              "result": "LOSS",
-              "actual_peak": null
+              "spill": 25,
+              "k": 0.54,
+              "win_prob": 0.36,
+              "result": "WIN",
+              "actual_peak": null,
+              "pm_result": "WIN"
             },
             "p5": {
               "spill": 23,
               "k": null,
               "win_prob": 0.059,
               "result": "LOSS",
-              "actual_peak": null
+              "actual_peak": null,
+              "pm_result": "LOSS"
             },
             "mean": {
               "spill": 25,
               "k": 0.0,
               "win_prob": 0.36,
               "result": "WIN",
-              "actual_peak": null
+              "actual_peak": null,
+              "pm_result": "WIN"
             }
           },
           "peak_detected_at": null,
@@ -172969,6 +173303,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.5,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 25.1,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -173028,11 +173364,74 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 23.9,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
             "spread_filter": "medium",
             "uhi_adjusted": false
+          }
+        },
+        "Dallas, US": {
+          "bma_mean": 37.1,
+          "bma_std": 0.88,
+          "p5": 35.7,
+          "p95": 38.6,
+          "confidence": 0.589,
+          "models": 8,
+          "bma_probs": {
+            "32": 0.0,
+            "33": 0.0,
+            "34": 0.2,
+            "35": 3.3,
+            "36": 21.3,
+            "37": 42.8,
+            "38": 26.9,
+            "39": 5.3,
+            "40": 0.3,
+            "41": 0.0
+          },
+          "strategies": {
+            "sigma": {
+              "spill": 36,
+              "k": 0.59,
+              "win_prob": 0.4,
+              "result": null,
+              "actual_peak": null
+            },
+            "p5": {
+              "spill": 35,
+              "k": null,
+              "win_prob": 0.15,
+              "result": null,
+              "actual_peak": null
+            },
+            "mean": {
+              "spill": 36,
+              "k": 0.0,
+              "win_prob": 0.4,
+              "result": null,
+              "actual_peak": null
+            }
+          },
+          "peak_detected_at": null,
+          "recommendation": null,
+          "_lat": 32.8472,
+          "_lon": -96.8518,
+          "_tz": "America/Chicago",
+          "_peak_hour_start": 15,
+          "_peak_hour_end": 17,
+          "_target_date": "2026-09-05",
+          "_uhi_adjustment": 1.0,
+          "_lead_days": 0,
+          "_bias_correction": 0.752,
+          "_mean_corrected": 36.3,
+          "_features": {
+            "model_weighting": true,
+            "dynamic_k": true,
+            "spread_filter": "medium",
+            "uhi_adjusted": true
           }
         },
         "London, UK": {
@@ -173057,22 +173456,22 @@
           "strategies": {
             "sigma": {
               "spill": 21,
-              "k": 1.03,
-              "win_prob": 0.227,
+              "k": 1.23,
+              "win_prob": 0.154,
               "result": null,
               "actual_peak": null
             },
             "p5": {
               "spill": 21,
               "k": null,
-              "win_prob": 0.227,
+              "win_prob": 0.154,
               "result": null,
               "actual_peak": null
             },
             "mean": {
               "spill": 22,
               "k": 0.0,
-              "win_prob": 0.507,
+              "win_prob": 0.488,
               "result": null,
               "actual_peak": null
             }
@@ -173087,6 +173486,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
+          "_bias_correction": -0.217,
+          "_mean_corrected": 22.2,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -173147,11 +173548,75 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.8,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 32.3,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
             "spread_filter": "medium",
             "uhi_adjusted": true
+          }
+        },
+        "Austin, US": {
+          "bma_mean": 34.9,
+          "bma_std": 1.25,
+          "p5": 32.8,
+          "p95": 36.9,
+          "confidence": 0.586,
+          "models": 8,
+          "bma_probs": {
+            "29": 0.0,
+            "30": 0.0,
+            "31": 0.3,
+            "32": 2.4,
+            "33": 10.4,
+            "34": 24.3,
+            "35": 31.0,
+            "36": 21.5,
+            "37": 8.2,
+            "38": 1.7,
+            "39": 0.2
+          },
+          "strategies": {
+            "sigma": {
+              "spill": 33,
+              "k": 1.4,
+              "win_prob": 0.104,
+              "result": null,
+              "actual_peak": null
+            },
+            "p5": {
+              "spill": 33,
+              "k": null,
+              "win_prob": 0.104,
+              "result": null,
+              "actual_peak": null
+            },
+            "mean": {
+              "spill": 35,
+              "k": 0.0,
+              "win_prob": 0.311,
+              "result": null,
+              "actual_peak": null
+            }
+          },
+          "peak_detected_at": null,
+          "recommendation": null,
+          "_lat": 30.1945,
+          "_lon": -97.6699,
+          "_tz": "America/Chicago",
+          "_peak_hour_start": 15,
+          "_peak_hour_end": 17,
+          "_target_date": "2026-09-05",
+          "_uhi_adjustment": 0.3,
+          "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 34.9,
+          "_features": {
+            "model_weighting": true,
+            "dynamic_k": true,
+            "spread_filter": "wide",
+            "uhi_adjusted": false
           }
         },
         "Paris, FR": {
@@ -173207,11 +173672,74 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.5,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 23.6,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
             "spread_filter": "medium",
             "uhi_adjusted": true
+          }
+        },
+        "Houston, US": {
+          "bma_mean": 32.9,
+          "bma_std": 0.97,
+          "p5": 31.3,
+          "p95": 34.5,
+          "confidence": 0.574,
+          "models": 8,
+          "bma_probs": {
+            "28": 0.0,
+            "29": 0.0,
+            "30": 0.6,
+            "31": 6.8,
+            "32": 26.6,
+            "33": 39.2,
+            "34": 21.9,
+            "35": 4.6,
+            "36": 0.4,
+            "37": 0.0
+          },
+          "strategies": {
+            "sigma": {
+              "spill": 32,
+              "k": 0.49,
+              "win_prob": 0.265,
+              "result": null,
+              "actual_peak": null
+            },
+            "p5": {
+              "spill": 31,
+              "k": null,
+              "win_prob": 0.068,
+              "result": null,
+              "actual_peak": null
+            },
+            "mean": {
+              "spill": 33,
+              "k": 0.0,
+              "win_prob": 0.391,
+              "result": null,
+              "actual_peak": null
+            }
+          },
+          "peak_detected_at": null,
+          "recommendation": null,
+          "_lat": 29.6454,
+          "_lon": -95.2789,
+          "_tz": "America/Chicago",
+          "_peak_hour_start": 14,
+          "_peak_hour_end": 17,
+          "_target_date": "2026-09-05",
+          "_uhi_adjustment": 0.5,
+          "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 32.9,
+          "_features": {
+            "model_weighting": true,
+            "dynamic_k": true,
+            "spread_filter": "medium",
+            "uhi_adjusted": false
           }
         },
         "Singapore, SG": {
@@ -173269,6 +173797,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 32.1,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -173331,6 +173861,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 30.2,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -173390,6 +173922,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 32.3,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -173449,6 +173983,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 27.9,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -173479,7 +174015,7 @@
           "strategies": {
             "sigma": {
               "spill": 31,
-              "k": 1.29,
+              "k": 1.3,
               "win_prob": 0.103,
               "result": "LOSS",
               "actual_peak": null,
@@ -173512,6 +174048,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.3,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 32.8,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -173571,6 +174109,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 36.0,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -173631,6 +174171,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 32.6,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -173691,6 +174233,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.7,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 33.8,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -173754,6 +174298,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.7,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 27.8,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -173814,6 +174360,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 23.7,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -173874,6 +174422,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 32.4,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -173937,6 +174487,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 30.4,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -173997,6 +174549,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 32.8,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -174060,6 +174614,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 2.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 29.4,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -174120,6 +174676,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 31.4,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -174181,6 +174739,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 23.2,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -174243,6 +174803,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.0,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 26.6,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -174274,23 +174836,23 @@
           },
           "strategies": {
             "sigma": {
-              "spill": 21,
-              "k": 1.24,
-              "win_prob": 0.108,
+              "spill": 22,
+              "k": 1.25,
+              "win_prob": 0.125,
               "result": null,
               "actual_peak": null
             },
             "p5": {
-              "spill": 20,
+              "spill": 21,
               "k": null,
-              "win_prob": 0.051,
+              "win_prob": 0.064,
               "result": null,
               "actual_peak": null
             },
             "mean": {
-              "spill": 23,
+              "spill": 24,
               "k": 0.0,
-              "win_prob": 0.208,
+              "win_prob": 0.209,
               "result": null,
               "actual_peak": null
             }
@@ -174305,6 +174867,8 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 1.0,
           "_lead_days": 0,
+          "_bias_correction": -0.733,
+          "_mean_corrected": 23.9,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -174367,6 +174931,73 @@
           "_target_date": "2026-09-05",
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 37.6,
+          "_features": {
+            "model_weighting": true,
+            "dynamic_k": true,
+            "spread_filter": "wide",
+            "uhi_adjusted": false
+          }
+        },
+        "Panama City, PA": {
+          "bma_mean": 31.2,
+          "bma_std": 2.1,
+          "p5": 27.8,
+          "p95": 34.7,
+          "confidence": 0.373,
+          "models": 7,
+          "bma_probs": {
+            "24": 0.1,
+            "25": 0.3,
+            "26": 0.9,
+            "27": 2.6,
+            "28": 6.0,
+            "29": 11.0,
+            "30": 16.0,
+            "31": 18.7,
+            "32": 17.5,
+            "33": 13.1,
+            "34": 7.9,
+            "35": 3.8,
+            "36": 1.4,
+            "37": 0.4
+          },
+          "strategies": {
+            "sigma": {
+              "spill": 28,
+              "k": 1.4,
+              "win_prob": 0.06,
+              "result": null,
+              "actual_peak": null
+            },
+            "p5": {
+              "spill": 28,
+              "k": null,
+              "win_prob": 0.06,
+              "result": null,
+              "actual_peak": null
+            },
+            "mean": {
+              "spill": 31,
+              "k": 0.0,
+              "win_prob": 0.188,
+              "result": null,
+              "actual_peak": null
+            }
+          },
+          "peak_detected_at": null,
+          "recommendation": null,
+          "_lat": 8.9733,
+          "_lon": -79.5556,
+          "_tz": "America/Panama",
+          "_peak_hour_start": 13,
+          "_peak_hour_end": 16,
+          "_target_date": "2026-09-05",
+          "_uhi_adjustment": 0.3,
+          "_lead_days": 0,
+          "_bias_correction": 0.0,
+          "_mean_corrected": 31.2,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -174437,15 +175068,15 @@
   ],
   "cumulative": {
     "total_days": 26,
-    "total_predictions": 1325,
-    "sigma_wins": 122,
-    "sigma_losses": 1171,
+    "total_predictions": 1326,
+    "sigma_wins": 123,
+    "sigma_losses": 1166,
     "p5_wins": 71,
-    "p5_losses": 1222,
+    "p5_losses": 1218,
     "mean_wins": 358,
-    "mean_losses": 935,
+    "mean_losses": 931,
     "mean_pm_wins": 358,
-    "mean_pm_losses": 934,
-    "mean_pm_bets": 1292
+    "mean_pm_losses": 930,
+    "mean_pm_bets": 1288
   }
 }
