@@ -1,15 +1,15 @@
 # Model Quality Report
 
-**Generated:** 2026-09-05T09:41:25.288204+00:00
+**Generated:** 2026-09-05T10:49:38.292298+00:00
 **Days tracked:** 26
 
 ## Cumulative Strategy Performance
 
 | Strategy | Wins | Losses | Win Rate |
 |----------|------|--------|----------|
-| 🎯 Sigma (μ−kσ) | 126 | 1170 | 9.7% |
-| 🛡️ P5-Basert | 72 | 1224 | 5.6% |
-| 📊 Mean-Basert | 362 | 934 | 27.9% |
+| 🎯 Sigma (μ−kσ) | 126 | 1174 | 9.7% |
+| 🛡️ P5-Basert | 72 | 1228 | 5.5% |
+| 📊 Mean-Basert | 364 | 936 | 28.0% |
 
 ## Per-City 3-Strategy W/L (Cumulative)
 
@@ -36,7 +36,7 @@
 | Jeddah, SA | 1W/24L (n=25) | 4.0% | 0W/25L (n=25) | 0.0% | 9W/16L (n=25) | 36.0% |
 | Jinan, CN | 23W/1L (n=24) | 95.8% | 22W/2L (n=24) | 91.7% | 23W/1L (n=24) | 95.8% |
 | Karachi, PK | 0W/26L (n=26) | 0.0% | 0W/26L (n=26) | 0.0% | 12W/14L (n=26) | 46.2% |
-| Kuala Lumpur, MY | 0W/24L (n=24) | 0.0% | 0W/24L (n=24) | 0.0% | 1W/23L (n=24) | 4.2% |
+| Kuala Lumpur, MY | 0W/26L (n=26) | 0.0% | 0W/26L (n=26) | 0.0% | 2W/24L (n=26) | 7.7% |
 | London, UK | 3W/22L (n=25) | 12.0% | 2W/23L (n=25) | 8.0% | 8W/17L (n=25) | 32.0% |
 | Los Angeles, US | 6W/20L (n=26) | 23.1% | 1W/25L (n=26) | 3.8% | 3W/23L (n=26) | 11.5% |
 | Lucknow, IN | 1W/25L (n=26) | 3.8% | 1W/25L (n=26) | 3.8% | 13W/13L (n=26) | 50.0% |
@@ -54,7 +54,7 @@
 | San Francisco, US | 0W/26L (n=26) | 0.0% | 0W/26L (n=26) | 0.0% | 1W/25L (n=26) | 3.8% |
 | Sao Paulo, BR | 1W/24L (n=25) | 4.0% | 1W/24L (n=25) | 4.0% | 5W/20L (n=25) | 20.0% |
 | Seattle, US | 2W/24L (n=26) | 7.7% | 1W/25L (n=26) | 3.8% | 6W/20L (n=26) | 23.1% |
-| Seoul (Incheon), KR | 1W/23L (n=24) | 4.2% | 1W/23L (n=24) | 4.2% | 5W/19L (n=24) | 20.8% |
+| Seoul (Incheon), KR | 1W/25L (n=26) | 3.8% | 1W/25L (n=26) | 3.8% | 6W/20L (n=26) | 23.1% |
 | Shanghai, CN | 1W/25L (n=26) | 3.8% | 0W/26L (n=26) | 0.0% | 3W/23L (n=26) | 11.5% |
 | Shenzhen, CN | 0W/26L (n=26) | 0.0% | 0W/26L (n=26) | 0.0% | 14W/12L (n=26) | 53.8% |
 | Singapore, SG | 1W/25L (n=26) | 3.8% | 1W/25L (n=26) | 3.8% | 2W/24L (n=26) | 7.7% |
