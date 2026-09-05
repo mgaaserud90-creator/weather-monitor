@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anbefalt spill — Polymarket Weather v1</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg-card: #161b22;
+    --bg-card-hover: #1c2333;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-dim: #8b949e;
+    --green: #3fb950;
+    --red: #f85149;
+    --orange: #d2991d;
+    --blue: #58a6ff;
+    --purple: #bc8cff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px 16px 48px; }
+  header { text-align: center; padding: 24px 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  header h1 { font-size: 1.7rem; color: var(--blue); font-weight: 800; }
+  header .subtitle { color: var(--text-dim); font-size: 0.9rem; margin-top: 4px; }
+  .back-link { display: inline-block; margin-top: 10px; color: var(--text-dim); text-decoration: none; font-size: 0.8rem; }
+  .back-link:hover { color: var(--blue); }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: center; margin-bottom: 16px; }
+  .refresh-btn {
+    background: var(--blue); color: #0d1117; border: none; border-radius: 8px;
+    padding: 10px 20px; font-size: 1rem; font-weight: 700; cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .refresh-btn:hover { background: #79c0ff; }
+  .refresh-btn:active { transform: scale(0.97); }
+  .status { color: var(--text-dim); font-size: 0.85rem; }
+  .summary { text-align: center; color: var(--text-dim); font-size: 0.85rem; margin-bottom: 16px; }
+  .summary b { color: var(--text); }
+  .notes { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; }
+  .notes summary { cursor: pointer; color: var(--orange); font-weight: 700; }
+  .notes ul { margin-top: 8px; padding-left: 20px; color: var(--text-dim); font-size: 0.82rem; }
+  .table-wrap { overflow-x: auto; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; }
+  table { width: 100%; border-collapse: collapse; min-width: 760px; }
+  th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { color: var(--text-dim); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; position: sticky; top: 0; background: var(--bg-card); }
+  td { font-size: 0.92rem; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--bg-card-hover); }
+  .city { font-weight: 700; }
+  .strategy { font-weight: 600; }
+  .strat-sigma { color: var(--green); }
+  .strat-p5 { color: var(--blue); }
+  .strat-mean { color: var(--orange); }
+  .strat-modifisert { color: var(--purple); }
+  .edge-pos { color: var(--green); font-weight: 700; }
+  .edge-neg { color: var(--red); font-weight: 700; }
+  .muted { color: var(--text-dim); }
+  .empty { text-align: center; padding: 40px; color: var(--text-dim); }
+  footer { text-align: center; color: var(--text-dim); font-size: 0.75rem; margin-top: 24px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎯 Anbefalt spill</h1>
+  <div class="subtitle">Høyest historisk edge per by · kvalifiserte spill (≥ 60 % win rate)</div>
+  <a href="index.html" class="back-link">← Tilbake til VaerMonitor</a>
+</header>
+<div class="container">
+  <div class="toolbar">
+    <button class="refresh-btn" id="refreshBtn" onclick="loadData()">🔄 Refresh</button>
+    <span class="status" id="status">Laster data…</span>
+  </div>
+  <div class="summary" id="summary"></div>
+  <details class="notes" id="notesBox" hidden>
+    <summary>ℹ️ Merknader & metode</summary>
+    <ul id="notesList"></ul>
+  </details>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>City</th>
+          <th>Strategy</th>
+          <th>Bucket</th>
+          <th>P(bucket)</th>
+          <th>Price</th>
+          <th>Edge</th>
+          <th>Max stake</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="7" class="empty">Ingen data lastet ennå.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <footer id="footer"></footer>
+</div>
+
+<script>
+  const STRAT_CLASS = { 'sigma': 'strat-sigma', 'p5': 'strat-p5', 'mean': 'strat-mean', 'modifisert': 'strat-modifisert' };
+
+  function fmtPct(v) {
+    if (v === null || v === undefined) return '—';
+    return v.toFixed(1) + '%';
+  }
+  function fmtUsd(v) {
+    if (v === null || v === undefined) return '—';
+    return '$' + v.toFixed(2);
+  }
+  function fmtEdge(edge, note) {
+    var core;
+    if (edge === null || edge === undefined) {
+      core = '<span class="muted">—</span>';
+    } else {
+      core = edge >= 0
+        ? '<span class="edge-pos">+' + edge.toFixed(1) + 'pp</span>'
+        : '<span class="edge-neg">' + edge.toFixed(1) + 'pp</span>';
+    }
+    if (note) {
+      core += '<div class="muted" style="font-size:0.7rem;">' + escapeHtml(note) + '</div>';
+    }
+    return core;
+  }
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&' + 'amp;')
+      .replace(/</g, '&' + 'lt;')
+      .replace(/>/g, '&' + 'gt;')
+      .replace(/"/g, '&' + 'quot;')
+      .replace(/'/g, '&' + '#39;');
+  }
+  function stratCell(strategy, hist) {
+    const cls = STRAT_CLASS[strategy] || '';
+    const wr = hist && hist.win_rate_pct != null ? ' · ' + hist.win_rate_pct.toFixed(1) + '% hist' : '';
+    return '<span class="strategy ' + cls + '">' + escapeHtml(strategy) + '</span>' +
+           '<span class="muted" style="font-size:0.75rem;">' + escapeHtml(wr) + '</span>';
+  }
+
+  async function loadData() {
+    const status = document.getElementById('status');
+    const btn = document.getElementById('refreshBtn');
+    btn.disabled = true;
+    status.textContent = 'Laster data…';
+    try {
+      const resp = await fetch('_recommended_bets.json', { cache: 'no-store' });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const data = await resp.json();
+      render(data);
+      status.textContent = 'Oppdatert kl. ' + new Date().toLocaleTimeString('no-NO');
+    } catch (err) {
+      status.textContent = 'Feil: ' + err.message;
+      document.getElementById('tbody').innerHTML =
+        '<tr><td colspan="7" class="empty">Kunne ikke laste _recommended_bets.json — ' + escapeHtml(err.message) + '</td></tr>';
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function render(data) {
+    const bets = (data.recommended_bets || []).slice().sort(function (a, b) {
+      const ea = a.edge, eb = b.edge;
+      if (ea === null || ea === undefined) return 1;
+      if (eb === null || eb === undefined) return -1;
+      return eb - ea;
+    });
+
+    const tbody = document.getElementById('tbody');
+    if (!bets.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty">Ingen kvalifiserte byer (ingen med historisk win rate ≥ 60 %).</td></tr>';
+    } else {
+      tbody.innerHTML = bets.map(function (b) {
+        return '<tr>' +
+          '<td class="city">' + escapeHtml(b.city) + '</td>' +
+          '<td>' + stratCell(b.strategy_display || b.strategy, b.historical) + '</td>' +
+          '<td>' + escapeHtml(b.bucket_label || (b.bucket != null ? b.bucket + '°C' : '—')) +
+            (b.bucket_note ? '<div class="muted" style="font-size:0.7rem;">' + escapeHtml(b.bucket_note) + '</div>' : '') + '</td>' +
+          '<td>' + fmtPct(b.p_bucket_pct) + '</td>' +
+          '<td>' + fmtPct(b.price_pct) + '</td>' +
+          '<td>' + fmtEdge(b.edge, b.note) + '</td>' +
+          '<td>' + fmtUsd(b.max_stake_usd) + '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    const summary = document.getElementById('summary');
+    const q = data.qualification || {};
+    summary.innerHTML =
+      '<b>' + bets.length + '</b> anbefalte spill · kvalifisering: best-strategi win rate ≥ ' +
+      escapeHtml(q.min_win_rate_pct || 60) + ' % (min ' + escapeHtml(q.min_sample || 8) + ' resolved bets) · ' +
+      'sortert etter edge synkende';
+
+    const notesBox = document.getElementById('notesBox');
+    const notesList = document.getElementById('notesList');
+    const notes = data.notes || [];
+    notesBox.hidden = notes.length === 0;
+    notesList.innerHTML = notes.map(function (n) { return '<li>' + escapeHtml(n) + '</li>'; }).join('');
+
+    const footer = document.getElementById('footer');
+    footer.textContent = 'Generert: ' + escapeHtml(data.generated_at || '—') +
+      (data.market_prices_fetched_at ? ' · Priser hentet: ' + escapeHtml(data.market_prices_fetched_at) : '') +
+      (data.spill_date ? ' · Spill-dato: ' + escapeHtml(data.spill_date) : '');
+  }
+
+  loadData();
+</script>
+</body>
+</html>

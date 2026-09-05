@@ -53,6 +53,10 @@ jobs:
       - name: Generate peak detection
         run: python _generate_quality_report.py --peak
 
+      - name: Generate recommended bets (Anbefalt spill)
+        continue-on-error: true
+        run: python _recommended_bets.py
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 

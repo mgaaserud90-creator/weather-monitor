@@ -164,6 +164,10 @@ jobs:
       - name: Generate peak detection page
         run: python3 _generate_quality_report.py --peak
 
+      - name: Generate recommended bets (Anbefalt spill)
+        continue-on-error: true
+        run: python3 _recommended_bets.py
+
       - name: Verify all data integrity
         continue-on-error: true
         run: python3 _verify_all_data.py
@@ -187,6 +191,7 @@ jobs:
             _pnl_log.json _edge_enhancer_backtest.json
             _quality_report.md _quality_report.html _all_cities.html
             index.html _peak_detection.html
+            _recommended_bets.json _anbefalt_spill.html
           push_options: '--force-with-lease'
 
       - name: Trigger deploy to GitHub Pages

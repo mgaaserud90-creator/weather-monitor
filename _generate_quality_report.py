@@ -3830,6 +3830,7 @@ function sortTable(colIdx) {{
 <header>
   <h1>🌡️ Model Quality Dashboard <span class="rapid-badge">3 STRATEGIES</span></h1>
   <div class="subtitle" id="last-updated">{'⏳ Ingen data enda — første pipeline-kjøring kl 06:00 UTC' if not has_data else f'🤖 Siste pipeline: {last_pipeline_str} | Neste pipeline-oppdatering: …'}</div>
+  <a href="_anbefalt_spill.html" style="display:inline-block;margin-top:10px;color:var(--orange);text-decoration:none;font-weight:700;">🎯 Anbefalt spill →</a>
 </header>
 <div class="container">
 
@@ -4704,6 +4705,10 @@ def _generate_index_html() -> str:
     <a href="_peak_detection.html" class="nav-card">
       <span class="nav-icon">📈</span>
       <span class="nav-text"><h3>Live Peak Detection</h3><p>Sanntids-overvakning · Auto-velg byer i peak-vindu · Trend-piler · Peak-las</p></span>
+    </a>
+    <a href="_anbefalt_spill.html" class="nav-card">
+      <span class="nav-icon">🎯</span>
+      <span class="nav-text"><h3>Anbefalt spill</h3><p>Beste strategi per by · Edge · Max stake · 🔄 Refresh</p></span>
     </a>
     <a href="brukermanual.html" class="nav-card">
       <span class="nav-icon">📖</span>
