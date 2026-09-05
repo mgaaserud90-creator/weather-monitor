@@ -1,115 +1,68 @@
-════════════════════════════════════════════════════════════
-     MODELLKVALITET — KUMULATIV RAPPORT
-════════════════════════════════════════════════════════════
+# Model Quality Report
 
-Generert: 2026-09-05
+**Generated:** 2026-09-05T08:38:10.633535+00:00
+**Days tracked:** 26
 
-Dager kjørt: 26
+## Cumulative Strategy Performance
 
-📊 PER-STRATEGI RESULTATER (KUMULATIV):
-   🎯 Sigma (μ−kσ): V:121 T:1169  (9.4%)
-   🛡️ P5-basert:     V:71 T:1219  (5.5%)
-   📊 Mean-basert:   V:355 T:935  (27.5%)
+| Strategy | Wins | Losses | Win Rate |
+|----------|------|--------|----------|
+| 🎯 Sigma (μ−kσ) | 121 | 1171 | 9.4% |
+| 🛡️ P5-Basert | 71 | 1221 | 5.5% |
+| 📊 Mean-Basert | 357 | 935 | 27.6% |
 
-🏙️ PER-BY 3-STRATEGI W/L (KUMULATIV, MIN-SAMPLE):
-   By                                      Sigma               P5             Mean
-   Amsterdam, NL                1W/24L (4.0%, n=25) 0W/25L (0.0%, n=25) 9W/16L (36.0%, n=25)
-   Ankara, TR                   0W/25L (0.0%, n=25) 1W/24L (4.0%, n=25) 4W/21L (16.0%, n=25)
-   Atlanta, US                  0W/25L (0.0%, n=25) 0W/25L (0.0%, n=25) 1W/24L (4.0%, n=25)
-   Austin, US                   0W/26L (0.0%, n=26) 0W/26L (0.0%, n=26) 5W/21L (19.2%, n=26)
-   Beijing, CN                  1W/23L (4.2%, n=24) 1W/23L (4.2%, n=24) 5W/19L (20.8%, n=24)
-   Buenos Aires, AR             2W/23L (8.0%, n=25) 2W/23L (8.0%, n=25) 9W/16L (36.0%, n=25)
-   Busan, KR                    0W/26L (0.0%, n=26) 0W/26L (0.0%, n=26) 5W/21L (19.2%, n=26)
-   Cape Town, ZA                3W/22L (12.0%, n=25) 1W/24L (4.0%, n=25) 7W/18L (28.0%, n=25)
-   Chengdu, CN                  2W/22L (8.3%, n=24) 0W/24L (0.0%, n=24) 1W/23L (4.2%, n=24)
-   Chicago, US                  3W/23L (11.5%, n=26) 1W/25L (3.8%, n=26) 11W/15L (42.3%, n=26)
-   Chongqing, CN                0W/24L (0.0%, n=24) 0W/24L (0.0%, n=24) 1W/23L (4.2%, n=24)
-   Dallas, US                   12W/14L (46.2%, n=26) 8W/18L (30.8%, n=26) 9W/17L (34.6%, n=26)
-   Denver, US                   1W/25L (3.8%, n=26) 1W/25L (3.8%, n=26) 2W/24L (7.7%, n=26)
-   Guangzhou, CN                1W/25L (3.8%, n=26) 1W/25L (3.8%, n=26) 3W/23L (11.5%, n=26)
-   Helsinki, FI                 2W/23L (8.0%, n=25) 1W/24L (4.0%, n=25) 10W/15L (40.0%, n=25)
-   Hong Kong, HK                2W/24L (7.7%, n=26) 1W/25L (3.8%, n=26) 10W/16L (38.5%, n=26)
-   Houston, US                  9W/17L (34.6%, n=26) 2W/24L (7.7%, n=26) 12W/14L (46.2%, n=26)
-   Istanbul, TR                 0W/25L (0.0%, n=25) 0W/25L (0.0%, n=25) 13W/12L (52.0%, n=25)
-   Jeddah, SA                   1W/24L (4.0%, n=25) 0W/25L (0.0%, n=25) 9W/16L (36.0%, n=25)
-   Jinan, CN                    23W/1L (95.8%, n=24) 22W/2L (91.7%, n=24) 23W/1L (95.8%, n=24)
-   Karachi, PK                  0W/25L (0.0%, n=25) 0W/25L (0.0%, n=25) 12W/13L (48.0%, n=25)
-   Kuala Lumpur, MY             0W/24L (0.0%, n=24) 0W/24L (0.0%, n=24) 1W/23L (4.2%, n=24)
-   London, UK                   3W/22L (12.0%, n=25) 2W/23L (8.0%, n=25) 8W/17L (32.0%, n=25)
-   Los Angeles, US              6W/20L (23.1%, n=26) 1W/25L (3.8%, n=26) 3W/23L (11.5%, n=26)
-   Lucknow, IN                  1W/24L (4.0%, n=25) 1W/24L (4.0%, n=25) 12W/13L (48.0%, n=25)
-   Madrid, ES                   0W/25L (0.0%, n=25) 0W/25L (0.0%, n=25) 9W/16L (36.0%, n=25)
-   Manila, PH                   0W/26L (0.0%, n=26) 1W/25L (3.8%, n=26) 5W/21L (19.2%, n=26)
-   Mexico City, MX              5W/21L (19.2%, n=26) 3W/23L (11.5%, n=26) 12W/14L (46.2%, n=26)
-   Miami, US                    1W/24L (4.0%, n=25) 1W/24L (4.0%, n=25) 0W/25L (0.0%, n=25)
-   Milan, IT                    1W/24L (4.0%, n=25) 0W/25L (0.0%, n=25) 6W/19L (24.0%, n=25)
-   Moscow, RU                   3W/22L (12.0%, n=25) 2W/23L (8.0%, n=25) 11W/14L (44.0%, n=25)
-   Munich, DE                   0W/25L (0.0%, n=25) 0W/25L (0.0%, n=25) 4W/21L (16.0%, n=25)
-   New York, US                 5W/20L (20.0%, n=25) 2W/23L (8.0%, n=25) 13W/12L (52.0%, n=25)
-   Panama City, PA              0W/25L (0.0%, n=25) 0W/25L (0.0%, n=25) 1W/24L (4.0%, n=25)
-   Paris, FR                    0W/25L (0.0%, n=25) 0W/25L (0.0%, n=25) 7W/18L (28.0%, n=25)
-   Qingdao, CN                  0W/26L (0.0%, n=26) 0W/26L (0.0%, n=26) 7W/19L (26.9%, n=26)
-   San Francisco, US            0W/26L (0.0%, n=26) 0W/26L (0.0%, n=26) 1W/25L (3.8%, n=26)
-   Sao Paulo, BR                1W/24L (4.0%, n=25) 1W/24L (4.0%, n=25) 5W/20L (20.0%, n=25)
-   Seattle, US                  2W/24L (7.7%, n=26) 1W/25L (3.8%, n=26) 6W/20L (23.1%, n=26)
-   Seoul (Incheon), KR          1W/23L (4.2%, n=24) 1W/23L (4.2%, n=24) 5W/19L (20.8%, n=24)
-   Shanghai, CN                 1W/25L (3.8%, n=26) 0W/26L (0.0%, n=26) 2W/24L (7.7%, n=26)
-   Shenzhen, CN                 0W/26L (0.0%, n=26) 0W/26L (0.0%, n=26) 14W/12L (53.8%, n=26)
-   Singapore, SG                1W/25L (3.8%, n=26) 1W/25L (3.8%, n=26) 2W/24L (7.7%, n=26)
-   Taipei, TW                   0W/26L (0.0%, n=26) 0W/26L (0.0%, n=26) 1W/25L (3.8%, n=26)
-   Tel Aviv, IL                 16W/9L (64.0%, n=25) 6W/19L (24.0%, n=25) 6W/19L (24.0%, n=25)
-   Tokyo, JP                    6W/19L (24.0%, n=25) 1W/24L (4.0%, n=25) 11W/14L (44.0%, n=25)
-   Toronto, CA                  0W/25L (0.0%, n=25) 1W/24L (4.0%, n=25) 14W/11L (56.0%, n=25)
-   Warsaw, PL                   0W/25L (0.0%, n=25) 0W/25L (0.0%, n=25) 15W/10L (60.0%, n=25)
-   Wellington, NZ               2W/24L (7.7%, n=26) 1W/25L (3.8%, n=26) 4W/22L (15.4%, n=26)
-   Wuhan, CN                    2W/24L (7.7%, n=26) 2W/24L (7.7%, n=26) 1W/25L (3.8%, n=26)
-   Zhengzhou, CN                1W/25L (3.8%, n=26) 1W/25L (3.8%, n=26) 8W/18L (30.8%, n=26)
+## Per-City 3-Strategy W/L (Cumulative)
 
-📋 AVGJORTE RESULTATER — SISTE DAG (2026-09-05):
-   By                              Sigma       P5     Mean         Marked
-   Amsterdam, NL                       ⏳        ⏳        ⏳              —
-   Ankara, TR                          ⏳        ⏳        ⏳              —
-   Austin, US                          ❌        ❌        ❌        94-95°F
-   Beijing, CN                         ⏳        ⏳        ⏳              —
-   Busan, KR                           ❌        ❌        ❌           29°C
-   Cape Town, ZA                       ⏳        ⏳        ⏳              —
-   Chengdu, CN                         ⏳        ⏳        ⏳              —
-   Chicago, US                         ❌        ❌        ❌        92-93°F
-   Chongqing, CN                       ⏳        ⏳        ⏳              —
-   Dallas, US                          ❌        ❌        ❌        98-99°F
-   Denver, US                          ❌        ❌        ❌        92-93°F
-   Guangzhou, CN                       ❌        ❌        ❌           35°C
-   Helsinki, FI                        ⏳        ⏳        ⏳              —
-   Hong Kong, HK                       ❌        ❌        ❌           32°C
-   Houston, US                         ❌        ❌        ❌        90-91°F
-   Istanbul, TR                        ⏳        ⏳        ⏳              —
-   Jeddah, SA                          ⏳        ⏳        ⏳              —
-   Jinan, CN                           ⏳        ⏳        ⏳              —
-   Karachi, PK                         ⏳        ⏳        ⏳              —
-   Kuala Lumpur, MY                    ⏳        ⏳        ⏳              —
-   London, UK                          ⏳        ⏳        ⏳              —
-   Los Angeles, US                     ❌        ❌        ❌        76-77°F
-   Lucknow, IN                         ⏳        ⏳        ⏳              —
-   Madrid, ES                          ⏳        ⏳        ⏳              —
-   Manila, PH                          ❌        ❌        ❌           29°C
-   Mexico City, MX                     ❌        ❌        ✅         26.0°C
-   Milan, IT                           ⏳        ⏳        ⏳              —
-   Moscow, RU                          ⏳        ⏳        ⏳              —
-   Munich, DE                          ⏳        ⏳        ⏳              —
-   Paris, FR                           ⏳        ⏳        ⏳              —
-   Qingdao, CN                         ❌        ❌        ❌           31°C
-   San Francisco, US                   ❌        ❌        ❌        70-71°F
-   Seattle, US                         ❌        ❌        ✅        68-69°F
-   Seoul (Incheon), KR                 ⏳        ⏳        ⏳              —
-   Shanghai, CN                        ❌        ❌        ❌           30°C
-   Shenzhen, CN                        ❌        ❌        ✅           31°C
-   Singapore, SG                       ❌        ❌        ❌           33°C
-   Taipei, TW                          ❌        ❌        ❌           31°C
-   Tel Aviv, IL                        ⏳        ⏳        ⏳              —
-   Tokyo, JP                           ⏳        ⏳        ⏳              —
-   Warsaw, PL                          ⏳        ⏳        ⏳              —
-   Wellington, NZ                      ❌        ❌        ❌           15°C
-   Wuhan, CN                           ❌        ❌        ❌           31°C
-   Zhengzhou, CN                       ❌        ❌        ❌           31°C
-
-════════════════════════════════════════════════════════════
+| City | Sigma W/L | Sigma Rate | P5 W/L | P5 Rate | Mean W/L | Mean Rate |
+|------|-----------|------------|--------|---------|----------|-----------|
+| Amsterdam, NL | 1W/24L (n=25) | 4.0% | 0W/25L (n=25) | 0.0% | 9W/16L (n=25) | 36.0% |
+| Ankara, TR | 0W/25L (n=25) | 0.0% | 1W/24L (n=25) | 4.0% | 4W/21L (n=25) | 16.0% |
+| Atlanta, US | 0W/25L (n=25) | 0.0% | 0W/25L (n=25) | 0.0% | 1W/24L (n=25) | 4.0% |
+| Austin, US | 0W/26L (n=26) | 0.0% | 0W/26L (n=26) | 0.0% | 5W/21L (n=26) | 19.2% |
+| Beijing, CN | 1W/25L (n=26) | 3.8% | 1W/25L (n=26) | 3.8% | 7W/19L (n=26) | 26.9% |
+| Buenos Aires, AR | 2W/23L (n=25) | 8.0% | 2W/23L (n=25) | 8.0% | 9W/16L (n=25) | 36.0% |
+| Busan, KR | 0W/26L (n=26) | 0.0% | 0W/26L (n=26) | 0.0% | 5W/21L (n=26) | 19.2% |
+| Cape Town, ZA | 3W/22L (n=25) | 12.0% | 1W/24L (n=25) | 4.0% | 7W/18L (n=25) | 28.0% |
+| Chengdu, CN | 2W/22L (n=24) | 8.3% | 0W/24L (n=24) | 0.0% | 1W/23L (n=24) | 4.2% |
+| Chicago, US | 3W/23L (n=26) | 11.5% | 1W/25L (n=26) | 3.8% | 11W/15L (n=26) | 42.3% |
+| Chongqing, CN | 0W/24L (n=24) | 0.0% | 0W/24L (n=24) | 0.0% | 1W/23L (n=24) | 4.2% |
+| Dallas, US | 12W/14L (n=26) | 46.2% | 8W/18L (n=26) | 30.8% | 9W/17L (n=26) | 34.6% |
+| Denver, US | 1W/25L (n=26) | 3.8% | 1W/25L (n=26) | 3.8% | 2W/24L (n=26) | 7.7% |
+| Guangzhou, CN | 1W/25L (n=26) | 3.8% | 1W/25L (n=26) | 3.8% | 3W/23L (n=26) | 11.5% |
+| Helsinki, FI | 2W/23L (n=25) | 8.0% | 1W/24L (n=25) | 4.0% | 10W/15L (n=25) | 40.0% |
+| Hong Kong, HK | 2W/24L (n=26) | 7.7% | 1W/25L (n=26) | 3.8% | 10W/16L (n=26) | 38.5% |
+| Houston, US | 9W/17L (n=26) | 34.6% | 2W/24L (n=26) | 7.7% | 12W/14L (n=26) | 46.2% |
+| Istanbul, TR | 0W/25L (n=25) | 0.0% | 0W/25L (n=25) | 0.0% | 13W/12L (n=25) | 52.0% |
+| Jeddah, SA | 1W/24L (n=25) | 4.0% | 0W/25L (n=25) | 0.0% | 9W/16L (n=25) | 36.0% |
+| Jinan, CN | 23W/1L (n=24) | 95.8% | 22W/2L (n=24) | 91.7% | 23W/1L (n=24) | 95.8% |
+| Karachi, PK | 0W/25L (n=25) | 0.0% | 0W/25L (n=25) | 0.0% | 12W/13L (n=25) | 48.0% |
+| Kuala Lumpur, MY | 0W/24L (n=24) | 0.0% | 0W/24L (n=24) | 0.0% | 1W/23L (n=24) | 4.2% |
+| London, UK | 3W/22L (n=25) | 12.0% | 2W/23L (n=25) | 8.0% | 8W/17L (n=25) | 32.0% |
+| Los Angeles, US | 6W/20L (n=26) | 23.1% | 1W/25L (n=26) | 3.8% | 3W/23L (n=26) | 11.5% |
+| Lucknow, IN | 1W/24L (n=25) | 4.0% | 1W/24L (n=25) | 4.0% | 12W/13L (n=25) | 48.0% |
+| Madrid, ES | 0W/25L (n=25) | 0.0% | 0W/25L (n=25) | 0.0% | 9W/16L (n=25) | 36.0% |
+| Manila, PH | 0W/26L (n=26) | 0.0% | 1W/25L (n=26) | 3.8% | 5W/21L (n=26) | 19.2% |
+| Mexico City, MX | 5W/21L (n=26) | 19.2% | 3W/23L (n=26) | 11.5% | 12W/14L (n=26) | 46.2% |
+| Miami, US | 1W/24L (n=25) | 4.0% | 1W/24L (n=25) | 4.0% | 0W/25L (n=25) | 0.0% |
+| Milan, IT | 1W/24L (n=25) | 4.0% | 0W/25L (n=25) | 0.0% | 6W/19L (n=25) | 24.0% |
+| Moscow, RU | 3W/22L (n=25) | 12.0% | 2W/23L (n=25) | 8.0% | 11W/14L (n=25) | 44.0% |
+| Munich, DE | 0W/25L (n=25) | 0.0% | 0W/25L (n=25) | 0.0% | 4W/21L (n=25) | 16.0% |
+| New York, US | 5W/20L (n=25) | 20.0% | 2W/23L (n=25) | 8.0% | 13W/12L (n=25) | 52.0% |
+| Panama City, PA | 0W/25L (n=25) | 0.0% | 0W/25L (n=25) | 0.0% | 1W/24L (n=25) | 4.0% |
+| Paris, FR | 0W/25L (n=25) | 0.0% | 0W/25L (n=25) | 0.0% | 7W/18L (n=25) | 28.0% |
+| Qingdao, CN | 0W/26L (n=26) | 0.0% | 0W/26L (n=26) | 0.0% | 7W/19L (n=26) | 26.9% |
+| San Francisco, US | 0W/26L (n=26) | 0.0% | 0W/26L (n=26) | 0.0% | 1W/25L (n=26) | 3.8% |
+| Sao Paulo, BR | 1W/24L (n=25) | 4.0% | 1W/24L (n=25) | 4.0% | 5W/20L (n=25) | 20.0% |
+| Seattle, US | 2W/24L (n=26) | 7.7% | 1W/25L (n=26) | 3.8% | 6W/20L (n=26) | 23.1% |
+| Seoul (Incheon), KR | 1W/23L (n=24) | 4.2% | 1W/23L (n=24) | 4.2% | 5W/19L (n=24) | 20.8% |
+| Shanghai, CN | 1W/25L (n=26) | 3.8% | 0W/26L (n=26) | 0.0% | 2W/24L (n=26) | 7.7% |
+| Shenzhen, CN | 0W/26L (n=26) | 0.0% | 0W/26L (n=26) | 0.0% | 14W/12L (n=26) | 53.8% |
+| Singapore, SG | 1W/25L (n=26) | 3.8% | 1W/25L (n=26) | 3.8% | 2W/24L (n=26) | 7.7% |
+| Taipei, TW | 0W/26L (n=26) | 0.0% | 0W/26L (n=26) | 0.0% | 1W/25L (n=26) | 3.8% |
+| Tel Aviv, IL | 16W/9L (n=25) | 64.0% | 6W/19L (n=25) | 24.0% | 6W/19L (n=25) | 24.0% |
+| Tokyo, JP | 6W/19L (n=25) | 24.0% | 1W/24L (n=25) | 4.0% | 11W/14L (n=25) | 44.0% |
+| Toronto, CA | 0W/25L (n=25) | 0.0% | 1W/24L (n=25) | 4.0% | 14W/11L (n=25) | 56.0% |
+| Warsaw, PL | 0W/25L (n=25) | 0.0% | 0W/25L (n=25) | 0.0% | 15W/10L (n=25) | 60.0% |
+| Wellington, NZ | 2W/24L (n=26) | 7.7% | 1W/25L (n=26) | 3.8% | 4W/22L (n=26) | 15.4% |
+| Wuhan, CN | 2W/24L (n=26) | 7.7% | 2W/24L (n=26) | 7.7% | 1W/25L (n=26) | 3.8% |
+| Zhengzhou, CN | 1W/25L (n=26) | 3.8% | 1W/25L (n=26) | 3.8% | 8W/18L (n=26) | 30.8% |
