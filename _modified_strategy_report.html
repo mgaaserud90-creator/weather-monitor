@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modifisert strategi — rapport</title>
+<style>
+  :root {
+    --bg: #0d1117; --card: #161b22; --border: #30363d;
+    --text: #c9d1d9; --dim: #8b949e; --green: #3fb950;
+    --red: #f85149; --orange: #d2991d; --blue: #58a6ff; --purple: #bc8cff;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:-apple-system,'Segoe UI',Roboto,sans-serif; line-height:1.55; padding:24px; }
+  .wrap { max-width:1200px; margin:0 auto; }
+  header { text-align:center; padding:24px 16px; border-bottom:1px solid var(--border); margin-bottom:24px; }
+  header h1 { color:var(--blue); font-size:1.6rem; }
+  header p { color:var(--dim); font-size:0.9rem; margin-top:6px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; margin-bottom:24px; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px; text-align:center; }
+  .card .value { font-size:1.9rem; font-weight:700; }
+  .card .label { color:var(--dim); font-size:0.8rem; margin-top:4px; }
+  .section { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:20px; margin-bottom:18px; }
+  .section h2 { color:var(--purple); font-size:1.15rem; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px; }
+  table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+  th, td { text-align:left; padding:7px 9px; border-bottom:1px solid var(--border); vertical-align:top; }
+  th { color:var(--dim); text-transform:uppercase; font-size:0.68rem; letter-spacing:0.4px; }
+  tr:hover { background:rgba(255,255,255,0.02); }
+  .city { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:14px; }
+  .city-head { display:flex; flex-wrap:wrap; gap:10px; align-items:baseline; border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:6px; }
+  .city-name { font-size:1.05rem; font-weight:700; color:var(--blue); }
+  .city-unit { color:var(--dim); font-size:0.75rem; }
+  .city-wl { margin-left:auto; font-weight:700; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { background:rgba(88,166,255,0.12); border:1px solid rgba(88,166,255,0.4); color:var(--blue); border-radius:999px; padding:4px 11px; font-size:0.8rem; }
+  code { background:rgba(255,255,255,0.06); padding:1px 6px; border-radius:5px; font-size:0.8em; }
+  .muted { color:var(--dim); font-size:0.85rem; }
+  .note { background:rgba(88,166,255,0.08); border-left:3px solid var(--blue); padding:12px 14px; border-radius:6px; margin-bottom:18px; font-size:0.85rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🧪 Modifisert strategi — vektet + korrigert per by</h1>
+    <p>Generert 2026-09-05T12:50:58.381647+00:00 · Selvstendig HTML (inline CSS, ingen eksterne ressurser)</p>
+  </header>
+
+  <div class="cards">
+    <div class="card"><div class="value" style="color:#f85149;">41.8%</div><div class="label">Modifisert — total win rate</div></div>
+    <div class="card"><div class="value">461W / 643L</div><div class="label">Modifisert — kumulativ W/L</div></div>
+    <div class="card"><div class="value" style="color:#f85149;">28.5%</div><div class="label">Vanlig mean — win rate</div></div>
+    <div class="card"><div class="value">315W / 789L</div><div class="label">Vanlig mean — kumulativ W/L</div></div>
+    <div class="card"><div class="value" style="color:var(--orange);">3.0</div><div class="label">Snitt fjernede providere / by</div></div>
+    <div class="card"><div class="value" style="color:var(--red);">153</div><div class="label">Totalt fjernede providere</div></div>
+  </div>
+
+  <div class="note">
+    <b>Fjerningsregel:</b> fjern en provider fra en by hvis
+    <code>|bias| ≥ 1.0°C OG sign-agreement ≥ 70%</code> (konsistent misser),
+    ELLER <code>std ≥ 1.0°C OG sign-agreement 45–55%</code> (oscillator).
+    Vekting: invers-MSE (<code>1/(bias² + std² + 0.25)</code>) over gjenværende providere, normalisert, gulv 0.02.
+    Korreksjon: byens beste modell fra <code>_per_city_curvefit.json</code> (out-of-sample parametre, °C-skala).
+    Spill = <code>round(korrigert_mean)</code> °C. Win-regel: prosjektets — WIN hvis spillet treffer resolved bucket.
+  </div>
+
+  <div class="section">
+    <h2>🏙️ Per by — fjerning, vekter, korreksjon og resultat</h2>
+    
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Amsterdam, NL</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">11W / 14L (44.0%) n=25</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>GFS</td><td>oscillator</td><td>+0.07°C</td><td>1.16°C</td><td>52%</td><td style='font-size:0.75rem;color:#8b949e;'>std 1.16°C >= 1.0°C AND sign-agreement 52% in 45-55%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-2.38°C</td><td>1.32°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.38°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-1.90°C</td><td>1.09°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.90°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>UKMO <b>29.5%</b></span><span class='chip'>GEM <b>26.1%</b></span><span class='chip'>ICON <b>26.0%</b></span><span class='chip'>ECMWF IFS <b>18.4%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>median offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 0.7500 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Ankara, TR</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#3fb950;">17W / 8L (68.0%) n=25</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>GFS</td><td>consistent misser</td><td>-1.08°C</td><td>0.55°C</td><td>96%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.08°C >= 1.0°C AND sign-agreement 96% >= 70%</td></tr><tr><td>ICON</td><td>consistent misser</td><td>-1.12°C</td><td>0.56°C</td><td>96%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.12°C >= 1.0°C AND sign-agreement 96% >= 70%</td></tr><tr><td>UKMO</td><td>consistent misser</td><td>-1.70°C</td><td>0.86°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.70°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-1.67°C</td><td>0.67°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.67°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-1.78°C</td><td>0.85°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.78°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>ECMWF IFS <b>53.6%</b></span><span class='chip'>GEM <b>46.4%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>additive offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 0.6750 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Atlanta, US</span>
+          <span class="city-unit">unit F · IKKE MENING</span>
+          <span class="city-wl" style="color:#f85149;">9W / 16L (36.0%) n=25</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>GEM</td><td>consistent misser</td><td>-1.21°C</td><td>1.11°C</td><td>84%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.21°C >= 1.0°C AND sign-agreement 84% >= 70%</td></tr><tr><td>UKMO</td><td>consistent misser</td><td>-1.04°C</td><td>0.80°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.04°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-2.94°C</td><td>1.39°C</td><td>96%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.94°C >= 1.0°C AND sign-agreement 96% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-2.02°C</td><td>1.10°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.02°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>GFS <b>33.8%</b></span><span class='chip'>HRRR <b>33.8%</b></span><span class='chip'>ICON <b>20.8%</b></span><span class='chip'>ECMWF IFS <b>11.7%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>linear (a + b·mean)</b>
+          <span style="color:#8b949e;"> · params: a = 17.4554, b = 0.5144 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Austin, US</span>
+          <span class="city-unit">unit F · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">12W / 13L (48.0%) n=25</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>JMA</td><td>consistent misser</td><td>-2.84°C</td><td>1.20°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.84°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-1.45°C</td><td>0.83°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.45°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>GFS <b>21.0%</b></span><span class='chip'>HRRR <b>21.0%</b></span><span class='chip'>UKMO <b>19.4%</b></span><span class='chip'>ICON <b>17.1%</b></span><span class='chip'>GEM <b>13.2%</b></span><span class='chip'>ECMWF IFS <b>8.4%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>additive offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 0.9325 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Beijing, CN</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#3fb950;">14W / 7L (66.7%) n=21</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ICON</td><td>consistent misser</td><td>-1.18°C</td><td>0.78°C</td><td>95%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.18°C >= 1.0°C AND sign-agreement 95% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-1.06°C</td><td>1.08°C</td><td>81%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.06°C >= 1.0°C AND sign-agreement 81% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>GEM <b>25.6%</b></span><span class='chip'>UKMO <b>23.7%</b></span><span class='chip'>ECMWF IFS <b>18.6%</b></span><span class='chip'>JMA <b>16.7%</b></span><span class='chip'>GFS <b>15.4%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>linear (a + b·mean)</b>
+          <span style="color:#8b949e;"> · params: a = 4.2279, b = 0.8779 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Buenos Aires, AR</span>
+          <span class="city-unit">unit C · IKKE MENING</span>
+          <span class="city-wl" style="color:#d2991d;">13W / 12L (52.0%) n=25</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>AIFS</td><td>consistent misser</td><td>-1.10°C</td><td>0.86°C</td><td>84%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.10°C >= 1.0°C AND sign-agreement 84% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>ECMWF IFS <b>28.0%</b></span><span class='chip'>ICON <b>20.1%</b></span><span class='chip'>UKMO <b>19.2%</b></span><span class='chip'>GEM <b>13.8%</b></span><span class='chip'>GFS <b>10.4%</b></span><span class='chip'>JMA <b>8.6%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>multiplicative (k·mean)</b>
+          <span style="color:#8b949e;"> · params: k = 1.0571 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Busan, KR</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">7W / 14L (33.3%) n=21</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ECMWF IFS</td><td>consistent misser</td><td>-1.35°C</td><td>1.15°C</td><td>90%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.35°C >= 1.0°C AND sign-agreement 90% >= 70%</td></tr><tr><td>ICON</td><td>consistent misser</td><td>-2.34°C</td><td>1.05°C</td><td>95%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.34°C >= 1.0°C AND sign-agreement 95% >= 70%</td></tr><tr><td>UKMO</td><td>consistent misser</td><td>-1.20°C</td><td>0.95°C</td><td>90%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.20°C >= 1.0°C AND sign-agreement 90% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-1.84°C</td><td>0.92°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.84°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-1.23°C</td><td>1.05°C</td><td>86%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.23°C >= 1.0°C AND sign-agreement 86% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>GFS <b>55.2%</b></span><span class='chip'>GEM <b>44.8%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>additive offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 1.4091 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Cape Town, ZA</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">7W / 17L (29.2%) n=24</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ECMWF IFS</td><td>oscillator</td><td>-0.10°C</td><td>1.03°C</td><td>50%</td><td style='font-size:0.75rem;color:#8b949e;'>std 1.03°C >= 1.0°C AND sign-agreement 50% in 45-55%</td></tr><tr><td>GFS</td><td>oscillator</td><td>+0.59°C</td><td>1.69°C</td><td>54%</td><td style='font-size:0.75rem;color:#8b949e;'>std 1.69°C >= 1.0°C AND sign-agreement 54% in 45-55%</td></tr><tr><td>ICON</td><td>oscillator</td><td>-0.15°C</td><td>1.30°C</td><td>50%</td><td style='font-size:0.75rem;color:#8b949e;'>std 1.30°C >= 1.0°C AND sign-agreement 50% in 45-55%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-2.07°C</td><td>1.06°C</td><td>96%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.07°C >= 1.0°C AND sign-agreement 96% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-2.17°C</td><td>1.41°C</td><td>96%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.17°C >= 1.0°C AND sign-agreement 96% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>UKMO <b>70.3%</b></span><span class='chip'>GEM <b>29.7%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>linear (a + b·mean)</b>
+          <span style="color:#8b949e;"> · params: a = -1.9393, b = 1.1200 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Chengdu, CN</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">5W / 15L (25.0%) n=20</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ECMWF IFS</td><td>consistent misser</td><td>-2.22°C</td><td>1.71°C</td><td>85%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.22°C >= 1.0°C AND sign-agreement 85% >= 70%</td></tr><tr><td>GFS</td><td>consistent misser</td><td>-1.11°C</td><td>1.62°C</td><td>75%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.11°C >= 1.0°C AND sign-agreement 75% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-2.14°C</td><td>2.10°C</td><td>95%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.14°C >= 1.0°C AND sign-agreement 95% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-2.10°C</td><td>1.37°C</td><td>90%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.10°C >= 1.0°C AND sign-agreement 90% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>ICON <b>38.7%</b></span><span class='chip'>UKMO <b>34.8%</b></span><span class='chip'>GEM <b>26.6%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>additive offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 1.0400 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Chicago, US</span>
+          <span class="city-unit">unit F · IKKE MENING</span>
+          <span class="city-wl" style="color:#f85149;">10W / 15L (40.0%) n=25</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>UKMO</td><td>oscillator</td><td>-0.07°C</td><td>1.14°C</td><td>52%</td><td style='font-size:0.75rem;color:#8b949e;'>std 1.14°C >= 1.0°C AND sign-agreement 52% in 45-55%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>ICON <b>18.8%</b></span><span class='chip'>GFS <b>18.0%</b></span><span class='chip'>HRRR <b>18.0%</b></span><span class='chip'>ECMWF IFS <b>15.3%</b></span><span class='chip'>GEM <b>12.0%</b></span><span class='chip'>AIFS <b>9.3%</b></span><span class='chip'>JMA <b>8.5%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>median offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = -0.4650 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Chongqing, CN</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">2W / 18L (10.0%) n=20</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ECMWF IFS</td><td>consistent misser</td><td>-1.42°C</td><td>0.87°C</td><td>90%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.42°C >= 1.0°C AND sign-agreement 90% >= 70%</td></tr><tr><td>GFS</td><td>consistent misser</td><td>-1.61°C</td><td>1.02°C</td><td>95%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.61°C >= 1.0°C AND sign-agreement 95% >= 70%</td></tr><tr><td>GEM</td><td>oscillator</td><td>-0.74°C</td><td>1.54°C</td><td>55%</td><td style='font-size:0.75rem;color:#8b949e;'>std 1.54°C >= 1.0°C AND sign-agreement 55% in 45-55%</td></tr><tr><td>UKMO</td><td>consistent misser</td><td>-2.44°C</td><td>0.92°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.44°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-2.59°C</td><td>1.43°C</td><td>95%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.59°C >= 1.0°C AND sign-agreement 95% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-1.28°C</td><td>0.92°C</td><td>90%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.28°C >= 1.0°C AND sign-agreement 90% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>ICON <b>100.0%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>additive offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 1.7500 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Dallas, US</span>
+          <span class="city-unit">unit F · IKKE MENING</span>
+          <span class="city-wl" style="color:#f85149;">11W / 13L (45.8%) n=24</span>
+        </div>
+        <p style='color:#8b949e;margin:8px 0;'>Ingen providere fjernet — alle beholdes.</p>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>ECMWF IFS <b>15.9%</b></span><span class='chip'>AIFS <b>15.1%</b></span><span class='chip'>ICON <b>15.0%</b></span><span class='chip'>UKMO <b>12.7%</b></span><span class='chip'>JMA <b>11.8%</b></span><span class='chip'>GEM <b>10.7%</b></span><span class='chip'>GFS <b>9.5%</b></span><span class='chip'>HRRR <b>9.5%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>linear (a + b·mean)</b>
+          <span style="color:#8b949e;"> · params: a = -6.9871, b = 1.1629 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Denver, US</span>
+          <span class="city-unit">unit F · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">1W / 24L (4.0%) n=25</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ICON</td><td>consistent misser</td><td>-1.25°C</td><td>1.19°C</td><td>84%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.25°C >= 1.0°C AND sign-agreement 84% >= 70%</td></tr><tr><td>GEM</td><td>consistent misser</td><td>-1.35°C</td><td>1.30°C</td><td>92%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.35°C >= 1.0°C AND sign-agreement 92% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-1.94°C</td><td>1.29°C</td><td>96%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.94°C >= 1.0°C AND sign-agreement 96% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-1.92°C</td><td>1.12°C</td><td>96%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.92°C >= 1.0°C AND sign-agreement 96% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>GFS <b>32.3%</b></span><span class='chip'>HRRR <b>32.3%</b></span><span class='chip'>UKMO <b>21.2%</b></span><span class='chip'>ECMWF IFS <b>14.2%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>median offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 1.4000 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Guangzhou, CN</span>
+          <span class="city-unit">unit C · IKKE MENING</span>
+          <span class="city-wl" style="color:#8b949e;">0W / 0L (n/a) n=0</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ECMWF IFS</td><td>consistent misser</td><td>-1.74°C</td><td>1.19°C</td><td>95%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.74°C >= 1.0°C AND sign-agreement 95% >= 70%</td></tr><tr><td>GFS</td><td>consistent misser</td><td>-1.09°C</td><td>1.37°C</td><td>80%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.09°C >= 1.0°C AND sign-agreement 80% >= 70%</td></tr><tr><td>ICON</td><td>consistent misser</td><td>-1.95°C</td><td>1.16°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.95°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>GEM</td><td>consistent misser</td><td>-1.57°C</td><td>1.67°C</td><td>85%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.57°C >= 1.0°C AND sign-agreement 85% >= 70%</td></tr><tr><td>UKMO</td><td>consistent misser</td><td>-2.26°C</td><td>1.34°C</td><td>95%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.26°C >= 1.0°C AND sign-agreement 95% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-3.16°C</td><td>1.54°C</td><td>95%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 3.16°C >= 1.0°C AND sign-agreement 95% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-1.79°C</td><td>1.54°C</td><td>85%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.79°C >= 1.0°C AND sign-agreement 85% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span style='color:#8b949e;'>Ingen</span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>additive offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 2.1100 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Helsinki, FI</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">10W / 15L (40.0%) n=25</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>AIFS</td><td>consistent misser</td><td>-1.20°C</td><td>0.87°C</td><td>92%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.20°C >= 1.0°C AND sign-agreement 92% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>ICON <b>20.4%</b></span><span class='chip'>UKMO <b>18.5%</b></span><span class='chip'>GFS <b>17.5%</b></span><span class='chip'>JMA <b>17.0%</b></span><span class='chip'>GEM <b>17.0%</b></span><span class='chip'>ECMWF IFS <b>9.6%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>additive offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 0.6417 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Hong Kong, HK</span>
+          <span class="city-unit">unit C · IKKE MENING</span>
+          <span class="city-wl" style="color:#f85149;">10W / 11L (47.6%) n=21</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>UKMO</td><td>oscillator</td><td>-0.07°C</td><td>1.12°C</td><td>52%</td><td style='font-size:0.75rem;color:#8b949e;'>std 1.12°C >= 1.0°C AND sign-agreement 52% in 45-55%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-1.18°C</td><td>1.00°C</td><td>86%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.18°C >= 1.0°C AND sign-agreement 86% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>ECMWF IFS <b>28.1%</b></span><span class='chip'>ICON <b>21.1%</b></span><span class='chip'>GFS <b>19.6%</b></span><span class='chip'>GEM <b>17.0%</b></span><span class='chip'>JMA <b>14.3%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>additive offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 0.8000 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Houston, US</span>
+          <span class="city-unit">unit F · GIR MENING</span>
+          <span class="city-wl" style="color:#d2991d;">14W / 11L (56.0%) n=25</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>JMA</td><td>consistent misser</td><td>-2.12°C</td><td>1.10°C</td><td>96%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.12°C >= 1.0°C AND sign-agreement 96% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>GEM <b>19.9%</b></span><span class='chip'>GFS <b>17.1%</b></span><span class='chip'>HRRR <b>17.1%</b></span><span class='chip'>ICON <b>14.2%</b></span><span class='chip'>UKMO <b>11.7%</b></span><span class='chip'>AIFS <b>11.4%</b></span><span class='chip'>ECMWF IFS <b>8.7%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>linear (a + b·mean)</b>
+          <span style="color:#8b949e;"> · params: a = 5.1370, b = 0.8458 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Istanbul, TR</span>
+          <span class="city-unit">unit C · IKKE MENING</span>
+          <span class="city-wl" style="color:#f85149;">5W / 20L (20.0%) n=25</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>GFS</td><td>consistent misser</td><td>+1.63°C</td><td>1.09°C</td><td>92%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.63°C >= 1.0°C AND sign-agreement 92% >= 70%</td></tr><tr><td>UKMO</td><td>consistent misser</td><td>-2.67°C</td><td>1.35°C</td><td>96%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.67°C >= 1.0°C AND sign-agreement 96% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-2.72°C</td><td>1.03°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.72°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>AIFS <b>27.6%</b></span><span class='chip'>GEM <b>27.6%</b></span><span class='chip'>ECMWF IFS <b>25.5%</b></span><span class='chip'>ICON <b>19.3%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>median offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 0.5000 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Jeddah, SA</span>
+          <span class="city-unit">unit C · IKKE MENING</span>
+          <span class="city-wl" style="color:#f85149;">8W / 14L (36.4%) n=22</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ECMWF IFS</td><td>consistent misser</td><td>+2.45°C</td><td>0.96°C</td><td>95%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.45°C >= 1.0°C AND sign-agreement 95% >= 70%</td></tr><tr><td>GFS</td><td>oscillator</td><td>-0.18°C</td><td>1.20°C</td><td>55%</td><td style='font-size:0.75rem;color:#8b949e;'>std 1.20°C >= 1.0°C AND sign-agreement 55% in 45-55%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-5.76°C</td><td>1.23°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 5.76°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>AIFS <b>34.6%</b></span><span class='chip'>ICON <b>28.3%</b></span><span class='chip'>UKMO <b>19.7%</b></span><span class='chip'>GEM <b>17.4%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>additive offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 0.2000 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Jinan, CN</span>
+          <span class="city-unit">unit C · IKKE MENING</span>
+          <span class="city-wl" style="color:#8b949e;">0W / 0L (n/a) n=0</span>
+        </div>
+        <p style='color:#8b949e;margin:8px 0;'>Ingen providere fjernet — alle beholdes.</p>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span style='color:#8b949e;'>Ingen</span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>additive offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = -0.7000 · kilde: in_sample</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Karachi, PK</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#3fb950;">16W / 8L (66.7%) n=24</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>GEM</td><td>consistent misser</td><td>-1.03°C</td><td>0.92°C</td><td>96%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.03°C >= 1.0°C AND sign-agreement 96% >= 70%</td></tr><tr><td>UKMO</td><td>consistent misser</td><td>+1.28°C</td><td>0.86°C</td><td>96%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.28°C >= 1.0°C AND sign-agreement 96% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-1.60°C</td><td>0.81°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.60°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-1.71°C</td><td>0.62°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.71°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>ICON <b>45.2%</b></span><span class='chip'>GFS <b>29.2%</b></span><span class='chip'>ECMWF IFS <b>25.6%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>linear (a + b·mean)</b>
+          <span style="color:#8b949e;"> · params: a = -25.1594, b = 1.7847 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Kuala Lumpur, MY</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">9W / 12L (42.9%) n=21</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>GFS</td><td>consistent misser</td><td>-1.80°C</td><td>0.68°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.80°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>GEM</td><td>consistent misser</td><td>-1.68°C</td><td>1.11°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.68°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-4.26°C</td><td>0.67°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 4.26°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>UKMO <b>35.9%</b></span><span class='chip'>ICON <b>27.6%</b></span><span class='chip'>ECMWF IFS <b>21.5%</b></span><span class='chip'>AIFS <b>15.0%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>linear (a + b·mean)</b>
+          <span style="color:#8b949e;"> · params: a = 22.1756, b = 0.3569 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">London, UK</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#d2991d;">12W / 12L (50.0%) n=24</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>JMA</td><td>consistent misser</td><td>-1.14°C</td><td>1.16°C</td><td>79%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.14°C >= 1.0°C AND sign-agreement 79% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>GFS <b>23.0%</b></span><span class='chip'>ICON <b>19.9%</b></span><span class='chip'>UKMO <b>19.6%</b></span><span class='chip'>GEM <b>17.3%</b></span><span class='chip'>ECMWF IFS <b>11.6%</b></span><span class='chip'>AIFS <b>8.5%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>median offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 0.6500 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Los Angeles, US</span>
+          <span class="city-unit">unit F · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">4W / 20L (16.7%) n=24</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ECMWF IFS</td><td>consistent misser</td><td>+5.67°C</td><td>1.82°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 5.67°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>ICON</td><td>consistent misser</td><td>+2.28°C</td><td>1.13°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.28°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>+3.85°C</td><td>1.74°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 3.85°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>GFS <b>29.6%</b></span><span class='chip'>HRRR <b>29.6%</b></span><span class='chip'>GEM <b>19.3%</b></span><span class='chip'>UKMO <b>16.3%</b></span><span class='chip'>JMA <b>5.3%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>linear (a + b·mean)</b>
+          <span style="color:#8b949e;"> · params: a = 12.4586, b = 0.4789 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Lucknow, IN</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#3fb950;">16W / 8L (66.7%) n=24</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>GFS</td><td>consistent misser</td><td>+1.49°C</td><td>1.71°C</td><td>79%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.49°C >= 1.0°C AND sign-agreement 79% >= 70%</td></tr><tr><td>GEM</td><td>consistent misser</td><td>-1.18°C</td><td>1.36°C</td><td>79%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.18°C >= 1.0°C AND sign-agreement 79% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-2.24°C</td><td>1.22°C</td><td>92%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.24°C >= 1.0°C AND sign-agreement 92% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>AIFS <b>36.1%</b></span><span class='chip'>UKMO <b>22.1%</b></span><span class='chip'>ECMWF IFS <b>21.6%</b></span><span class='chip'>ICON <b>20.1%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>linear (a + b·mean)</b>
+          <span style="color:#8b949e;"> · params: a = 2.7924, b = 0.9153 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Madrid, ES</span>
+          <span class="city-unit">unit C · IKKE MENING</span>
+          <span class="city-wl" style="color:#d2991d;">12W / 12L (50.0%) n=24</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>GEM</td><td>consistent misser</td><td>-1.30°C</td><td>0.62°C</td><td>96%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.30°C >= 1.0°C AND sign-agreement 96% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-1.58°C</td><td>0.72°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.58°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>UKMO <b>27.1%</b></span><span class='chip'>ECMWF IFS <b>20.4%</b></span><span class='chip'>ICON <b>19.7%</b></span><span class='chip'>GFS <b>18.8%</b></span><span class='chip'>JMA <b>14.1%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>additive offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 1.0250 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Manila, PH</span>
+          <span class="city-unit">unit C · IKKE MENING</span>
+          <span class="city-wl" style="color:#f85149;">7W / 14L (33.3%) n=21</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ECMWF IFS</td><td>consistent misser</td><td>-1.71°C</td><td>0.71°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.71°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>GEM</td><td>consistent misser</td><td>-2.11°C</td><td>1.03°C</td><td>95%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.11°C >= 1.0°C AND sign-agreement 95% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-1.68°C</td><td>0.70°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.68°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>UKMO <b>38.0%</b></span><span class='chip'>ICON <b>28.9%</b></span><span class='chip'>JMA <b>17.7%</b></span><span class='chip'>GFS <b>15.4%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>additive offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 0.8091 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Mexico City, MX</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#d2991d;">12W / 11L (52.2%) n=23</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>JMA</td><td>consistent misser</td><td>-1.67°C</td><td>1.24°C</td><td>87%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.67°C >= 1.0°C AND sign-agreement 87% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>ICON <b>21.3%</b></span><span class='chip'>ECMWF IFS <b>21.0%</b></span><span class='chip'>GFS <b>19.3%</b></span><span class='chip'>UKMO <b>16.3%</b></span><span class='chip'>AIFS <b>15.9%</b></span><span class='chip'>GEM <b>6.3%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>median offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 0.2000 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Miami, US</span>
+          <span class="city-unit">unit F · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">4W / 21L (16.0%) n=25</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ECMWF IFS</td><td>consistent misser</td><td>-1.27°C</td><td>0.89°C</td><td>96%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.27°C >= 1.0°C AND sign-agreement 96% >= 70%</td></tr><tr><td>ICON</td><td>consistent misser</td><td>-1.02°C</td><td>0.74°C</td><td>88%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.02°C >= 1.0°C AND sign-agreement 88% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-2.78°C</td><td>1.12°C</td><td>96%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.78°C >= 1.0°C AND sign-agreement 96% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>UKMO <b>28.9%</b></span><span class='chip'>GFS <b>20.8%</b></span><span class='chip'>HRRR <b>20.8%</b></span><span class='chip'>GEM <b>16.9%</b></span><span class='chip'>JMA <b>12.6%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>median offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 0.6600 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Milan, IT</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">11W / 13L (45.8%) n=24</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ECMWF IFS</td><td>consistent misser</td><td>-1.10°C</td><td>0.98°C</td><td>83%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.10°C >= 1.0°C AND sign-agreement 83% >= 70%</td></tr><tr><td>GFS</td><td>oscillator</td><td>+0.00°C</td><td>1.41°C</td><td>54%</td><td style='font-size:0.75rem;color:#8b949e;'>std 1.41°C >= 1.0°C AND sign-agreement 54% in 45-55%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-2.49°C</td><td>1.26°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.49°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-2.30°C</td><td>1.14°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.30°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>ICON <b>37.8%</b></span><span class='chip'>GEM <b>36.2%</b></span><span class='chip'>UKMO <b>26.0%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>linear (a + b·mean)</b>
+          <span style="color:#8b949e;"> · params: a = 5.0051, b = 0.8616 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Moscow, RU</span>
+          <span class="city-unit">unit C · IKKE MENING</span>
+          <span class="city-wl" style="color:#d2991d;">13W / 12L (52.0%) n=25</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>GFS</td><td>oscillator</td><td>-0.00°C</td><td>1.15°C</td><td>48%</td><td style='font-size:0.75rem;color:#8b949e;'>std 1.15°C >= 1.0°C AND sign-agreement 48% in 45-55%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>GEM <b>20.5%</b></span><span class='chip'>ECMWF IFS <b>18.1%</b></span><span class='chip'>UKMO <b>16.5%</b></span><span class='chip'>JMA <b>15.5%</b></span><span class='chip'>AIFS <b>14.8%</b></span><span class='chip'>ICON <b>14.7%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>median offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 0.3500 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Munich, DE</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">5W / 20L (20.0%) n=25</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ECMWF IFS</td><td>consistent misser</td><td>-1.82°C</td><td>1.19°C</td><td>92%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.82°C >= 1.0°C AND sign-agreement 92% >= 70%</td></tr><tr><td>GFS</td><td>consistent misser</td><td>-1.09°C</td><td>1.26°C</td><td>88%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.09°C >= 1.0°C AND sign-agreement 88% >= 70%</td></tr><tr><td>ICON</td><td>consistent misser</td><td>-1.33°C</td><td>0.92°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.33°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>UKMO</td><td>consistent misser</td><td>-1.29°C</td><td>1.27°C</td><td>84%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.29°C >= 1.0°C AND sign-agreement 84% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-2.94°C</td><td>1.64°C</td><td>92%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.94°C >= 1.0°C AND sign-agreement 92% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-1.80°C</td><td>1.06°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.80°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>GEM <b>100.0%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>multiplicative (k·mean)</b>
+          <span style="color:#8b949e;"> · params: k = 1.0789 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">New York, US</span>
+          <span class="city-unit">unit F · IKKE MENING</span>
+          <span class="city-wl" style="color:#3fb950;">17W / 8L (68.0%) n=25</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>AIFS</td><td>consistent misser</td><td>-2.20°C</td><td>0.94°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.20°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>ICON <b>18.8%</b></span><span class='chip'>UKMO <b>16.2%</b></span><span class='chip'>GFS <b>15.5%</b></span><span class='chip'>HRRR <b>15.5%</b></span><span class='chip'>JMA <b>15.5%</b></span><span class='chip'>ECMWF IFS <b>9.7%</b></span><span class='chip'>GEM <b>8.8%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>baseline (no correction)</b>
+          <span style="color:#8b949e;"> · params: — · kilde: none</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Panama City, PA</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">1W / 20L (4.8%) n=21</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ECMWF IFS</td><td>consistent misser</td><td>-1.11°C</td><td>1.41°C</td><td>86%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.11°C >= 1.0°C AND sign-agreement 86% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-2.20°C</td><td>1.04°C</td><td>95%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.20°C >= 1.0°C AND sign-agreement 95% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-2.03°C</td><td>1.26°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.03°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>ICON <b>38.9%</b></span><span class='chip'>GEM <b>28.0%</b></span><span class='chip'>UKMO <b>18.1%</b></span><span class='chip'>GFS <b>15.0%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>median offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 1.5000 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Paris, FR</span>
+          <span class="city-unit">unit C · IKKE MENING</span>
+          <span class="city-wl" style="color:#f85149;">9W / 15L (37.5%) n=24</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ECMWF IFS</td><td>consistent misser</td><td>-1.05°C</td><td>0.85°C</td><td>88%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.05°C >= 1.0°C AND sign-agreement 88% >= 70%</td></tr><tr><td>UKMO</td><td>consistent misser</td><td>-1.28°C</td><td>0.85°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.28°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-1.88°C</td><td>1.22°C</td><td>96%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.88°C >= 1.0°C AND sign-agreement 96% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-1.03°C</td><td>0.82°C</td><td>96%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.03°C >= 1.0°C AND sign-agreement 96% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>GFS <b>43.2%</b></span><span class='chip'>GEM <b>33.1%</b></span><span class='chip'>ICON <b>23.7%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>baseline (no correction)</b>
+          <span style="color:#8b949e;"> · params: — · kilde: none</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Qingdao, CN</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">5W / 16L (23.8%) n=21</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>JMA</td><td>consistent misser</td><td>-1.67°C</td><td>1.15°C</td><td>90%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.67°C >= 1.0°C AND sign-agreement 90% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-1.04°C</td><td>0.98°C</td><td>81%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.04°C >= 1.0°C AND sign-agreement 81% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>ICON <b>26.8%</b></span><span class='chip'>UKMO <b>20.4%</b></span><span class='chip'>GEM <b>19.1%</b></span><span class='chip'>ECMWF IFS <b>18.9%</b></span><span class='chip'>GFS <b>14.8%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>additive offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 1.0182 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">San Francisco, US</span>
+          <span class="city-unit">unit F · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">3W / 22L (12.0%) n=25</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ECMWF IFS</td><td>consistent misser</td><td>-1.72°C</td><td>1.32°C</td><td>88%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.72°C >= 1.0°C AND sign-agreement 88% >= 70%</td></tr><tr><td>GFS</td><td>consistent misser</td><td>+1.12°C</td><td>1.32°C</td><td>84%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.12°C >= 1.0°C AND sign-agreement 84% >= 70%</td></tr><tr><td>ICON</td><td>oscillator</td><td>+0.53°C</td><td>1.53°C</td><td>52%</td><td style='font-size:0.75rem;color:#8b949e;'>std 1.53°C >= 1.0°C AND sign-agreement 52% in 45-55%</td></tr><tr><td>GEM</td><td>consistent misser</td><td>-2.21°C</td><td>1.19°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.21°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-3.50°C</td><td>1.42°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 3.50°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>HRRR</td><td>consistent misser</td><td>+1.12°C</td><td>1.32°C</td><td>84%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.12°C >= 1.0°C AND sign-agreement 84% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>AIFS <b>61.1%</b></span><span class='chip'>UKMO <b>38.9%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>median offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 0.9800 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Sao Paulo, BR</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">10W / 14L (41.7%) n=24</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>GFS</td><td>oscillator</td><td>+0.20°C</td><td>1.17°C</td><td>54%</td><td style='font-size:0.75rem;color:#8b949e;'>std 1.17°C >= 1.0°C AND sign-agreement 54% in 45-55%</td></tr><tr><td>GEM</td><td>oscillator</td><td>+0.25°C</td><td>2.33°C</td><td>50%</td><td style='font-size:0.75rem;color:#8b949e;'>std 2.33°C >= 1.0°C AND sign-agreement 50% in 45-55%</td></tr><tr><td>UKMO</td><td>consistent misser</td><td>-1.43°C</td><td>1.21°C</td><td>83%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.43°C >= 1.0°C AND sign-agreement 83% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-1.87°C</td><td>1.70°C</td><td>88%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.87°C >= 1.0°C AND sign-agreement 88% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>AIFS <b>40.5%</b></span><span class='chip'>ECMWF IFS <b>36.5%</b></span><span class='chip'>ICON <b>22.9%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>linear (a + b·mean)</b>
+          <span style="color:#8b949e;"> · params: a = 0.4879, b = 1.0033 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Seattle, US</span>
+          <span class="city-unit">unit F · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">9W / 16L (36.0%) n=25</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ICON</td><td>consistent misser</td><td>-1.45°C</td><td>0.93°C</td><td>96%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.45°C >= 1.0°C AND sign-agreement 96% >= 70%</td></tr><tr><td>GEM</td><td>consistent misser</td><td>-1.29°C</td><td>0.88°C</td><td>96%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.29°C >= 1.0°C AND sign-agreement 96% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-1.43°C</td><td>1.51°C</td><td>84%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.43°C >= 1.0°C AND sign-agreement 84% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-2.52°C</td><td>0.97°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.52°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>GFS <b>37.2%</b></span><span class='chip'>HRRR <b>37.2%</b></span><span class='chip'>UKMO <b>15.1%</b></span><span class='chip'>ECMWF IFS <b>10.6%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>additive offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 0.5567 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Seoul (Incheon), KR</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">9W / 12L (42.9%) n=21</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>GFS</td><td>consistent misser</td><td>-2.62°C</td><td>1.38°C</td><td>95%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.62°C >= 1.0°C AND sign-agreement 95% >= 70%</td></tr><tr><td>UKMO</td><td>consistent misser</td><td>-1.88°C</td><td>1.42°C</td><td>95%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.88°C >= 1.0°C AND sign-agreement 95% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-2.04°C</td><td>1.37°C</td><td>90%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.04°C >= 1.0°C AND sign-agreement 90% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>ICON <b>37.1%</b></span><span class='chip'>ECMWF IFS <b>24.3%</b></span><span class='chip'>GEM <b>20.2%</b></span><span class='chip'>AIFS <b>18.4%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>linear (a + b·mean)</b>
+          <span style="color:#8b949e;"> · params: a = -6.2260, b = 1.2558 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Shanghai, CN</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">4W / 17L (19.0%) n=21</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ECMWF IFS</td><td>consistent misser</td><td>-1.01°C</td><td>0.68°C</td><td>86%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.01°C >= 1.0°C AND sign-agreement 86% >= 70%</td></tr><tr><td>GFS</td><td>consistent misser</td><td>-1.09°C</td><td>0.89°C</td><td>90%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.09°C >= 1.0°C AND sign-agreement 90% >= 70%</td></tr><tr><td>ICON</td><td>consistent misser</td><td>-1.20°C</td><td>0.89°C</td><td>90%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.20°C >= 1.0°C AND sign-agreement 90% >= 70%</td></tr><tr><td>GEM</td><td>consistent misser</td><td>-1.01°C</td><td>0.80°C</td><td>81%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.01°C >= 1.0°C AND sign-agreement 81% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-1.70°C</td><td>1.45°C</td><td>90%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.70°C >= 1.0°C AND sign-agreement 90% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-1.07°C</td><td>0.87°C</td><td>90%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.07°C >= 1.0°C AND sign-agreement 90% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>UKMO <b>100.0%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>linear (a + b·mean)</b>
+          <span style="color:#8b949e;"> · params: a = -16.9786, b = 1.6216 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Shenzhen, CN</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#d2991d;">12W / 9L (57.1%) n=21</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>GFS</td><td>consistent misser</td><td>+1.27°C</td><td>1.70°C</td><td>81%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.27°C >= 1.0°C AND sign-agreement 81% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-1.47°C</td><td>1.08°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.47°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-1.13°C</td><td>0.94°C</td><td>86%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.13°C >= 1.0°C AND sign-agreement 86% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>UKMO <b>36.5%</b></span><span class='chip'>GEM <b>25.2%</b></span><span class='chip'>ECMWF IFS <b>19.4%</b></span><span class='chip'>ICON <b>18.9%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>median offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 0.3000 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Singapore, SG</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#3fb950;">16W / 5L (76.2%) n=21</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>GFS</td><td>consistent misser</td><td>-1.01°C</td><td>0.78°C</td><td>95%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.01°C >= 1.0°C AND sign-agreement 95% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-2.76°C</td><td>0.66°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.76°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>UKMO <b>26.9%</b></span><span class='chip'>ICON <b>22.2%</b></span><span class='chip'>AIFS <b>20.9%</b></span><span class='chip'>ECMWF IFS <b>17.7%</b></span><span class='chip'>GEM <b>12.2%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>linear (a + b·mean)</b>
+          <span style="color:#8b949e;"> · params: a = 27.9374, b = 0.1554 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Taipei, TW</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#8b949e;">0W / 0L (n/a) n=0</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ECMWF IFS</td><td>consistent misser</td><td>-1.62°C</td><td>1.14°C</td><td>95%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.62°C >= 1.0°C AND sign-agreement 95% >= 70%</td></tr><tr><td>GFS</td><td>consistent misser</td><td>-1.16°C</td><td>1.53°C</td><td>76%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.16°C >= 1.0°C AND sign-agreement 76% >= 70%</td></tr><tr><td>ICON</td><td>consistent misser</td><td>-1.74°C</td><td>1.15°C</td><td>95%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.74°C >= 1.0°C AND sign-agreement 95% >= 70%</td></tr><tr><td>GEM</td><td>consistent misser</td><td>-2.86°C</td><td>1.03°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.86°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>UKMO</td><td>consistent misser</td><td>-1.72°C</td><td>1.13°C</td><td>95%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.72°C >= 1.0°C AND sign-agreement 95% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-2.94°C</td><td>1.11°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.94°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-5.20°C</td><td>1.77°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 5.20°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span style='color:#8b949e;'>Ingen</span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>median offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 2.6000 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Tel Aviv, IL</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">12W / 13L (48.0%) n=25</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ECMWF IFS</td><td>consistent misser</td><td>+1.96°C</td><td>0.63°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.96°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>GEM <b>21.8%</b></span><span class='chip'>ICON <b>19.8%</b></span><span class='chip'>GFS <b>18.9%</b></span><span class='chip'>AIFS <b>15.5%</b></span><span class='chip'>JMA <b>15.2%</b></span><span class='chip'>UKMO <b>8.7%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>median offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = -0.8000 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Tokyo, JP</span>
+          <span class="city-unit">unit C · IKKE MENING</span>
+          <span class="city-wl" style="color:#3fb950;">13W / 8L (61.9%) n=21</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>JMA</td><td>consistent misser</td><td>-1.31°C</td><td>1.20°C</td><td>95%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.31°C >= 1.0°C AND sign-agreement 95% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>UKMO <b>21.1%</b></span><span class='chip'>GFS <b>20.2%</b></span><span class='chip'>ECMWF IFS <b>15.2%</b></span><span class='chip'>ICON <b>14.9%</b></span><span class='chip'>AIFS <b>14.3%</b></span><span class='chip'>GEM <b>14.3%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>baseline (no correction)</b>
+          <span style="color:#8b949e;"> · params: — · kilde: none</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Toronto, CA</span>
+          <span class="city-unit">unit C · IKKE MENING</span>
+          <span class="city-wl" style="color:#d2991d;">14W / 11L (56.0%) n=25</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>JMA</td><td>consistent misser</td><td>-2.66°C</td><td>1.29°C</td><td>96%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 2.66°C >= 1.0°C AND sign-agreement 96% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-1.14°C</td><td>0.96°C</td><td>96%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.14°C >= 1.0°C AND sign-agreement 96% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>GFS <b>30.4%</b></span><span class='chip'>ICON <b>19.5%</b></span><span class='chip'>UKMO <b>19.2%</b></span><span class='chip'>ECMWF IFS <b>17.7%</b></span><span class='chip'>GEM <b>13.2%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>baseline (no correction)</b>
+          <span style="color:#8b949e;"> · params: — · kilde: none</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Warsaw, PL</span>
+          <span class="city-unit">unit C · IKKE MENING</span>
+          <span class="city-wl" style="color:#3fb950;">15W / 8L (65.2%) n=23</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>JMA</td><td>consistent misser</td><td>-1.49°C</td><td>1.15°C</td><td>87%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.49°C >= 1.0°C AND sign-agreement 87% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-1.53°C</td><td>0.88°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.53°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>ICON <b>29.5%</b></span><span class='chip'>GEM <b>24.4%</b></span><span class='chip'>UKMO <b>23.7%</b></span><span class='chip'>GFS <b>11.7%</b></span><span class='chip'>ECMWF IFS <b>10.7%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>baseline (no correction)</b>
+          <span style="color:#8b949e;"> · params: — · kilde: none</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Wellington, NZ</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#d2991d;">12W / 12L (50.0%) n=24</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>GFS</td><td>consistent misser</td><td>-1.07°C</td><td>0.78°C</td><td>92%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.07°C >= 1.0°C AND sign-agreement 92% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-1.39°C</td><td>1.06°C</td><td>79%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.39°C >= 1.0°C AND sign-agreement 79% >= 70%</td></tr><tr><td>AIFS</td><td>consistent misser</td><td>-1.43°C</td><td>1.06°C</td><td>92%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.43°C >= 1.0°C AND sign-agreement 92% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>ICON <b>30.6%</b></span><span class='chip'>UKMO <b>27.7%</b></span><span class='chip'>ECMWF IFS <b>22.6%</b></span><span class='chip'>GEM <b>19.1%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>multiplicative (k·mean)</b>
+          <span style="color:#8b949e;"> · params: k = 1.0629 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Wuhan, CN</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#f85149;">7W / 13L (35.0%) n=20</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ECMWF IFS</td><td>consistent misser</td><td>-1.27°C</td><td>1.35°C</td><td>80%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.27°C >= 1.0°C AND sign-agreement 80% >= 70%</td></tr><tr><td>GFS</td><td>consistent misser</td><td>-1.40°C</td><td>1.24°C</td><td>85%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.40°C >= 1.0°C AND sign-agreement 85% >= 70%</td></tr><tr><td>ICON</td><td>consistent misser</td><td>-1.27°C</td><td>0.99°C</td><td>90%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.27°C >= 1.0°C AND sign-agreement 90% >= 70%</td></tr><tr><td>JMA</td><td>consistent misser</td><td>-1.28°C</td><td>1.45°C</td><td>80%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.28°C >= 1.0°C AND sign-agreement 80% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>AIFS <b>40.2%</b></span><span class='chip'>UKMO <b>34.5%</b></span><span class='chip'>GEM <b>25.3%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>median offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 0.7000 · kilde: oos</span>
+        </p>
+      </div>
+
+      <div class="city">
+        <div class="city-head">
+          <span class="city-name">Zhengzhou, CN</span>
+          <span class="city-unit">unit C · GIR MENING</span>
+          <span class="city-wl" style="color:#3fb950;">6W / 4L (60.0%) n=10</span>
+        </div>
+        <h4 style='margin:14px 0 6px;color:#f85149;'>🗑️ Fjernede providere</h4><table><thead><tr><th>Provider</th><th>Årsak</th><th>Bias</th><th>Std</th><th>Sign-agree</th><th>Regel</th></tr></thead><tbody><tr><td>ECMWF IFS</td><td>consistent misser</td><td>-1.44°C</td><td>1.04°C</td><td>100%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.44°C >= 1.0°C AND sign-agreement 100% >= 70%</td></tr><tr><td>GFS</td><td>consistent misser</td><td>-1.21°C</td><td>1.14°C</td><td>90%</td><td style='font-size:0.75rem;color:#8b949e;'>|bias| 1.21°C >= 1.0°C AND sign-agreement 90% >= 70%</td></tr></tbody></table>
+        <h4 style="margin:14px 0 6px;">⚖️ Gjenværende providere og vekter</h4>
+        <div class="chips"><span class='chip'>ICON <b>24.4%</b></span><span class='chip'>AIFS <b>24.4%</b></span><span class='chip'>UKMO <b>21.3%</b></span><span class='chip'>JMA <b>19.2%</b></span><span class='chip'>GEM <b>10.7%</b></span></div>
+        <h4 style="margin:14px 0 6px;">🔧 Korreksjonsmodell</h4>
+        <p style="margin:0 0 4px;">
+          <b>median offset (mean + c)</b>
+          <span style="color:#8b949e;"> · params: c = 1.1000 · kilde: oos</span>
+        </p>
+      </div>
+  </div>
+
+  <footer style="text-align:center;color:var(--dim);font-size:0.8rem;padding:16px;">
+    Modifisert strategi · v1 Polymarket Weather · 48 byer med resolvede spill
+  </footer>
+</div>
+</body>
+</html>

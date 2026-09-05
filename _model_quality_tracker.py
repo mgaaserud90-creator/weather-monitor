@@ -81,6 +81,7 @@ except ImportError:
 
 LOG_FILE = Path(_SCRIPT_DIR) / "_model_quality_log.json"
 REPORT_FILE = Path(_SCRIPT_DIR) / "_quality_report.md"
+MODIFIED_LOG_FILE = Path(_SCRIPT_DIR) / "_modified_strategy_log.json"
 RAPID_PEAK_LOG = Path(_SCRIPT_DIR) / "_rapid_peak_log.json"
 PEAK_VERIFICATION_LOG = Path(_SCRIPT_DIR) / "_peak_verification_log.json"
 MAX_LOG_DAYS = 90  # Keep last 90 days in log
@@ -315,6 +316,18 @@ def _save_log(data: dict) -> None:
     if len(runs) > MAX_LOG_DAYS:
         data["runs"] = runs[-MAX_LOG_DAYS:]
     LOG_FILE.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def _modified_strategy_totals() -> tuple[int, int]:
+    """Return (wins, losses) for the Modifisert strategy from its log."""
+    if MODIFIED_LOG_FILE.exists():
+        try:
+            data = json.loads(MODIFIED_LOG_FILE.read_text(encoding="utf-8"))
+            overall = data.get("overall", {})
+            return int(overall.get("wins", 0)), int(overall.get("losses", 0))
+        except (json.JSONDecodeError, KeyError, TypeError, OSError):
+            pass
+    return 0, 0
 
 
 def _now_utc() -> str:
@@ -3105,6 +3118,9 @@ def _generate_markdown_report(log_data: dict, today_entry: dict | None) -> None:
         lines.append("")
 
     # -- Cumulative per-strategy stats
+    modified_wins, modified_losses = _modified_strategy_totals()
+    modified_total = modified_wins + modified_losses
+
     lines.append("## Cumulative Strategy Performance")
     lines.append("")
     lines.append(f"| Strategy | Wins | Losses | Win Rate |")
@@ -3112,6 +3128,7 @@ def _generate_markdown_report(log_data: dict, today_entry: dict | None) -> None:
     lines.append(f"| 🎯 Sigma (μ−kσ) | {sigma_wins} | {sigma_losses} | {round(sigma_wins/max(1,sigma_total)*100,1)}% |")
     lines.append(f"| 🛡️ P5-Basert | {p5_wins} | {p5_losses} | {round(p5_wins/max(1,p5_total)*100,1)}% |")
     lines.append(f"| 📊 Mean-Basert | {mean_wins} | {mean_losses} | {round(mean_wins/max(1,mean_total)*100,1)}% |")
+    lines.append(f"| 🧪 Modifisert | {modified_wins} | {modified_losses} | {round(modified_wins/max(1,modified_total)*100,1)}% |")
     lines.append("")
 
     # -- Per-city 3-strategy W/L with min-sample gating

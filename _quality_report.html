@@ -161,7 +161,7 @@
 // No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-09-05T11:02:59Z');
+    var deployTime = new Date('2026-09-05T12:51:01Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {
@@ -265,11 +265,22 @@ function sortTable(colIdx) {
 
   <!-- PER-STRATEGY PERFORMANCE CARDS -->
   
-   <div class="card-grid">
-     <div class="card">
-       <div class="value" style="color: #f85149;">28.0%</div>
-       <div class="label">📊 Mean-Basert<br/>363W / 935L</div>
-     </div>
+   <div class="section">
+     <h2>📊 Per-Strategi Resultater — Kumulativ (4 strategier)</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       Kumulativ W/L på tvers av alle dager. WIN = vår bøtte == Polymarkets resolusjon.
+       Modifisert er den nye 4. strategien: per-by fjerning av upresise/inkonsistente
+       providere, invers-MSE-vekting og per-by korreksjon.
+     </p>
+     <table>
+       <thead><tr><th>Strategi</th><th>Wins</th><th>Losses</th><th>Win Rate</th><th>Resolved</th></tr></thead>
+       <tbody>
+         <tr><td>🎯 Sigma (μ−kσ)</td><td>127</td><td>1171</td><td style="color:#f85149;font-weight:600;">9.8%</td><td>1298</td></tr>
+         <tr><td>🛡️ P5-Basert</td><td>72</td><td>1226</td><td style="color:#f85149;font-weight:600;">5.5%</td><td>1298</td></tr>
+         <tr><td>📊 Mean-Basert</td><td>363</td><td>935</td><td style="color:#f85149;font-weight:600;">28.0%</td><td>1298</td></tr>
+         <tr><td>🧪 Modifisert</td><td>461</td><td>643</td><td style="color:#f85149;font-weight:600;">41.8%</td><td>1104</td></tr>
+       </tbody>
+     </table>
    </div>
 
   <!-- PER-CITY 3-STRATEGY W/L -->
@@ -917,22 +928,22 @@ function sortTable(colIdx) {
       </p>
       <div class="card-grid" style="margin-bottom: 16px;">
         <div class="card">
-          <div class="value" style="color: var(--red);">1</div>
+          <div class="value" style="color: var(--red);">18</div>
           <div class="label">STATION_BIAS</div>
         </div>
         <div class="card">
-          <div class="value" style="color: var(--orange);">28</div>
+          <div class="value" style="color: var(--orange);">16</div>
           <div class="label">HIGH_VARIANCE</div>
         </div>
         <div class="card">
-          <div class="value" style="color: var(--green);">22</div>
+          <div class="value" style="color: var(--green);">16</div>
           <div class="label">OK</div>
         </div>
       </div>
       <div style="overflow-x: auto;">
       <table>
         <thead><tr><th>By</th><th>n</th><th>Mean err °C</th><th>MAE °C</th><th>Std °C</th><th>Klassifisering</th><th>Årsak</th></tr></thead>
-        <tbody><tr><td><strong>Busan, KR</strong></td><td>22</td><td>-1.95</td><td>1.95</td><td>0.80</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 0.80°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Taipei, TW</strong></td><td>22</td><td>-1.85</td><td>1.85</td><td>1.02</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.02°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Munich, DE</strong></td><td>25</td><td>-1.70</td><td>1.72</td><td>1.19</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.19°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Guangzhou, CN</strong></td><td>21</td><td>-1.66</td><td>1.81</td><td>1.23</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.23°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Beijing, CN</strong></td><td>22</td><td>-1.64</td><td>1.66</td><td>0.87</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 0.87°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Zhengzhou, CN</strong></td><td>13</td><td>-1.55</td><td>1.69</td><td>1.28</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.28°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Chengdu, CN</strong></td><td>21</td><td>-1.54</td><td>2.05</td><td>1.80</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.80°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Wuhan, CN</strong></td><td>22</td><td>-1.10</td><td>1.56</td><td>1.32</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.32°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Tokyo, JP</strong></td><td>22</td><td>-1.05</td><td>1.11</td><td>0.89</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 0.89°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Manila, PH</strong></td><td>22</td><td>-1.04</td><td>1.20</td><td>0.75</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 0.75°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Mexico City, MX</strong></td><td>23</td><td>-1.03</td><td>1.17</td><td>0.90</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 0.90°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Wellington, NZ</strong></td><td>24</td><td>-0.98</td><td>0.99</td><td>0.83</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 0.83°C) — model/noise error rather than a fixed station offset</td></tr></tbody>
+        <tbody><tr><td><strong>Wellington, NZ</strong></td><td>1</td><td>-2.60</td><td>2.60</td><td>0.00</td><td style="color:#f85149;font-weight:700;">STATION_BIAS</td><td style="color:var(--text-dim);">consistent under-predicts offset (mean -2.60°C, std 0.00°C) — likely different station/source vs Polymarket</td></tr><tr><td><strong>Zhengzhou, CN</strong></td><td>3</td><td>-2.40</td><td>2.40</td><td>1.71</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.71°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Shenzhen, CN</strong></td><td>1</td><td>-2.20</td><td>2.20</td><td>0.00</td><td style="color:#f85149;font-weight:700;">STATION_BIAS</td><td style="color:var(--text-dim);">consistent under-predicts offset (mean -2.20°C, std 0.00°C) — likely different station/source vs Polymarket</td></tr><tr><td><strong>Taipei, TW</strong></td><td>1</td><td>-2.10</td><td>2.10</td><td>0.00</td><td style="color:#f85149;font-weight:700;">STATION_BIAS</td><td style="color:var(--text-dim);">consistent under-predicts offset (mean -2.10°C, std 0.00°C) — likely different station/source vs Polymarket</td></tr><tr><td><strong>Guangzhou, CN</strong></td><td>1</td><td>-1.90</td><td>1.90</td><td>0.00</td><td style="color:#f85149;font-weight:700;">STATION_BIAS</td><td style="color:var(--text-dim);">consistent under-predicts offset (mean -1.90°C, std 0.00°C) — likely different station/source vs Polymarket</td></tr><tr><td><strong>San Francisco, US</strong></td><td>4</td><td>-1.62</td><td>1.62</td><td>1.68</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.68°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Wuhan, CN</strong></td><td>1</td><td>+1.60</td><td>1.60</td><td>0.00</td><td style="color:#f85149;font-weight:700;">STATION_BIAS</td><td style="color:var(--text-dim);">consistent over-predicts offset (mean +1.60°C, std 0.00°C) — likely different station/source vs Polymarket</td></tr><tr><td><strong>Austin, US</strong></td><td>4</td><td>-1.60</td><td>1.60</td><td>1.44</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.44°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Munich, DE</strong></td><td>4</td><td>-1.55</td><td>1.60</td><td>1.97</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.97°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Tokyo, JP</strong></td><td>1</td><td>-1.50</td><td>1.50</td><td>0.00</td><td style="color:#f85149;font-weight:700;">STATION_BIAS</td><td style="color:var(--text-dim);">consistent under-predicts offset (mean -1.50°C, std 0.00°C) — likely different station/source vs Polymarket</td></tr><tr><td><strong>Seattle, US</strong></td><td>5</td><td>+1.40</td><td>1.64</td><td>1.73</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.73°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Chengdu, CN</strong></td><td>1</td><td>-1.40</td><td>1.40</td><td>0.00</td><td style="color:#f85149;font-weight:700;">STATION_BIAS</td><td style="color:var(--text-dim);">consistent under-predicts offset (mean -1.40°C, std 0.00°C) — likely different station/source vs Polymarket</td></tr></tbody>
       </table>
       </div>
     </div>
@@ -955,7 +966,7 @@ function sortTable(colIdx) {
           <th>📊 Mean før</th><th>📊 Mean etter</th>
           <th>🛡️ P5 før</th><th>🛡️ P5 etter</th>
         </tr></thead>
-        <tbody><tr><td><strong>n≥5</strong></td><td>973</td><td>1.0986</td><td>0.9867</td><td>97W/876L (10.0%)</td><td>173W/800L (17.8%)</td><td>248W/725L (25.5%)</td><td>291W/682L (29.9%)</td><td>30W/943L (3.1%)</td><td>69W/904L (7.1%)</td></tr><tr><td><strong>n≥8</strong></td><td>821</td><td>1.0734</td><td>0.9277</td><td>73W/748L (8.9%)</td><td>133W/688L (16.2%)</td><td>206W/615L (25.1%)</td><td>249W/572L (30.3%)</td><td>20W/801L (2.4%)</td><td>53W/768L (6.5%)</td></tr><tr><td><strong>n≥10</strong></td><td>722</td><td>1.0514</td><td>0.9023</td><td>65W/657L (9.0%)</td><td>118W/604L (16.3%)</td><td>182W/540L (25.2%)</td><td>218W/504L (30.2%)</td><td>15W/707L (2.1%)</td><td>49W/673L (6.8%)</td></tr></tbody>
+        <tbody><tr><td><strong>n≥5</strong></td><td>136</td><td>0.9398</td><td>0.9882</td><td>15W/121L (11.0%)</td><td>28W/108L (20.6%)</td><td>40W/96L (29.4%)</td><td>44W/92L (32.4%)</td><td>6W/130L (4.4%)</td><td>13W/123L (9.6%)</td></tr><tr><td><strong>n≥8</strong></td><td>11</td><td>0.3545</td><td>0.4648</td><td>1W/10L (9.1%)</td><td>8W/3L (72.7%)</td><td>8W/3L (72.7%)</td><td>6W/5L (54.5%)</td><td>0W/11L (0.0%)</td><td>4W/7L (36.4%)</td></tr><tr><td><strong>n≥10</strong></td><td>0</td><td>None</td><td>None</td><td>0W/0L (0.0%)</td><td>0W/0L (0.0%)</td><td>0W/0L (0.0%)</td><td>0W/0L (0.0%)</td><td>0W/0L (0.0%)</td><td>0W/0L (0.0%)</td></tr></tbody>
       </table>
       </div>
     </div>

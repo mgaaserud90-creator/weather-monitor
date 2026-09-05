@@ -44,6 +44,7 @@ INDEX_FILE = Path(_SCRIPT_DIR) / "index.html"
 PEAK_DETECTION_FILE = Path(_SCRIPT_DIR) / "_peak_detection.html"
 PEAK_VERIFICATION_LOG = Path(_SCRIPT_DIR) / "_peak_verification_log.json"
 PEAK_DEVIATION_LOG = Path(_SCRIPT_DIR) / "_peak_deviation_log.json"
+MODIFIED_LOG_FILE = Path(_SCRIPT_DIR) / "_modified_strategy_log.json"
 
 # Market edge computation (BMA vs Polymarket)
 try:
@@ -115,6 +116,18 @@ def _load_log() -> dict:
         except (json.JSONDecodeError, KeyError):
             pass
     return {"runs": []}
+
+
+def _load_modified_totals() -> tuple[int, int]:
+    """Return (wins, losses) for the Modifisert strategy from its log."""
+    if MODIFIED_LOG_FILE.exists():
+        try:
+            data = json.loads(MODIFIED_LOG_FILE.read_text(encoding="utf-8"))
+            overall = data.get("overall", {})
+            return int(overall.get("wins", 0)), int(overall.get("losses", 0))
+        except (json.JSONDecodeError, KeyError, TypeError, OSError):
+            pass
+    return 0, 0
 
 
 def _tally_from_predictions(runs: list) -> dict:
@@ -599,6 +612,9 @@ def _generate_report() -> str:
     lines.append(f"Dager kjørt: {total_days}")
     lines.append("")
 
+    modified_wins, modified_losses = _load_modified_totals()
+    modified_total = modified_wins + modified_losses
+
     lines.append("📊 PER-STRATEGI RESULTATER (KUMULATIV):")
     lines.append(f"   🎯 Sigma (μ−kσ): V:{sigma_wins} T:{sigma_losses}  "
                  f"({round(sigma_wins/max(1,sigma_total)*100,1)}%)")
@@ -606,6 +622,8 @@ def _generate_report() -> str:
                  f"({round(p5_wins/max(1,p5_total)*100,1)}%)")
     lines.append(f"   📊 Mean-basert:   V:{mean_wins} T:{mean_losses}  "
                  f"({round(mean_wins/max(1,mean_total)*100,1)}%)")
+    lines.append(f"   🧪 Modifisert:    V:{modified_wins} T:{modified_losses}  "
+                 f"({round(modified_wins/max(1,modified_total)*100,1)}%)")
     lines.append("")
 
     # Per-city 3-strategy W/L with min-sample.
@@ -1113,23 +1131,53 @@ def _build_strategy_summary_cards(
     p5_wins: int, p5_losses: int,
     mean_wins: int, mean_losses: int,
 ) -> str:
-    """Build summary card grid for the mean strategy (mean-only presentation)."""
-    mean_total = mean_wins + mean_losses
-    mean_rate = round(mean_wins / max(1, mean_total) * 100, 1)
+    """Build the cumulative per-strategy performance table (4 rows).
 
-    def _rate_color(r):
+    Rows: Sigma (μ−kσ), P5, Mean and Modifisert (the modified strategy).
+    The modified strategy's W/L is read from ``_modified_strategy_log.json``.
+    """
+    modified_wins, modified_losses = _load_modified_totals()
+
+    def _rate(w: int, l: int) -> tuple[int, float]:
+        total = w + l
+        return total, (round(w / total * 100, 1) if total else 0.0)
+
+    def _rate_color(r: float) -> str:
         if r >= 60:
             return "#3fb950"
         elif r >= 50:
             return "#d2991d"
         return "#f85149"
 
+    sigma_total, sigma_rate = _rate(sigma_wins, sigma_losses)
+    p5_total, p5_rate = _rate(p5_wins, p5_losses)
+    mean_total, mean_rate = _rate(mean_wins, mean_losses)
+    mod_total, mod_rate = _rate(modified_wins, modified_losses)
+
+    def _row(icon: str, name: str, w: int, l: int, total: int, rate: float) -> str:
+        return (
+            f'<tr><td>{icon} {name}</td><td>{w}</td><td>{l}</td>'
+            f'<td style="color:{_rate_color(rate)};font-weight:600;">{rate}%</td>'
+            f'<td>{total}</td></tr>'
+        )
+
     return f"""
-   <div class="card-grid">
-     <div class="card">
-       <div class="value" style="color: {_rate_color(mean_rate)};">{mean_rate}%</div>
-       <div class="label">📊 Mean-Basert<br/>{mean_wins}W / {mean_losses}L</div>
-     </div>
+   <div class="section">
+     <h2>📊 Per-Strategi Resultater — Kumulativ (4 strategier)</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       Kumulativ W/L på tvers av alle dager. WIN = vår bøtte == Polymarkets resolusjon.
+       Modifisert er den nye 4. strategien: per-by fjerning av upresise/inkonsistente
+       providere, invers-MSE-vekting og per-by korreksjon.
+     </p>
+     <table>
+       <thead><tr><th>Strategi</th><th>Wins</th><th>Losses</th><th>Win Rate</th><th>Resolved</th></tr></thead>
+       <tbody>
+         {_row("🎯", "Sigma (μ−kσ)", sigma_wins, sigma_losses, sigma_total, sigma_rate)}
+         {_row("🛡️", "P5-Basert", p5_wins, p5_losses, p5_total, p5_rate)}
+         {_row("📊", "Mean-Basert", mean_wins, mean_losses, mean_total, mean_rate)}
+         {_row("🧪", "Modifisert", modified_wins, modified_losses, mod_total, mod_rate)}
+       </tbody>
+     </table>
    </div>"""
 
 

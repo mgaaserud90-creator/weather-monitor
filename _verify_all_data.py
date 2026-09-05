@@ -170,6 +170,32 @@ def verify_resolved_markets():
         check(False, f"JSON parse error: {e}")
 
 
+def verify_modified_strategy():
+    """Verify the Modifisert strategy outputs (_modified_strategy_log.json + HTML)."""
+    print("\n--- Modifisert strategy outputs ---")
+    log_path = _SCRIPT_DIR / "_modified_strategy_log.json"
+    html_path = _SCRIPT_DIR / "_modified_strategy_report.html"
+    check(log_path.exists(), "_modified_strategy_log.json exists", "warn")
+    check(html_path.exists(), "_modified_strategy_report.html exists", "warn")
+
+    if not log_path.exists():
+        return
+    try:
+        data = json.loads(log_path.read_text(encoding="utf-8"))
+        overall = data.get("overall", {})
+        wins = int(overall.get("wins", 0))
+        losses = int(overall.get("losses", 0))
+        bets = int(overall.get("bets", 0))
+        check(bets == wins + losses, f"W/L reconciles: {wins}W + {losses}L = {bets} bets")
+        check(len(data.get("records", [])) > 0, f"Has {len(data.get('records', []))} backtest records")
+        check(len(data.get("cities", {})) > 0, f"Has {len(data.get('cities', {}))} city configs")
+        meta = data.get("meta", {})
+        print(f"  Modifisert: {wins}W/{losses}L "
+              f"({meta.get('avg_providers_removed_per_city', 0)} providers removed/city avg)")
+    except Exception as e:
+        check(False, f"JSON parse error: {e}")
+
+
 def verify_accuracy():
     """Verify _model_accuracy_log.json."""
     print("\n--- _model_accuracy_log.json ---")
@@ -228,6 +254,7 @@ def main():
     verify_market_prices()
     verify_peak_verification()
     verify_resolved_markets()
+    verify_modified_strategy()
 
     print(f"\n{'='*60}")
     print(f"  RESULTS: {CHECKS['pass']}[OK] {CHECKS['warn']}[WARN] {CHECKS['fail']}[FAIL]")
