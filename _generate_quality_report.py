@@ -654,7 +654,43 @@ def _generate_report() -> str:
     lines.append("═" * 60)
     lines.append("")
 
+    lines.extend(_peak_vs_resolution_markdown_lines())
+
     return "\n".join(lines)
+
+
+def _peak_vs_resolution_markdown_lines() -> list[str]:
+    """Markdown: cumulative PEAK vs RESOLUTION section (read from the log)."""
+    data = _load_peak_deviation_data()
+    cities = data.get("cities", {}) or {}
+    global_stats = data.get("global", {}) or {}
+
+    lines: list[str] = []
+    lines.append("🌡️ PEAK vs RESOLUTION — KUMULATIV")
+    lines.append("")
+    if global_stats.get("n"):
+        g = global_stats
+        lines.append(
+            f"   Samples: {g.get('n')}  ·  Bias (snitt avvik): {float(g.get('bias_c', 0) or 0):+.3f}°C  ·  "
+            f"MAE: {float(g.get('mae_c', 0) or 0):.3f}°C  ·  RMSE: {float(g.get('rmse_c', 0) or 0):.3f}°C  ·  "
+            f"Std: {float(g.get('std_gap_c', 0) or 0):.3f}°C"
+        )
+        lines.append("")
+    lines.append(f"   {'By':<24s} {'n':>3s} {'Bias °C':>9s} {'MAE':>7s} {'RMSE':>7s} {'Std':>7s}  Flagg")
+    ordered = sorted(
+        cities.items(), key=lambda kv: (-abs(float(kv[1].get("bias_c", 0) or 0)), kv[0].lower())
+    )
+    for city, stats in ordered:
+        bias = float(stats.get("bias_c", 0) or 0)
+        std = float(stats.get("std_gap_c", 0) or 0)
+        flag = "STASJONSBIAS" if abs(bias) >= 0.75 and std <= 0.75 else ""
+        lines.append(
+            f"   {city:<24s} {stats.get('n', 0):>3d} {bias:>+9.2f} "
+            f"{float(stats.get('mae_c', 0) or 0):>7.2f} {float(stats.get('rmse_c', 0) or 0):>7.2f} "
+            f"{std:>7.2f}  {flag}"
+        )
+    lines.append("")
+    return lines
 
 
 # =============================================================================
@@ -3055,6 +3091,241 @@ def _build_city_3strategy_section(runs: list) -> str:
    </div>"""
 
 
+def _load_edge_enhancer_backtest() -> dict:
+    path = Path(_SCRIPT_DIR) / "_edge_enhancer_backtest.json"
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def _load_city_diagnostics() -> dict:
+    path = Path(_SCRIPT_DIR) / "_city_error_diagnostics.json"
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def _build_peak_vs_resolution_html_section() -> str:
+    """HTML: cumulative PEAK vs RESOLUTION with per-city bias table."""
+    data = _load_peak_deviation_data()
+    cities = data.get("cities", {})
+    global_stats = data.get("global", {})
+    if not cities:
+        return ""
+
+    def _f(v):
+        try:
+            return f"{float(v):+.2f}"
+        except (TypeError, ValueError):
+            return "—"
+
+    g_n = int(global_stats.get("n", 0) or 0)
+    ordered = sorted(
+        cities.items(),
+        key=lambda kv: (-abs(float(kv[1].get("bias_c", 0) or 0)), kv[0].lower()),
+    )
+
+    rows = ""
+    station_cities: list[str] = []
+    for city, stats in ordered:
+        bias = float(stats.get("bias_c", 0) or 0)
+        std = float(stats.get("std_gap_c", 0) or 0)
+        is_station = abs(bias) >= 0.75 and std <= 0.75
+        if is_station:
+            station_cities.append(city)
+        flag = '<span style="color:#f85149;font-weight:700;">⚠️ stasjonsbias</span>' if is_station else ""
+        rows += (
+            f"<tr><td><strong>{city}</strong></td>"
+            f"<td>{stats.get('n', 0)}</td>"
+            f"<td>{_f(bias)}</td>"
+            f"<td>{_f(stats.get('mae_c'))}</td>"
+            f"<td>{_f(stats.get('rmse_c'))}</td>"
+            f"<td>{_f(std)}</td>"
+            f"<td>{flag}</td></tr>"
+        )
+
+    note = ""
+    if station_cities:
+        note = (
+            '<p style="color:#f85149;font-size:0.85rem;margin-top:10px;">'
+            f"⚠️ Stasjonsbias-kandidater (|bias| ≥ 0.75 °C og std ≤ 0.75 °C): "
+            f"{', '.join(station_cities[:12])}"
+            + (" …" if len(station_cities) > 12 else "")
+            + "</p>"
+        )
+
+    return f"""
+    <div class="section" style="border-color: rgba(88, 166, 255, 0.45);">
+      <h2>🌡️ PEAK vs RESOLUTION — Kumulativ</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        Kumulativt avvik mellom vår predikerte peak (Open-Meteo arkiv) og Polymarkets
+        resolusjon, normalisert til °C. Bias = gjennomsnittlig signert avvik (positiv =
+        vi overpredikerer). Sortert etter absolutt bias.
+      </p>
+      <div class="card-grid" style="margin-bottom: 16px;">
+        <div class="card">
+          <div class="value" style="color: var(--blue);">{g_n}</div>
+          <div class="label">Samples</div>
+        </div>
+        <div class="card">
+          <div class="value" style="color: var(--purple);">{_f(global_stats.get('bias_c'))}</div>
+          <div class="label">Bias (snitt avvik °C)</div>
+        </div>
+        <div class="card">
+          <div class="value">{_f(global_stats.get('mae_c'))}</div>
+          <div class="label">MAE °C</div>
+        </div>
+        <div class="card">
+          <div class="value">{_f(global_stats.get('rmse_c'))}</div>
+          <div class="label">RMSE °C</div>
+        </div>
+        <div class="card">
+          <div class="value">{_f(global_stats.get('std_gap_c'))}</div>
+          <div class="label">Std °C</div>
+        </div>
+      </div>
+      <div style="max-height: 640px; overflow-y: auto;">
+      <table>
+        <thead><tr><th>By</th><th>n</th><th>Bias °C</th><th>MAE °C</th><th>RMSE °C</th><th>Std °C</th><th>Flagg</th></tr></thead>
+        <tbody>{rows}</tbody>
+      </table>
+      </div>
+      {note}
+    </div>"""
+
+
+def _build_city_diagnostics_html_section() -> str:
+    """HTML: city miss-cause diagnostics (top offenders + summary)."""
+    diag = _load_city_diagnostics()
+    cities = diag.get("cities", [])
+    if not cities:
+        return ""
+    summary = diag.get("summary", {})
+    rows = ""
+    for r in cities[:12]:
+        color = "#f85149" if r["classification"] == "STATION_BIAS" else (
+            "#d2991d" if r["classification"] == "HIGH_VARIANCE" else "#3fb950"
+        )
+        rows += (
+            f"<tr><td><strong>{r['city']}</strong></td>"
+            f"<td>{r['n']}</td>"
+            f"<td>{r['mean_error_c']:+.2f}</td>"
+            f"<td>{r['mae_c']:.2f}</td>"
+            f"<td>{r['std_error_c']:.2f}</td>"
+            f'<td style="color:{color};font-weight:700;">{r["classification"]}</td>'
+            f'<td style="color:var(--text-dim);">{r["cause"]}</td></tr>'
+        )
+    return f"""
+    <div class="section" style="border-color: rgba(248, 81, 73, 0.4);">
+      <h2>🔬 MISS-CAUSE DIAGNOSTICS — Hvorfor bommer byene?</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        STATION_BIAS = konsistent offset (feil stasjon/kilde vs Polymarket) ·
+        HIGH_VARIANCE = støy/spredning (modellfeil, ikke fast offset) · OK = innenfor toleranse.
+        Topp 12 verste byer vises; full tabell i <code>_city_error_diagnostics.csv</code>.
+      </p>
+      <div class="card-grid" style="margin-bottom: 16px;">
+        <div class="card">
+          <div class="value" style="color: var(--red);">{summary.get('n_station_bias', 0)}</div>
+          <div class="label">STATION_BIAS</div>
+        </div>
+        <div class="card">
+          <div class="value" style="color: var(--orange);">{summary.get('n_high_variance', 0)}</div>
+          <div class="label">HIGH_VARIANCE</div>
+        </div>
+        <div class="card">
+          <div class="value" style="color: var(--green);">{summary.get('n_ok', 0)}</div>
+          <div class="label">OK</div>
+        </div>
+      </div>
+      <div style="overflow-x: auto;">
+      <table>
+        <thead><tr><th>By</th><th>n</th><th>Mean err °C</th><th>MAE °C</th><th>Std °C</th><th>Klassifisering</th><th>Årsak</th></tr></thead>
+        <tbody>{rows}</tbody>
+      </table>
+      </div>
+    </div>"""
+
+
+def _build_edge_enhancer_html_section() -> str:
+    """HTML: edge-enhancer backtest before/after comparison."""
+    bt = _load_edge_enhancer_backtest()
+    backtest_data = bt.get("backtest", {})
+    if not backtest_data:
+        return ""
+    config = bt.get("config", {})
+
+    rows = ""
+    for ms, block in sorted(backtest_data.items(), key=lambda kv: int(kv[0])):
+        b = block.get("before", {})
+        a = block.get("after", {})
+
+        def _cell(sn):
+            before = b.get(sn, {})
+            after = a.get(sn, {})
+            return (
+                f"<td>{before.get('wins', 0)}W/{before.get('losses', 0)}L "
+                f"({before.get('rate', 0)}%)</td>"
+                f"<td>{after.get('wins', 0)}W/{after.get('losses', 0)}L "
+                f"({after.get('rate', 0)}%)</td>"
+            )
+
+        rows += (
+            f"<tr><td><strong>n≥{ms}</strong></td>"
+            f"<td>{block.get('n_applied', 0)}</td>"
+            f"<td>{b.get('mae', '—')}</td><td>{a.get('mae', '—')}</td>"
+            f"{_cell('sigma')}{_cell('mean')}{_cell('p5')}</tr>"
+        )
+
+    enabled = "PÅ" if config.get("enabled") else "AV"
+    return f"""
+    <div class="section" style="border-color: rgba(63, 185, 80, 0.4);">
+      <h2>⚡ EDGE ENHANCER — Bias-korreksjon (før / etter)</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        Walk-forward backtest over eksisterende historikk: hver bys bias beregnes kun fra
+        <em>tidligere</em> dager (ingen look-ahead). Status: <strong>{enabled}</strong> ·
+        min_sample={config.get('min_sample')} · cap={config.get('cap_c')}°C.
+      </p>
+      <div style="overflow-x: auto;">
+      <table>
+        <thead><tr>
+          <th>Min sample</th><th>Korrigerte bets</th>
+          <th>BMA-MAE før</th><th>BMA-MAE etter</th>
+          <th>🎯 Sigma før</th><th>🎯 Sigma etter</th>
+          <th>📊 Mean før</th><th>📊 Mean etter</th>
+          <th>🛡️ P5 før</th><th>🛡️ P5 etter</th>
+        </tr></thead>
+        <tbody>{rows}</tbody>
+      </table>
+      </div>
+    </div>"""
+
+
+def _build_daily_log_export_html_section() -> str:
+    """HTML: export links for the daily city log + diagnostics files."""
+    links = []
+    for name in (
+        "_daily_city_log.csv", "_daily_city_log.json",
+        "_city_error_diagnostics.csv", "_city_error_diagnostics.json",
+        "_peak_deviation_log.json", "_edge_enhancer_backtest.json",
+    ):
+        links.append(f'<a href="{name}" style="margin-right:14px;">⬇️ {name}</a>')
+    return f"""
+    <div class="section">
+      <h2>📦 Eksport / Full daglig logg</h2>
+      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+        Komplett by-per-dag logg (alle byer, alle dager, alle strategier) med prediksjon vs
+        resolusjon, avvik og vinn/tap.
+      </p>
+      <div style="font-size:0.9rem;">{''.join(links)}</div>
+    </div>"""
+
+
 def _generate_html_report() -> str:
     """Generate a self-contained HTML dashboard with dark theme and 3-strategy comparison."""
     log_data = _load_log()
@@ -3208,6 +3479,11 @@ def _generate_html_report() -> str:
                 last_pipeline_str = dt.strftime("%H:%M UTC")
             except Exception:
                 pass
+
+    peak_vs_resolution_section = _build_peak_vs_resolution_html_section()
+    city_diagnostics_section = _build_city_diagnostics_html_section()
+    edge_enhancer_section = _build_edge_enhancer_html_section()
+    daily_log_export_section = _build_daily_log_export_html_section()
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -3482,6 +3758,18 @@ function sortTable(colIdx) {{
 
   <!-- AVGJORTE RESULTATER -->
   {predictions_html}
+
+  <!-- PEAK vs RESOLUTION -->
+  {peak_vs_resolution_section}
+
+  <!-- MISS-CAUSE DIAGNOSTICS -->
+  {city_diagnostics_section}
+
+  <!-- EDGE ENHANCER -->
+  {edge_enhancer_section}
+
+  <!-- EXPORT / DAILY LOG -->
+  {daily_log_export_section}
 
 </div>
 <footer>

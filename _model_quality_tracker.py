@@ -89,6 +89,23 @@ MAX_RAPID_RUNTIME_HOURS = 4  # Max runtime for rapid polling (fits GH 6h limit)
 RAPID_POLL_INTERVAL_MINUTES = 3  # Poll every 3 min during peak windows
 MIN_SAMPLE = int(os.environ.get("MIN_SAMPLE", "5"))  # Min resolved bets before a per-city rate is shown
 
+# Edge enhancer (per-station bias correction). Default ON. Opt out with
+# EDGE_ENHANCER=0. Thresholds are read from the shared _edge_enhancer module.
+try:
+    from _edge_enhancer import (  # type: ignore[import-not-found]
+        EDGE_ENHANCER_ENABLED,
+        MIN_BIAS_SAMPLE,
+        BIAS_CAP_C,
+        live_city_bias,
+    )
+except Exception:  # pragma: no cover - module always shipped alongside
+    EDGE_ENHANCER_ENABLED = os.environ.get("EDGE_ENHANCER", "1").strip().lower() not in ("0", "false", "off", "no")
+    MIN_BIAS_SAMPLE = int(os.environ.get("EDGE_ENHANCER_MIN_SAMPLE", "5"))
+    BIAS_CAP_C = float(os.environ.get("EDGE_ENHANCER_CAP_C", "1.5"))
+
+    def live_city_bias(city: str) -> tuple[float | None, int, float]:
+        return None, 0, 0.0
+
 # Open-Meteo API endpoints
 CURRENT_WEATHER_URL = "https://api.open-meteo.com/v1/forecast"
 ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
@@ -125,6 +142,10 @@ class CityPrediction:
     mean_spill: int = 0
     p5_win_prob: float = 0.95
     mean_win_prob: float = 0.5
+
+    # Edge-enhancer bookkeeping (0.0 when the correction is off/unavailable).
+    bias_correction: float = 0.0   # °C subtracted from the BMA mean
+    mean_corrected: float = 0.0     # BMA mean after bias correction
 
 
 # =============================================================================
@@ -565,8 +586,19 @@ async def run_bma_for_all(
         # Estimate std from P5-P95 range (normal approx: P95-P5 ≈ 2*1.645*σ = 3.29σ)
         std_c = (p95_c - p5_c) / 3.29 if p95_c > p5_c else max(1.0, abs(mean_c) * 0.05)
 
+        # ── Edge enhancer: per-station bias correction (default ON) ──
+        # Subtract the city's historical mean peak-vs-resolution error before
+        # computing strategy spills. The stored bma_mean/p5/p95 stay raw for
+        # transparency; the correction is recorded separately.
+        bias_c, bias_n, _bias_raw = live_city_bias(city)
+        if bias_c is None:
+            bias_c = 0.0
+        mean_corr = float(mean_c) - bias_c
+        p5_corr = float(p5_c) - bias_c
+        p95_corr = float(p95_c) - bias_c
+
         # Compute statistically optimal bet level (sigma-adjusted, replaces arbitrary floor/ceiling)
-        optimal = _compute_optimal_spill(mean_c, std_c, conf, p5_c, city_name=city)
+        optimal = _compute_optimal_spill(mean_corr, std_c, conf, p5_corr, city_name=city)
         spill = int(optimal["recommended"])
         k_used = float(optimal["k_used"])
 
@@ -600,6 +632,8 @@ async def run_bma_for_all(
             mean_spill=int(optimal["mean_spill"]),
             p5_win_prob=float(optimal["p5_win_prob"]),
             mean_win_prob=float(optimal["mean_win_prob"]),
+            bias_correction=round(bias_c, 3),
+            mean_corrected=round(mean_corr, 1),
         )
         predictions.append(pred)
 
@@ -1124,6 +1158,8 @@ def _preds_to_dict(predictions: list[CityPrediction], locations: list[SavedLocat
             "_target_date": p.target_date,
             "_uhi_adjustment": round(uhi, 1),
             "_lead_days": lead_days,
+            "_bias_correction": round(p.bias_correction, 3),
+            "_mean_corrected": round(p.mean_corrected, 1),
             "_features": {
                 "model_weighting": p.model_count >= 6,
                 "dynamic_k": p.optimal_k != 0.5,
@@ -2410,6 +2446,10 @@ async def daily_close_mode(target_date: str | None = None) -> None:
     # Generate daily markdown report
     _generate_markdown_report(log_data, entry)
 
+    # Regenerate cumulative peak-vs-resolution stats, daily city log,
+    # city error diagnostics and the edge-enhancer backtest.
+    _finalize_derived_outputs()
+
     # Print summary
     total_sigma = sigma_wins + sigma_losses
     total_p5 = p5_wins + p5_losses
@@ -2483,6 +2523,8 @@ def full_report_mode() -> None:
 
     # Generate full report file
     _generate_markdown_report(log_data, None)
+
+    _finalize_derived_outputs()
 
     print(f"\n  📄 Full rapport skrevet til _quality_report.md\n")
 
@@ -3091,8 +3133,54 @@ def _generate_markdown_report(log_data: dict, today_entry: dict | None) -> None:
         )
     lines.append("")
 
+    # -- PEAK vs RESOLUTION (cumulative) --
+    _append_peak_vs_resolution_markdown(lines)
+
     # Write
     REPORT_FILE.write_text("\n".join(lines), encoding="utf-8")
+
+
+def _append_peak_vs_resolution_markdown(lines: list[str]) -> None:
+    """Append the cumulative PEAK vs RESOLUTION section to the MD report.
+
+    Reads the persistent ``_peak_deviation_log.json`` (recomputed each run by
+    ``_peak_deviation_stats``) and renders the global stats plus a per-city
+    table sorted by absolute bias, flagging station-bias candidates.
+    """
+    try:
+        import _peak_deviation_stats  # type: ignore[import-not-found]  # local module
+        _peak_deviation_stats.main()
+        data = json.loads(
+            (Path(_SCRIPT_DIR) / "_peak_deviation_log.json").read_text(encoding="utf-8")
+        )
+    except Exception:
+        data = {}
+    cities = data.get("cities", {}) or {}
+    global_stats = data.get("global", {}) or {}
+
+    lines.append("## 🌡️ PEAK vs RESOLUTION — Cumulative")
+    lines.append("")
+    if global_stats.get("n"):
+        g = global_stats
+        lines.append(
+            f"- **Samples:** {g.get('n')}  ·  **Bias (mean deviation):** {g.get('bias_c', 0):+.3f}°C  ·  "
+            f"**MAE:** {g.get('mae_c', 0):.3f}°C  ·  **RMSE:** {g.get('rmse_c', 0):.3f}°C  ·  "
+            f"**Std:** {g.get('std_gap_c', 0):.3f}°C"
+        )
+        lines.append("")
+    lines.append("| City | n | Bias °C | MAE °C | RMSE °C | Std °C | Flag |")
+    lines.append("|------|---|---------|--------|---------|--------|------|")
+    ordered = sorted(
+        cities.items(), key=lambda kv: (-abs(float(kv[1].get("bias_c", 0) or 0)), kv[0].lower())
+    )
+    for city, stats in ordered:
+        bias = float(stats.get("bias_c", 0) or 0)
+        flag = "⚠️ station-bias" if abs(bias) >= 0.75 and float(stats.get("std_gap_c", 0) or 0) <= 0.75 else ""
+        lines.append(
+            f"| {city} | {stats.get('n', 0)} | {bias:+.2f} | {float(stats.get('mae_c', 0) or 0):.2f} | "
+            f"{float(stats.get('rmse_c', 0) or 0):.2f} | {float(stats.get('std_gap_c', 0) or 0):.2f} | {flag} |"
+        )
+    lines.append("")
 
 
 # =============================================================================
@@ -3696,7 +3784,25 @@ def backfill_mode() -> None:
     print(f"  Oppdaterte {updated} by-prediksjoner.")
     print(f"  Dager kjørt (unike): {log_data['cumulative'].get('total_days', 0)}")
     _generate_markdown_report(log_data, None)
+    _finalize_derived_outputs()
     print(f"  Rapport skrevet til _quality_report.md\n")
+
+
+def _finalize_derived_outputs() -> None:
+    """Regenerate all derived diagnostics/logs after the log has been saved.
+
+    Idempotent — each module rebuilds from ``_model_quality_log.json`` +
+    ``_peak_deviation_log.json`` and never double-counts. Exceptions are
+    swallowed so a diagnostics bug can never fail the main pipeline.
+    """
+    modules = ("_peak_deviation_stats", "_daily_city_log", "_diagnose_city_errors", "_edge_enhancer")
+    for mod_name in modules:
+        try:
+            mod = __import__(mod_name)
+            print(f"  🔄 {mod_name} — regenerating derived outputs")
+            mod.main()
+        except Exception as exc:  # pragma: no cover - defensive
+            print(f"  ⚠️ {mod_name} failed (non-fatal): {exc}")
 
 
 def main() -> None:

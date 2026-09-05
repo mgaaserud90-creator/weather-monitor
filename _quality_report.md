@@ -7,9 +7,9 @@ Generert: 2026-09-05
 Dager kjørt: 26
 
 📊 PER-STRATEGI RESULTATER (KUMULATIV):
-   🎯 Sigma (μ−kσ): V:121 T:1169  (9.4%)
-   🛡️ P5-basert:     V:71 T:1219  (5.5%)
-   📊 Mean-basert:   V:355 T:935  (27.5%)
+   🎯 Sigma (μ−kσ): V:121 T:1171  (9.4%)
+   🛡️ P5-basert:     V:71 T:1221  (5.5%)
+   📊 Mean-basert:   V:357 T:935  (27.6%)
 
 🏙️ PER-BY 3-STRATEGI W/L (KUMULATIV, MIN-SAMPLE):
    By                                      Sigma               P5             Mean
@@ -17,7 +17,7 @@ Dager kjørt: 26
    Ankara, TR                   0W/25L (0.0%, n=25) 1W/24L (4.0%, n=25) 4W/21L (16.0%, n=25)
    Atlanta, US                  0W/25L (0.0%, n=25) 0W/25L (0.0%, n=25) 1W/24L (4.0%, n=25)
    Austin, US                   0W/26L (0.0%, n=26) 0W/26L (0.0%, n=26) 5W/21L (19.2%, n=26)
-   Beijing, CN                  1W/23L (4.2%, n=24) 1W/23L (4.2%, n=24) 5W/19L (20.8%, n=24)
+   Beijing, CN                  1W/25L (3.8%, n=26) 1W/25L (3.8%, n=26) 7W/19L (26.9%, n=26)
    Buenos Aires, AR             2W/23L (8.0%, n=25) 2W/23L (8.0%, n=25) 9W/16L (36.0%, n=25)
    Busan, KR                    0W/26L (0.0%, n=26) 0W/26L (0.0%, n=26) 5W/21L (19.2%, n=26)
    Cape Town, ZA                3W/22L (12.0%, n=25) 1W/24L (4.0%, n=25) 7W/18L (28.0%, n=25)
@@ -70,7 +70,7 @@ Dager kjørt: 26
    Amsterdam, NL                       ⏳        ⏳        ⏳              —
    Ankara, TR                          ⏳        ⏳        ⏳              —
    Austin, US                          ❌        ❌        ❌        94-95°F
-   Beijing, CN                         ⏳        ⏳        ⏳              —
+   Beijing, CN                         ❌        ❌        ✅           33°C
    Busan, KR                           ❌        ❌        ❌           29°C
    Cape Town, ZA                       ⏳        ⏳        ⏳              —
    Chengdu, CN                         ⏳        ⏳        ⏳              —
@@ -78,7 +78,7 @@ Dager kjørt: 26
    Chongqing, CN                       ⏳        ⏳        ⏳              —
    Dallas, US                          ❌        ❌        ❌        98-99°F
    Denver, US                          ❌        ❌        ❌        92-93°F
-   Guangzhou, CN                       ❌        ❌        ❌           35°C
+   Guangzhou, CN                       ⏳        ⏳        ⏳              —
    Helsinki, FI                        ⏳        ⏳        ⏳              —
    Hong Kong, HK                       ❌        ❌        ❌           32°C
    Houston, US                         ❌        ❌        ❌        90-91°F
@@ -113,3 +113,59 @@ Dager kjørt: 26
    Zhengzhou, CN                       ❌        ❌        ❌           31°C
 
 ════════════════════════════════════════════════════════════
+
+🌡️ PEAK vs RESOLUTION — KUMULATIV
+
+   Samples: 147  ·  Bias (snitt avvik): -0.462°C  ·  MAE: 0.995°C  ·  RMSE: 1.306°C  ·  Std: 1.225°C
+
+   By                         n   Bias °C     MAE    RMSE     Std  Flagg
+   Wellington, NZ             1     -2.60    2.60    2.60    0.00  STASJONSBIAS
+   Zhengzhou, CN              3     -2.40    2.40    2.78    1.71  
+   Shenzhen, CN               1     -2.20    2.20    2.20    0.00  STASJONSBIAS
+   Taipei, TW                 1     -2.10    2.10    2.10    0.00  STASJONSBIAS
+   Guangzhou, CN              1     -1.90    1.90    1.90    0.00  STASJONSBIAS
+   San Francisco, US          4     -1.62    1.62    2.18    1.68  
+   Wuhan, CN                  1     +1.60    1.60    1.60    0.00  STASJONSBIAS
+   Austin, US                 4     -1.60    1.60    2.03    1.44  
+   Munich, DE                 4     -1.55    1.60    2.31    1.97  
+   Tokyo, JP                  1     -1.50    1.50    1.50    0.00  STASJONSBIAS
+   Chengdu, CN                1     -1.40    1.40    1.40    0.00  STASJONSBIAS
+   Chongqing, CN              1     -1.40    1.40    1.40    0.00  STASJONSBIAS
+   Seattle, US                5     +1.40    1.64    2.09    1.73  
+   Mexico City, MX            4     -1.38    1.38    1.46    0.57  STASJONSBIAS
+   Atlanta, US                3     -1.32    1.38    1.78    1.46  
+   Houston, US                4     -1.31    1.31    1.57    1.01  
+   Warsaw, PL                 3     -1.13    1.13    1.27    0.71  STASJONSBIAS
+   Helsinki, FI               3     -1.10    1.10    1.19    0.56  STASJONSBIAS
+   Hong Kong, HK              2     +1.10    1.10    1.17    0.57  STASJONSBIAS
+   Shanghai, CN               1     -1.10    1.10    1.10    0.00  STASJONSBIAS
+   Manila, PH                 1     -1.00    1.00    1.00    0.00  STASJONSBIAS
+   Qingdao, CN                1     +1.00    1.00    1.00    0.00  STASJONSBIAS
+   Lucknow, IN                1     -0.90    0.90    0.90    0.00  STASJONSBIAS
+   Los Angeles, US            4     -0.85    1.10    1.35    1.21  
+   Busan, KR                  1     -0.80    0.80    0.80    0.00  STASJONSBIAS
+   Dallas, US                 6     +0.75    0.75    0.80    0.31  STASJONSBIAS
+   Sao Paulo, BR              6     -0.73    0.97    1.00    0.74  
+   Madrid, ES                 8     -0.71    0.71    0.81    0.41  
+   New York, US               2     +0.58    0.75    0.95    1.06  
+   Istanbul, TR               3     +0.53    1.00    1.06    1.12  
+   Moscow, RU                 6     -0.53    1.13    1.20    1.17  
+   Karachi, PK                1     +0.50    0.50    0.50    0.00  
+   Panama City, PA            2     +0.50    0.80    0.94    1.13  
+   Seoul (Incheon), KR        1     -0.50    0.50    0.50    0.00  
+   Amsterdam, NL              3     -0.43    0.50    0.70    0.68  
+   Miami, US                  6     -0.35    1.21    1.40    1.49  
+   Denver, US                 4     +0.35    1.15    1.30    1.45  
+   Ankara, TR                 4     -0.28    0.33    0.48    0.45  
+   London, UK                 6     -0.22    0.88    1.14    1.22  
+   Beijing, CN                1     +0.20    0.20    0.20    0.00  
+   Jeddah, SA                 3     -0.20    0.67    0.67    0.78  
+   Kuala Lumpur, MY           1     +0.20    0.20    0.20    0.00  
+   Toronto, CA                3     -0.17    0.17    0.21    0.15  
+   Buenos Aires, AR           7     -0.16    0.59    0.64    0.67  
+   Milan, IT                  3     -0.13    0.40    0.41    0.47  
+   Singapore, SG              1     +0.10    0.10    0.10    0.00  
+   Chicago, US                4     -0.08    0.42    0.45    0.51  
+   Cape Town, ZA              3     +0.03    0.90    0.99    1.21  
+   Paris, FR                  3     +0.03    0.23    0.25    0.31  
+   Tel Aviv, IL               4     -0.03    0.17    0.19    0.22  

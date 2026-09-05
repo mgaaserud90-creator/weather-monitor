@@ -353,6 +353,33 @@ def compute_global_aggregates(samples: list[dict]) -> dict:
     }
 
 
+def compute_daily_aggregates(samples: list[dict]) -> list[dict]:
+    """Recompute the per-day global deviation time series (°C-normalised).
+
+    One entry per distinct date with n, mean signed gap (°C) and MAE (°C).
+    This is the "time series of deviations per day" persisted into the log.
+    """
+    by_date: dict[str, list[float]] = defaultdict(list)
+    for sample in samples:
+        try:
+            by_date[sample["date"]].append(float(sample["gap_c"]))
+        except (KeyError, TypeError, ValueError):
+            continue
+
+    daily: list[dict] = []
+    for date_str in sorted(by_date):
+        gaps = by_date[date_str]
+        n = len(gaps)
+        mean = sum(gaps) / n
+        daily.append({
+            "date": date_str,
+            "n": n,
+            "mean_gap_c": _round(mean),
+            "mae_c": _round(sum(abs(g) for g in gaps) / n),
+        })
+    return daily
+
+
 def _recompute_and_write(samples_by_key: dict) -> dict:
     """Sort the samples and write the log with recomputed aggregates."""
     samples = sorted(
@@ -363,12 +390,14 @@ def _recompute_and_write(samples_by_key: dict) -> dict:
         sorted(cities.items(), key=lambda item: (-item[1]["n"], item[0].lower()))
     )
     global_stats = compute_global_aggregates(samples)
+    daily = compute_daily_aggregates(samples)
 
     output = {
         "updated": datetime.now(timezone.utc).isoformat(),
         "samples": samples,
         "cities": ordered_cities,
         "global": global_stats,
+        "daily": daily,
     }
 
     with open(PEAK_DEVIATION_LOG, "w", encoding="utf-8") as fh:
