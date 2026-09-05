@@ -164,6 +164,9 @@ jobs:
       - name: Generate peak detection page
         run: python3 _generate_quality_report.py --peak
 
+      - name: Generate modified strategy (today + backfill)
+        run: python3 _modified_strategy.py
+
       - name: Generate recommended bets (Anbefalt spill)
         continue-on-error: true
         run: python3 _recommended_bets.py
@@ -191,6 +194,7 @@ jobs:
             _pnl_log.json _edge_enhancer_backtest.json
             _quality_report.md _quality_report.html _all_cities.html
             index.html _peak_detection.html
+            _modified_strategy_log.json _modified_strategy_report.html
             _recommended_bets.json _anbefalt_spill.html
           push_options: '--force-with-lease'
 

@@ -76,6 +76,8 @@ PER_CITY_CURVEFIT_FILE = SCRIPT_DIR / "_per_city_curvefit.json"
 PROVIDER_ANALYSIS_FILE = SCRIPT_DIR / "_provider_analysis.md"
 MODIFIED_LOG_FILE = SCRIPT_DIR / "_modified_strategy_log.json"
 MODIFIED_HTML_FILE = SCRIPT_DIR / "_modified_strategy_report.html"
+QUALITY_LOG_FILE = SCRIPT_DIR / "_model_quality_log.json"
+DAILY_CITY_LOG_FILE = SCRIPT_DIR / "_daily_city_log.json"
 
 # ── Removal thresholds (documented, derived from _provider_analysis.md) ──
 MISSER_BIAS_THRESHOLD = 1.0       # |bias| >= 1.0 °C
@@ -180,6 +182,68 @@ def load_curvefit(path: Path = PER_CITY_CURVEFIT_FILE) -> dict[str, dict]:
 def load_predictions(path: Path = WEIGHTED_PREDICTIONS_FILE) -> dict:
     """Return the full ``_weighted_mean_predictions.json`` payload."""
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def load_latest_bma_predictions(path: Path = QUALITY_LOG_FILE) -> dict[str, dict]:
+    """Return {city: prediction} from the latest run in ``_model_quality_log.json``.
+
+    This is the fallback forecast source for today when today's per-provider
+    values are not present in ``_weighted_mean_predictions.json``. The BMA mean
+    is stored in °C (the project's internal unit, see ``_model_quality_tracker``).
+    """
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+    runs = data.get("runs", []) or []
+    if not runs:
+        return {}
+    return runs[-1].get("predictions", {}) or {}
+
+
+def resolve_today_str() -> str:
+    """Return the pipeline's "today" target date.
+
+    Prefers the latest date present in ``_daily_city_log.json`` — the exact
+    date ``_recommended_bets.py`` uses for its Sigma/P5/Mean rows — so the
+    modified strategy's today bucket always lines up with the other strategies.
+    Falls back to the UTC calendar date.
+    """
+    if DAILY_CITY_LOG_FILE.exists():
+        try:
+            data = json.loads(DAILY_CITY_LOG_FILE.read_text(encoding="utf-8"))
+            dates = sorted({str(r.get("date", "")) for r in data.get("rows", []) if r.get("date")})
+            if dates:
+                return dates[-1]
+        except (json.JSONDecodeError, OSError):
+            pass
+    return datetime.now(timezone.utc).date().isoformat()
+
+
+def _match_city_key(city: str, mapping: dict[str, dict]) -> dict | None:
+    """Match a city name against a mapping keyed by city, with fuzzy fallback."""
+    if city in mapping:
+        return mapping[city]
+    base = city.split(",")[0].strip().lower()
+    if not base:
+        return None
+    for key, value in mapping.items():
+        if key.split(",")[0].strip().lower() == base:
+            return value
+    for key, value in mapping.items():
+        kbase = key.split(",")[0].strip().lower()
+        if kbase and (base in kbase or kbase in base):
+            return value
+    return None
+
+
+def _to_float(value: Any) -> float | None:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def load_market_details() -> dict[tuple[str, str], dict]:
@@ -297,6 +361,39 @@ def recompute_weights(
     return {k: round(v * 100.0, 2) for k, v in weights.items()}
 
 
+def build_cities_config(
+    provider_stats: dict[str, dict[str, dict]],
+    curvefit: dict[str, dict],
+    decisions: dict[str, list[dict]],
+) -> dict[str, dict]:
+    """Assemble the per-city static strategy configuration.
+
+    For every city this stores the removed providers, the recomputed remaining
+    provider weights (percentages) and the city's best correction model +
+    parameters. This is the self-contained recipe used for both historical
+    backfill rows and today's modified spill.
+    """
+    cities_cfg: dict[str, dict] = {}
+    for city, stats in provider_stats.items():
+        cf = curvefit.get(city, {})
+        removed = decisions.get(city, [])
+        removed_keys = {r["provider_key"] for r in removed}
+        weights_pct = recompute_weights(stats, removed_keys)
+        method, params, params_source = correction_params(cf)
+        cities_cfg[city] = {
+            "unit": cf.get("unit", "C"),
+            "verdict": cf.get("verdict", ""),
+            "removed": removed,
+            "remaining_weights": weights_pct,
+            "correction_method": method,
+            "correction_params": params,
+            "correction_params_source": params_source,
+            "wins": 0,
+            "losses": 0,
+        }
+    return cities_cfg
+
+
 # =============================================================================
 # Correction
 # =============================================================================
@@ -325,6 +422,123 @@ def apply_correction(method: str, params: dict[str, float], mean_c: float) -> fl
     if method == "linear":
         return params.get("a", 0.0) + params.get("b", 1.0) * mean_c
     return mean_c  # baseline
+
+
+def compute_today_records(
+    cities_cfg: dict[str, dict],
+    today_str: str,
+    predictions: list[dict],
+    bma_preds: dict[str, dict],
+) -> tuple[list[dict], dict]:
+    """Compute TODAY's modified spill for every city in the config.
+
+    Primary path  — per-provider daily-max values for ``today_str`` taken from
+    ``_weighted_mean_predictions.json`` (the Open-Meteo per-model archive the
+    project's analysis uses). The city's remaining providers are weighted with
+    the city's own ``remaining_weights`` (renormalized over the available
+    subset) and the city's correction model is applied.
+
+    Fallback path — today's BMA mean from the latest ``_model_quality_log.json``
+    run, corrected with the city's correction model. Used when today's
+    per-provider values are unavailable (the current situation for all cities
+    except Wellington, NZ).
+
+    The chosen path is recorded per row as ``today_source`` so the computation
+    is fully auditable. Spill is ``round(corrected_mean)`` in °C (native unit).
+    """
+    today_provider_rows: dict[str, dict] = {}
+    for rec in predictions:
+        if str(rec.get("date", "")) == today_str:
+            city = str(rec.get("city", "")).strip()
+            providers = rec.get("providers", {}) or {}
+            if city and providers:
+                today_provider_rows[city] = providers
+
+    records: list[dict] = []
+    summary: dict = {}
+
+    for city, cfg in sorted(cities_cfg.items()):
+        weights_pct = cfg.get("remaining_weights", {})
+        method = cfg.get("correction_method", "baseline")
+        params = cfg.get("correction_params", {})
+
+        weighted_mean: float | None = None
+        providers_used: list[str] = []
+        source = ""
+
+        # 1) Prefer today's per-provider values (Open-Meteo per-model source).
+        providers = today_provider_rows.get(city, {})
+        available = []
+        for key, raw in providers.items():
+            if key in weights_pct:
+                val = _to_float(raw)
+                if val is not None:
+                    available.append((key, val))
+        if available:
+            wsum = sum(weights_pct[key] for key, _ in available)
+            if wsum > 0:
+                weighted_mean = sum(weights_pct[key] * val for key, val in available) / wsum
+                providers_used = [key for key, _ in available]
+                source = "open_meteo_per_model"
+
+        # 2) Fallback to the latest-run BMA mean and apply the correction.
+        if weighted_mean is None:
+            bma_mean = None
+            entry = _match_city_key(city, bma_preds)
+            if isinstance(entry, dict):
+                bma_mean = _to_float(entry.get("bma_mean"))
+            if bma_mean is not None:
+                weighted_mean = bma_mean
+                source = "bma_mean_fallback"
+
+        if weighted_mean is None:
+            summary[city] = {
+                "date": today_str,
+                "spill": None,
+                "today_source": "unavailable",
+                "reason": "no per-provider values and no BMA mean for today",
+                "remaining_weights": weights_pct,
+                "correction_method": method,
+                "correction_params": params,
+            }
+            continue
+
+        corrected_mean = apply_correction(method, params, weighted_mean)
+        spill = int(round(corrected_mean))
+
+        record = {
+            "city": city,
+            "date": today_str,
+            "weighted_mean": round(weighted_mean, 4),
+            "correction_method": method,
+            "correction": round(corrected_mean, 4),
+            "corrected_mean": round(corrected_mean, 4),
+            "spill": spill,
+            "resolved": None,
+            "resolved_bucket": None,
+            "market_type": None,
+            "market_unit": cfg.get("unit"),
+            "result": None,
+            "plain_mean": None,
+            "plain_mean_spill": None,
+            "plain_mean_result": None,
+            "today_source": source,
+            "providers_used": providers_used,
+        }
+        records.append(record)
+        summary[city] = {
+            "date": today_str,
+            "spill": spill,
+            "today_source": source,
+            "providers_used": providers_used,
+            "weighted_mean": round(weighted_mean, 4),
+            "corrected_mean": round(corrected_mean, 4),
+            "correction_method": method,
+            "correction_params": params,
+            "remaining_weights": weights_pct,
+        }
+
+    return records, summary
 
 
 # =============================================================================
@@ -382,24 +596,7 @@ def build_log() -> dict:
     decisions = removal_decisions(provider_stats)
 
     # Per-city static configuration (removed providers + weights + correction).
-    cities_cfg: dict[str, dict] = {}
-    for city, stats in provider_stats.items():
-        cf = curvefit.get(city, {})
-        removed = decisions.get(city, [])
-        removed_keys = {r["provider_key"] for r in removed}
-        weights_pct = recompute_weights(stats, removed_keys)
-        method, params, params_source = correction_params(cf)
-        cities_cfg[city] = {
-            "unit": cf.get("unit", "C"),
-            "verdict": cf.get("verdict", ""),
-            "removed": removed,
-            "remaining_weights": weights_pct,
-            "correction_method": method,
-            "correction_params": params,
-            "correction_params_source": params_source,
-            "wins": 0,
-            "losses": 0,
-        }
+    cities_cfg = build_cities_config(provider_stats, curvefit, decisions)
 
     records: list[dict] = []
     for rec in predictions:
@@ -458,6 +655,16 @@ def build_log() -> dict:
             "plain_mean_result": plain_result,
         })
 
+    # ── Today's modified spill (per city, self-contained) ──
+    today_str = resolve_today_str()
+    today_records, today_summary = compute_today_records(
+        cities_cfg, today_str, predictions, load_latest_bma_predictions()
+    )
+    existing_pairs = {(r["city"], r["date"]) for r in records}
+    for tr in today_records:
+        if (tr["city"], tr["date"]) not in existing_pairs:
+            records.append(tr)
+
     # Per-city aggregates.
     cities_out: dict[str, dict] = {}
     for city, cfg in sorted(cities_cfg.items()):
@@ -509,6 +716,7 @@ def build_log() -> dict:
             "win_rule": "WIN iff spill matches the resolved bucket (project _spill_vs_polymarket_result / _spill_vs_threshold_result)",
             "n_cities_with_config": len(cities_out),
             "n_cities_with_bets": sum(1 for c in cities_out.values() if c["bets"] > 0),
+            "n_cities_with_today_spill": sum(1 for v in today_summary.values() if v.get("spill") is not None),
             "avg_providers_removed_per_city": round(removed_total / len(cities_out), 2) if cities_out else 0.0,
             "total_providers_removed": removed_total,
         },
@@ -523,6 +731,17 @@ def build_log() -> dict:
             "plain_mean_win_rate": round(plain_wins / plain_bets * 100, 1) if plain_bets else None,
         },
         "cities": cities_out,
+        "today": {
+            "date": today_str,
+            "computed_at": _now_iso(),
+            "source_priority": (
+                "1) today's per-provider values from _weighted_mean_predictions.json "
+                "(Open-Meteo per-model source); 2) latest-run BMA mean from "
+                "_model_quality_log.json + city correction (fallback). "
+                "Each city's chosen path is recorded in rows[].today_source."
+            ),
+            "rows": today_summary,
+        },
         "records": records,
     }
 
