@@ -146,6 +146,9 @@ jobs:
         run: python3 _edge_enhancer.py
 
       # ---- e. reports + verification ------------------------------------------
+      - name: Generate full report (tracker)
+        run: python3 _model_quality_tracker.py --mode full_report
+
       - name: Generate MD report
         run: python3 _generate_quality_report.py
 
