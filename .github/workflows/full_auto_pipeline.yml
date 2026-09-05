@@ -1,0 +1,196 @@
+name: Full Auto Pipeline (v1)
+
+# The single comprehensive daily pipeline. Runs in the exact order the data
+# dependency graph requires and is idempotent, so it can be triggered repeatedly.
+#
+# Cron schedule (all UTC):
+#   30 16 * * *  → Asia daily close    (16:30 UTC = 00:30 Asia/Taipei next day)
+#   30 0  * * *  → Europe daily close  (00:30 UTC = 02:30 Europe/Paris next day)
+#   30 8  * * *  → Americas daily close(08:30 UTC = 04:30 America/New_York next day)
+#   0  12 * * *  → Backstop full run   (12:00 UTC — catch-all + daily_bma refresh)
+#
+# Step order:
+#   a. fetch predictions (hourly_active) + daily_close for the region that just closed
+#   b. fetch resolved Polymarket markets + backfill strategy resolutions
+#   c. fetch Wunderground real (finalized) daily max temperatures
+#   d. rebuild peak history → populate peak verify → peak deviation stats
+#      → city error diagnostics → daily city log → PnL ledger → edge enhancer
+#   e. generate MD/HTML reports → verify all data integrity
+#
+# Outputs are committed back to the repo by the auto-commit step below, which
+# also re-triggers the Pages deploy.
+
+on:
+  schedule:
+    - cron: '30 16 * * *'   # Asia daily close
+    - cron: '30 0 * * *'    # Europe daily close
+    - cron: '30 8 * * *'    # Americas daily close
+    - cron: '0 12 * * *'    # Backstop full run
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: full-auto-pipeline
+  cancel-in-progress: false
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Install dependencies
+        run: pip install httpx structlog tenacity pydantic pydantic-settings python-dotenv orjson redis
+
+      - name: Create minimal .env
+        run: |
+          cat > .env << 'EOF'
+          ENV=production
+          WEATHER_BMA_ENABLED=true
+          WEATHER_SATELLITE_ENABLED=false
+          WEATHER_ENSEMBLE_CONFIDENCE_FLOOR=0.5
+          EOF
+
+      - name: Determine region close date
+        id: close_date
+        shell: bash
+        run: |
+          HOUR=$(date -u +%H)
+          if [ "$HOUR" = "16" ]; then
+            CLOSE_DATE=$(date -u +%F)            # Asia: resolve today's entry
+          else
+            CLOSE_DATE=$(date -u -d 'yesterday' +%F)
+          fi
+          echo "close_date=$CLOSE_DATE" >> "$GITHUB_OUTPUT"
+          echo "UTC hour=$HOUR → close_date=$CLOSE_DATE"
+
+      # ---- a. fetch predictions + daily close --------------------------------
+      - name: Fetch predictions (hourly active)
+        run: python3 _model_quality_tracker.py --mode hourly_active
+
+      - name: Daily BMA refresh (backstop hour only)
+        shell: bash
+        run: |
+          if [ "$(date -u +%H)" = "12" ]; then
+            python3 _model_quality_tracker.py --mode daily_bma
+          else
+            echo "Skip daily_bma (runs at 12:00 UTC backstop)"
+          fi
+
+      - name: Run daily close (region)
+        run: python3 _model_quality_tracker.py --mode daily_close --date "${{ steps.close_date.outputs.close_date }}"
+
+      # ---- b. resolved markets + backfill ------------------------------------
+      - name: Fetch resolved markets (rolling 7 days)
+        run: |
+          DATES=$(python3 -c "
+          from datetime import date, timedelta
+          today = date.today()
+          print(' '.join((today - timedelta(days=i)).isoformat() for i in range(7)))
+          ")
+          echo "Fetching dates: $DATES"
+          python3 _fetch_resolved_markets.py --dates $DATES
+
+      - name: Backfill strategy resolutions
+        run: python3 _model_quality_tracker.py --mode backfill
+
+      # ---- c. Wunderground real resolutions -----------------------------------
+      - name: Fetch Wunderground real resolutions
+        run: python3 _fetch_wunderground_real.py
+
+      # ---- d. derived stats / diagnostics / logs ------------------------------
+      - name: Rebuild peak history
+        continue-on-error: true
+        run: python3 _rebuild_peak_history.py
+
+      - name: Populate peak verification
+        continue-on-error: true
+        run: python3 _populate_peak_verify.py
+
+      - name: Peak deviation stats
+        continue-on-error: true
+        run: python3 _peak_deviation_stats.py
+
+      - name: City error diagnostics
+        continue-on-error: true
+        run: python3 _diagnose_city_errors.py
+
+      - name: Daily city log
+        continue-on-error: true
+        run: python3 _daily_city_log.py
+
+      - name: PnL ledger
+        continue-on-error: true
+        run: python3 _pnl_tracker.py
+
+      - name: Edge enhancer backtest
+        continue-on-error: true
+        run: python3 _edge_enhancer.py
+
+      # ---- e. reports + verification ------------------------------------------
+      - name: Generate MD report
+        run: python3 _generate_quality_report.py
+
+      - name: Generate HTML dashboard
+        run: python3 _generate_quality_report.py --html
+
+      - name: Generate all-cities HTML
+        run: python3 _generate_quality_report.py --all-cities
+
+      - name: Generate index
+        run: python3 _generate_quality_report.py --index
+
+      - name: Generate peak detection page
+        run: python3 _generate_quality_report.py --peak
+
+      - name: Verify all data integrity
+        continue-on-error: true
+        run: python3 _verify_all_data.py
+
+      # ---- commit + deploy ----------------------------------------------------
+      - name: Sync before commit
+        env:
+          GIT_TERMINAL_PROMPT: '0'
+        run: git -c core.askPass=true pull --rebase --autostash origin main
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        continue-on-error: true
+        with:
+          commit_message: "Auto: full pipeline $(date -u +%Y-%m-%dT%H:%M)"
+          file_pattern: >
+            _model_quality_log.json _resolved_markets_log.json _resolved_markets.csv
+            _wunderground_real.json _wunderground_real.csv
+            _peak_verification_log.json _peak_deviation_log.json
+            _city_error_diagnostics.json _city_error_diagnostics.csv
+            _daily_city_log.json _daily_city_log.csv
+            _pnl_log.json _edge_enhancer_backtest.json
+            _quality_report.md _quality_report.html _all_cities.html
+            index.html _peak_detection.html
+          push_options: '--force-with-lease'
+
+      - name: Trigger deploy to GitHub Pages
+        if: success()
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/deploy_dashboard.yml/dispatches" \
+            -d '{"ref":"main"}'

@@ -1,33 +1,29 @@
 name: Model Quality Pipeline
 
-# Lightweight pipeline — minimal API calls.
+# Hourly prediction generator. Runs timezone-aware `hourly_active` once per hour
+# so every city gets fresh BMA predictions as soon as it enters its active
+# window (04:00 local → peak_end+2).
 #
-# Three cron triggers:
-#   0 0-22 * * *    → hourly_active  — Simple BMA + peak check once per hour.
-#                                      No rapid monitoring. ~50 API calls per run.
-#   0 2 * * *       → daily_close    — Second close for Americas (resolve ~01:00 UTC).
-#   0 23 * * *      → daily_close    — Resolve today's predictions against archive data.
-#
-# Push to main → trigger deploy_dashboard.yml for GitHub Pages
+# Daily resolution (daily_close), backfill, Wunderground real-resolution fetch,
+# peak history/verification/stats, diagnostics, daily city log, PnL ledger,
+# edge enhancer, report generation and data verification all live in
+# `full_auto_pipeline.yml` (Asia/Europe/Americas staggered UTC crons).
 
 on:
   push:
     branches: ["main", "master"]
   schedule:
-    - cron: '0 0-22 * * *'    # Hourly (00:00-22:00 UTC): simple BMA + peak check
-    - cron: '0 2 * * *'       # Second daily close at 02:00 UTC (Americas resolve ~01:00 UTC)
-    - cron: '0 23 * * *'      # Daily close at 23:00 UTC (NO hourly at 23:00 to avoid conflict)
+    - cron: '0 0-22 * * *'    # Hourly (00:00-22:00 UTC)
   workflow_dispatch:
     inputs:
       mode:
         description: 'Run mode'
         required: true
         type: choice
-        options: [hourly_active, daily_bma, hourly_check, daily_close, full_report]
+        options: [hourly_active, hourly_check]
 
 permissions:
   contents: write
-  actions: write
 
 concurrency:
   group: model-quality-pipeline
@@ -36,9 +32,7 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    # Hourly: 10 min (simple BMA + peak check)
-    # Daily close: 10 min (archive API)
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
@@ -61,82 +55,10 @@ jobs:
           WEATHER_ENSEMBLE_CONFIDENCE_FLOOR=0.5
           EOF
 
-      - name: Smoke test
-        run: |
-          python -u -c "import sys; sys.path.insert(0, '.'); from weather_monitor_cli import WeatherAnalyzer, LocationManager; print('Imports OK'); lm = LocationManager(); lm.reset_to_defaults(); print(f'Locations loaded: {lm.count}'); print('Smoke test PASSED')"
-
-      - name: Determine mode
-        id: mode
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" = "schedule" ]; then
-            HOUR=$(date +%H)
-            if [ "$HOUR" = "23" ] || [ "$HOUR" = "02" ]; then
-              MODE="daily_close"
-            else
-              MODE="hourly_active"
-            fi
-          else
-            MODE="${{ inputs.mode }}"
-            if [ -z "$MODE" ]; then
-              MODE="hourly_active"
-              echo "No mode provided, defaulting to hourly_active"
-            fi
-          fi
-          echo "mode=$MODE" >> $GITHUB_OUTPUT
-          echo "Running mode: $MODE at UTC $(date -u +%H:%M) (schedule: ${SCHEDULE:-manual})"
-
-      - name: Run tracker
+      - name: Run hourly active
         run: |
           set -x
-          MODE="${{ steps.mode.outputs.mode }}"
-          DATE_ARG=""
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "$MODE" = "daily_close" ] && [ "$(date -u +%H)" = "02" ]; then
-            DATE_ARG="--date $(date -u -d 'yesterday' +%F)"
-          fi
-          python -u _model_quality_tracker.py --mode "$MODE" $DATE_ARG
-
-      - name: Backfill strategy resolutions
-        run: python3 _model_quality_tracker.py --mode backfill
-
-      - name: Peak deviation stats (cumulative)
-        run: python3 _peak_deviation_stats.py
-
-      - name: PnL ledger
-        run: python3 _pnl_tracker.py
-
-      - name: Generate Dashboard HTML
-        run: python _generate_quality_report.py --html
-
-      - name: Generate All-Cities HTML
-        run: python _generate_quality_report.py --all-cities
-
-      - name: Verify all data integrity
-        run: python3 _verify_all_data.py
-
-      - name: Verify output files
-        run: |
-          set -x
-          echo "=== Verifying generated files ==="
-          for f in _model_quality_log.json _quality_report.md _quality_report.html _all_cities.html; do
-            if [ -f "$f" ]; then
-              echo "OK: $f ($(wc -c < "$f") bytes)"
-            else
-              echo "MISSING: $f"
-            fi
-          done
-          python -c "
-          import json
-          d = json.load(open('_model_quality_log.json'))
-          print(f'Runs in log: {len(d.get(\"runs\", d if isinstance(d, list) else []))}')
-          "
-
-      - name: Send SMS alerts
-        env:
-          TWILIO_SID: ${{ secrets.TWILIO_SID }}
-          TWILIO_TOKEN: ${{ secrets.TWILIO_TOKEN }}
-          TWILIO_FROM: ${{ secrets.TWILIO_FROM }}
-        run: python _sms_alert.py --check-and-send
+          python3 _model_quality_tracker.py --mode hourly_active
 
       - name: Sync before commit
         env:
@@ -146,15 +68,6 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v5
         continue-on-error: true
         with:
-          commit_message: "Auto: ${{ steps.mode.outputs.mode }} $(date -Iminutes)"
-          file_pattern: '_model_quality_log.json _quality_report.md _quality_report.html _all_cities.html _market_prices.json _peak_verification_log.json _resolved_markets_log.json _resolved_markets.csv _peak_deviation_log.json _pnl_log.json'
+          commit_message: "Auto: hourly active $(date -u +%Y-%m-%dT%H:%M)"
+          file_pattern: '_model_quality_log.json'
           push_options: '--force-with-lease'
-
-      - name: Trigger deploy to GitHub Pages
-        if: success()
-        run: |
-          curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/deploy_dashboard.yml/dispatches" \
-            -d '{"ref":"main"}'
