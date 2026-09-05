@@ -49,6 +49,12 @@ jobs:
             echo "Resolved markets collected: $COUNT"
           fi
 
+      - name: Install dependencies (backfill)
+        run: pip install httpx structlog tenacity pydantic pydantic-settings python-dotenv orjson redis
+
+      - name: Backfill strategy resolutions
+        run: python3 _model_quality_tracker.py --mode backfill
+
       - name: Sync before commit
         env:
           GIT_TERMINAL_PROMPT: '0'
@@ -58,5 +64,5 @@ jobs:
         continue-on-error: true
         with:
           commit_message: "Auto: resolved markets $(date -u +%Y-%m-%dT%H:%M)"
-          file_pattern: '_resolved_markets_log.json _resolved_markets.csv'
+          file_pattern: '_resolved_markets_log.json _resolved_markets.csv _model_quality_log.json _quality_report.md'
           push_options: '--force-with-lease'

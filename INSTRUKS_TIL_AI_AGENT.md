@@ -523,7 +523,7 @@ VærMonitor evaluerer **3 parallelle strategier** for hver by, hver dag:
 
 | # | Strategi | Formel | Win-sannsynlighet | Stil |
 |---|----------|--------|-------------------|------|
-| 🎯 | Sigma (μ−kσ) | `spill = ⌊μ − k×σ⌋` | 62-84% (avhengig av k) | **Adaptiv** — k justeres etter confidence |
+| 🎯 | Sigma (μ−kσ) | `spill = round(μ − k×σ)` | 62-84% (avhengig av k) | **Adaptiv** — k justeres etter confidence |
 | 🛡️ | P5-Basert | `spill = ⌊P5⌋` | ~95% | **Ultra-konservativ** — nesten garantert |
 | 📊 | Mean-Basert | `spill = ⌊μ⌋` | ~50% | **Balansert** — 50/50 |
 
@@ -531,7 +531,7 @@ VærMonitor evaluerer **3 parallelle strategier** for hver by, hver dag:
 
 **Formel:**
 ```
-spill = ⌊μ − k × σ⌋
+spill = round(μ − k × σ)
 
 hvor:
   μ  = BMA ensemble gjennomsnittstemperatur (°C)
@@ -712,7 +712,7 @@ Eksempler fra [`weather_monitor_defaults.json`](weather_monitor_defaults.json):
 | Filter | Formel | Beskrivelse |
 |--------|--------|-------------|
 | Dynamic k | `k = 0.3 if conf>0.8, 0.5 if conf>0.7, else 0.7` | Risikojustering |
-| Sigma spill | `spill = ⌊μ − k×σ⌋` | Primærstrategi |
+| Sigma spill | `spill = round(μ − k×σ)` | Primærstrategi |
 | P5 spill | `spill = ⌊P5⌋` | Ultra-konservativ |
 | Mean spill | `spill = ⌊μ⌋` | 50/50 referanse |
 | Win probability | `0.5 × (1 + erf((μ − T) / (σ × √2)))` | Normal CDF |

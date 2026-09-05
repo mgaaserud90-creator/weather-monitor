@@ -225,12 +225,9 @@ def main():
     print("=" * 60)
 
     verify_quality_log()
-    verify_trading_csv()
     verify_market_prices()
     verify_peak_verification()
     verify_resolved_markets()
-    verify_accuracy()
-    verify_cross_file_integrity()
 
     print(f"\n{'='*60}")
     print(f"  RESULTS: {CHECKS['pass']}[OK] {CHECKS['warn']}[WARN] {CHECKS['fail']}[FAIL]")

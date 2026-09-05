@@ -76,10 +76,35 @@ try:
     from _model_quality_tracker import (  # type: ignore[import-not-found]
         _load_market_resolved_details,
         _spill_vs_polymarket_result,
+        _spill_vs_threshold_result,
     )
     HAS_PM_RESOLUTION = True
 except ImportError:
     HAS_PM_RESOLUTION = False
+
+MIN_SAMPLE = int(os.environ.get("MIN_SAMPLE", "5"))  # Min resolved bets before a per-city rate is shown
+
+
+def _tally_all_strategies_city_records(runs: list) -> dict[str, dict]:
+    """Return {city: {strategy: {"wins": n, "losses": n}}} across all runs.
+
+    Sums every prediction directly so per-city totals reconcile with
+    ``_tally_from_predictions`` (no dedup).
+    """
+    tally: dict[str, dict] = {}
+    for run in runs:
+        for city, pdata in run.get("predictions", {}).items():
+            strategies = pdata.get("strategies", {}) or {}
+            rec = tally.setdefault(
+                city, {sn: {"wins": 0, "losses": 0} for sn in ("sigma", "p5", "mean")}
+            )
+            for sn in ("sigma", "p5", "mean"):
+                res = strategies.get(sn, {}).get("result")
+                if res == "WIN":
+                    rec[sn]["wins"] += 1
+                elif res == "LOSS":
+                    rec[sn]["losses"] += 1
+    return tally
 
 
 def _load_log() -> dict:
@@ -160,8 +185,10 @@ def _pm_market_info_for_city(city: str, target_date: str, resolved_markets: dict
 
 def _pm_market_display(market_info: dict | None) -> str:
     """Format the resolved Polymarket bucket/temp for the 'Marked' column."""
-    if not market_info or market_info.get("value") is None:
+    if not market_info:
         return "—"
+    if market_info.get("value") is None:
+        return str(market_info.get("bucket") or "—")
     unit = (market_info.get("unit") or "C").upper()
     if unit == "F" and market_info.get("lo_f") is not None and market_info.get("hi_f") is not None:
         return f"{int(market_info['lo_f'])}-{int(market_info['hi_f'])}°F"
@@ -176,6 +203,8 @@ def _spill_pm_result(spill, market_info: dict | None) -> str | None:
     if not HAS_PM_RESOLUTION or spill is None:
         return None
     try:
+        if market_info and market_info.get("type") == "threshold":
+            return _spill_vs_threshold_result(spill, market_info)
         return _spill_vs_polymarket_result(spill, market_info)
     except Exception:
         return None
@@ -304,15 +333,24 @@ def _build_city_pm_scoreboard(runs: list) -> list[dict]:
     for city, entry in tally.items():
         total_bets = entry["total_bets"]
         wins = entry["wins"]
+        if total_bets >= MIN_SAMPLE:
+            win_rate = round(wins / total_bets * 100, 1)
+            win_rate_display = f"{win_rate}% (n={total_bets})"
+        else:
+            win_rate = None
+            win_rate_display = f"N/A — not enough data (n={total_bets})"
         scoreboard.append({
             "city": city,
             "points": wins,
             "wins": wins,
             "total_bets": total_bets,
-            "win_rate": round(wins / max(1, total_bets) * 100, 1),
+            "win_rate": win_rate,
+            "win_rate_display": win_rate_display,
         })
 
-    scoreboard.sort(key=lambda d: (-d["points"], -d["win_rate"], d["city"]))
+    scoreboard.sort(
+        key=lambda d: (-d["points"], -(d["win_rate"] or -1.0), d["city"])
+    )
     return scoreboard
 
 
@@ -524,15 +562,14 @@ def _build_eligible_bets_html_section() -> str:
 
 
 def _generate_report() -> str:
-    """Generate the full report string."""
+    """Generate the full report string (concept metrics only)."""
     log_data = _load_log()
     runs = log_data.get("runs", [])
-    cum = log_data.get("cumulative", {})
 
     lines: list[str] = []
 
     lines.append("═" * 60)
-    lines.append("     MODELLKVALITET — KUMULATIV RAPPORT (MEAN-STRATEGI)")
+    lines.append("     MODELLKVALITET — KUMULATIV RAPPORT")
     lines.append("═" * 60)
     lines.append("")
 
@@ -545,8 +582,8 @@ def _generate_report() -> str:
         lines.append("")
         return "\n".join(lines)
 
-    # Aggregate per-strategy stats (recomputed from predictions, not the
-    # run-level summary which can go stale before daily_close).
+    total_days = len({r.get("run_date") for r in runs if r.get("run_date")})
+
     _tally = _tally_from_predictions(runs)
     sigma_wins = _tally["sigma_wins"]
     sigma_losses = _tally["sigma_losses"]
@@ -559,181 +596,60 @@ def _generate_report() -> str:
     p5_total = p5_wins + p5_losses
     mean_total = mean_wins + mean_losses
 
-    total_cities = sum(len(r.get("predictions", {})) for r in runs)
-
-    lines.append(f"Dager kjørt: {len(runs)}")
-    lines.append(f"Totalt by-prediksjoner: {total_cities}")
+    lines.append(f"Dager kjørt: {total_days}")
     lines.append("")
 
-    lines.append("📊 RESULTATER (MEAN-BASERT):")
-    lines.append(f"   📊 Mean-basert:    V:{mean_wins} T:{mean_losses}  "
+    lines.append("📊 PER-STRATEGI RESULTATER (KUMULATIV):")
+    lines.append(f"   🎯 Sigma (μ−kσ): V:{sigma_wins} T:{sigma_losses}  "
+                 f"({round(sigma_wins/max(1,sigma_total)*100,1)}%)")
+    lines.append(f"   🛡️ P5-basert:     V:{p5_wins} T:{p5_losses}  "
+                 f"({round(p5_wins/max(1,p5_total)*100,1)}%)")
+    lines.append(f"   📊 Mean-basert:   V:{mean_wins} T:{mean_losses}  "
                  f"({round(mean_wins/max(1,mean_total)*100,1)}%)")
     lines.append("")
 
-    # Cumulative per-city scoreboard: Mean(round) vs Polymarket.
-    pm_scoreboard = _build_city_pm_scoreboard(runs)
-    total_pm_points = sum(d["points"] for d in pm_scoreboard)
-    total_pm_bets = sum(d["total_bets"] for d in pm_scoreboard)
-    lines.append("🏆 CITY SCOREBOARD — MEAN(ROUND) vs POLYMARKET (KUMULATIV):")
-    if not pm_scoreboard:
-        lines.append("   Ingen resolvede byer registrert ennå.")
-    else:
-        lines.append(f"   {'#':>2s}  {'By':<28s} {'Poeng':>6s} {'V':>4s} {'Bets':>5s} {'Win%':>7s}")
-        for i, d in enumerate(pm_scoreboard, start=1):
-            lines.append(f"   {i:2d}. {d['city']:<28s} {d['points']:6d} "
-                         f"{d['wins']:4d} {d['total_bets']:5d} {d['win_rate']:6.1f}%")
-        lines.append(f"   Totalt: {total_pm_points} poeng / {total_pm_bets} resolvede spill "
-                     f"({round(total_pm_points/max(1,total_pm_bets)*100,1)}% win rate).")
+    # Per-city 3-strategy W/L with min-sample.
+    lines.append("🏙️ PER-BY 3-STRATEGI W/L (KUMULATIV, MIN-SAMPLE):")
+    lines.append(f"   {'By':<28s} {'Sigma':>16s} {'P5':>16s} {'Mean':>16s}")
+    for city, rec in sorted(_tally_all_strategies_city_records(runs).items()):
+        cells: list[str] = []
+        for sn in ("sigma", "p5", "mean"):
+            w = rec[sn]["wins"]
+            l = rec[sn]["losses"]
+            n = w + l
+            if n >= MIN_SAMPLE:
+                cells.append(f"{w}W/{l}L ({round(w/max(1,n)*100,1)}%, n={n})")
+            else:
+                cells.append(f"{w}W/{l}L (N/A — not enough data, n={n})")
+        lines.append(f"   {city:<28s} {cells[0]:>16s} {cells[1]:>16s} {cells[2]:>16s}")
     lines.append("")
 
-    # 💰 Edge & PnL ledger (P6)
-    lines.extend(_pnl_markdown_section(runs))
+    # Latest-day resolved table (AVGJORTE RESULTATER).
+    resolved_run = _pick_latest_resolved_run(runs)
+    resolved_preds = resolved_run.get("predictions", {})
+    resolved_target_date = resolved_run.get("target_date", resolved_run.get("run_date", ""))
+    resolved_markets = _load_pm_resolved_details()
 
-    # Best strategy (mean-only presentation)
-    mean_rate_pct = round(mean_wins / max(1, mean_total) * 100, 1)
-    lines.append(f"🏆 BESTE STRATEGI: Mean-basert ({mean_rate_pct}%)")
+    def _fmt(r):
+        return "✅" if r == "WIN" else ("❌" if r == "LOSS" else "⏳")
+
+    lines.append(f"📋 AVGJORTE RESULTATER — SISTE DAG ({resolved_target_date}):")
+    lines.append(f"   {'By':<28s} {'Sigma':>8s} {'P5':>8s} {'Mean':>8s} {'Marked':>14s}")
+    for city, pdata in sorted(resolved_preds.items()):
+        strategies = pdata.get("strategies", {}) or {}
+        sigma = strategies.get("sigma", {}) or {}
+        p5s = strategies.get("p5", {}) or {}
+        means = strategies.get("mean", {}) or {}
+        target = pdata.get("_target_date") or resolved_target_date
+        market_info = _pm_market_info_for_city(city, target, resolved_markets)
+        sigma_res = _spill_pm_result(sigma.get("spill"), market_info)
+        p5_res = _spill_pm_result(p5s.get("spill"), market_info)
+        mean_res = _spill_pm_result(means.get("spill"), market_info)
+        lines.append(
+            f"   {city:<28s} {_fmt(sigma_res):>8s} {_fmt(p5_res):>8s} {_fmt(mean_res):>8s} "
+            f"{_pm_market_display(market_info):>14s}"
+        )
     lines.append("")
-
-    # Per-city stats across all strategies
-    city_stats: dict[str, dict] = {}
-    for run in runs:
-        for city, pdata in run.get("predictions", {}).items():
-            if city not in city_stats:
-                city_stats[city] = {"sigma": {"wins": 0, "losses": 0},
-                                     "p5": {"wins": 0, "losses": 0},
-                                     "mean": {"wins": 0, "losses": 0}}
-            strategies = pdata.get("strategies", {})
-            for sn in ("sigma", "p5", "mean"):
-                s = strategies.get(sn, {})
-                if s.get("result") == "WIN":
-                    city_stats[city][sn]["wins"] += 1
-                elif s.get("result") == "LOSS":
-                    city_stats[city][sn]["losses"] += 1
-
-    # Cities with strategy divergence
-    lines.append("🔍 BYER MED STRATEGI-FORSKJELLER (>20pp):")
-    found = False
-    for city, stats in sorted(city_stats.items()):
-        sigma_t = stats["sigma"]["wins"] + stats["sigma"]["losses"]
-        p5_t = stats["p5"]["wins"] + stats["p5"]["losses"]
-        mean_t = stats["mean"]["wins"] + stats["mean"]["losses"]
-        if sigma_t < 2:
-            continue
-        sigma_r = stats["sigma"]["wins"] / sigma_t * 100
-        p5_r = stats["p5"]["wins"] / p5_t * 100 if p5_t > 0 else 0
-        mean_r = stats["mean"]["wins"] / mean_t * 100 if mean_t > 0 else 0
-        max_r = max(sigma_r, p5_r, mean_r)
-        min_r = min(sigma_r, p5_r, mean_r)
-        if max_r - min_r > 20:
-            found = True
-            best_s = "Sigma" if sigma_r == max_r else ("P5" if p5_r == max_r else "Mean")
-            lines.append(f"   {city:<30s} sigma={sigma_r:.0f}% p5={p5_r:.0f}% mean={mean_r:.0f}% → {best_s} best")
-    if not found:
-        lines.append("   Ingen signifikante forskjeller funnet.")
-    lines.append("")
-
-    # Flip recommendations
-    flip_count = 0
-    flip_wins = 0
-    for run in runs:
-        for city, pdata in run.get("predictions", {}).items():
-            rec = pdata.get("recommendation", "")
-            if rec and "SELG" in str(rec):
-                flip_count += 1
-                # Check if P5 would have won (i.e., flip would be profitable)
-                p5_result = pdata.get("strategies", {}).get("p5", {}).get("result", "")
-                if p5_result == "WIN":
-                    flip_wins += 1
-    if flip_count > 0:
-        lines.append(f"🔄 FLIP-ANBEFALINGER: {flip_count} totalt "
-                     f"({flip_wins} ville vært profitable via P5)")
-        lines.append("")
-
-    # Per-run table
-    lines.append("─" * 60)
-    lines.append("📋 PER DAG:")
-    lines.append("─" * 60)
-    for run in runs:
-        rd = run.get("run_date", "?")
-        _rt = _tally_from_predictions([run])
-        sw = _rt["sigma_wins"]
-        sl = _rt["sigma_losses"]
-        pw = _rt["p5_wins"]
-        pl = _rt["p5_losses"]
-        mw = _rt["mean_wins"]
-        ml = _rt["mean_losses"]
-        npred = len(run.get("predictions", {}))
-        if sw + sl > 0:
-            sr = round(sw / (sw + sl) * 100, 1)
-            lines.append(f"   {rd}  │  {npred:3d} byer  │  sigma={sw}/{sl} ({sr}%)  "
-                         f"p5={pw}/{pl}  mean={mw}/{ml}")
-        else:
-            lines.append(f"   {rd}  │  {npred:3d} byer  │  (ingen resultater)")
-
-    lines.append("")
-
-    # ── Peak Verification: all cities (Var vs Polymarket) ──
-    peak_rows, peak_counts, peak_show_date = _build_peak_verification_table()
-    if peak_rows:
-        lines.append(f"📋 PEAK VERIFICATION — SISTE DAG ({peak_show_date}) (VAR vs POLYMARKET):")
-        lines.append(
-            f"   OK: {peak_counts['OK']}  MINOR: {peak_counts['MINOR']}  "
-            f"STASJONSFEIL: {peak_counts['STASJONSFEIL']}  Venter: {peak_counts['Venter']}"
-        )
-        lines.append(
-            f"   {'By':<26s} {'Var':>8s} {'Marked':>10s} {'Gap':>8s} "
-            f"{'Status':<17s} {'Korr.faktor':>16s}"
-        )
-        for r in peak_rows:
-            lines.append(
-                f"   {r['city']:<26s} {r['our_str']:>8s} {r['market_str']:>10s} {r['gap_str']:>8s} "
-                f"{r['status']:<17s} {r['corr_str']:>16s}"
-            )
-        lines.append("")
-
-    # ── Peak deviation statistics (cumulative) ──
-    peak_dev = _load_peak_deviation_data()
-    peak_samples = peak_dev.get("samples", [])
-    if peak_samples:
-        def _d(value) -> str:
-            try:
-                return f"{float(value):+.2f}"
-            except (TypeError, ValueError):
-                return "—"
-
-        g = peak_dev.get("global", {})
-        lines.append("📈 AVVIKSSTATISTIKK (KUMULATIV) — VAR PEAK vs POLYMARKET:")
-        try:
-            overall_mae = f"{float(g.get('mae_c', 0)):.2f}"
-        except (TypeError, ValueError):
-            overall_mae = "—"
-        lines.append(
-            f"   OVERALL DEVIATION FACTOR (MAE, alle dager): {overall_mae}°C "
-            f"(bias {_d(g.get('bias_c'))}°C, n={g.get('n', 0)})"
-        )
-        lines.append(
-            f"   n={g.get('n', 0)}  bias/snitt={_d(g.get('bias_c'))}°C  "
-            f"std={_d(g.get('std_gap_c'))}°C  MAE={_d(g.get('mae_c'))}°C  "
-            f"RMSE={_d(g.get('rmse_c'))}°C"
-        )
-        peak_cities = peak_dev.get("cities", {})
-        if peak_cities:
-            lines.append(
-                f"   {'By':<28s} {'n':>4s} {'Bias°C':>9s} {'Std':>7s} "
-                f"{'Min':>7s} {'Max':>7s} {'Siste':>7s}"
-            )
-            for city, c in sorted(peak_cities.items()):
-                lines.append(
-                    f"   {city:<28s} {c.get('n', 0):4d} {_d(c.get('bias_c')):>9s} "
-                    f"{_d(c.get('std_gap_c')):>7s} {_d(c.get('min_gap_c')):>7s} "
-                    f"{_d(c.get('max_gap_c')):>7s} {_d(c.get('last_gap_c')):>7s}"
-                )
-        lines.append("")
-
-    # ── Per-city strategy recommendation + Resultant Monitor ──
-    best_per_city = _get_best_strategy_per_city(runs)
-    resultant_lines = _build_resultant_monitor_lines(best_per_city)
-    lines.extend(resultant_lines)
 
     lines.append("═" * 60)
     lines.append("")
@@ -1439,11 +1355,10 @@ def _build_city_win_rate_section(runs: list) -> str:
     city_rates: list[tuple] = []
     for city, wl in city_wl.items():
         total = wl["wins"] + wl["losses"]
-        if total >= 2:
-            rate = round(wl["wins"] / total * 100, 1)
-            city_rates.append((city, wl["wins"], wl["losses"], rate, total))
+        rate = round(wl["wins"] / total * 100, 1) if total >= MIN_SAMPLE else None
+        city_rates.append((city, wl["wins"], wl["losses"], rate, total))
 
-    city_rates.sort(key=lambda x: (-x[3], -x[4], x[0]))
+    city_rates.sort(key=lambda x: (x[3] is None, -(x[3] or 0.0), -x[4], x[0]))
     if not city_rates:
         return ""
 
@@ -1453,11 +1368,16 @@ def _build_city_win_rate_section(runs: list) -> str:
     best_rows = ""
     for i, (city, w, l, rate, total) in enumerate(best):
         icon = "🥇" if i == 0 else ("🥈" if i == 1 else ("🥉" if i == 2 else f"{i+1}."))
-        rate_color = "#3fb950" if rate >= 60 else ("#d2991d" if rate >= 40 else "#f85149")
+        if rate is None:
+            rate_cell = "N/A — not enough data"
+            rate_color = "#8b949e"
+        else:
+            rate_cell = f"{rate}% (n={total})"
+            rate_color = "#3fb950" if rate >= 60 else ("#d2991d" if rate >= 40 else "#f85149")
         best_rows += (
             f'<tr><td>{icon}</td><td><strong>{city}</strong></td>'
             f'<td>{w}W/{l}L</td>'
-            f'<td style="color:{rate_color};font-weight:600;">{rate}%</td></tr>'
+            f'<td style="color:{rate_color};font-weight:600;">{rate_cell}</td></tr>'
         )
 
     best_cities = {c for c, *_rest in best}
@@ -1465,11 +1385,16 @@ def _build_city_win_rate_section(runs: list) -> str:
     worst_rows = ""
     for (city, w, l, rate, total) in worst:
         rank = rank_of[city]
-        rate_color = "#f85149" if rate < 40 else "#d2991d"
+        if rate is None:
+            rate_cell = "N/A — not enough data"
+            rate_color = "#8b949e"
+        else:
+            rate_cell = f"{rate}% (n={total})"
+            rate_color = "#f85149" if rate < 40 else "#d2991d"
         worst_rows += (
             f'<tr><td>{rank}.</td><td><strong>{city}</strong></td>'
             f'<td>{w}W/{l}L</td>'
-            f'<td style="color:{rate_color};font-weight:600;">{rate}%</td></tr>'
+            f'<td style="color:{rate_color};font-weight:600;">{rate_cell}</td></tr>'
         )
 
     return f"""
@@ -3095,6 +3020,41 @@ def _build_expandable_market_section_html() -> str:
     </div>"""
 
 
+def _build_city_3strategy_section(runs: list) -> str:
+    """HTML section: per-city cumulative W/L for sigma/p5/mean with min-sample."""
+    recs = _tally_all_strategies_city_records(runs)
+    rows = ""
+    for city, rec in sorted(recs.items()):
+        cells: list[str] = []
+        for sn in ("sigma", "p5", "mean"):
+            w = rec[sn]["wins"]
+            l = rec[sn]["losses"]
+            n = w + l
+            if n >= MIN_SAMPLE:
+                pct = round(w / n * 100, 1)
+                rate = f"{pct}%"
+                rate_color = "#3fb950" if pct >= 60 else ("#d2991d" if pct >= 40 else "#f85149")
+            else:
+                rate = "N/A — not enough data"
+                rate_color = "#8b949e"
+            cells.append(f'<td>{w}W/{l}L (n={n})</td><td style="color:{rate_color};font-weight:600;">{rate}</td>')
+        rows += f'<tr><td><strong>{city}</strong></td>' + "".join(cells) + "</tr>"
+    return f"""
+   <div class="section">
+     <h2>🏙️ Per-City 3-Strategy W/L (Cumulative)</h2>
+     <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
+       Kumulativ per by på tvers av alle dager. Rater vises kun med minst {MIN_SAMPLE}
+       avgjorte spill; ellers "N/A — not enough data". Sample size (n) vises for alle.
+     </p>
+     <div style="overflow-x: auto;">
+     <table>
+       <thead><tr><th>City</th><th>Sigma W/L</th><th>Sigma Rate</th><th>P5 W/L</th><th>P5 Rate</th><th>Mean W/L</th><th>Mean Rate</th></tr></thead>
+       <tbody>{rows}</tbody>
+     </table>
+     </div>
+   </div>"""
+
+
 def _generate_html_report() -> str:
     """Generate a self-contained HTML dashboard with dark theme and 3-strategy comparison."""
     log_data = _load_log()
@@ -3109,8 +3069,6 @@ def _generate_html_report() -> str:
             actual = pdata.get("strategies", {}).get("sigma", {}).get("actual_peak")
             if actual:
                 peak_data[city] = actual
-
-    best_per_city = _get_best_strategy_per_city(runs)
 
     # Aggregate per-strategy stats (recomputed from predictions, not the
     # run-level summary which can go stale before daily_close).
@@ -3127,79 +3085,7 @@ def _generate_html_report() -> str:
     mean_total = mean_wins + mean_losses
     overall_total = mean_total  # Mean is the only strategy shown
 
-    # Count unique dates
-    unique_dates = set()
-    for r in runs:
-        rd = r.get("run_date", "")
-        if rd:
-            unique_dates.add(rd)
-    total_days = len(unique_dates)
-
-    # Avg confidence (sigma strategy)
-    all_conf_w: list[float] = []
-    all_conf_l: list[float] = []
-    for run in runs:
-        for pdata in run.get("predictions", {}).values():
-            sigma = pdata.get("strategies", {}).get("sigma", {})
-            if sigma.get("result") == "WIN":
-                all_conf_w.append(pdata.get("confidence", 0))
-            elif sigma.get("result") == "LOSS":
-                all_conf_l.append(pdata.get("confidence", 0))
-    avg_conf_w = round(sum(all_conf_w) / max(1, len(all_conf_w)), 3)
-    avg_conf_l = round(sum(all_conf_l) / max(1, len(all_conf_l)), 3)
-
-    # Per confidence tier (sigma strategy, 4 tiers)
-    tiers = [
-        {"pos": 0, "wins": 0, "label": ">80%", "icon": "🟢", "lo": 0.8, "hi": 1.0},
-        {"pos": 0, "wins": 0, "label": "70-80%", "icon": "🟠", "lo": 0.7, "hi": 0.8},
-        {"pos": 0, "wins": 0, "label": "60-70%", "icon": "🔴", "lo": 0.6, "hi": 0.7},
-        {"pos": 0, "wins": 0, "label": "<60%", "icon": "🔴", "lo": 0.0, "hi": 0.6},
-    ]
-
-    for run in runs:
-        for pdata in run.get("predictions", {}).values():
-            sigma = pdata.get("strategies", {}).get("sigma", {})
-            result = sigma.get("result", "")
-            conf = pdata.get("confidence", 0)
-            if result in ("WIN", "LOSS"):
-                for t in tiers:
-                    if t["lo"] <= conf < t["hi"] or (t["hi"] == 1.0 and conf >= 0.8):
-                        t["pos"] += 1
-                        if result == "WIN":
-                            t["wins"] += 1
-                        break
-
-    tier_rows = ""
-    for t in tiers:
-        losses = t["pos"] - t["wins"]
-        wr = round(t["wins"] / max(1, t["pos"]) * 100, 1) if t["pos"] > 0 else 0
-        tier_rows += f"""
-            <tr>
-                <td>{t['icon']} {t['label']}</td>
-                <td>{t['pos']}</td>
-                <td>{t['wins']}</td>
-                <td>{losses}</td>
-                <td>{wr}%</td>
-            </tr>"""
-
-    # Recent daily results
-    daily_rows = ""
-    recent = sorted(runs, key=lambda r: r.get("run_date", ""), reverse=True)[:14]
-    for r in recent:
-        _rt = _tally_from_predictions([r])
-        sw = _rt["sigma_wins"]
-        sl = _rt["sigma_losses"]
-        pw = _rt["p5_wins"]
-        pl = _rt["p5_losses"]
-        mw = _rt["mean_wins"]
-        ml = _rt["mean_losses"]
-        phase = r.get("phase", "?")
-        sigma_rate = round(sw / max(1, sw + sl) * 100, 1) if (sw + sl) > 0 else "—"
-        sigma_rate_str = f"{sigma_rate}%" if isinstance(sigma_rate, (int, float)) else str(sigma_rate)
-        phase_badge = {"daily_bma": "🔮 BMA", "hourly_check": "⏱️ hourly",
-                       "rapid_peak_monitor": "⚡ rapid", "daily_close": "🔒 closed"}.get(phase, phase)
-        daily_rows += f"""
-                <tr><td>{r['run_date']}</td><td>{phase_badge}</td><td>{sw}/{sl}</td><td>{pw}/{pl}</td><td>{mw}/{ml}</td><td>{sigma_rate_str}</td></tr>"""
+    total_days = len({r.get("run_date") for r in runs if r.get("run_date")})
 
     # ── Top 5 predictions section (multi-day: I DAG + I MORGEN) ──
     predictions_html = ""
@@ -3216,32 +3102,6 @@ def _generate_html_report() -> str:
         target_date = latest_run.get("target_date", latest_run.get("run_date", ""))
         resolved_preds = resolved_run.get("predictions", {})
         resolved_target_date = resolved_run.get("target_date", resolved_run.get("run_date", ""))
-
-        # ── Day 1: I DAG ──
-        if top5_cities:
-            top5_rows = _build_top5_rows_html(preds, top5_cities[:5], peak_data)
-            flip_section = _build_flip_recommendations_section(preds, top5_cities[:5])
-            strategy_comparison = _build_strategy_comparison_section(preds)
-            divergence_section = _build_city_divergence_section(preds)
-
-            predictions_html += f"""
-    <div class="section">
-      <h2>📅 TOP 5 — I DAG ({target_date})</h2>
-      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
-        Siste dags prediksjoner (ikke kumulativ) — kumulativ scoreboard vises øverst.
-        All 3 strategies shown: 🎯 Sigma (μ−kσ, dynamic k), 🛡️ P5-Basert (ultra-conservative), 📊 Mean-Basert (50/50)
-      </p>
-      <div style="overflow-x: auto;">
-      <table>
-        <thead><tr><th>#</th><th>City</th><th>BMA μ</th><th>Sigma Pos</th><th>P5 Pos</th><th>Mean Pos</th><th>Conf</th><th>Models</th><th>📡 Peak | Marked</th><th>Sigma</th><th>P5</th><th>Mean</th><th>Rec</th></tr></thead>
-        <tbody>{top5_rows}
-        </tbody>
-      </table>
-      </div>
-    </div>
-    {flip_section}
-    {divergence_section}
-    {strategy_comparison}"""
 
         # ── RESOLVED RESULTS section (show all cities' outcomes for the LATEST day) ──
         resolved_markets = _load_pm_resolved_details()
@@ -3324,12 +3184,8 @@ def _generate_html_report() -> str:
         sigma_wins, sigma_losses, p5_wins, p5_losses, mean_wins, mean_losses
     )
 
-    # Cumulative per-city scoreboard: Mean(round) vs Polymarket
-    mean_pm_section = _build_mean_pm_winners_html(_build_city_pm_scoreboard(runs))
-
-    # 💰 Edge & PnL ledger (P6) + 🎯 GODE ODDS eligible bets (P1)
-    pnl_section = _build_pnl_html_section(runs)
-    eligible_bets_section = _build_eligible_bets_html_section()
+    # Per-city 3-strategy W/L with min-sample
+    per_city_3way_section = _build_city_3strategy_section(runs)
 
     # Overall win rate uses the mean strategy (mean-only presentation)
     overall_win_rate = round(mean_wins / max(1, mean_total) * 100, 1)
@@ -3352,46 +3208,6 @@ def _generate_html_report() -> str:
                 last_pipeline_str = dt.strftime("%H:%M UTC")
             except Exception:
                 pass
-
-    # ── Today vs Tomorrow separation ──
-    today_tomorrow_section = _build_today_tomorrow_section(runs)
-
-    # ── Edge-maximizing metric sections ──
-    city_win_rate_section = _build_city_win_rate_section(runs)
-    model_agreement_section = _build_model_agreement_section(runs)
-    range_accuracy_section = _build_range_accuracy_section(runs)
-    optimal_strat_section = _build_optimal_strategy_by_confidence_section(runs)
-    cum_edge_section = _build_cumulative_edge_section(runs)
-    region_section = _build_region_performance_section(runs)
-    uhi_section = _build_uhi_accuracy_section(runs)
-    strat_rec_section = _build_strat_rec_html_section(best_per_city)
-
-    # ── Market Edge Section (BMA vs Polymarket) ──
-    market_edge_section = _build_market_edge_html_section(peak_data)
-
-    # ── Expandable Market Detail Section ──
-    expandable_market_section = _build_expandable_market_section_html()
-
-    # ── Edge Validation Section (Real vs Imagined) ──
-    edge_validation_section = _build_edge_validation_html_section(runs)
-
-    # ── Resolution Arbitrage Section (Post-Peak) ──
-    resolution_arb_section = _build_resolution_arbitrage_html_section()
-
-    # ── Arbitrage Stats Section (Win/Loss Tracking) ──
-    arbitrage_stats_section = _build_arbitrage_stats_html_section(runs)
-
-    # ── Madrid Arbitrage Highlight ──
-    madrid_arb_section = _build_madrid_arbitrage_highlight(runs)
-
-    # ── Peak Verification: Var vs Polymarket ──
-    peak_verification_section = _build_peak_verification_html_section()
-
-    # ── Peak Deviation Statistics (cumulative) ──
-    peak_deviation_section = _build_peak_deviation_html_section()
-
-    # ── PM Strategy Results: Anbefalt Spill vs Polymarket ──
-    pm_strategy_section = _build_pm_strategy_html_section()
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -3656,102 +3472,16 @@ function sortTable(colIdx) {{
       <div class="value" style="color: {win_color};">{overall_win_rate}%</div>
       <div class="label">Overall Win Rate (Mean)</div>
     </div>
-    <div class="card">
-      <div class="value" style="color: var(--text);">{avg_conf_w:.3f} / {avg_conf_l:.3f}</div>
-      <div class="label">Avg Conf (Winners / Losers)</div>
-    </div>
   </div>
 
   <!-- PER-STRATEGY PERFORMANCE CARDS -->
   {strategy_cards}
 
-  <!-- MEAN(ROUND) VS POLYMARKET WINNERS -->
-  {mean_pm_section}
+  <!-- PER-CITY 3-STRATEGY W/L -->
+  {per_city_3way_section}
 
-  <!-- EDGE & PNL LEDGER -->
-  {pnl_section}
-
-  <!-- GODE ODDS: ELIGIBLE BETS -->
-  {eligible_bets_section}
-
-  <!-- TODAY VS TOMORROW SEPARATION -->
-  {today_tomorrow_section}
-
-  <!-- RESOLUTION ARBITRAGE: Post-Peak -->
-  {resolution_arb_section}
-
-  <!-- MADRID ARBITRAGE HIGHLIGHT -->
-  {madrid_arb_section}
-
-  <!-- PEAK VERIFICATION: Var vs Polymarket -->
-  {peak_verification_section}
-
-  <!-- PEAK DEVIATION STATISTICS: Cumulative -->
-  {peak_deviation_section}
-
-  <!-- PM STRATEGY RESULTS: Anbefalt Spill vs Polymarket -->
-  {pm_strategy_section}
-
-  <!-- ARBITRAGE STATS: Win/Loss Tracking -->
-  {arbitrage_stats_section}
-
-  <!-- MARKET EDGE: BMA vs Polymarket -->
-  {market_edge_section}
-
-  <!-- EXPANDABLE MARKET DETAIL -->
-  {expandable_market_section}
-
-  <!-- TOP 5 PREDICTIONS -->
+  <!-- AVGJORTE RESULTATER -->
   {predictions_html}
-
-  <div class="section">
-    <h2>📊 WIN RATE BY CONFIDENCE (resolved markets only)</h2>
-    <table>
-      <thead><tr><th>Tier</th><th>Positions</th><th>Wins</th><th>Losses</th><th>Win Rate</th></tr></thead>
-      <tbody>{tier_rows if tier_rows.strip() else '<tr><td colspan="5" style="color: var(--text-dim);">No resolved results yet — predictions pending</td></tr>'}
-      </tbody>
-    </table>
-  </div>
-
-  <div class="section">
-    <h2>📋 Recent Daily Results (Last 14 Runs)</h2>
-    <div style="overflow-x: auto;">
-    <table>
-      <thead><tr><th>Date</th><th>Phase</th><th>Sigma W/L</th><th>P5 W/L</th><th>Mean W/L</th><th>Rate (Sigma)</th></tr></thead>
-      <tbody>{daily_rows if daily_rows else '<tr><td colspan="6" style="color: var(--text-dim);">No runs recorded yet</td></tr>'}
-      </tbody>
-    </table>
-    </div>
-  </div>
-
-  <div class="section">
-    <h2>⚡ Rapid Peak Monitoring Filters</h2>
-    <table>
-      <thead><tr><th>Filter</th><th>Condition</th><th>Adjustment</th></tr></thead>
-      <tbody>
-        <tr><td>💧 Humidity</td><td>>80% relative humidity</td><td>-8% confidence</td></tr>
-        <tr><td>💧 Humidity</td><td><40% relative humidity</td><td>+3% confidence</td></tr>
-        <tr><td>☁️ Cloud Cover</td><td>>70% cloud cover</td><td>-5% confidence</td></tr>
-        <tr><td>☁️ Cloud Cover</td><td><20% cloud cover</td><td>+3% confidence</td></tr>
-        <tr><td>🏙️ UHI</td><td>Urban Heat Island adjustment</td><td>+0.5–3.0°C to BMA prediction</td></tr>
-        <tr><td>💰 Kelly</td><td>Position sizing criterion</td><td>Optimal bet % of bankroll</td></tr>
-        <tr><td>🔗 Correlation</td><td>Cross-city correlation warnings</td><td>Reduce exposure if r >= 0.55</td></tr>
-        <tr><td>📊 Ensemble Spread</td><td>P5–P95 range tracking</td><td>Narrow spread = higher confidence</td></tr>
-        <tr><td>🚨 Alert Levels</td><td>INFO → MOMENTANT_OVER → ADVARSEL → KRITISK → BEKREFTET</td><td>Progressive alerting</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- EDGE-MAXIMIZING METRICS -->
-  {city_win_rate_section}
-  {model_agreement_section}
-  {range_accuracy_section}
-  {optimal_strat_section}
-  {cum_edge_section}
-  {region_section}
-  {uhi_section}
-  {strat_rec_section}
-  {edge_validation_section}
 
 </div>
 <footer>

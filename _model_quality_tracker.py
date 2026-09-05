@@ -87,6 +87,7 @@ MAX_LOG_DAYS = 90  # Keep last 90 days in log
 MAX_OBS_HISTORY = 144  # Max observations per city (~12 hours at 5-min, ample for GH)
 MAX_RAPID_RUNTIME_HOURS = 4  # Max runtime for rapid polling (fits GH 6h limit)
 RAPID_POLL_INTERVAL_MINUTES = 3  # Poll every 3 min during peak windows
+MIN_SAMPLE = int(os.environ.get("MIN_SAMPLE", "5"))  # Min resolved bets before a per-city rate is shown
 
 # Open-Meteo API endpoints
 CURRENT_WEATHER_URL = "https://api.open-meteo.com/v1/forecast"
@@ -222,7 +223,7 @@ def _compute_optimal_spill(
     else:
         k = 0.7   # Low confidence → conservative
 
-    sigma_spill = int(mean_c - k * std_c)
+    sigma_spill = int(round(mean_c - k * std_c))
     p5_spill = int(round(p5_c))
     mean_spill = int(round(mean_c))
 
@@ -249,7 +250,7 @@ def _compute_optimal_spill(
             k = k * (2.0 - calibration_factor)  # Adjust k
             k = max(0.1, min(1.5, k))  # Clamp
             # Recompute sigma_spill with calibrated k
-            sigma_spill = int(mean_c - k * std_c)
+            sigma_spill = int(round(mean_c - k * std_c))
             predicted_wp = win_prob(sigma_spill, mean_c, std_c)
 
     return {
@@ -307,101 +308,76 @@ def _today_iso() -> str:
 # Timezone-Region Mapping & Active Window Helpers
 # =============================================================================
 
-# Region → UTC offset mapping for all 51 cities.
-# Used for reporting (region grouping) and for computing local time.
-REGION_TZ_MAP: dict[str, dict[str, str | int | float]] = {
-    # ── ASIA (UTC+8/9) ──
-    "Tokyo, JP":               {"region": "ASIA", "utc_offset": 9},
-    "Seoul (Incheon), KR":     {"region": "ASIA", "utc_offset": 9},
-    "Shanghai, CN":            {"region": "ASIA", "utc_offset": 8},
-    "Beijing, CN":             {"region": "ASIA", "utc_offset": 8},
-    "Taipei, TW":              {"region": "ASIA", "utc_offset": 8},
-    "Hong Kong, HK":           {"region": "ASIA", "utc_offset": 8},
-    "Singapore, SG":           {"region": "ASIA", "utc_offset": 8},
-    "Manila, PH":              {"region": "ASIA", "utc_offset": 8},
-    "Kuala Lumpur, MY":        {"region": "ASIA", "utc_offset": 8},
-    "Busan, KR":               {"region": "ASIA", "utc_offset": 9},
-    "Osaka, JP":               {"region": "ASIA", "utc_offset": 9},
-    "Bangkok, TH":             {"region": "ASIA", "utc_offset": 7},
-    "Jakarta, ID":             {"region": "ASIA", "utc_offset": 7},
-    "Mumbai, IN":              {"region": "ASIA", "utc_offset": 5.5},
-    "Delhi, IN":               {"region": "ASIA", "utc_offset": 5.5},
-    "Hanoi, VN":               {"region": "ASIA", "utc_offset": 7},
+# City → timezone lookups are built dynamically from weather_monitor_defaults.json
+# (the single source of truth for the 51 canonical cities) instead of a stale
+# hardcoded map. Region is derived from the IANA tz string and the UTC offset
+# is computed live via ZoneInfo so DST is respected.
 
-    # ── EUROPE (UTC+1/2/3) ──
-    "London, GB":              {"region": "EUROPE", "utc_offset": 1},
-    "Paris, FR":               {"region": "EUROPE", "utc_offset": 2},
-    "Madrid, ES":              {"region": "EUROPE", "utc_offset": 2},
-    "Berlin, DE":              {"region": "EUROPE", "utc_offset": 2},
-    "Rome, IT":                {"region": "EUROPE", "utc_offset": 2},
-    "Moscow, RU":              {"region": "EUROPE", "utc_offset": 3},
-    "Istanbul, TR":            {"region": "EUROPE", "utc_offset": 3},
-    "Warsaw, PL":              {"region": "EUROPE", "utc_offset": 2},
-    "Stockholm, SE":           {"region": "EUROPE", "utc_offset": 2},
-    "Oslo, NO":                {"region": "EUROPE", "utc_offset": 2},
 
-    # ── AMERICAS (UTC-4 to -7) ──
-    "New York, US":            {"region": "AMERICAS", "utc_offset": -4},
-    "Chicago, US":             {"region": "AMERICAS", "utc_offset": -5},
-    "Dallas, US":              {"region": "AMERICAS", "utc_offset": -5},
-    "Los Angeles, US":         {"region": "AMERICAS", "utc_offset": -7},
-    "Denver, US":              {"region": "AMERICAS", "utc_offset": -6},
-    "Toronto, CA":             {"region": "AMERICAS", "utc_offset": -4},
-    "Mexico City, MX":         {"region": "AMERICAS", "utc_offset": -6},
-    "San Francisco, US":       {"region": "AMERICAS", "utc_offset": -7},
-    "Miami, US":               {"region": "AMERICAS", "utc_offset": -4},
-    "Houston, US":             {"region": "AMERICAS", "utc_offset": -5},
-    "Atlanta, US":             {"region": "AMERICAS", "utc_offset": -4},
-    "Panama City, PA":         {"region": "AMERICAS", "utc_offset": -5},
+def _load_default_locations() -> list[dict]:
+    """Load the canonical city list from weather_monitor_defaults.json."""
+    defaults_path = Path(_SCRIPT_DIR) / "weather_monitor_defaults.json"
+    if defaults_path.exists():
+        try:
+            data = json.loads(defaults_path.read_text(encoding="utf-8"))
+            locs = data.get("default_locations", [])
+            if isinstance(locs, list):
+                return locs
+        except (json.JSONDecodeError, OSError):
+            pass
+    return []
 
-    # ── MIDDLE_EAST (UTC+3) ──
-    "Jeddah, SA":              {"region": "MIDDLE_EAST", "utc_offset": 3},
-    "Tel Aviv, IL":            {"region": "MIDDLE_EAST", "utc_offset": 3},
-    "Ankara, TR":              {"region": "MIDDLE_EAST", "utc_offset": 3},
-    "Dubai, AE":               {"region": "MIDDLE_EAST", "utc_offset": 4},
-    "Tehran, IR":              {"region": "MIDDLE_EAST", "utc_offset": 3.5},
 
-    # ── OCEANIA (UTC+12) ──
-    "Wellington, NZ":          {"region": "OCEANIA", "utc_offset": 12},
-    "Sydney, AU":              {"region": "OCEANIA", "utc_offset": 10},
-    "Melbourne, AU":           {"region": "OCEANIA", "utc_offset": 10},
+def _city_tz_lookup() -> dict[str, str]:
+    """Map city name → tz string, keyed by both the full name and base name."""
+    lookup: dict[str, str] = {}
+    for loc in _load_default_locations():
+        name = str(loc.get("name", "")).strip()
+        tz = str(loc.get("tz", "")).strip()
+        if not name or not tz:
+            continue
+        lookup[name] = tz
+        base = name.split(",")[0].strip()
+        lookup.setdefault(base, tz)
+    return lookup
 
-    # ── AFRICA (UTC+2) ──
-    "Cape Town, ZA":           {"region": "AFRICA", "utc_offset": 2},
-    "Cairo, EG":               {"region": "AFRICA", "utc_offset": 3},
-    "Lagos, NG":               {"region": "AFRICA", "utc_offset": 1},
-    "Nairobi, KE":             {"region": "AFRICA", "utc_offset": 3},
 
-    # ── SOUTH_AM (UTC-3) ──
-    "Buenos Aires, AR":        {"region": "SOUTH_AM", "utc_offset": -3},
-    "Sao Paulo, BR":           {"region": "SOUTH_AM", "utc_offset": -3},
-    "Lima, PE":                 {"region": "SOUTH_AM", "utc_offset": -5},
-    "Santiago, CL":             {"region": "SOUTH_AM", "utc_offset": -4},
-}
+def _region_from_tz(tz: str) -> str:
+    """Derive a reporting region label from an IANA timezone string."""
+    if not tz:
+        return "Other"
+    if tz in ("Asia/Riyadh", "Asia/Jerusalem", "Asia/Dubai", "Asia/Tehran"):
+        return "MIDDLE_EAST"
+    if tz.startswith("America/Argentina") or tz in (
+        "America/Sao_Paulo", "America/Lima", "America/Santiago",
+    ):
+        return "SOUTH_AM"
+    if tz.startswith("America/"):
+        return "AMERICAS"
+    if tz.startswith("Europe/"):
+        return "EUROPE"
+    if tz.startswith("Africa/"):
+        return "AFRICA"
+    if tz.startswith(("Pacific/", "Australia/")):
+        return "OCEANIA"
+    if tz.startswith("Asia/"):
+        return "ASIA"
+    return "Other"
 
 
 def _get_utc_offset_for_city(city_name: str, tz_str: str = "UTC") -> float:
-    """Get UTC offset for a city.
+    """Get the city's current UTC offset in hours.
 
-    Prefers the hardcoded REGION_TZ_MAP, falls back to ZoneInfo from tz string,
-    then defaults to 0 (UTC).
+    Prefers the tz from the canonical defaults file, falls back to the passed
+    tz string, and computes the offset live via ZoneInfo (DST-aware).
     """
-    # Try exact match first
-    entry = REGION_TZ_MAP.get(city_name)
-    if entry is not None:
-        return float(entry["utc_offset"])
-
-    # Try matching base name (strip country code)
-    base = city_name.split(",")[0].strip()
-    for key, val in REGION_TZ_MAP.items():
-        if key.split(",")[0].strip() == base:
-            return float(val["utc_offset"])
-
-    # Fall back to ZoneInfo
+    tz = _city_tz_lookup().get(city_name)
+    if not tz:
+        tz = _city_tz_lookup().get(city_name.split(",")[0].strip(), "")
+    tz = tz or tz_str or "UTC"
     try:
-        tz_obj = ZoneInfo(tz_str)
-        now = datetime.now(tz_obj)
-        offset = now.utcoffset()
+        tz_obj = ZoneInfo(tz)
+        offset = datetime.now(tz_obj).utcoffset()
         if offset is not None:
             return offset.total_seconds() / 3600.0
     except Exception:
@@ -410,18 +386,15 @@ def _get_utc_offset_for_city(city_name: str, tz_str: str = "UTC") -> float:
 
 
 def _get_region_for_city(city_name: str) -> str:
-    """Get geographic region for a city name."""
-    entry = REGION_TZ_MAP.get(city_name)
-    if entry is not None:
-        return str(entry["region"])
+    """Get the geographic reporting region for a city name.
 
-    # Try matching base name
-    base = city_name.split(",")[0].strip()
-    for key, val in REGION_TZ_MAP.items():
-        if key.split(",")[0].strip() == base:
-            return str(val["region"])
-
-    return "Unknown"
+    Derived from the city's IANA tz in weather_monitor_defaults.json; never
+    returns "Unknown" for the 51 canonical cities.
+    """
+    tz = _city_tz_lookup().get(city_name)
+    if not tz:
+        tz = _city_tz_lookup().get(city_name.split(",")[0].strip(), "")
+    return _region_from_tz(tz)
 
 
 def _compute_city_local_hour(utc_offset: float, utc_hour: int) -> int:
@@ -1360,6 +1333,50 @@ def _merge_predictions(existing: dict, new: dict) -> dict:
 
         merged[city] = new_pdata
     return merged
+
+
+def _recompute_cumulative_from_runs(log_data: dict) -> None:
+    """Recompute ``log_data["cumulative"]`` idempotently from every run.
+
+    ``total_days`` is the unique ``run_date`` count (single source of truth),
+    so re-running never double-counts a day. All per-strategy W/L totals are
+    recomputed from scratch from each run's summary + persisted mean pm_result.
+    """
+    runs = log_data.get("runs", [])
+    _c_total_days = len({_run.get("run_date") for _run in runs if _run.get("run_date")})
+    _c_total_preds = 0
+    _c_sigma_w = _c_sigma_l = 0
+    _c_p5_w = _c_p5_l = 0
+    _c_mean_w = _c_mean_l = 0
+    _c_meanpm_w = _c_meanpm_l = 0
+    for _run in runs:
+        _c_total_preds += len(_run.get("predictions", {}) or {})
+        _s = _run.get("summary", {}) or {}
+        _c_sigma_w += _s.get("sigma_wins", 0)
+        _c_sigma_l += _s.get("sigma_losses", 0)
+        _c_p5_w += _s.get("p5_wins", 0)
+        _c_p5_l += _s.get("p5_losses", 0)
+        _c_mean_w += _s.get("mean_wins", 0)
+        _c_mean_l += _s.get("mean_losses", 0)
+        for _p in (_run.get("predictions", {}) or {}).values():
+            _pmr = (_p.get("strategies", {}) or {}).get("mean", {}).get("pm_result")
+            if _pmr == "WIN":
+                _c_meanpm_w += 1
+            elif _pmr == "LOSS":
+                _c_meanpm_l += 1
+    log_data["cumulative"] = {
+        "total_days": _c_total_days,
+        "total_predictions": _c_total_preds,
+        "sigma_wins": _c_sigma_w,
+        "sigma_losses": _c_sigma_l,
+        "p5_wins": _c_p5_w,
+        "p5_losses": _c_p5_l,
+        "mean_wins": _c_mean_w,
+        "mean_losses": _c_mean_l,
+        "mean_pm_wins": _c_meanpm_w,
+        "mean_pm_losses": _c_meanpm_l,
+        "mean_pm_bets": _c_meanpm_w + _c_meanpm_l,
+    }
 
 
 def _recompute_summary(entry: dict) -> None:
@@ -2386,42 +2403,7 @@ async def daily_close_mode(target_date: str | None = None) -> None:
     # re-run of daily_close never double-counts and the totals always match the
     # predictions-derived report numbers). Mean-vs-PM wins/losses are counted
     # from each city's persisted pm_result.
-    _c_sigma_w = _c_sigma_l = 0
-    _c_p5_w = _c_p5_l = 0
-    _c_mean_w = _c_mean_l = 0
-    _c_meanpm_w = _c_meanpm_l = 0
-    _c_total_days = 0
-    _c_total_preds = 0
-    for _run in log_data.get("runs", []):
-        _c_total_days += 1
-        _c_total_preds += len(_run.get("predictions", {}) or {})
-        _s = _run.get("summary", {}) or {}
-        _c_sigma_w += _s.get("sigma_wins", 0)
-        _c_sigma_l += _s.get("sigma_losses", 0)
-        _c_p5_w += _s.get("p5_wins", 0)
-        _c_p5_l += _s.get("p5_losses", 0)
-        _c_mean_w += _s.get("mean_wins", 0)
-        _c_mean_l += _s.get("mean_losses", 0)
-        for _p in (_run.get("predictions", {}) or {}).values():
-            _pmr = (_p.get("strategies", {}) or {}).get("mean", {}).get("pm_result")
-            if _pmr == "WIN":
-                _c_meanpm_w += 1
-            elif _pmr == "LOSS":
-                _c_meanpm_l += 1
-    _c_meanpm_bets = _c_meanpm_w + _c_meanpm_l
-    log_data["cumulative"] = {
-        "total_days": _c_total_days,
-        "total_predictions": _c_total_preds,
-        "sigma_wins": _c_sigma_w,
-        "sigma_losses": _c_sigma_l,
-        "p5_wins": _c_p5_w,
-        "p5_losses": _c_p5_l,
-        "mean_wins": _c_mean_w,
-        "mean_losses": _c_mean_l,
-        "mean_pm_wins": _c_meanpm_w,
-        "mean_pm_losses": _c_meanpm_l,
-        "mean_pm_bets": _c_meanpm_bets,
-    }
+    _recompute_cumulative_from_runs(log_data)
 
     _save_log(log_data)
 
@@ -2479,7 +2461,7 @@ def full_report_mode() -> None:
     p5_total = p5_wins + p5_losses
     mean_total = mean_wins + mean_losses
 
-    print(f"  Dager kjørt:         {len(runs)}")
+    print(f"  Dager kjørt:         {len({r.get('run_date') for r in runs if r.get('run_date')})}")
     print(f"  Totalt by-prediksjoner: {total_cities}\n")
 
     print(f"  📊 PER-STRATEGI RESULTATER:")
@@ -2498,58 +2480,6 @@ def full_report_mode() -> None:
     }
     best = max(rates, key=lambda k: rates[k])
     print(f"\n  🏆 BESTE STRATEGI: {best} ({rates[best]}%)")
-
-    # ── Arbitrage Stats ──
-    arb_summary = _summarize_arbitrage(runs)
-    short = arb_summary["short"]
-    buy = arb_summary["buy"]
-    total_arb = arb_summary["total"]
-    if total_arb["wins"] + total_arb["losses"] > 0:
-        print(f"\n  💰 ARBITRAGE STATS")
-        print(f"     SHORT opportunities: {short['wins']}W/{short['losses']}L = {short['rate']}%")
-        print(f"     BUY opportunities: {buy['wins']}W/{buy['losses']}L = {buy['rate']}%")
-        print(f"     Total: {total_arb['wins']}W/{total_arb['losses']}L = {total_arb['rate']}%")
-
-    # Per-city stats across all strategies
-    city_stats: dict[str, dict] = {}
-    for run in runs:
-        for city, pdata in run.get("predictions", {}).items():
-            if city not in city_stats:
-                city_stats[city] = {"sigma": {"wins": 0, "losses": 0},
-                                     "p5": {"wins": 0, "losses": 0},
-                                     "mean": {"wins": 0, "losses": 0}}
-            strategies = pdata.get("strategies", {})
-            for sn in ("sigma", "p5", "mean"):
-                s = strategies.get(sn, {})
-                if s.get("result") == "WIN":
-                    city_stats[city][sn]["wins"] += 1
-                elif s.get("result") == "LOSS":
-                    city_stats[city][sn]["losses"] += 1
-
-    # Cities where one strategy clearly outperforms
-    print(f"\n  🔍 BYER MED STRATEGI-FORSKJELLER:")
-    strategy_diff_found = False
-    for city, stats in sorted(city_stats.items()):
-        sigma_t = stats["sigma"]["wins"] + stats["sigma"]["losses"]
-        p5_t = stats["p5"]["wins"] + stats["p5"]["losses"]
-        mean_t = stats["mean"]["wins"] + stats["mean"]["losses"]
-        if sigma_t < 2:
-            continue
-        sigma_r = stats["sigma"]["wins"] / sigma_t * 100
-        p5_r = stats["p5"]["wins"] / p5_t * 100 if p5_t > 0 else 0
-        mean_r = stats["mean"]["wins"] / mean_t * 100 if mean_t > 0 else 0
-        max_r = max(sigma_r, p5_r, mean_r)
-        min_r = min(sigma_r, p5_r, mean_r)
-        if max_r - min_r > 20:  # 20pp difference
-            strategy_diff_found = True
-            best_s = "Sigma" if sigma_r == max_r else ("P5" if p5_r == max_r else "Mean")
-            print(f"     {city:<30s} sigma={sigma_r:.0f}% p5={p5_r:.0f}% mean={mean_r:.0f}% → {best_s} best")
-    if not strategy_diff_found:
-        print(f"     Ingen signifikante forskjeller funnet.")
-
-    # ── Edge Impact Analysis ──
-    edge_analysis = _analyze_edge_impact()
-    print(edge_analysis)
 
     # Generate full report file
     _generate_markdown_report(log_data, None)
@@ -2574,7 +2504,12 @@ def _tz_to_region(tz: str) -> str:
 
 
 def _add_city_win_rate_section(lines: list[str], runs: list) -> None:
-    """Add per-city win rate table (sigma strategy) sorted by win rate."""
+    """Add per-city win rate table (sigma strategy) sorted by win rate.
+
+    Rates are only shown once a city has at least MIN_SAMPLE resolved bets;
+    below that the row renders "N/A — not enough data". Sample size is always
+    shown next to every rate.
+    """
     city_wl: dict[str, dict] = {}
     for run in runs:
         for city, pdata in run.get("predictions", {}).items():
@@ -2592,13 +2527,17 @@ def _add_city_win_rate_section(lines: list[str], runs: list) -> None:
     city_rates = []
     for city, wl in city_wl.items():
         total = wl["wins"] + wl["losses"]
-        if total >= 2:
-            rate = round(wl["wins"] / total * 100, 1)
-            city_rates.append((city, wl["wins"], wl["losses"], rate, total))
-    city_rates.sort(key=lambda x: x[3], reverse=True)
+        rate = round(wl["wins"] / total * 100, 1) if total >= MIN_SAMPLE else None
+        city_rates.append((city, wl["wins"], wl["losses"], rate, total))
+    city_rates.sort(key=lambda x: (x[3] is None, -(x[3] or 0.0), -x[4], x[0]))
 
     if not city_rates:
         return
+
+    def _rate_cell(rate, total):
+        if rate is None:
+            return f"N/A — not enough data (n={total})"
+        return f"{rate}% (n={total})"
 
     lines.append("## 🏆 Win Rate Per City — Sigma Strategy")
     lines.append("")
@@ -2606,8 +2545,8 @@ def _add_city_win_rate_section(lines: list[str], runs: list) -> None:
     lines.append("")
     lines.append("| # | City | Record | Win Rate |")
     lines.append("|---|---|---|---|")
-    for i, (city, w, l, rate, _) in enumerate(city_rates[:10]):
-        lines.append(f"| {i+1} | {city} | {w}W/{l}L | {rate}% |")
+    for i, (city, w, l, rate, total) in enumerate(city_rates[:10]):
+        lines.append(f"| {i+1} | {city} | {w}W/{l}L | {_rate_cell(rate, total)} |")
     lines.append("")
 
     lines.append("### 📉 SVESTE BYER")
@@ -2615,9 +2554,9 @@ def _add_city_win_rate_section(lines: list[str], runs: list) -> None:
     lines.append("| # | City | Record | Win Rate |")
     lines.append("|---|---|---|---|")
     worst = city_rates[-10:] if len(city_rates) >= 10 else []
-    for i, (city, w, l, rate, _) in enumerate(reversed(worst)):
+    for i, (city, w, l, rate, total) in enumerate(reversed(worst)):
         rank = len(city_rates) - len(worst) + i + 1
-        lines.append(f"| {rank} | {city} | {w}W/{l}L | {rate}% |")
+        lines.append(f"| {rank} | {city} | {w}W/{l}L | {_rate_cell(rate, total)} |")
     lines.append("")
 
 
@@ -3030,6 +2969,24 @@ def _analyze_edge_impact() -> str:
 # Markdown Report Generator
 # =============================================================================
 
+def _tally_city_3strategy(runs: list) -> dict[str, dict]:
+    """Return {city: {strategy: {"wins": n, "losses": n}}} across all runs."""
+    tally: dict[str, dict] = {}
+    for run in runs:
+        for city, pdata in run.get("predictions", {}).items():
+            strategies = pdata.get("strategies", {}) or {}
+            rec = tally.setdefault(
+                city, {sn: {"wins": 0, "losses": 0} for sn in ("sigma", "p5", "mean")}
+            )
+            for sn in ("sigma", "p5", "mean"):
+                res = strategies.get(sn, {}).get("result")
+                if res == "WIN":
+                    rec[sn]["wins"] += 1
+                elif res == "LOSS":
+                    rec[sn]["losses"] += 1
+    return tally
+
+
 def _generate_markdown_report(log_data: dict, today_entry: dict | None) -> None:
     """Generate _quality_report.md from log data.
 
@@ -3054,7 +3011,7 @@ def _generate_markdown_report(log_data: dict, today_entry: dict | None) -> None:
     lines: list[str] = []
     lines.append("# Model Quality Report")
     lines.append(f"\n**Generated:** {_now_utc()}")
-    lines.append(f"**Days tracked:** {len([r for r in runs if r.get('phase') == 'daily_close'])}")
+    lines.append(f"**Days tracked:** {len({r.get('run_date') for r in runs if r.get('run_date')})}")
     lines.append("")
 
     # -- Today's results (if available)
@@ -3115,108 +3072,24 @@ def _generate_markdown_report(log_data: dict, today_entry: dict | None) -> None:
     lines.append(f"| 📊 Mean-Basert | {mean_wins} | {mean_losses} | {round(mean_wins/max(1,mean_total)*100,1)}% |")
     lines.append("")
 
-    # -- Confidence tier analysis (sigma only, 4 tiers)
-    tier_80p = {"pos": 0, "wins": 0}
-    tier_70_80 = {"pos": 0, "wins": 0}
-    tier_60_70 = {"pos": 0, "wins": 0}
-    tier_lt60 = {"pos": 0, "wins": 0}
-
-    for run in runs:
-        for city, pdata in run.get("predictions", {}).items():
-            sigma = pdata.get("strategies", {}).get("sigma", {})
-            result = sigma.get("result", "")
-            conf = pdata.get("confidence", 0)
-            if result in ("WIN", "LOSS"):
-                if conf >= 0.8:
-                    tier_80p["pos"] += 1
-                    if result == "WIN":
-                        tier_80p["wins"] += 1
-                elif conf >= 0.7:
-                    tier_70_80["pos"] += 1
-                    if result == "WIN":
-                        tier_70_80["wins"] += 1
-                elif conf >= 0.6:
-                    tier_60_70["pos"] += 1
-                    if result == "WIN":
-                        tier_60_70["wins"] += 1
-                else:
-                    tier_lt60["pos"] += 1
-                    if result == "WIN":
-                        tier_lt60["wins"] += 1
-
-    lines.append("## Sigma Strategy by Confidence Tier")
+    # -- Per-city 3-strategy W/L with min-sample gating
+    lines.append("## Per-City 3-Strategy W/L (Cumulative)")
     lines.append("")
-    lines.append(f"| Tier | Positions | Wins | Losses | Win Rate |")
-    lines.append(f"|------|-----------|------|--------|----------|")
-    for label, stats in [
-        ("🟢 >80%", tier_80p),
-        ("🟠 70-80%", tier_70_80),
-        ("🔴 60-70%", tier_60_70),
-        ("🔴 <60%", tier_lt60),
-    ]:
-        losses = stats["pos"] - stats["wins"]
-        wr = round(stats["wins"] / max(1, stats["pos"]) * 100, 1) if stats["pos"] > 0 else "N/A"
-        wr_str = f"{wr}%" if isinstance(wr, (int, float)) else wr
-        lines.append(f"| {label} | {stats['pos']} | {stats['wins']} | {losses} | {wr_str} |")
+    lines.append("| City | Sigma W/L | Sigma Rate | P5 W/L | P5 Rate | Mean W/L | Mean Rate |")
+    lines.append("|------|-----------|------------|--------|---------|----------|-----------|")
+    for city, rec in sorted(_tally_city_3strategy(runs).items()):
+        cells: list[str] = []
+        for sn in ("sigma", "p5", "mean"):
+            w = rec[sn]["wins"]
+            l = rec[sn]["losses"]
+            n = w + l
+            rate = f"{round(w / n * 100, 1)}%" if n >= MIN_SAMPLE else "N/A — not enough data"
+            cells.append(f"{w}W/{l}L (n={n})")
+            cells.append(rate)
+        lines.append(
+            f"| {city} | {cells[0]} | {cells[1]} | {cells[2]} | {cells[3]} | {cells[4]} | {cells[5]} |"
+        )
     lines.append("")
-
-    # -- Recent daily entries
-    lines.append("## Recent Daily Results")
-    lines.append("")
-    recent = [r for r in runs if r.get("phase") == "daily_close"][-10:]
-    if recent:
-        lines.append(f"| Date | Sigma W/L | P5 W/L | Mean W/L |")
-        lines.append(f"|------|-----------|--------|----------|")
-        for r in recent:
-            s = r.get("summary", {})
-            sw2 = s.get("sigma_wins", 0)
-            sl2 = s.get("sigma_losses", 0)
-            pw2 = s.get("p5_wins", 0)
-            pl2 = s.get("p5_losses", 0)
-            mw2 = s.get("mean_wins", 0)
-            ml2 = s.get("mean_losses", 0)
-            lines.append(f"| {r['run_date']} | {sw2}/{sl2} | {pw2}/{pl2} | {mw2}/{ml2} |")
-        lines.append("")
-
-    # -- Flip recommendations summary
-    flip_count = 0
-    for run in runs:
-        for city, pdata in run.get("predictions", {}).items():
-            rec = pdata.get("recommendation", "")
-            if rec and "SELG" in str(rec):
-                flip_count += 1
-    if flip_count > 0:
-        lines.append(f"**Total flip recommendations (SHORT):** {flip_count}")
-        lines.append("")
-
-    # ── 1. Win Rate Per City (Sigma strategy) ──
-    _add_city_win_rate_section(lines, runs)
-
-    # ── 2. Model Agreement vs Win Rate ──
-    _add_model_agreement_section(lines, runs)
-
-    # ── 3. P5-P95 Range Size vs Accuracy ──
-    _add_range_accuracy_section(lines, runs)
-
-    # ── 4. Best Strategy PER Confidence Level ──
-    _add_optimal_strategy_section(lines, runs)
-
-    # ── 5. Cumulative Edge Tracker ──
-    _add_cumulative_edge_section(lines, runs)
-
-    # ── 5b. Arbitrage Stats ──
-    _add_arbitrage_stats_section(lines, runs)
-
-    # ── 6. Timezone/Region Performance ──
-    _add_region_performance_section(lines, runs)
-
-    # ── 7. UHI Adjustment Accuracy ──
-    _add_uhi_accuracy_section(lines, runs)
-
-    # ── 8. Edge Impact Analysis ──
-    edge_analysis = _analyze_edge_impact()
-    # Strip surrounding newlines and add to lines
-    lines.append(edge_analysis.strip() if edge_analysis else "  No edge impact data yet.")
 
     # Write
     REPORT_FILE.write_text("\n".join(lines), encoding="utf-8")
@@ -3369,7 +3242,10 @@ def _load_market_resolved_details() -> dict[tuple[str, str], dict[str, Any]]:
     """Extract resolved market outcomes (unit-aware) from all sources.
 
     Returns {(city, date_iso): market_info}. Point markets carry a native-unit
-    numeric value. Threshold markets are NEVER included as point temperatures.
+    numeric ``value``; threshold markets carry ``type == "threshold"`` and a
+    ``lower_bound_c`` (°C) bound plus an optional ``lower_bound_f`` (°F) bound.
+    Consumers must branch on ``market_info["type"]`` before treating an entry
+    as a point temperature — threshold bounds are never point temperatures.
 
     Source priority (most curated first):
       1. _resolved_markets_log.json — the comprehensive collector with
@@ -3392,8 +3268,6 @@ def _load_market_resolved_details() -> dict[tuple[str, str], dict[str, Any]]:
                 city, date_str = key_str.split("||", 1)
                 info = _resolved_log_entry_to_info(data)
                 if info is None:
-                    continue
-                if info.get("type") == "threshold":
                     continue
                 key = (city, date_str)
                 if key not in details:
@@ -3616,6 +3490,39 @@ def _mean_pm_result(market_info: dict[str, Any] | None, mean_spill: float | int 
     return _spill_vs_polymarket_result(mean_spill, market_info)
 
 
+def _spill_vs_threshold_result(
+    spill_c: float | int | None, market_info: dict[str, Any] | None
+) -> str | None:
+    """Resolve a strategy bucket (°C) against a Polymarket threshold market.
+
+    Threshold markets are binary bounds ("26°C or higher", "75°F or below")
+    rather than resolved point temperatures. The market's lower bound is
+    converted to °C by the collector, so all comparisons are in °C:
+
+    - "or higher" / "at least" / "or above" → WIN iff round(spill) >= lower_bound_c
+    - "or below" / "or lower"               → WIN iff round(spill) <  lower_bound_c
+
+    Returns None when the market has no lower bound, the bucket direction is
+    unrecognized, or the spill is missing (the bet stays unresolved).
+    """
+    if spill_c is None or not market_info:
+        return None
+    lower_bound_c = market_info.get("lower_bound_c")
+    if lower_bound_c is None:
+        return None
+    try:
+        lower_bound_c = float(lower_bound_c)
+        rounded_spill = int(round(float(spill_c)))
+    except (TypeError, ValueError):
+        return None
+    direction = str(market_info.get("bucket") or "").lower()
+    if any(kw in direction for kw in ("or higher", "at least", "or above", "or more", "≥")):
+        return "WIN" if rounded_spill >= lower_bound_c else "LOSS"
+    if any(kw in direction for kw in ("or below", "or lower", "≤")):
+        return "WIN" if rounded_spill < lower_bound_c else "LOSS"
+    return None
+
+
 def _resolve_strategies_vs_polymarket(
     pdata: dict, city: str, resolved_markets: dict | None = None
 ) -> None:
@@ -3636,14 +3543,20 @@ def _resolve_strategies_vs_polymarket(
         resolved_markets.get((city, city_target))
         or resolved_markets.get((city_base, city_target))
     )
-    if market_info is None or market_info.get("value") is None:
+    if market_info is None:
+        return
+    is_threshold = market_info.get("type") == "threshold"
+    if not is_threshold and market_info.get("value") is None:
         return
     strategies = _get_strategies(pdata)
     for sn in ("sigma", "p5", "mean"):
         strat = strategies.get(sn, {})
         if not strat:
             continue
-        res = _spill_vs_polymarket_result(strat.get("spill"), market_info)
+        if is_threshold:
+            res = _spill_vs_threshold_result(strat.get("spill"), market_info)
+        else:
+            res = _spill_vs_polymarket_result(strat.get("spill"), market_info)
         strat["pm_result"] = res
         if res is not None:
             strat["result"] = res
@@ -3736,6 +3649,56 @@ async def _verify_peaks_vs_market(
     _save_log(log_data)
 
 
+def backfill_mode() -> None:
+    """Re-resolve ALL historical runs against the current resolved-markets log.
+
+    Reloads _load_market_resolved_details() (point + threshold markets), re-runs
+    _resolve_strategies_vs_polymarket() over every run/city, recomputes each
+    run's summary and the cumulative totals, then saves the log. Idempotent:
+    re-running overwrites results instead of double-counting.
+    """
+    print("╔══════════════════════════════════════════════════╗")
+    print("║   MODELLKVALITET — BACKFILL (MARKEDSOPPGJØR)    ║")
+    print("╚══════════════════════════════════════════════════╝")
+    print(f"   Start: {_now_utc()}")
+
+    log_data = _load_log()
+    runs = log_data.get("runs", [])
+    if not runs:
+        print("  Ingen runs i loggen — ingenting å backfille.\n")
+        return
+
+    resolved_markets = _load_market_resolved_details()
+    if not resolved_markets:
+        print("  Ingen resolvede markeder funnet — ingenting å gjøre.\n")
+        return
+    print(f"  Lastet {len(resolved_markets)} resolvede markeder (point + threshold).")
+
+    updated = 0
+    for run in runs:
+        for city, pdata in (run.get("predictions") or {}).items():
+            before = {
+                sn: (pdata.get("strategies", {}) or {}).get(sn, {}).get("result")
+                for sn in ("sigma", "p5", "mean")
+            }
+            _resolve_strategies_vs_polymarket(pdata, city, resolved_markets)
+            after = {
+                sn: (pdata.get("strategies", {}) or {}).get(sn, {}).get("result")
+                for sn in ("sigma", "p5", "mean")
+            }
+            if before != after:
+                updated += 1
+        _recompute_summary(run)
+
+    _recompute_cumulative_from_runs(log_data)
+    _save_log(log_data)
+
+    print(f"  Oppdaterte {updated} by-prediksjoner.")
+    print(f"  Dager kjørt (unike): {log_data['cumulative'].get('total_days', 0)}")
+    _generate_markdown_report(log_data, None)
+    print(f"  Rapport skrevet til _quality_report.md\n")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Model Quality Tracker — BMA ensemble performance monitoring",
@@ -3743,7 +3706,7 @@ def main() -> None:
     parser.add_argument(
         "--mode",
         required=True,
-        choices=["daily_bma", "hourly_check", "hourly_active", "daily_close", "full_report"],
+        choices=["daily_bma", "hourly_check", "hourly_active", "daily_close", "full_report", "backfill"],
         help="Run mode for GitHub Actions pipeline",
     )
     parser.add_argument(
@@ -3765,6 +3728,8 @@ def main() -> None:
         asyncio.run(daily_close_mode(target_date=args.date))
     elif args.mode == "full_report":
         full_report_mode()
+    elif args.mode == "backfill":
+        backfill_mode()
 
 
 if __name__ == "__main__":
