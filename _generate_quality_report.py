@@ -130,6 +130,26 @@ def _load_modified_totals() -> tuple[int, int]:
     return 0, 0
 
 
+def _load_modified_city_records() -> dict[str, dict]:
+    """Return {city: {"wins": n, "losses": n}} from _modified_strategy_log.json."""
+    records: dict[str, dict] = {}
+    if not MODIFIED_LOG_FILE.exists():
+        return records
+    try:
+        data = json.loads(MODIFIED_LOG_FILE.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return records
+    for city, info in (data.get("cities", {}) or {}).items():
+        try:
+            records[city] = {
+                "wins": int(info.get("wins", 0)),
+                "losses": int(info.get("losses", 0)),
+            }
+        except (TypeError, ValueError):
+            records[city] = {"wins": 0, "losses": 0}
+    return records
+
+
 def _tally_from_predictions(runs: list) -> dict:
     """Compute per-strategy win/loss totals from predictions (ground truth).
 
@@ -626,20 +646,34 @@ def _generate_report() -> str:
                  f"({round(modified_wins/max(1,modified_total)*100,1)}%)")
     lines.append("")
 
-    # Per-city 3-strategy W/L with min-sample.
-    lines.append("🏙️ PER-BY 3-STRATEGI W/L (KUMULATIV, MIN-SAMPLE):")
-    lines.append(f"   {'By':<28s} {'Sigma':>16s} {'P5':>16s} {'Mean':>16s}")
-    for city, rec in sorted(_tally_all_strategies_city_records(runs).items()):
+    # Per-city 4-strategy W/L with min-sample.
+    modified_city_records = _load_modified_city_records()
+    city_tally = _tally_all_strategies_city_records(runs)
+    all_cities = sorted(set(city_tally) | set(modified_city_records))
+
+    lines.append("🏙️ PER-BY 4-STRATEGI W/L (KUMULATIV, MIN-SAMPLE):")
+    lines.append(f"   {'By':<28s} {'Sigma':>16s} {'P5':>16s} {'Mean':>16s} {'Modifisert':>22s}")
+    for city in all_cities:
+        rec = city_tally.get(city, {})
         cells: list[str] = []
         for sn in ("sigma", "p5", "mean"):
-            w = rec[sn]["wins"]
-            l = rec[sn]["losses"]
+            stats = rec.get(sn, {"wins": 0, "losses": 0})
+            w = stats["wins"]
+            l = stats["losses"]
             n = w + l
             if n >= MIN_SAMPLE:
                 cells.append(f"{w}W/{l}L ({round(w/max(1,n)*100,1)}%, n={n})")
             else:
                 cells.append(f"{w}W/{l}L (N/A — not enough data, n={n})")
-        lines.append(f"   {city:<28s} {cells[0]:>16s} {cells[1]:>16s} {cells[2]:>16s}")
+        mrec = modified_city_records.get(city, {"wins": 0, "losses": 0})
+        mw = mrec["wins"]
+        ml = mrec["losses"]
+        mn = mw + ml
+        if mn >= MIN_SAMPLE:
+            mcell = f"{mw}W/{ml}L ({round(mw/max(1,mn)*100,1)}%, n={mn})"
+        else:
+            mcell = f"{mw}W/{ml}L (N/A — not enough data, n={mn})"
+        lines.append(f"   {city:<28s} {cells[0]:>16s} {cells[1]:>16s} {cells[2]:>16s} {mcell:>22s}")
     lines.append("")
 
     # Latest-day resolved table (AVGJORTE RESULTATER).
@@ -932,7 +966,7 @@ def _build_strat_rec_html_section(best_per_city: dict) -> str:
 
 
 # =============================================================================
-# HTML Report Generator (Dark Theme Dashboard — 3-Strategy Edition)
+# HTML Report Generator (Dark Theme Dashboard — 4-Strategy Edition)
 # =============================================================================
 
 def _build_top5_rows_html(predictions: dict, top5_cities: list[str], peak_data: dict | None = None) -> str:
@@ -3105,14 +3139,18 @@ def _build_expandable_market_section_html() -> str:
 
 
 def _build_city_3strategy_section(runs: list) -> str:
-    """HTML section: per-city cumulative W/L for sigma/p5/mean with min-sample."""
+    """HTML section: per-city cumulative W/L for sigma/p5/mean/modifisert with min-sample."""
     recs = _tally_all_strategies_city_records(runs)
+    modified_city_records = _load_modified_city_records()
+    all_cities = sorted(set(recs) | set(modified_city_records))
     rows = ""
-    for city, rec in sorted(recs.items()):
+    for city in all_cities:
+        rec = recs.get(city, {})
         cells: list[str] = []
         for sn in ("sigma", "p5", "mean"):
-            w = rec[sn]["wins"]
-            l = rec[sn]["losses"]
+            stats = rec.get(sn, {"wins": 0, "losses": 0})
+            w = stats["wins"]
+            l = stats["losses"]
             n = w + l
             if n >= MIN_SAMPLE:
                 pct = round(w / n * 100, 1)
@@ -3122,17 +3160,29 @@ def _build_city_3strategy_section(runs: list) -> str:
                 rate = "N/A — not enough data"
                 rate_color = "#8b949e"
             cells.append(f'<td>{w}W/{l}L (n={n})</td><td style="color:{rate_color};font-weight:600;">{rate}</td>')
+        mrec = modified_city_records.get(city, {"wins": 0, "losses": 0})
+        mw = mrec["wins"]
+        ml = mrec["losses"]
+        mn = mw + ml
+        if mn >= MIN_SAMPLE:
+            mpct = round(mw / mn * 100, 1)
+            mrate = f"{mpct}%"
+            mrate_color = "#3fb950" if mpct >= 60 else ("#d2991d" if mpct >= 40 else "#f85149")
+        else:
+            mrate = "N/A — not enough data"
+            mrate_color = "#8b949e"
+        cells.append(f'<td>{mw}W/{ml}L (n={mn})</td><td style="color:{mrate_color};font-weight:600;">{mrate}</td>')
         rows += f'<tr><td><strong>{city}</strong></td>' + "".join(cells) + "</tr>"
     return f"""
    <div class="section">
-     <h2>🏙️ Per-City 3-Strategy W/L (Cumulative)</h2>
+     <h2>🏙️ Per-City 4-Strategy W/L (Cumulative)</h2>
      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
        Kumulativ per by på tvers av alle dager. Rater vises kun med minst {MIN_SAMPLE}
        avgjorte spill; ellers "N/A — not enough data". Sample size (n) vises for alle.
      </p>
      <div style="overflow-x: auto;">
      <table>
-       <thead><tr><th>City</th><th>Sigma W/L</th><th>Sigma Rate</th><th>P5 W/L</th><th>P5 Rate</th><th>Mean W/L</th><th>Mean Rate</th></tr></thead>
+       <thead><tr><th>City</th><th>Sigma W/L</th><th>Sigma Rate</th><th>P5 W/L</th><th>P5 Rate</th><th>Mean W/L</th><th>Mean Rate</th><th>Modifisert W/L</th><th>Modifisert Rate</th></tr></thead>
        <tbody>{rows}</tbody>
      </table>
      </div>
@@ -3538,7 +3588,7 @@ def _generate_html_report() -> str:
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Model Quality Dashboard — 3-Strategy BMA Ensemble</title>
+<title>Model Quality Dashboard — 4-Strategy BMA Ensemble</title>
 <style>
   :root {{
     --bg: #0d1117;
@@ -3821,7 +3871,7 @@ function sortTable(colIdx) {{
 
 </div>
 <footer>
-  Model Quality Dashboard · 3-Strategy Comparison · Sigma (μ−kσ) vs P5 vs Mean · GitHub Pages Deploy
+  Model Quality Dashboard · 4-Strategy Comparison · Sigma (μ−kσ) vs P5 vs Mean vs Modifisert · GitHub Pages Deploy
 </footer>
 
 </body>
@@ -4276,7 +4326,7 @@ def _generate_all_cities_html() -> str:
 
 </div>
 <footer>
-  Alle 51 Byer Dashboard · BMA Multi-Model Ensemble · 3-Strategy Comparison · GitHub Pages Deploy
+  Alle 51 Byer Dashboard · BMA Multi-Model Ensemble · 4-Strategy Comparison · GitHub Pages Deploy
 </footer>
 
 <script>
@@ -4645,7 +4695,7 @@ def _generate_index_html() -> str:
   <div class="nav-grid">
     <a href="_quality_report.html" class="nav-card">
       <span class="nav-icon">📊</span>
-      <span class="nav-text"><h3>Kvalitetsrapport</h3><p>3-strategi dashboard · Sigma / P5 / Mean · Edge Validation</p></span>
+      <span class="nav-text"><h3>Kvalitetsrapport</h3><p>4-strategi dashboard · Sigma / P5 / Mean / Modifisert · Edge Validation</p></span>
     </a>
     <a href="_all_cities.html" class="nav-card">
       <span class="nav-icon">🌍</span>

@@ -330,6 +330,26 @@ def _modified_strategy_totals() -> tuple[int, int]:
     return 0, 0
 
 
+def _modified_strategy_city_records() -> dict[str, dict]:
+    """Return {city: {"wins": n, "losses": n}} from _modified_strategy_log.json."""
+    records: dict[str, dict] = {}
+    if not MODIFIED_LOG_FILE.exists():
+        return records
+    try:
+        data = json.loads(MODIFIED_LOG_FILE.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return records
+    for city, info in (data.get("cities", {}) or {}).items():
+        try:
+            records[city] = {
+                "wins": int(info.get("wins", 0)),
+                "losses": int(info.get("losses", 0)),
+            }
+        except (TypeError, ValueError):
+            records[city] = {"wins": 0, "losses": 0}
+    return records
+
+
 def _now_utc() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -3131,22 +3151,40 @@ def _generate_markdown_report(log_data: dict, today_entry: dict | None) -> None:
     lines.append(f"| 🧪 Modifisert | {modified_wins} | {modified_losses} | {round(modified_wins/max(1,modified_total)*100,1)}% |")
     lines.append("")
 
-    # -- Per-city 3-strategy W/L with min-sample gating
-    lines.append("## Per-City 3-Strategy W/L (Cumulative)")
+    # -- Per-city 4-strategy W/L with min-sample gating
+    city_tally = _tally_city_3strategy(runs)
+    modified_city_records = _modified_strategy_city_records()
+    all_cities = sorted(set(city_tally) | set(modified_city_records))
+
+    lines.append("## Per-City 4-Strategy W/L (Cumulative)")
     lines.append("")
-    lines.append("| City | Sigma W/L | Sigma Rate | P5 W/L | P5 Rate | Mean W/L | Mean Rate |")
-    lines.append("|------|-----------|------------|--------|---------|----------|-----------|")
-    for city, rec in sorted(_tally_city_3strategy(runs).items()):
+    lines.append(
+        "| City | Sigma W/L | Sigma Rate | P5 W/L | P5 Rate | Mean W/L | Mean Rate | "
+        "Modifisert W/L | Modifisert Rate |"
+    )
+    lines.append(
+        "|------|-----------|------------|--------|---------|----------|-----------|"
+        "----------------|-----------------|"
+    )
+    for city in all_cities:
+        rec = city_tally.get(city, {})
         cells: list[str] = []
         for sn in ("sigma", "p5", "mean"):
-            w = rec[sn]["wins"]
-            l = rec[sn]["losses"]
+            stats = rec.get(sn, {"wins": 0, "losses": 0})
+            w = stats["wins"]
+            l = stats["losses"]
             n = w + l
             rate = f"{round(w / n * 100, 1)}%" if n >= MIN_SAMPLE else "N/A — not enough data"
             cells.append(f"{w}W/{l}L (n={n})")
             cells.append(rate)
+        mrec = modified_city_records.get(city, {"wins": 0, "losses": 0})
+        mw = mrec["wins"]
+        ml = mrec["losses"]
+        mn = mw + ml
+        mrate = f"{round(mw / mn * 100, 1)}%" if mn >= MIN_SAMPLE else "N/A — not enough data"
         lines.append(
-            f"| {city} | {cells[0]} | {cells[1]} | {cells[2]} | {cells[3]} | {cells[4]} | {cells[5]} |"
+            f"| {city} | {cells[0]} | {cells[1]} | {cells[2]} | {cells[3]} | "
+            f"{cells[4]} | {cells[5]} | {mw}W/{ml}L (n={mn}) | {mrate} |"
         )
     lines.append("")
 
