@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-05T13:00:45.424846+00:00",
+  "updated": "2026-09-05T15:13:27.507219+00:00",
   "thresholds": {
     "station_bias_mean_c": 0.75,
     "station_bias_std_c": 0.75,
@@ -8,8 +8,8 @@
   "summary": {
     "n_cities": 51,
     "n_station_bias": 1,
-    "n_high_variance": 28,
-    "n_ok": 22
+    "n_high_variance": 29,
+    "n_ok": 21
   },
   "cities": [
     {
@@ -125,20 +125,6 @@
       "cause": "high scatter (std 1.32°C) — model/noise error rather than a fixed station offset"
     },
     {
-      "city": "Tokyo, JP",
-      "n": 22,
-      "mean_error_c": -1.05,
-      "median_error_c": -1.2,
-      "mae_c": 1.114,
-      "rmse_c": 1.364,
-      "std_error_c": 0.891,
-      "bias_sign": "negative",
-      "bias_magnitude_c": 1.05,
-      "unit": "C",
-      "classification": "HIGH_VARIANCE",
-      "cause": "high scatter (std 0.89°C) — model/noise error rather than a fixed station offset"
-    },
-    {
       "city": "Manila, PH",
       "n": 22,
       "mean_error_c": -1.036,
@@ -181,6 +167,20 @@
       "cause": "high scatter (std 0.83°C) — model/noise error rather than a fixed station offset"
     },
     {
+      "city": "Tokyo, JP",
+      "n": 22,
+      "mean_error_c": -0.959,
+      "median_error_c": -0.95,
+      "mae_c": 1.086,
+      "rmse_c": 1.344,
+      "std_error_c": 0.963,
+      "bias_sign": "negative",
+      "bias_magnitude_c": 0.959,
+      "unit": "C",
+      "classification": "HIGH_VARIANCE",
+      "cause": "high scatter (std 0.96°C) — model/noise error rather than a fixed station offset"
+    },
+    {
       "city": "Austin, US",
       "n": 25,
       "mean_error_c": -0.929,
@@ -195,20 +195,6 @@
       "cause": "high scatter (std 0.96°C) — model/noise error rather than a fixed station offset"
     },
     {
-      "city": "Warsaw, PL",
-      "n": 23,
-      "mean_error_c": -0.878,
-      "median_error_c": -0.9,
-      "mae_c": 0.913,
-      "rmse_c": 1.078,
-      "std_error_c": 0.64,
-      "bias_sign": "negative",
-      "bias_magnitude_c": 0.878,
-      "unit": "C",
-      "classification": "STATION_BIAS",
-      "cause": "consistent under-predicts offset (mean -0.88°C, std 0.64°C) — likely different station/source vs Polymarket"
-    },
-    {
       "city": "Seoul (Incheon), KR",
       "n": 22,
       "mean_error_c": -0.877,
@@ -221,6 +207,20 @@
       "unit": "C",
       "classification": "HIGH_VARIANCE",
       "cause": "high scatter (std 0.97°C) — model/noise error rather than a fixed station offset"
+    },
+    {
+      "city": "Warsaw, PL",
+      "n": 24,
+      "mean_error_c": -0.875,
+      "median_error_c": -0.85,
+      "mae_c": 0.908,
+      "rmse_c": 1.068,
+      "std_error_c": 0.626,
+      "bias_sign": "negative",
+      "bias_magnitude_c": 0.875,
+      "unit": "C",
+      "classification": "STATION_BIAS",
+      "cause": "consistent under-predicts offset (mean -0.87°C, std 0.63°C) — likely different station/source vs Polymarket"
     },
     {
       "city": "Paris, FR",
@@ -251,6 +251,20 @@
       "cause": "high scatter (std 0.96°C) — model/noise error rather than a fixed station offset"
     },
     {
+      "city": "Amsterdam, NL",
+      "n": 26,
+      "mean_error_c": -0.758,
+      "median_error_c": -0.65,
+      "mae_c": 0.819,
+      "rmse_c": 1.123,
+      "std_error_c": 0.846,
+      "bias_sign": "negative",
+      "bias_magnitude_c": 0.758,
+      "unit": "C",
+      "classification": "HIGH_VARIANCE",
+      "cause": "high scatter (std 0.85°C) — model/noise error rather than a fixed station offset"
+    },
+    {
       "city": "Atlanta, US",
       "n": 25,
       "mean_error_c": -0.736,
@@ -265,15 +279,15 @@
       "cause": "high scatter (std 1.07°C) — model/noise error rather than a fixed station offset"
     },
     {
-      "city": "Amsterdam, NL",
-      "n": 25,
-      "mean_error_c": -0.724,
-      "median_error_c": -0.6,
-      "mae_c": 0.788,
-      "rmse_c": 1.1,
-      "std_error_c": 0.845,
-      "bias_sign": "negative",
-      "bias_magnitude_c": 0.724,
+      "city": "Istanbul, TR",
+      "n": 26,
+      "mean_error_c": 0.708,
+      "median_error_c": 0.8,
+      "mae_c": 0.977,
+      "rmse_c": 1.105,
+      "std_error_c": 0.865,
+      "bias_sign": "positive",
+      "bias_magnitude_c": 0.708,
       "unit": "C",
       "classification": "OK",
       "cause": "within tolerance — no systematic miss cause detected"
@@ -293,29 +307,15 @@
       "cause": "high scatter (std 1.38°C) — model/noise error rather than a fixed station offset"
     },
     {
-      "city": "Istanbul, TR",
-      "n": 25,
-      "mean_error_c": 0.664,
-      "median_error_c": 0.8,
-      "mae_c": 0.944,
-      "rmse_c": 1.067,
-      "std_error_c": 0.853,
-      "bias_sign": "positive",
-      "bias_magnitude_c": 0.664,
-      "unit": "C",
-      "classification": "OK",
-      "cause": "within tolerance — no systematic miss cause detected"
-    },
-    {
       "city": "Chongqing, CN",
       "n": 22,
-      "mean_error_c": -0.641,
+      "mean_error_c": -0.609,
       "median_error_c": -0.6,
-      "mae_c": 0.85,
-      "rmse_c": 1.019,
-      "std_error_c": 0.81,
+      "mae_c": 0.818,
+      "rmse_c": 0.998,
+      "std_error_c": 0.809,
       "bias_sign": "negative",
-      "bias_magnitude_c": 0.641,
+      "bias_magnitude_c": 0.609,
       "unit": "C",
       "classification": "OK",
       "cause": "within tolerance — no systematic miss cause detected"
@@ -406,14 +406,14 @@
     },
     {
       "city": "Jeddah, SA",
-      "n": 22,
-      "mean_error_c": 0.509,
-      "median_error_c": 0.55,
-      "mae_c": 0.8,
-      "rmse_c": 1.005,
-      "std_error_c": 0.886,
+      "n": 23,
+      "mean_error_c": 0.53,
+      "median_error_c": 0.7,
+      "mae_c": 0.809,
+      "rmse_c": 1.004,
+      "std_error_c": 0.872,
       "bias_sign": "positive",
-      "bias_magnitude_c": 0.509,
+      "bias_magnitude_c": 0.53,
       "unit": "C",
       "classification": "OK",
       "cause": "within tolerance — no systematic miss cause detected"
@@ -560,28 +560,28 @@
     },
     {
       "city": "Ankara, TR",
-      "n": 25,
-      "mean_error_c": -0.316,
+      "n": 26,
+      "mean_error_c": -0.308,
       "median_error_c": -0.3,
-      "mae_c": 0.516,
-      "rmse_c": 0.67,
-      "std_error_c": 0.603,
+      "mae_c": 0.5,
+      "rmse_c": 0.657,
+      "std_error_c": 0.592,
       "bias_sign": "negative",
-      "bias_magnitude_c": 0.316,
+      "bias_magnitude_c": 0.308,
       "unit": "C",
       "classification": "OK",
       "cause": "within tolerance — no systematic miss cause detected"
     },
     {
       "city": "Moscow, RU",
-      "n": 25,
-      "mean_error_c": -0.288,
+      "n": 26,
+      "mean_error_c": -0.277,
       "median_error_c": -0.4,
-      "mae_c": 0.776,
-      "rmse_c": 0.937,
-      "std_error_c": 0.91,
+      "mae_c": 0.746,
+      "rmse_c": 0.919,
+      "std_error_c": 0.894,
       "bias_sign": "negative",
-      "bias_magnitude_c": 0.288,
+      "bias_magnitude_c": 0.277,
       "unit": "C",
       "classification": "OK",
       "cause": "within tolerance — no systematic miss cause detected"
@@ -615,20 +615,6 @@
       "cause": "within tolerance — no systematic miss cause detected"
     },
     {
-      "city": "Cape Town, ZA",
-      "n": 24,
-      "mean_error_c": 0.175,
-      "median_error_c": 0.0,
-      "mae_c": 0.925,
-      "rmse_c": 1.081,
-      "std_error_c": 1.09,
-      "bias_sign": "positive",
-      "bias_magnitude_c": 0.175,
-      "unit": "C",
-      "classification": "HIGH_VARIANCE",
-      "cause": "high scatter (std 1.09°C) — model/noise error rather than a fixed station offset"
-    },
-    {
       "city": "Los Angeles, US",
       "n": 24,
       "mean_error_c": -0.139,
@@ -643,29 +629,43 @@
       "cause": "within tolerance — no systematic miss cause detected"
     },
     {
-      "city": "Helsinki, FI",
+      "city": "Cape Town, ZA",
       "n": 25,
-      "mean_error_c": -0.084,
-      "median_error_c": -0.3,
-      "mae_c": 0.692,
-      "rmse_c": 0.834,
-      "std_error_c": 0.846,
-      "bias_sign": "negative",
-      "bias_magnitude_c": 0.084,
+      "mean_error_c": 0.136,
+      "median_error_c": -0.1,
+      "mae_c": 0.92,
+      "rmse_c": 1.071,
+      "std_error_c": 1.085,
+      "bias_sign": "positive",
+      "bias_magnitude_c": 0.136,
+      "unit": "C",
+      "classification": "HIGH_VARIANCE",
+      "cause": "high scatter (std 1.08°C) — model/noise error rather than a fixed station offset"
+    },
+    {
+      "city": "Kuala Lumpur, MY",
+      "n": 22,
+      "mean_error_c": 0.077,
+      "median_error_c": 0.2,
+      "mae_c": 0.595,
+      "rmse_c": 0.761,
+      "std_error_c": 0.775,
+      "bias_sign": "positive",
+      "bias_magnitude_c": 0.077,
       "unit": "C",
       "classification": "OK",
       "cause": "within tolerance — no systematic miss cause detected"
     },
     {
-      "city": "Kuala Lumpur, MY",
-      "n": 22,
-      "mean_error_c": 0.068,
-      "median_error_c": 0.2,
-      "mae_c": 0.586,
-      "rmse_c": 0.745,
-      "std_error_c": 0.759,
-      "bias_sign": "positive",
-      "bias_magnitude_c": 0.068,
+      "city": "Helsinki, FI",
+      "n": 26,
+      "mean_error_c": -0.069,
+      "median_error_c": -0.25,
+      "mae_c": 0.677,
+      "rmse_c": 0.819,
+      "std_error_c": 0.833,
+      "bias_sign": "negative",
+      "bias_magnitude_c": 0.069,
       "unit": "C",
       "classification": "OK",
       "cause": "within tolerance — no systematic miss cause detected"
