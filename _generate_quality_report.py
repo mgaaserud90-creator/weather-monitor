@@ -3424,6 +3424,87 @@ def _build_daily_log_export_html_section() -> str:
     </div>"""
 
 
+# Self-contained "Hent markedspriser" widget. Injected into the generated pages
+# so the dashboard has a manual price-fetch trigger (GitHub Actions
+# workflow_dispatch on fetch_market_prices.yml). The GitHub PAT is kept in the
+# browser's localStorage and is never committed to the repo.
+_FETCH_PRICES_WIDGET = """
+<style>
+  .vm-fetch { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 16px auto 4px; }
+  .vm-fetch-btn {
+    background: var(--green, #3fb950); color: #0d1117; border: none;
+    border-radius: 8px; padding: 12px 26px; font-size: 1rem; font-weight: 700;
+    cursor: pointer; transition: all .2s; box-shadow: 0 2px 10px rgba(63, 185, 80, .25);
+  }
+  .vm-fetch-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+  .vm-fetch-btn:disabled { opacity: .6; cursor: wait; transform: none; }
+  .vm-fetch-status { font-size: .8rem; color: var(--text-dim, #8b949e); min-height: 1.2em; }
+</style>
+<div class="vm-fetch">
+  <button class="vm-fetch-btn" id="vm-fetch-btn" type="button">💰 Hent markedspriser</button>
+  <span class="vm-fetch-status" id="vm-fetch-status"></span>
+</div>
+<script>
+(function () {
+  var GH_OWNER = 'mgaaserud90-creator';
+  var GH_REPO = 'weather-monitor';
+  var GH_WORKFLOW = 'fetch_market_prices.yml';
+  var btn = document.getElementById('vm-fetch-btn');
+  var status = document.getElementById('vm-fetch-status');
+  if (!btn || !status) return;
+
+  function setStatus(msg) { status.textContent = msg; }
+
+  btn.addEventListener('click', function () {
+    var token = '';
+    try { token = localStorage.getItem('vm_gh_pat') || ''; } catch (e) { token = ''; }
+    if (!token) {
+      token = window.prompt('Lim inn en GitHub PAT med "workflow"-rettighet for repoet, for å trigge manuell prisfetch. (GitHub → Settings → Developer settings → Personal access tokens)', '');
+      if (!token) { setStatus('⚠️ Avbrutt — ingen token oppgitt.'); return; }
+      try { localStorage.setItem('vm_gh_pat', token); } catch (e) {}
+    }
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Henter...';
+    setStatus('Trigger GitHub Actions-fetch (' + GH_WORKFLOW + ')...');
+
+    fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/actions/workflows/' + GH_WORKFLOW + '/dispatches', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ ref: 'main' })
+    })
+    .then(function (resp) {
+      if (resp.status === 204 || resp.ok) {
+        setStatus('✅ Klar — fetch startet ' + new Date().toLocaleString('nb-NO') + '. _market_prices.json oppdateres om ~1-2 min.');
+      } else if (resp.status === 401 || resp.status === 403) {
+        try { localStorage.removeItem('vm_gh_pat'); } catch (e) {}
+        setStatus('❌ Ugyldig/utløpt token (' + resp.status + '). Prøv på nytt.');
+      } else {
+        resp.json().then(function (j) {
+          setStatus('❌ Feil ' + resp.status + ': ' + ((j && j.message) || 'ukjent feil'));
+        }).catch(function () {
+          setStatus('❌ Feil ' + resp.status + ' ved triggering.');
+        });
+      }
+    })
+    .catch(function (err) {
+      setStatus('❌ Nettverksfeil: ' + err);
+    })
+    .finally(function () {
+      btn.disabled = false;
+      btn.textContent = '💰 Hent markedspriser';
+    });
+  });
+})();
+</script>
+"""
+
+
 def _generate_html_report() -> str:
     """Generate a self-contained HTML dashboard with dark theme and 3-strategy comparison."""
     log_data = _load_log()
@@ -3831,6 +3912,7 @@ function sortTable(colIdx) {{
   <h1>🌡️ Model Quality Dashboard <span class="rapid-badge">3 STRATEGIES</span></h1>
   <div class="subtitle" id="last-updated">{'⏳ Ingen data enda — første pipeline-kjøring kl 06:00 UTC' if not has_data else f'🤖 Siste pipeline: {last_pipeline_str} | Neste pipeline-oppdatering: …'}</div>
   <a href="_anbefalt_spill.html" style="display:inline-block;margin-top:10px;color:var(--orange);text-decoration:none;font-weight:700;">🎯 Anbefalt spill →</a>
+  {_FETCH_PRICES_WIDGET}
 </header>
 <div class="container">
 
@@ -4693,6 +4775,7 @@ def _generate_index_html() -> str:
 <div class="container">
   <h1>🌤️ VaerMonitor</h1>
   <p class="subtitle">BMA Multi-Model Ensemble · Temperatur Peak Prediksjon · 51 Byer</p>
+  {_FETCH_PRICES_WIDGET}
   <div class="nav-grid">
     <a href="_quality_report.html" class="nav-card">
       <span class="nav-icon">📊</span>
