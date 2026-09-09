@@ -194,9 +194,9 @@ const ALL_CITIES = [
   {name: "Jinan, CN", lat: 36.8572, lon: 117.2158, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16}
 ];
 const ACTUAL_PEAK_DATA = {
+  "Helsinki, FI": {actual_peak: 16.5, peak_detected_at: "", recommendation: "None", spill: 16},
   "Guangzhou, CN": {actual_peak: 32.9, peak_detected_at: "", recommendation: "None", spill: 33},
   "Seoul (Incheon), KR": {actual_peak: 25.0, peak_detected_at: "", recommendation: "None", spill: 25},
-  "Wellington, NZ": {actual_peak: 12.8, peak_detected_at: "", recommendation: "None", spill: 13},
   "Denver, US": {actual_peak: 27.2, peak_detected_at: "", recommendation: "None", spill: 27},
   "Chengdu, CN": {actual_peak: 24.3, peak_detected_at: "", recommendation: "None", spill: 26},
   "Beijing, CN": {actual_peak: 24.7, peak_detected_at: "", recommendation: "None", spill: 26},
@@ -224,26 +224,29 @@ const ACTUAL_PEAK_DATA = {
   "Jinan, CN": {actual_peak: 23.9, peak_detected_at: "", recommendation: "None", spill: 24},
   "Jeddah, SA": {actual_peak: 37.7, peak_detected_at: "", recommendation: "None", spill: 34},
   "Zhengzhou, CN": {actual_peak: 18.6, peak_detected_at: "", recommendation: "None", spill: 18},
-  "San Francisco, US": {actual_peak: 35.5, peak_detected_at: "", recommendation: "None", spill: 29},
+  "San Francisco, US": {actual_peak: 35.5, peak_detected_at: "", recommendation: "None", spill: 28},
   "Amsterdam, NL": {actual_peak: 17.9, peak_detected_at: "", recommendation: "None", spill: 18},
   "London, UK": {actual_peak: 18.5, peak_detected_at: "", recommendation: "None", spill: 19},
   "Madrid, ES": {actual_peak: 27.2, peak_detected_at: "", recommendation: "None", spill: 26},
   "Paris, FR": {actual_peak: 20.9, peak_detected_at: "", recommendation: "None", spill: 21},
-  "Milan, IT": {actual_peak: 22.3, peak_detected_at: "", recommendation: "None", spill: 22},
+  "Milan, IT": {actual_peak: 22.3, peak_detected_at: "", recommendation: "None", spill: 23},
   "Munich, DE": {actual_peak: 19.2, peak_detected_at: "", recommendation: "None", spill: 21},
   "Warsaw, PL": {actual_peak: 27.4, peak_detected_at: "", recommendation: "None", spill: 28},
   "Cape Town, ZA": {actual_peak: 20.5, peak_detected_at: "", recommendation: "None", spill: 19},
   "Dallas, US": {actual_peak: 38.3, peak_detected_at: "", recommendation: "None", spill: 37},
   "Buenos Aires, AR": {actual_peak: 19.2, peak_detected_at: "", recommendation: "None", spill: 19},
-  "Atlanta, US": {actual_peak: 31.9, peak_detected_at: "", recommendation: "None", spill: 32},
+  "Atlanta, US": {actual_peak: 31.9, peak_detected_at: "", recommendation: "None", spill: 31},
   "Sao Paulo, BR": {actual_peak: 22.7, peak_detected_at: "", recommendation: "None", spill: 21},
+  "New York, US": {actual_peak: 29.2, peak_detected_at: "", recommendation: "None", spill: 28},
   "Chicago, US": {actual_peak: 28.0, peak_detected_at: "", recommendation: "None", spill: 26},
-  "Austin, US": {actual_peak: 35.1, peak_detected_at: "", recommendation: "None", spill: 34},
+  "Panama City, PA": {actual_peak: 29.9, peak_detected_at: "", recommendation: "None", spill: 29},
+  "Toronto, CA": {actual_peak: 26.1, peak_detected_at: "", recommendation: "None", spill: 22},
+  "Austin, US": {actual_peak: 35.1, peak_detected_at: "", recommendation: "None", spill: 35},
   "Miami, US": {actual_peak: 29.2, peak_detected_at: "", recommendation: "None", spill: 29}
 };
 const MARKET_PRICES = {};
-const AUTO_SELECT_CITIES = ["Madrid, ES", "Paris, FR", "Munich, DE", "London, UK", "Milan, IT", "Helsinki, FI", "Jeddah, SA", "Istanbul, TR", "Ankara, TR", "Amsterdam, NL", "Warsaw, PL", "Cape Town, ZA", "Tel Aviv, IL", "Moscow, RU"];
-const AUTO_SELECT_GENERATED = "2026-09-09 15:19:34 UTC";
+const AUTO_SELECT_CITIES = ["Madrid, ES", "Paris, FR", "Munich, DE", "London, UK", "Milan, IT", "Helsinki, FI", "Amsterdam, NL", "Warsaw, PL", "Cape Town, ZA", "Buenos Aires, AR", "Sao Paulo, BR", "Moscow, RU"];
+const AUTO_SELECT_GENERATED = "2026-09-09 16:39:59 UTC";
 
 // ---- State ----
 const activeCities = new Set();  // city names currently monitored
