@@ -221533,15 +221533,15 @@
     {
       "run_date": "2026-09-11",
       "target_date": "2026-09-11",
-      "phase": "daily_bma",
+      "phase": "hourly_active",
       "run_started": "2026-09-11T01:48:55.172809+00:00",
-      "last_updated": "2026-09-11T12:59:15.866014+00:00",
+      "last_updated": "2026-09-11T15:27:34.466402+00:00",
       "top_5_confidence": [
-        "Guangzhou, CN",
         "Seattle, US",
-        "Beijing, CN",
         "Helsinki, FI",
-        "Wellington, NZ"
+        "Mexico City, MX",
+        "Madrid, ES",
+        "Amsterdam, NL"
       ],
       "predictions": {
         "Guangzhou, CN": {
@@ -221613,20 +221613,20 @@
           "_verdict": "OK"
         },
         "Seattle, US": {
-          "bma_mean": 19.1,
-          "bma_std": 0.58,
+          "bma_mean": 19.2,
+          "bma_std": 0.61,
           "p5": 18.2,
-          "p95": 20.1,
-          "confidence": 0.827,
+          "p95": 20.2,
+          "confidence": 0.816,
           "models": 8,
           "bma_probs": {
             "15": 0.0,
             "16": 0.0,
             "17": 0.3,
-            "18": 14.8,
-            "19": 60.4,
-            "20": 23.7,
-            "21": 0.8,
+            "18": 12.3,
+            "19": 56.3,
+            "20": 29.5,
+            "21": 1.6,
             "22": 0.0,
             "23": 0.0
           },
@@ -221634,21 +221634,21 @@
             "sigma": {
               "spill": 19,
               "k": 0.57,
-              "win_prob": 0.597,
+              "win_prob": 0.586,
               "result": null,
               "actual_peak": 20.7
             },
             "p5": {
               "spill": 18,
               "k": null,
-              "win_prob": 0.265,
+              "win_prob": 0.231,
               "result": null,
               "actual_peak": 20.7
             },
             "mean": {
               "spill": 19,
               "k": 0.0,
-              "win_prob": 0.597,
+              "win_prob": 0.586,
               "result": null,
               "actual_peak": 20.7
             }
@@ -221663,12 +221663,12 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 0.0,
           "_lead_days": 0,
-          "_bias_correction": 0.254,
-          "_mean_corrected": 18.8,
+          "_bias_correction": 0.272,
+          "_mean_corrected": 18.9,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
-            "spread_filter": "narrow",
+            "spread_filter": "medium",
             "uhi_adjusted": false
           }
         },
@@ -221746,7 +221746,7 @@
           "bma_std": 0.61,
           "p5": 15.6,
           "p95": 17.6,
-          "confidence": 0.747,
+          "confidence": 0.748,
           "models": 7,
           "bma_probs": {
             "12": 0.0,
@@ -221763,23 +221763,26 @@
             "sigma": {
               "spill": 16,
               "k": 0.86,
-              "win_prob": 0.34,
-              "result": null,
-              "actual_peak": 17.3
+              "win_prob": 0.355,
+              "result": "LOSS",
+              "actual_peak": 17.3,
+              "pm_result": "LOSS"
             },
             "p5": {
               "spill": 16,
               "k": null,
-              "win_prob": 0.34,
-              "result": null,
-              "actual_peak": 17.3
+              "win_prob": 0.355,
+              "result": "LOSS",
+              "actual_peak": 17.3,
+              "pm_result": "LOSS"
             },
             "mean": {
               "spill": 17,
               "k": 0.0,
-              "win_prob": 0.539,
-              "result": null,
-              "actual_peak": 17.3
+              "win_prob": 0.529,
+              "result": "WIN",
+              "actual_peak": 17.3,
+              "pm_result": "WIN"
             }
           },
           "peak_detected_at": null,
@@ -221792,7 +221795,7 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 0.0,
           "_lead_days": 0,
-          "_bias_correction": -0.113,
+          "_bias_correction": -0.084,
           "_mean_corrected": 16.7,
           "_features": {
             "model_weighting": true,
@@ -221862,28 +221865,29 @@
           }
         },
         "Moscow, RU": {
-          "bma_mean": 16.8,
-          "bma_std": 0.7,
+          "bma_mean": 17.0,
+          "bma_std": 0.85,
           "p5": 15.6,
-          "p95": 17.9,
-          "confidence": 0.719,
-          "models": 6,
+          "p95": 18.4,
+          "confidence": 0.637,
+          "models": 7,
           "bma_probs": {
             "12": 0.0,
             "13": 0.0,
-            "14": 0.1,
-            "15": 3.1,
-            "16": 30.2,
-            "17": 50.7,
-            "18": 15.1,
-            "19": 0.8,
-            "20": 0.0
+            "14": 0.2,
+            "15": 3.7,
+            "16": 23.9,
+            "17": 44.4,
+            "18": 23.9,
+            "19": 3.7,
+            "20": 0.2,
+            "21": 0.0
           },
           "strategies": {
             "sigma": {
               "spill": 16,
-              "k": 0.88,
-              "win_prob": 0.182,
+              "k": 1.19,
+              "win_prob": 0.149,
               "result": "LOSS",
               "actual_peak": 16.9,
               "pm_result": "LOSS"
@@ -221891,7 +221895,7 @@
             "p5": {
               "spill": 16,
               "k": null,
-              "win_prob": 0.182,
+              "win_prob": 0.149,
               "result": "LOSS",
               "actual_peak": 16.9,
               "pm_result": "LOSS"
@@ -221899,7 +221903,7 @@
             "mean": {
               "spill": 17,
               "k": 0.0,
-              "win_prob": 0.52,
+              "win_prob": 0.414,
               "result": "LOSS",
               "actual_peak": 16.9,
               "pm_result": "LOSS"
@@ -221915,8 +221919,8 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 1.5,
           "_lead_days": 0,
-          "_bias_correction": -0.306,
-          "_mean_corrected": 17.1,
+          "_bias_correction": -0.331,
+          "_mean_corrected": 17.3,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -221930,42 +221934,42 @@
           "_verdict": "MINOR"
         },
         "Denver, US": {
-          "bma_mean": 31.6,
-          "bma_std": 0.79,
-          "p5": 30.3,
+          "bma_mean": 31.7,
+          "bma_std": 0.73,
+          "p5": 30.5,
           "p95": 32.9,
-          "confidence": 0.714,
+          "confidence": 0.671,
           "models": 8,
           "bma_probs": {
             "27": 0.0,
             "28": 0.0,
-            "29": 0.4,
-            "30": 7.8,
-            "31": 36.8,
-            "32": 42.3,
-            "33": 11.9,
-            "34": 0.8,
+            "29": 0.1,
+            "30": 4.9,
+            "31": 34.2,
+            "32": 47.1,
+            "33": 13.0,
+            "34": 0.7,
             "35": 0.0
           },
           "strategies": {
             "sigma": {
               "spill": 31,
-              "k": 0.96,
-              "win_prob": 0.162,
+              "k": 1.35,
+              "win_prob": 0.121,
               "result": null,
               "actual_peak": 32.2
             },
             "p5": {
               "spill": 31,
               "k": null,
-              "win_prob": 0.162,
+              "win_prob": 0.121,
               "result": null,
               "actual_peak": 32.2
             },
             "mean": {
               "spill": 32,
               "k": 0.0,
-              "win_prob": 0.455,
+              "win_prob": 0.464,
               "result": null,
               "actual_peak": 32.2
             }
@@ -221980,8 +221984,8 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
-          "_bias_correction": -0.637,
-          "_mean_corrected": 32.2,
+          "_bias_correction": -0.633,
+          "_mean_corrected": 32.3,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -222191,43 +222195,43 @@
           "_verdict": "OK"
         },
         "Mexico City, MX": {
-          "bma_mean": 25.0,
-          "bma_std": 0.88,
-          "p5": 23.5,
-          "p95": 26.4,
-          "confidence": 0.692,
+          "bma_mean": 24.9,
+          "bma_std": 0.82,
+          "p5": 23.6,
+          "p95": 26.3,
+          "confidence": 0.706,
           "models": 7,
           "bma_probs": {
             "20": 0.0,
             "21": 0.0,
             "22": 0.2,
             "23": 4.2,
-            "24": 24.1,
-            "25": 43.0,
-            "26": 24.1,
-            "27": 4.2,
-            "28": 0.2,
+            "24": 26.9,
+            "25": 45.5,
+            "26": 20.7,
+            "27": 2.5,
+            "28": 0.1,
             "29": 0.0
           },
           "strategies": {
             "sigma": {
-              "spill": 25,
-              "k": 0.86,
-              "win_prob": 0.186,
+              "spill": 26,
+              "k": 0.64,
+              "win_prob": 0.453,
               "result": null,
               "actual_peak": 23.1
             },
             "p5": {
               "spill": 25,
               "k": null,
-              "win_prob": 0.186,
+              "win_prob": 0.199,
               "result": null,
               "actual_peak": 23.1
             },
             "mean": {
               "spill": 26,
               "k": 0.0,
-              "win_prob": 0.419,
+              "win_prob": 0.453,
               "result": null,
               "actual_peak": 23.1
             }
@@ -222242,8 +222246,8 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 1.5,
           "_lead_days": 0,
-          "_bias_correction": -1.204,
-          "_mean_corrected": 26.2,
+          "_bias_correction": -1.225,
+          "_mean_corrected": 26.1,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -222252,20 +222256,20 @@
           }
         },
         "Madrid, ES": {
-          "bma_mean": 30.2,
-          "bma_std": 0.61,
+          "bma_mean": 30.1,
+          "bma_std": 0.58,
           "p5": 29.2,
-          "p95": 31.2,
-          "confidence": 0.68,
+          "p95": 31.1,
+          "confidence": 0.684,
           "models": 7,
           "bma_probs": {
             "26": 0.0,
             "27": 0.0,
             "28": 0.3,
-            "29": 12.3,
-            "30": 56.3,
-            "31": 29.5,
-            "32": 1.6,
+            "29": 14.8,
+            "30": 60.4,
+            "31": 23.7,
+            "32": 0.8,
             "33": 0.0,
             "34": 0.0
           },
@@ -222273,21 +222277,21 @@
             "sigma": {
               "spill": 30,
               "k": 1.35,
-              "win_prob": 0.412,
+              "win_prob": 0.471,
               "result": null,
               "actual_peak": 30.2
             },
             "p5": {
               "spill": 30,
               "k": null,
-              "win_prob": 0.412,
+              "win_prob": 0.471,
               "result": null,
               "actual_peak": 30.2
             },
             "mean": {
-              "spill": 31,
+              "spill": 30,
               "k": 0.0,
-              "win_prob": 0.486,
+              "win_prob": 0.471,
               "result": null,
               "actual_peak": 30.2
             }
@@ -222303,52 +222307,52 @@
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
           "_bias_correction": -0.377,
-          "_mean_corrected": 30.6,
+          "_mean_corrected": 30.5,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
-            "spread_filter": "medium",
+            "spread_filter": "narrow",
             "uhi_adjusted": false
           }
         },
         "Amsterdam, NL": {
-          "bma_mean": 19.6,
+          "bma_mean": 19.7,
           "bma_std": 0.97,
-          "p5": 18.0,
-          "p95": 21.2,
-          "confidence": 0.677,
+          "p5": 18.1,
+          "p95": 21.3,
+          "confidence": 0.679,
           "models": 7,
           "bma_probs": {
             "15": 0.0,
-            "16": 0.1,
-            "17": 1.4,
-            "18": 11.3,
-            "19": 33.1,
-            "20": 36.4,
-            "21": 15.2,
-            "22": 2.4,
-            "23": 0.1,
+            "16": 0.0,
+            "17": 1.1,
+            "18": 9.6,
+            "19": 31.0,
+            "20": 37.7,
+            "21": 17.3,
+            "22": 3.0,
+            "23": 0.2,
             "24": 0.0
           },
           "strategies": {
             "sigma": {
               "spill": 19,
-              "k": 1.28,
-              "win_prob": 0.158,
+              "k": 1.27,
+              "win_prob": 0.138,
               "result": null,
               "actual_peak": 20.1
             },
             "p5": {
               "spill": 19,
               "k": null,
-              "win_prob": 0.158,
+              "win_prob": 0.138,
               "result": null,
               "actual_peak": 20.1
             },
             "mean": {
               "spill": 20,
               "k": 0.0,
-              "win_prob": 0.367,
+              "win_prob": 0.353,
               "result": null,
               "actual_peak": 20.1
             }
@@ -222364,7 +222368,7 @@
           "_uhi_adjustment": 0.0,
           "_lead_days": 0,
           "_bias_correction": -0.771,
-          "_mean_corrected": 20.4,
+          "_mean_corrected": 20.5,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -222377,7 +222381,7 @@
           "bma_std": 0.7,
           "p5": 28.6,
           "p95": 30.9,
-          "confidence": 0.659,
+          "confidence": 0.657,
           "models": 7,
           "bma_probs": {
             "25": 0.0,
@@ -222395,22 +222399,25 @@
               "spill": 29,
               "k": 1.36,
               "win_prob": 0.21,
-              "result": null,
-              "actual_peak": 30.6
+              "result": "LOSS",
+              "actual_peak": 30.6,
+              "pm_result": "LOSS"
             },
             "p5": {
               "spill": 29,
               "k": null,
               "win_prob": 0.21,
-              "result": null,
-              "actual_peak": 30.6
+              "result": "LOSS",
+              "actual_peak": 30.6,
+              "pm_result": "LOSS"
             },
             "mean": {
               "spill": 30,
               "k": 0.0,
               "win_prob": 0.525,
-              "result": null,
-              "actual_peak": 30.6
+              "result": "LOSS",
+              "actual_peak": 30.6,
+              "pm_result": "LOSS"
             }
           },
           "peak_detected_at": null,
@@ -222433,42 +222440,44 @@
           }
         },
         "Atlanta, US": {
-          "bma_mean": 31.4,
-          "bma_std": 0.85,
-          "p5": 30.0,
-          "p95": 32.8,
-          "confidence": 0.652,
+          "bma_mean": 31.2,
+          "bma_std": 1.16,
+          "p5": 29.3,
+          "p95": 33.1,
+          "confidence": 0.549,
           "models": 8,
           "bma_probs": {
-            "27": 0.0,
-            "28": 0.0,
-            "29": 1.2,
-            "30": 13.2,
-            "31": 40.2,
-            "32": 35.5,
-            "33": 9.1,
-            "34": 0.7,
-            "35": 0.0
+            "26": 0.0,
+            "27": 0.1,
+            "28": 0.9,
+            "29": 6.1,
+            "30": 20.2,
+            "31": 32.9,
+            "32": 26.7,
+            "33": 10.8,
+            "34": 2.1,
+            "35": 0.2,
+            "36": 0.0
           },
           "strategies": {
             "sigma": {
-              "spill": 31,
+              "spill": 30,
               "k": 1.4,
-              "win_prob": 0.263,
+              "win_prob": 0.12,
               "result": null,
               "actual_peak": 32.0
             },
             "p5": {
-              "spill": 31,
+              "spill": 30,
               "k": null,
-              "win_prob": 0.263,
+              "win_prob": 0.12,
               "result": null,
               "actual_peak": 32.0
             },
             "mean": {
               "spill": 32,
               "k": 0.0,
-              "win_prob": 0.441,
+              "win_prob": 0.325,
               "result": null,
               "actual_peak": 32.0
             }
@@ -222483,8 +222492,8 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
-          "_bias_correction": -0.52,
-          "_mean_corrected": 31.9,
+          "_bias_correction": -0.504,
+          "_mean_corrected": 31.7,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -222493,44 +222502,47 @@
           }
         },
         "Tel Aviv, IL": {
-          "bma_mean": 32.4,
-          "bma_std": 0.79,
+          "bma_mean": 32.5,
+          "bma_std": 0.85,
           "p5": 31.1,
-          "p95": 33.7,
-          "confidence": 0.645,
+          "p95": 33.9,
+          "confidence": 0.636,
           "models": 7,
           "bma_probs": {
             "28": 0.0,
             "29": 0.0,
-            "30": 0.8,
-            "31": 11.9,
-            "32": 42.3,
-            "33": 36.8,
-            "34": 7.8,
-            "35": 0.4,
+            "30": 0.9,
+            "31": 11.0,
+            "32": 38.0,
+            "33": 38.0,
+            "34": 11.0,
+            "35": 0.9,
             "36": 0.0
           },
           "strategies": {
             "sigma": {
-              "spill": 32,
-              "k": 0.22,
-              "win_prob": 0.382,
-              "result": null,
-              "actual_peak": 32.1
+              "spill": 33,
+              "k": 0.1,
+              "win_prob": 0.411,
+              "result": "LOSS",
+              "actual_peak": 32.1,
+              "pm_result": "LOSS"
             },
             "p5": {
               "spill": 31,
               "k": null,
-              "win_prob": 0.087,
-              "result": null,
-              "actual_peak": 32.1
+              "win_prob": 0.082,
+              "result": "WIN",
+              "actual_peak": 32.1,
+              "pm_result": "WIN"
             },
             "mean": {
               "spill": 33,
               "k": 0.0,
               "win_prob": 0.411,
-              "result": null,
-              "actual_peak": 32.1
+              "result": "LOSS",
+              "actual_peak": 32.1,
+              "pm_result": "LOSS"
             }
           },
           "peak_detected_at": null,
@@ -222544,7 +222556,7 @@
           "_uhi_adjustment": 0.0,
           "_lead_days": 0,
           "_bias_correction": -0.152,
-          "_mean_corrected": 32.6,
+          "_mean_corrected": 32.7,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -222553,43 +222565,44 @@
           }
         },
         "Buenos Aires, AR": {
-          "bma_mean": 19.0,
-          "bma_std": 0.91,
-          "p5": 17.5,
-          "p95": 20.5,
-          "confidence": 0.622,
+          "bma_mean": 18.5,
+          "bma_std": 0.94,
+          "p5": 16.9,
+          "p95": 20.0,
+          "confidence": 0.556,
           "models": 7,
           "bma_probs": {
+            "13": 0.0,
             "14": 0.0,
-            "15": 0.0,
-            "16": 0.3,
-            "17": 4.7,
-            "18": 24.2,
-            "19": 41.7,
-            "20": 24.2,
-            "21": 4.7,
-            "22": 0.3,
+            "15": 0.1,
+            "16": 1.6,
+            "17": 12.7,
+            "18": 35.6,
+            "19": 35.6,
+            "20": 12.7,
+            "21": 1.6,
+            "22": 0.1,
             "23": 0.0
           },
           "strategies": {
             "sigma": {
               "spill": 18,
-              "k": 1.27,
-              "win_prob": 0.112,
+              "k": 1.2,
+              "win_prob": 0.229,
               "result": null,
               "actual_peak": 19.5
             },
             "p5": {
-              "spill": 18,
+              "spill": 17,
               "k": null,
-              "win_prob": 0.112,
+              "win_prob": 0.046,
               "result": null,
               "actual_peak": 19.5
             },
             "mean": {
-              "spill": 20,
+              "spill": 19,
               "k": 0.0,
-              "win_prob": 0.374,
+              "win_prob": 0.404,
               "result": null,
               "actual_peak": 19.5
             }
@@ -222604,8 +222617,8 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 0.8,
           "_lead_days": 0,
-          "_bias_correction": -0.553,
-          "_mean_corrected": 19.6,
+          "_bias_correction": -0.552,
+          "_mean_corrected": 19.1,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -222683,42 +222696,42 @@
           "_verdict": "OK"
         },
         "New York, US": {
-          "bma_mean": 27.3,
-          "bma_std": 0.73,
+          "bma_mean": 27.4,
+          "bma_std": 0.82,
           "p5": 26.1,
-          "p95": 28.5,
-          "confidence": 0.609,
+          "p95": 28.8,
+          "confidence": 0.536,
           "models": 8,
           "bma_probs": {
             "23": 0.0,
             "24": 0.0,
-            "25": 0.7,
-            "26": 13.0,
-            "27": 47.1,
-            "28": 34.2,
-            "29": 4.9,
-            "30": 0.1,
+            "25": 1.0,
+            "26": 12.6,
+            "27": 41.2,
+            "28": 36.2,
+            "29": 8.5,
+            "30": 0.5,
             "31": 0.0
           },
           "strategies": {
             "sigma": {
               "spill": 27,
-              "k": 0.94,
-              "win_prob": 0.439,
+              "k": 0.88,
+              "win_prob": 0.393,
               "result": null,
               "actual_peak": 27.6
             },
             "p5": {
               "spill": 26,
               "k": null,
-              "win_prob": 0.099,
+              "win_prob": 0.108,
               "result": null,
               "actual_peak": 27.6
             },
             "mean": {
               "spill": 27,
               "k": 0.0,
-              "win_prob": 0.439,
+              "win_prob": 0.393,
               "result": null,
               "actual_peak": 27.6
             }
@@ -222733,8 +222746,8 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 1.5,
           "_lead_days": 0,
-          "_bias_correction": -0.122,
-          "_mean_corrected": 27.4,
+          "_bias_correction": -0.082,
+          "_mean_corrected": 27.5,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -222813,43 +222826,42 @@
           "_verdict": "OK"
         },
         "Milan, IT": {
-          "bma_mean": 24.1,
-          "bma_std": 0.73,
-          "p5": 22.9,
-          "p95": 25.3,
-          "confidence": 0.591,
+          "bma_mean": 24.3,
+          "bma_std": 0.67,
+          "p5": 23.2,
+          "p95": 25.4,
+          "confidence": 0.599,
           "models": 7,
           "bma_probs": {
-            "19": 0.0,
             "20": 0.0,
             "21": 0.0,
-            "22": 1.4,
-            "23": 19.1,
-            "24": 50.3,
-            "25": 26.4,
-            "26": 2.7,
+            "22": 0.4,
+            "23": 11.3,
+            "24": 50.1,
+            "25": 34.6,
+            "26": 3.6,
             "27": 0.1,
             "28": 0.0
           },
           "strategies": {
             "sigma": {
               "spill": 24,
-              "k": 1.32,
-              "win_prob": 0.284,
+              "k": 1.36,
+              "win_prob": 0.195,
               "result": null,
               "actual_peak": 24.1
             },
             "p5": {
               "spill": 24,
               "k": null,
-              "win_prob": 0.284,
+              "win_prob": 0.195,
               "result": null,
               "actual_peak": 24.1
             },
             "mean": {
               "spill": 25,
               "k": 0.0,
-              "win_prob": 0.498,
+              "win_prob": 0.544,
               "result": null,
               "actual_peak": 24.1
             }
@@ -222865,7 +222877,7 @@
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
           "_bias_correction": -0.75,
-          "_mean_corrected": 24.9,
+          "_mean_corrected": 25.1,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -222943,43 +222955,43 @@
           "_verdict": "OK"
         },
         "London, UK": {
-          "bma_mean": 21.9,
-          "bma_std": 0.91,
-          "p5": 20.4,
+          "bma_mean": 21.8,
+          "bma_std": 0.97,
+          "p5": 20.2,
           "p95": 23.4,
-          "confidence": 0.562,
+          "confidence": 0.55,
           "models": 7,
           "bma_probs": {
             "17": 0.0,
             "18": 0.0,
-            "19": 0.4,
-            "20": 5.8,
-            "21": 26.8,
-            "22": 41.5,
-            "23": 21.5,
+            "19": 0.9,
+            "20": 8.1,
+            "21": 28.8,
+            "22": 38.6,
+            "23": 19.5,
             "24": 3.7,
-            "25": 0.2,
+            "25": 0.3,
             "26": 0.0
           },
           "strategies": {
             "sigma": {
               "spill": 21,
               "k": 1.16,
-              "win_prob": 0.138,
+              "win_prob": 0.168,
               "result": null,
               "actual_peak": 20.9
             },
             "p5": {
               "spill": 21,
               "k": null,
-              "win_prob": 0.138,
+              "win_prob": 0.168,
               "result": null,
               "actual_peak": 20.9
             },
             "mean": {
               "spill": 22,
               "k": 0.0,
-              "win_prob": 0.378,
+              "win_prob": 0.373,
               "result": null,
               "actual_peak": 20.9
             }
@@ -222995,7 +223007,7 @@
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
           "_bias_correction": -0.523,
-          "_mean_corrected": 22.4,
+          "_mean_corrected": 22.3,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -223004,47 +223016,49 @@
           }
         },
         "Warsaw, PL": {
-          "bma_mean": 16.8,
-          "bma_std": 1.34,
-          "p5": 14.6,
-          "p95": 19.0,
-          "confidence": 0.56,
+          "bma_mean": 16.9,
+          "bma_std": 1.25,
+          "p5": 14.8,
+          "p95": 18.9,
+          "confidence": 0.63,
           "models": 7,
           "bma_probs": {
             "11": 0.0,
-            "12": 0.1,
-            "13": 0.6,
-            "14": 3.6,
-            "15": 12.3,
-            "16": 24.5,
-            "17": 28.8,
-            "18": 19.8,
-            "19": 8.0,
-            "20": 1.9,
-            "21": 0.3,
-            "22": 0.0
+            "12": 0.0,
+            "13": 0.3,
+            "14": 2.4,
+            "15": 10.4,
+            "16": 24.3,
+            "17": 31.0,
+            "18": 21.5,
+            "19": 8.2,
+            "20": 1.7,
+            "21": 0.2
           },
           "strategies": {
             "sigma": {
               "spill": 16,
               "k": 1.31,
-              "win_prob": 0.129,
-              "result": null,
-              "actual_peak": 15.8
+              "win_prob": 0.11,
+              "result": "LOSS",
+              "actual_peak": 15.8,
+              "pm_result": "LOSS"
             },
             "p5": {
               "spill": 16,
               "k": null,
-              "win_prob": 0.129,
-              "result": null,
-              "actual_peak": 15.8
+              "win_prob": 0.11,
+              "result": "LOSS",
+              "actual_peak": 15.8,
+              "pm_result": "LOSS"
             },
             "mean": {
               "spill": 18,
               "k": 0.0,
-              "win_prob": 0.287,
-              "result": null,
-              "actual_peak": 15.8
+              "win_prob": 0.31,
+              "result": "LOSS",
+              "actual_peak": 15.8,
+              "pm_result": "LOSS"
             }
           },
           "peak_detected_at": null,
@@ -223058,7 +223072,7 @@
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
           "_bias_correction": -0.948,
-          "_mean_corrected": 17.7,
+          "_mean_corrected": 17.8,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -223136,44 +223150,43 @@
           "_verdict": "OK"
         },
         "Chicago, US": {
-          "bma_mean": 26.3,
-          "bma_std": 1.16,
-          "p5": 24.4,
-          "p95": 28.2,
-          "confidence": 0.545,
+          "bma_mean": 26.1,
+          "bma_std": 0.91,
+          "p5": 24.6,
+          "p95": 27.6,
+          "confidence": 0.581,
           "models": 8,
           "bma_probs": {
             "21": 0.0,
-            "22": 0.1,
-            "23": 0.7,
-            "24": 5.2,
-            "25": 18.5,
-            "26": 32.3,
-            "27": 28.1,
-            "28": 12.2,
-            "29": 2.6,
-            "30": 0.3,
-            "31": 0.0
+            "22": 0.0,
+            "23": 0.2,
+            "24": 3.7,
+            "25": 21.5,
+            "26": 41.5,
+            "27": 26.8,
+            "28": 5.8,
+            "29": 0.4,
+            "30": 0.0
           },
           "strategies": {
             "sigma": {
               "spill": 25,
-              "k": 1.17,
-              "win_prob": 0.129,
+              "k": 1.22,
+              "win_prob": 0.137,
               "result": null,
               "actual_peak": 24.9
             },
             "p5": {
               "spill": 25,
               "k": null,
-              "win_prob": 0.129,
+              "win_prob": 0.137,
               "result": null,
               "actual_peak": 24.9
             },
             "mean": {
-              "spill": 27,
+              "spill": 26,
               "k": 0.0,
-              "win_prob": 0.32,
+              "win_prob": 0.377,
               "result": null,
               "actual_peak": 24.9
             }
@@ -223188,8 +223201,8 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 0.7,
           "_lead_days": 0,
-          "_bias_correction": -0.346,
-          "_mean_corrected": 26.6,
+          "_bias_correction": -0.33,
+          "_mean_corrected": 26.4,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -223403,44 +223416,44 @@
           }
         },
         "Toronto, CA": {
-          "bma_mean": 22.5,
-          "bma_std": 1.25,
-          "p5": 20.4,
-          "p95": 24.5,
-          "confidence": 0.536,
+          "bma_mean": 22.3,
+          "bma_std": 1.37,
+          "p5": 20.1,
+          "p95": 24.6,
+          "confidence": 0.421,
           "models": 8,
           "bma_probs": {
             "17": 0.0,
-            "18": 0.1,
-            "19": 0.8,
-            "20": 4.7,
-            "21": 15.7,
-            "22": 28.8,
-            "23": 28.8,
-            "24": 15.7,
-            "25": 4.7,
-            "26": 0.8,
+            "18": 0.3,
+            "19": 1.8,
+            "20": 7.4,
+            "21": 18.5,
+            "22": 27.8,
+            "23": 25.1,
+            "24": 13.6,
+            "25": 4.4,
+            "26": 0.9,
             "27": 0.1
           },
           "strategies": {
             "sigma": {
               "spill": 20,
               "k": 1.4,
-              "win_prob": 0.074,
+              "win_prob": 0.102,
               "result": null,
               "actual_peak": 22.4
             },
             "p5": {
               "spill": 20,
               "k": null,
-              "win_prob": 0.074,
+              "win_prob": 0.102,
               "result": null,
               "actual_peak": 22.4
             },
             "mean": {
               "spill": 22,
               "k": 0.0,
-              "win_prob": 0.309,
+              "win_prob": 0.285,
               "result": null,
               "actual_peak": 22.4
             }
@@ -223455,8 +223468,8 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
-          "_bias_correction": 0.33,
-          "_mean_corrected": 22.2,
+          "_bias_correction": 0.29,
+          "_mean_corrected": 22.0,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -223466,42 +223479,42 @@
         },
         "Paris, FR": {
           "bma_mean": 23.9,
-          "bma_std": 1.12,
-          "p5": 22.0,
+          "bma_std": 1.09,
+          "p5": 22.1,
           "p95": 25.7,
-          "confidence": 0.529,
+          "confidence": 0.532,
           "models": 7,
           "bma_probs": {
             "19": 0.0,
             "20": 0.1,
-            "21": 1.5,
-            "22": 9.0,
-            "23": 25.5,
-            "24": 34.3,
+            "21": 1.3,
+            "22": 8.6,
+            "23": 25.7,
+            "24": 35.2,
             "25": 22.0,
-            "26": 6.6,
-            "27": 0.9,
-            "28": 0.1
+            "26": 6.3,
+            "27": 0.8,
+            "28": 0.0
           },
           "strategies": {
             "sigma": {
               "spill": 23,
               "k": 1.4,
-              "win_prob": 0.116,
+              "win_prob": 0.113,
               "result": null,
               "actual_peak": null
             },
             "p5": {
               "spill": 23,
               "k": null,
-              "win_prob": 0.116,
+              "win_prob": 0.113,
               "result": null,
               "actual_peak": null
             },
             "mean": {
               "spill": 25,
               "k": 0.0,
-              "win_prob": 0.333,
+              "win_prob": 0.341,
               "result": null,
               "actual_peak": null
             }
@@ -223600,7 +223613,7 @@
           "bma_std": 1.25,
           "p5": 17.1,
           "p95": 21.2,
-          "confidence": 0.512,
+          "confidence": 0.513,
           "models": 7,
           "bma_probs": {
             "14": 0.0,
@@ -223659,44 +223672,43 @@
         },
         "San Francisco, US": {
           "bma_mean": 20.3,
-          "bma_std": 1.46,
-          "p5": 17.9,
+          "bma_std": 1.43,
+          "p5": 18.0,
           "p95": 22.7,
-          "confidence": 0.509,
+          "confidence": 0.512,
           "models": 8,
           "bma_probs": {
-            "14": 0.0,
             "15": 0.0,
             "16": 0.4,
-            "17": 2.3,
-            "18": 8.1,
-            "19": 18.3,
-            "20": 26.3,
-            "21": 24.0,
-            "22": 14.0,
-            "23": 5.2,
-            "24": 1.2,
+            "17": 2.1,
+            "18": 7.9,
+            "19": 18.4,
+            "20": 26.8,
+            "21": 24.4,
+            "22": 13.9,
+            "23": 4.9,
+            "24": 1.1,
             "25": 0.2
           },
           "strategies": {
             "sigma": {
               "spill": 18,
               "k": 1.4,
-              "win_prob": 0.087,
+              "win_prob": 0.089,
               "result": null,
               "actual_peak": null
             },
             "p5": {
               "spill": 18,
               "k": null,
-              "win_prob": 0.087,
+              "win_prob": 0.089,
               "result": null,
               "actual_peak": null
             },
             "mean": {
               "spill": 20,
               "k": 0.0,
-              "win_prob": 0.265,
+              "win_prob": 0.272,
               "result": null,
               "actual_peak": null
             }
@@ -223711,7 +223723,7 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 0.0,
           "_lead_days": 0,
-          "_bias_correction": 0.07,
+          "_bias_correction": 0.12,
           "_mean_corrected": 20.2,
           "_features": {
             "model_weighting": true,
@@ -223787,44 +223799,44 @@
           }
         },
         "Miami, US": {
-          "bma_mean": 30.8,
-          "bma_std": 1.16,
-          "p5": 28.9,
-          "p95": 32.7,
-          "confidence": 0.497,
+          "bma_mean": 30.3,
+          "bma_std": 1.22,
+          "p5": 28.3,
+          "p95": 32.3,
+          "confidence": 0.49,
           "models": 8,
           "bma_probs": {
             "25": 0.0,
-            "26": 0.0,
-            "27": 0.2,
-            "28": 2.1,
-            "29": 10.8,
-            "30": 26.7,
-            "31": 32.9,
-            "32": 20.2,
-            "33": 6.1,
-            "34": 0.9,
-            "35": 0.1
+            "26": 0.1,
+            "27": 1.0,
+            "28": 5.9,
+            "29": 18.6,
+            "30": 30.9,
+            "31": 27.2,
+            "32": 12.7,
+            "33": 3.1,
+            "34": 0.4,
+            "35": 0.0
           },
           "strategies": {
             "sigma": {
-              "spill": 30,
-              "k": 1.32,
-              "win_prob": 0.142,
+              "spill": 29,
+              "k": 1.3,
+              "win_prob": 0.082,
               "result": null,
               "actual_peak": 30.2
             },
             "p5": {
-              "spill": 30,
+              "spill": 29,
               "k": null,
-              "win_prob": 0.142,
+              "win_prob": 0.082,
               "result": null,
               "actual_peak": 30.2
             },
             "mean": {
-              "spill": 32,
+              "spill": 31,
               "k": 0.0,
-              "win_prob": 0.313,
+              "win_prob": 0.319,
               "result": null,
               "actual_peak": 30.2
             }
@@ -223840,7 +223852,7 @@
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
           "_bias_correction": -0.762,
-          "_mean_corrected": 31.6,
+          "_mean_corrected": 31.1,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -223918,45 +223930,45 @@
           "_verdict": "STATION_MISMATCH"
         },
         "Sao Paulo, BR": {
-          "bma_mean": 28.5,
-          "bma_std": 1.52,
+          "bma_mean": 28.3,
+          "bma_std": 1.43,
           "p5": 25.9,
-          "p95": 30.9,
-          "confidence": 0.481,
+          "p95": 30.6,
+          "confidence": 0.49,
           "models": 7,
           "bma_probs": {
             "22": 0.0,
             "23": 0.0,
             "24": 0.4,
-            "25": 2.0,
-            "26": 7.0,
-            "27": 16.1,
-            "28": 24.5,
-            "29": 24.5,
-            "30": 16.1,
-            "31": 7.0,
-            "32": 2.0,
-            "33": 0.4
+            "25": 2.1,
+            "26": 7.9,
+            "27": 18.4,
+            "28": 26.8,
+            "29": 24.4,
+            "30": 13.9,
+            "31": 4.9,
+            "32": 1.1,
+            "33": 0.2
           },
           "strategies": {
             "sigma": {
               "spill": 27,
-              "k": 1.0,
-              "win_prob": 0.129,
+              "k": 1.04,
+              "win_prob": 0.148,
               "result": null,
               "actual_peak": 28.0
             },
             "p5": {
               "spill": 26,
               "k": null,
-              "win_prob": 0.049,
+              "win_prob": 0.055,
               "result": null,
               "actual_peak": 28.0
             },
             "mean": {
               "spill": 29,
               "k": 0.0,
-              "win_prob": 0.256,
+              "win_prob": 0.264,
               "result": null,
               "actual_peak": 28.0
             }
@@ -223972,7 +223984,7 @@
           "_uhi_adjustment": 1.0,
           "_lead_days": 0,
           "_bias_correction": -0.317,
-          "_mean_corrected": 28.8,
+          "_mean_corrected": 28.6,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -223981,45 +223993,42 @@
           }
         },
         "Houston, US": {
-          "bma_mean": 32.0,
-          "bma_std": 1.37,
-          "p5": 29.7,
-          "p95": 34.2,
-          "confidence": 0.47,
+          "bma_mean": 31.6,
+          "bma_std": 0.79,
+          "p5": 30.3,
+          "p95": 32.9,
+          "confidence": 0.66,
           "models": 8,
           "bma_probs": {
-            "26": 0.0,
             "27": 0.0,
-            "28": 0.5,
-            "29": 2.9,
-            "30": 10.3,
-            "31": 22.1,
-            "32": 28.5,
-            "33": 22.1,
-            "34": 10.3,
-            "35": 2.9,
-            "36": 0.5,
-            "37": 0.0
+            "28": 0.0,
+            "29": 0.4,
+            "30": 7.8,
+            "31": 36.8,
+            "32": 42.3,
+            "33": 11.9,
+            "34": 0.8,
+            "35": 0.0
           },
           "strategies": {
             "sigma": {
               "spill": 32,
-              "k": 0.6,
-              "win_prob": 0.254,
+              "k": 0.94,
+              "win_prob": 0.446,
               "result": null,
               "actual_peak": null
             },
             "p5": {
-              "spill": 30,
+              "spill": 31,
               "k": null,
-              "win_prob": 0.046,
+              "win_prob": 0.147,
               "result": null,
               "actual_peak": null
             },
             "mean": {
-              "spill": 33,
+              "spill": 32,
               "k": 0.0,
-              "win_prob": 0.278,
+              "win_prob": 0.446,
               "result": null,
               "actual_peak": null
             }
@@ -224034,12 +224043,12 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
-          "_bias_correction": -0.676,
-          "_mean_corrected": 32.7,
+          "_bias_correction": -0.69,
+          "_mean_corrected": 32.3,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
-            "spread_filter": "wide",
+            "spread_filter": "medium",
             "uhi_adjusted": false
           }
         },
@@ -224068,22 +224077,25 @@
               "spill": 31,
               "k": 1.33,
               "win_prob": 0.185,
-              "result": null,
-              "actual_peak": 30.6
+              "result": "WIN",
+              "actual_peak": 30.6,
+              "pm_result": "WIN"
             },
             "p5": {
               "spill": 30,
               "k": null,
               "win_prob": 0.049,
-              "result": null,
-              "actual_peak": 30.6
+              "result": "LOSS",
+              "actual_peak": 30.6,
+              "pm_result": "LOSS"
             },
             "mean": {
               "spill": 32,
               "k": 0.0,
               "win_prob": 0.333,
-              "result": null,
-              "actual_peak": 30.6
+              "result": "LOSS",
+              "actual_peak": 30.6,
+              "pm_result": "LOSS"
             }
           },
           "peak_detected_at": null,
@@ -224106,45 +224118,45 @@
           }
         },
         "Austin, US": {
-          "bma_mean": 37.0,
-          "bma_std": 1.46,
-          "p5": 34.6,
-          "p95": 39.4,
-          "confidence": 0.456,
+          "bma_mean": 36.9,
+          "bma_std": 1.37,
+          "p5": 34.7,
+          "p95": 39.2,
+          "confidence": 0.571,
           "models": 8,
           "bma_probs": {
             "31": 0.0,
             "32": 0.1,
-            "33": 0.7,
-            "34": 3.5,
-            "35": 10.9,
-            "36": 21.4,
-            "37": 26.8,
-            "38": 21.4,
-            "39": 10.9,
-            "40": 3.5,
-            "41": 0.7,
-            "42": 0.1
+            "33": 0.6,
+            "34": 3.3,
+            "35": 11.4,
+            "36": 23.2,
+            "37": 28.4,
+            "38": 20.9,
+            "39": 9.3,
+            "40": 2.5,
+            "41": 0.4,
+            "42": 0.0
           },
           "strategies": {
             "sigma": {
               "spill": 36,
               "k": 1.4,
-              "win_prob": 0.105,
+              "win_prob": 0.107,
               "result": null,
               "actual_peak": 37.3
             },
             "p5": {
               "spill": 36,
               "k": null,
-              "win_prob": 0.105,
+              "win_prob": 0.107,
               "result": null,
               "actual_peak": 37.3
             },
             "mean": {
               "spill": 38,
               "k": 0.0,
-              "win_prob": 0.268,
+              "win_prob": 0.285,
               "result": null,
               "actual_peak": 37.3
             }
@@ -224159,7 +224171,7 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
-          "_bias_correction": -1.037,
+          "_bias_correction": -1.061,
           "_mean_corrected": 38.0,
           "_features": {
             "model_weighting": true,
@@ -224170,44 +224182,43 @@
         },
         "Panama City, PA": {
           "bma_mean": 30.2,
-          "bma_std": 1.37,
-          "p5": 27.9,
+          "bma_std": 1.31,
+          "p5": 28.1,
           "p95": 32.4,
           "confidence": 0.443,
           "models": 7,
           "bma_probs": {
-            "24": 0.0,
             "25": 0.0,
-            "26": 0.3,
-            "27": 2.1,
-            "28": 8.3,
-            "29": 19.7,
-            "30": 28.2,
-            "31": 24.2,
-            "32": 12.5,
-            "33": 3.9,
-            "34": 0.7,
-            "35": 0.1
+            "26": 0.2,
+            "27": 1.7,
+            "28": 7.8,
+            "29": 19.9,
+            "30": 29.4,
+            "31": 24.9,
+            "32": 12.1,
+            "33": 3.4,
+            "34": 0.5,
+            "35": 0.0
           },
           "strategies": {
             "sigma": {
               "spill": 29,
               "k": 1.4,
-              "win_prob": 0.093,
+              "win_prob": 0.091,
               "result": null,
               "actual_peak": null
             },
             "p5": {
               "spill": 29,
               "k": null,
-              "win_prob": 0.093,
+              "win_prob": 0.091,
               "result": null,
               "actual_peak": null
             },
             "mean": {
               "spill": 31,
               "k": 0.0,
-              "win_prob": 0.285,
+              "win_prob": 0.298,
               "result": null,
               "actual_peak": null
             }
@@ -224222,7 +224233,7 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
-          "_bias_correction": -0.896,
+          "_bias_correction": -0.863,
           "_mean_corrected": 31.1,
           "_features": {
             "model_weighting": true,
@@ -224302,45 +224313,45 @@
           "_verdict": "STATION_MISMATCH"
         },
         "Istanbul, TR": {
-          "bma_mean": 25.0,
-          "bma_std": 1.4,
-          "p5": 22.7,
+          "bma_mean": 25.1,
+          "bma_std": 1.34,
+          "p5": 22.9,
           "p95": 27.3,
-          "confidence": 0.436,
+          "confidence": 0.442,
           "models": 7,
           "bma_probs": {
             "19": 0.0,
-            "20": 0.1,
-            "21": 0.6,
-            "22": 3.1,
-            "23": 10.5,
-            "24": 21.9,
-            "25": 27.9,
-            "26": 21.9,
-            "27": 10.5,
+            "20": 0.0,
+            "21": 0.3,
+            "22": 2.3,
+            "23": 9.0,
+            "24": 21.1,
+            "25": 29.0,
+            "26": 23.5,
+            "27": 11.1,
             "28": 3.1,
-            "29": 0.6,
-            "30": 0.1
+            "29": 0.5,
+            "30": 0.0
           },
           "strategies": {
             "sigma": {
-              "spill": 22,
+              "spill": 23,
               "k": 1.4,
-              "win_prob": 0.072,
+              "win_prob": 0.166,
               "result": null,
               "actual_peak": null
             },
             "p5": {
               "spill": 22,
               "k": null,
-              "win_prob": 0.072,
+              "win_prob": 0.059,
               "result": null,
               "actual_peak": null
             },
             "mean": {
               "spill": 24,
               "k": 0.0,
-              "win_prob": 0.271,
+              "win_prob": 0.276,
               "result": null,
               "actual_peak": null
             }
@@ -224356,7 +224367,7 @@
           "_uhi_adjustment": 1.0,
           "_lead_days": 0,
           "_bias_correction": 0.648,
-          "_mean_corrected": 24.4,
+          "_mean_corrected": 24.5,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -224508,47 +224519,46 @@
           "_verdict": "OK"
         },
         "Los Angeles, US": {
-          "bma_mean": 31.2,
-          "bma_std": 2.04,
+          "bma_mean": 30.7,
+          "bma_std": 1.73,
           "p5": 27.9,
-          "p95": 34.6,
-          "confidence": 0.405,
+          "p95": 33.6,
+          "confidence": 0.433,
           "models": 8,
           "bma_probs": {
             "24": 0.0,
-            "25": 0.2,
-            "26": 0.8,
-            "27": 2.4,
-            "28": 5.8,
-            "29": 10.9,
-            "30": 16.3,
-            "31": 19.3,
-            "32": 18.0,
-            "33": 13.2,
-            "34": 7.7,
-            "35": 3.5,
-            "36": 1.3,
-            "37": 0.4
+            "25": 0.1,
+            "26": 0.6,
+            "27": 2.5,
+            "28": 7.0,
+            "29": 14.2,
+            "30": 21.0,
+            "31": 22.4,
+            "32": 17.3,
+            "33": 9.6,
+            "34": 3.9,
+            "35": 1.1,
+            "36": 0.2
           },
           "strategies": {
             "sigma": {
-              "spill": 31,
-              "k": 0.1,
-              "win_prob": 0.184,
+              "spill": 30,
+              "k": 0.4,
+              "win_prob": 0.181,
               "result": null,
               "actual_peak": 28.5
             },
             "p5": {
               "spill": 28,
               "k": null,
-              "win_prob": 0.039,
+              "win_prob": 0.044,
               "result": null,
               "actual_peak": 28.5
             },
             "mean": {
-              "spill": 32,
+              "spill": 31,
               "k": 0.0,
-              "win_prob": 0.192,
+              "win_prob": 0.226,
               "result": null,
               "actual_peak": 28.5
             }
@@ -224563,8 +224573,8 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 0.7,
           "_lead_days": 0,
-          "_bias_correction": -0.484,
-          "_mean_corrected": 31.7,
+          "_bias_correction": -0.477,
+          "_mean_corrected": 31.2,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -224646,47 +224656,50 @@
         },
         "Cape Town, ZA": {
           "bma_mean": 22.3,
-          "bma_std": 1.88,
-          "p5": 19.2,
-          "p95": 25.4,
-          "confidence": 0.392,
+          "bma_std": 1.76,
+          "p5": 19.4,
+          "p95": 25.2,
+          "confidence": 0.401,
           "models": 7,
           "bma_probs": {
-            "16": 0.1,
-            "17": 0.4,
-            "18": 1.6,
-            "19": 4.7,
-            "20": 10.1,
-            "21": 16.6,
-            "22": 20.7,
-            "23": 19.6,
-            "24": 14.1,
-            "25": 7.7,
-            "26": 3.2,
-            "27": 1.0,
-            "28": 0.2
+            "16": 0.0,
+            "17": 0.3,
+            "18": 1.2,
+            "19": 4.0,
+            "20": 9.7,
+            "21": 17.1,
+            "22": 22.1,
+            "23": 20.7,
+            "24": 14.2,
+            "25": 7.1,
+            "26": 2.6,
+            "27": 0.7,
+            "28": 0.1
           },
           "strategies": {
             "sigma": {
               "spill": 20,
-              "k": 1.01,
-              "win_prob": 0.11,
-              "result": null,
-              "actual_peak": 24.2
+              "k": 1.03,
+              "win_prob": 0.108,
+              "result": "LOSS",
+              "actual_peak": 24.2,
+              "pm_result": "LOSS"
             },
             "p5": {
               "spill": 19,
               "k": null,
-              "win_prob": 0.053,
-              "result": null,
-              "actual_peak": 24.2
+              "win_prob": 0.047,
+              "result": "LOSS",
+              "actual_peak": 24.2,
+              "pm_result": "LOSS"
             },
             "mean": {
               "spill": 22,
               "k": 0.0,
-              "win_prob": 0.209,
-              "result": null,
-              "actual_peak": 24.2
+              "win_prob": 0.222,
+              "result": "LOSS",
+              "actual_peak": 24.2,
+              "pm_result": "LOSS"
             }
           },
           "peak_detected_at": null,
@@ -224709,46 +224722,46 @@
           }
         },
         "Dallas, US": {
-          "bma_mean": 36.8,
-          "bma_std": 1.91,
-          "p5": 33.6,
-          "p95": 39.9,
-          "confidence": 0.369,
+          "bma_mean": 36.6,
+          "bma_std": 1.73,
+          "p5": 33.7,
+          "p95": 39.4,
+          "confidence": 0.477,
           "models": 8,
           "bma_probs": {
             "30": 0.0,
-            "31": 0.2,
-            "32": 0.9,
-            "33": 3.0,
-            "34": 7.2,
-            "35": 13.4,
-            "36": 19.0,
-            "37": 20.5,
-            "38": 17.0,
-            "39": 10.8,
-            "40": 5.2,
-            "41": 1.9,
-            "42": 0.6
+            "31": 0.1,
+            "32": 0.7,
+            "33": 2.8,
+            "34": 7.6,
+            "35": 15.0,
+            "36": 21.5,
+            "37": 22.2,
+            "38": 16.5,
+            "39": 8.9,
+            "40": 3.5,
+            "41": 1.0,
+            "42": 0.2
           },
           "strategies": {
             "sigma": {
               "spill": 36,
               "k": 0.1,
-              "win_prob": 0.205,
+              "win_prob": 0.227,
               "result": null,
               "actual_peak": 36.2
             },
             "p5": {
               "spill": 33,
               "k": null,
-              "win_prob": 0.051,
+              "win_prob": 0.052,
               "result": null,
               "actual_peak": 36.2
             },
             "mean": {
               "spill": 36,
               "k": 0.0,
-              "win_prob": 0.205,
+              "win_prob": 0.227,
               "result": null,
               "actual_peak": 36.2
             }
@@ -224763,8 +224776,8 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 1.0,
           "_lead_days": 0,
-          "_bias_correction": 0.569,
-          "_mean_corrected": 36.2,
+          "_bias_correction": 0.589,
+          "_mean_corrected": 36.0,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -224800,22 +224813,25 @@
               "spill": 34,
               "k": 1.24,
               "win_prob": 0.096,
-              "result": null,
-              "actual_peak": null
+              "result": "LOSS",
+              "actual_peak": null,
+              "pm_result": "LOSS"
             },
             "p5": {
               "spill": 33,
               "k": null,
               "win_prob": 0.055,
-              "result": null,
-              "actual_peak": null
+              "result": "LOSS",
+              "actual_peak": null,
+              "pm_result": "LOSS"
             },
             "mean": {
               "spill": 37,
               "k": 0.0,
               "win_prob": 0.168,
-              "result": null,
-              "actual_peak": null
+              "result": "WIN",
+              "actual_peak": null,
+              "pm_result": "WIN"
             }
           },
           "peak_detected_at": null,
@@ -224842,46 +224858,162 @@
         "Guangzhou, CN": [],
         "Seattle, US": [],
         "Beijing, CN": [],
-        "Helsinki, FI": [],
-        "Wellington, NZ": []
+        "Helsinki, FI": [
+          {
+            "time": "2026-09-11T18:15:00",
+            "temp_c": 17.1,
+            "peak_state": "post_peak"
+          }
+        ],
+        "Wellington, NZ": [],
+        "Mexico City, MX": [
+          {
+            "time": "2026-09-11T09:15:00",
+            "temp_c": 16.9,
+            "peak_state": "pre_peak"
+          }
+        ],
+        "Madrid, ES": [
+          {
+            "time": "2026-09-11T17:15:00",
+            "temp_c": 30.5,
+            "peak_state": "peak_window"
+          }
+        ],
+        "Amsterdam, NL": [
+          {
+            "time": "2026-09-11T17:15:00",
+            "temp_c": 19.4,
+            "peak_state": "rising"
+          }
+        ],
+        "Denver, US": [
+          {
+            "time": "2026-09-11T09:15:00",
+            "temp_c": 24.4,
+            "peak_state": "pre_peak"
+          }
+        ],
+        "Houston, US": [
+          {
+            "time": "2026-09-11T10:15:00",
+            "temp_c": 31.6,
+            "peak_state": "pre_peak"
+          }
+        ],
+        "Ankara, TR": [
+          {
+            "time": "2026-09-11T18:15:00",
+            "temp_c": 28.2,
+            "peak_state": "post_peak"
+          }
+        ],
+        "Moscow, RU": [],
+        "Tel Aviv, IL": [
+          {
+            "time": "2026-09-11T18:15:00",
+            "temp_c": 28.4,
+            "peak_state": "post_peak"
+          }
+        ],
+        "Warsaw, PL": [
+          {
+            "time": "2026-09-11T17:15:00",
+            "temp_c": 16.1,
+            "peak_state": "rising"
+          }
+        ],
+        "Milan, IT": [
+          {
+            "time": "2026-09-11T17:15:00",
+            "temp_c": 24.2,
+            "peak_state": "rising"
+          }
+        ],
+        "Chicago, US": [
+          {
+            "time": "2026-09-11T10:15:00",
+            "temp_c": 23.4,
+            "peak_state": "pre_peak"
+          }
+        ],
+        "Austin, US": [
+          {
+            "time": "2026-09-11T10:15:00",
+            "temp_c": 29.8,
+            "peak_state": "pre_peak"
+          }
+        ],
+        "Buenos Aires, AR": [
+          {
+            "time": "2026-09-11T12:15:00",
+            "temp_c": 18.4,
+            "peak_state": "pre_peak"
+          }
+        ],
+        "London, UK": [
+          {
+            "time": "2026-09-11T16:15:00",
+            "temp_c": 22.0,
+            "peak_state": "peak_window"
+          }
+        ],
+        "Atlanta, US": [
+          {
+            "time": "2026-09-11T11:15:00",
+            "temp_c": 29.2,
+            "peak_state": "pre_peak"
+          }
+        ],
+        "New York, US": [],
+        "Paris, FR": [],
+        "Munich, DE": [],
+        "San Francisco, US": [],
+        "Miami, US": [],
+        "Sao Paulo, BR": [],
+        "Dallas, US": [],
+        "Panama City, PA": [],
+        "Istanbul, TR": [],
+        "Los Angeles, US": [],
+        "Toronto, CA": [],
+        "Cape Town, ZA": []
       },
       "arbitrage_results": {},
       "summary": {
-        "sigma_wins": 5,
-        "sigma_losses": 15,
-        "p5_wins": 2,
-        "p5_losses": 18,
-        "mean_wins": 7,
-        "mean_losses": 13,
-        "unresolved": 31
+        "sigma_wins": 6,
+        "sigma_losses": 21,
+        "p5_wins": 3,
+        "p5_losses": 24,
+        "mean_wins": 9,
+        "mean_losses": 18,
+        "unresolved": 24
       },
-      "utc_hour": 12,
+      "utc_hour": 15,
       "active_regions": [
         "AFRICA",
         "AMERICAS",
-        "ASIA",
         "EUROPE",
         "MIDDLE_EAST",
         "SOUTH_AM"
       ],
-      "active_city_count": 32,
+      "active_city_count": 29,
       "all_city_count": 51,
       "predictions_active": {
         "Seattle, US": {
-          "bma_mean": 19.1,
-          "bma_std": 0.58,
+          "bma_mean": 19.2,
+          "bma_std": 0.61,
           "p5": 18.2,
-          "p95": 20.1,
-          "confidence": 0.827,
+          "p95": 20.2,
+          "confidence": 0.816,
           "models": 8,
           "bma_probs": {
             "15": 0.0,
             "16": 0.0,
             "17": 0.3,
-            "18": 14.8,
-            "19": 60.4,
-            "20": 23.7,
-            "21": 0.8,
+            "18": 12.3,
+            "19": 56.3,
+            "20": 29.5,
+            "21": 1.6,
             "22": 0.0,
             "23": 0.0
           },
@@ -224889,23 +225021,23 @@
             "sigma": {
               "spill": 19,
               "k": 0.57,
-              "win_prob": 0.597,
+              "win_prob": 0.586,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 20.7
             },
             "p5": {
               "spill": 18,
               "k": null,
-              "win_prob": 0.265,
+              "win_prob": 0.231,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 20.7
             },
             "mean": {
               "spill": 19,
               "k": 0.0,
-              "win_prob": 0.597,
+              "win_prob": 0.586,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 20.7
             }
           },
           "peak_detected_at": null,
@@ -224918,12 +225050,12 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 0.0,
           "_lead_days": 0,
-          "_bias_correction": 0.254,
-          "_mean_corrected": 18.8,
+          "_bias_correction": 0.272,
+          "_mean_corrected": 18.9,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
-            "spread_filter": "narrow",
+            "spread_filter": "medium",
             "uhi_adjusted": false
           }
         },
@@ -224932,7 +225064,7 @@
           "bma_std": 0.61,
           "p5": 15.6,
           "p95": 17.6,
-          "confidence": 0.747,
+          "confidence": 0.748,
           "models": 7,
           "bma_probs": {
             "12": 0.0,
@@ -224949,23 +225081,26 @@
             "sigma": {
               "spill": 16,
               "k": 0.86,
-              "win_prob": 0.34,
-              "result": null,
-              "actual_peak": null
+              "win_prob": 0.355,
+              "result": "LOSS",
+              "actual_peak": 17.3,
+              "pm_result": "LOSS"
             },
             "p5": {
               "spill": 16,
               "k": null,
-              "win_prob": 0.34,
-              "result": null,
-              "actual_peak": null
+              "win_prob": 0.355,
+              "result": "LOSS",
+              "actual_peak": 17.3,
+              "pm_result": "LOSS"
             },
             "mean": {
               "spill": 17,
               "k": 0.0,
-              "win_prob": 0.539,
-              "result": null,
-              "actual_peak": null
+              "win_prob": 0.529,
+              "result": "WIN",
+              "actual_peak": 17.3,
+              "pm_result": "WIN"
             }
           },
           "peak_detected_at": null,
@@ -224978,7 +225113,7 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 0.0,
           "_lead_days": 0,
-          "_bias_correction": -0.113,
+          "_bias_correction": -0.084,
           "_mean_corrected": 16.7,
           "_features": {
             "model_weighting": true,
@@ -224987,12 +225122,254 @@
             "uhi_adjusted": false
           }
         },
+        "Mexico City, MX": {
+          "bma_mean": 24.9,
+          "bma_std": 0.82,
+          "p5": 23.6,
+          "p95": 26.3,
+          "confidence": 0.706,
+          "models": 7,
+          "bma_probs": {
+            "20": 0.0,
+            "21": 0.0,
+            "22": 0.2,
+            "23": 4.2,
+            "24": 26.9,
+            "25": 45.5,
+            "26": 20.7,
+            "27": 2.5,
+            "28": 0.1,
+            "29": 0.0
+          },
+          "strategies": {
+            "sigma": {
+              "spill": 26,
+              "k": 0.64,
+              "win_prob": 0.453,
+              "result": null,
+              "actual_peak": 23.1
+            },
+            "p5": {
+              "spill": 25,
+              "k": null,
+              "win_prob": 0.199,
+              "result": null,
+              "actual_peak": 23.1
+            },
+            "mean": {
+              "spill": 26,
+              "k": 0.0,
+              "win_prob": 0.453,
+              "result": null,
+              "actual_peak": 23.1
+            }
+          },
+          "peak_detected_at": null,
+          "recommendation": null,
+          "_lat": 19.4363,
+          "_lon": -99.0721,
+          "_tz": "America/Mexico_City",
+          "_peak_hour_start": 14,
+          "_peak_hour_end": 17,
+          "_target_date": "2026-09-11",
+          "_uhi_adjustment": 1.5,
+          "_lead_days": 0,
+          "_bias_correction": -1.225,
+          "_mean_corrected": 26.1,
+          "_features": {
+            "model_weighting": true,
+            "dynamic_k": true,
+            "spread_filter": "medium",
+            "uhi_adjusted": true
+          }
+        },
+        "Madrid, ES": {
+          "bma_mean": 30.1,
+          "bma_std": 0.58,
+          "p5": 29.2,
+          "p95": 31.1,
+          "confidence": 0.684,
+          "models": 7,
+          "bma_probs": {
+            "26": 0.0,
+            "27": 0.0,
+            "28": 0.3,
+            "29": 14.8,
+            "30": 60.4,
+            "31": 23.7,
+            "32": 0.8,
+            "33": 0.0,
+            "34": 0.0
+          },
+          "strategies": {
+            "sigma": {
+              "spill": 30,
+              "k": 1.35,
+              "win_prob": 0.471,
+              "result": null,
+              "actual_peak": 30.2
+            },
+            "p5": {
+              "spill": 30,
+              "k": null,
+              "win_prob": 0.471,
+              "result": null,
+              "actual_peak": 30.2
+            },
+            "mean": {
+              "spill": 30,
+              "k": 0.0,
+              "win_prob": 0.471,
+              "result": null,
+              "actual_peak": 30.2
+            }
+          },
+          "peak_detected_at": null,
+          "recommendation": null,
+          "_lat": 40.4719,
+          "_lon": -3.5626,
+          "_tz": "Europe/Madrid",
+          "_peak_hour_start": 15,
+          "_peak_hour_end": 18,
+          "_target_date": "2026-09-11",
+          "_uhi_adjustment": 0.5,
+          "_lead_days": 0,
+          "_bias_correction": -0.377,
+          "_mean_corrected": 30.5,
+          "_features": {
+            "model_weighting": true,
+            "dynamic_k": true,
+            "spread_filter": "narrow",
+            "uhi_adjusted": false
+          }
+        },
+        "Amsterdam, NL": {
+          "bma_mean": 19.7,
+          "bma_std": 0.97,
+          "p5": 18.1,
+          "p95": 21.3,
+          "confidence": 0.679,
+          "models": 7,
+          "bma_probs": {
+            "15": 0.0,
+            "16": 0.0,
+            "17": 1.1,
+            "18": 9.6,
+            "19": 31.0,
+            "20": 37.7,
+            "21": 17.3,
+            "22": 3.0,
+            "23": 0.2,
+            "24": 0.0
+          },
+          "strategies": {
+            "sigma": {
+              "spill": 19,
+              "k": 1.27,
+              "win_prob": 0.138,
+              "result": null,
+              "actual_peak": 20.1
+            },
+            "p5": {
+              "spill": 19,
+              "k": null,
+              "win_prob": 0.138,
+              "result": null,
+              "actual_peak": 20.1
+            },
+            "mean": {
+              "spill": 20,
+              "k": 0.0,
+              "win_prob": 0.353,
+              "result": null,
+              "actual_peak": 20.1
+            }
+          },
+          "peak_detected_at": null,
+          "recommendation": null,
+          "_lat": 52.3086,
+          "_lon": 4.7639,
+          "_tz": "Europe/Amsterdam",
+          "_peak_hour_start": 14,
+          "_peak_hour_end": 17,
+          "_target_date": "2026-09-11",
+          "_uhi_adjustment": 0.0,
+          "_lead_days": 0,
+          "_bias_correction": -0.771,
+          "_mean_corrected": 20.5,
+          "_features": {
+            "model_weighting": true,
+            "dynamic_k": true,
+            "spread_filter": "medium",
+            "uhi_adjusted": false
+          }
+        },
         "Denver, US": {
+          "bma_mean": 31.7,
+          "bma_std": 0.73,
+          "p5": 30.5,
+          "p95": 32.9,
+          "confidence": 0.671,
+          "models": 8,
+          "bma_probs": {
+            "27": 0.0,
+            "28": 0.0,
+            "29": 0.1,
+            "30": 4.9,
+            "31": 34.2,
+            "32": 47.1,
+            "33": 13.0,
+            "34": 0.7,
+            "35": 0.0
+          },
+          "strategies": {
+            "sigma": {
+              "spill": 31,
+              "k": 1.35,
+              "win_prob": 0.121,
+              "result": null,
+              "actual_peak": 32.2
+            },
+            "p5": {
+              "spill": 31,
+              "k": null,
+              "win_prob": 0.121,
+              "result": null,
+              "actual_peak": 32.2
+            },
+            "mean": {
+              "spill": 32,
+              "k": 0.0,
+              "win_prob": 0.464,
+              "result": null,
+              "actual_peak": 32.2
+            }
+          },
+          "peak_detected_at": null,
+          "recommendation": null,
+          "_lat": 39.7017,
+          "_lon": -104.7516,
+          "_tz": "America/Denver",
+          "_peak_hour_start": 14,
+          "_peak_hour_end": 17,
+          "_target_date": "2026-09-11",
+          "_uhi_adjustment": 0.3,
+          "_lead_days": 0,
+          "_bias_correction": -0.633,
+          "_mean_corrected": 32.3,
+          "_features": {
+            "model_weighting": true,
+            "dynamic_k": true,
+            "spread_filter": "medium",
+            "uhi_adjusted": false
+          }
+        },
+        "Houston, US": {
           "bma_mean": 31.6,
           "bma_std": 0.79,
           "p5": 30.3,
           "p95": 32.9,
-          "confidence": 0.714,
+          "confidence": 0.66,
           "models": 8,
           "bma_probs": {
             "27": 0.0,
@@ -225007,221 +225384,39 @@
           },
           "strategies": {
             "sigma": {
-              "spill": 31,
-              "k": 0.96,
-              "win_prob": 0.162,
+              "spill": 32,
+              "k": 0.94,
+              "win_prob": 0.446,
               "result": null,
               "actual_peak": null
             },
             "p5": {
               "spill": 31,
               "k": null,
-              "win_prob": 0.162,
+              "win_prob": 0.147,
               "result": null,
               "actual_peak": null
             },
             "mean": {
               "spill": 32,
               "k": 0.0,
-              "win_prob": 0.455,
+              "win_prob": 0.446,
               "result": null,
               "actual_peak": null
             }
           },
           "peak_detected_at": null,
           "recommendation": null,
-          "_lat": 39.7017,
-          "_lon": -104.7516,
-          "_tz": "America/Denver",
+          "_lat": 29.6454,
+          "_lon": -95.2789,
+          "_tz": "America/Chicago",
           "_peak_hour_start": 14,
           "_peak_hour_end": 17,
-          "_target_date": "2026-09-11",
-          "_uhi_adjustment": 0.3,
-          "_lead_days": 0,
-          "_bias_correction": -0.637,
-          "_mean_corrected": 32.2,
-          "_features": {
-            "model_weighting": true,
-            "dynamic_k": true,
-            "spread_filter": "medium",
-            "uhi_adjusted": false
-          }
-        },
-        "Mexico City, MX": {
-          "bma_mean": 25.0,
-          "bma_std": 0.88,
-          "p5": 23.5,
-          "p95": 26.4,
-          "confidence": 0.692,
-          "models": 7,
-          "bma_probs": {
-            "20": 0.0,
-            "21": 0.0,
-            "22": 0.2,
-            "23": 4.2,
-            "24": 24.1,
-            "25": 43.0,
-            "26": 24.1,
-            "27": 4.2,
-            "28": 0.2,
-            "29": 0.0
-          },
-          "strategies": {
-            "sigma": {
-              "spill": 25,
-              "k": 0.86,
-              "win_prob": 0.186,
-              "result": null,
-              "actual_peak": null
-            },
-            "p5": {
-              "spill": 25,
-              "k": null,
-              "win_prob": 0.186,
-              "result": null,
-              "actual_peak": null
-            },
-            "mean": {
-              "spill": 26,
-              "k": 0.0,
-              "win_prob": 0.419,
-              "result": null,
-              "actual_peak": null
-            }
-          },
-          "peak_detected_at": null,
-          "recommendation": null,
-          "_lat": 19.4363,
-          "_lon": -99.0721,
-          "_tz": "America/Mexico_City",
-          "_peak_hour_start": 14,
-          "_peak_hour_end": 17,
-          "_target_date": "2026-09-11",
-          "_uhi_adjustment": 1.5,
-          "_lead_days": 0,
-          "_bias_correction": -1.204,
-          "_mean_corrected": 26.2,
-          "_features": {
-            "model_weighting": true,
-            "dynamic_k": true,
-            "spread_filter": "medium",
-            "uhi_adjusted": true
-          }
-        },
-        "Madrid, ES": {
-          "bma_mean": 30.2,
-          "bma_std": 0.61,
-          "p5": 29.2,
-          "p95": 31.2,
-          "confidence": 0.68,
-          "models": 7,
-          "bma_probs": {
-            "26": 0.0,
-            "27": 0.0,
-            "28": 0.3,
-            "29": 12.3,
-            "30": 56.3,
-            "31": 29.5,
-            "32": 1.6,
-            "33": 0.0,
-            "34": 0.0
-          },
-          "strategies": {
-            "sigma": {
-              "spill": 30,
-              "k": 1.35,
-              "win_prob": 0.412,
-              "result": null,
-              "actual_peak": null
-            },
-            "p5": {
-              "spill": 30,
-              "k": null,
-              "win_prob": 0.412,
-              "result": null,
-              "actual_peak": null
-            },
-            "mean": {
-              "spill": 31,
-              "k": 0.0,
-              "win_prob": 0.486,
-              "result": null,
-              "actual_peak": null
-            }
-          },
-          "peak_detected_at": null,
-          "recommendation": null,
-          "_lat": 40.4719,
-          "_lon": -3.5626,
-          "_tz": "Europe/Madrid",
-          "_peak_hour_start": 15,
-          "_peak_hour_end": 18,
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 0.5,
           "_lead_days": 0,
-          "_bias_correction": -0.377,
-          "_mean_corrected": 30.6,
-          "_features": {
-            "model_weighting": true,
-            "dynamic_k": true,
-            "spread_filter": "medium",
-            "uhi_adjusted": false
-          }
-        },
-        "Amsterdam, NL": {
-          "bma_mean": 19.6,
-          "bma_std": 0.97,
-          "p5": 18.0,
-          "p95": 21.2,
-          "confidence": 0.677,
-          "models": 7,
-          "bma_probs": {
-            "15": 0.0,
-            "16": 0.1,
-            "17": 1.4,
-            "18": 11.3,
-            "19": 33.1,
-            "20": 36.4,
-            "21": 15.2,
-            "22": 2.4,
-            "23": 0.1,
-            "24": 0.0
-          },
-          "strategies": {
-            "sigma": {
-              "spill": 19,
-              "k": 1.28,
-              "win_prob": 0.158,
-              "result": null,
-              "actual_peak": null
-            },
-            "p5": {
-              "spill": 19,
-              "k": null,
-              "win_prob": 0.158,
-              "result": null,
-              "actual_peak": null
-            },
-            "mean": {
-              "spill": 20,
-              "k": 0.0,
-              "win_prob": 0.367,
-              "result": null,
-              "actual_peak": null
-            }
-          },
-          "peak_detected_at": null,
-          "recommendation": null,
-          "_lat": 52.3086,
-          "_lon": 4.7639,
-          "_tz": "Europe/Amsterdam",
-          "_peak_hour_start": 14,
-          "_peak_hour_end": 17,
-          "_target_date": "2026-09-11",
-          "_uhi_adjustment": 0.0,
-          "_lead_days": 0,
-          "_bias_correction": -0.771,
-          "_mean_corrected": 20.4,
+          "_bias_correction": -0.69,
+          "_mean_corrected": 32.3,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -225234,7 +225429,7 @@
           "bma_std": 0.7,
           "p5": 28.6,
           "p95": 30.9,
-          "confidence": 0.659,
+          "confidence": 0.657,
           "models": 7,
           "bma_probs": {
             "25": 0.0,
@@ -225252,22 +225447,25 @@
               "spill": 29,
               "k": 1.36,
               "win_prob": 0.21,
-              "result": null,
-              "actual_peak": null
+              "result": "LOSS",
+              "actual_peak": 30.6,
+              "pm_result": "LOSS"
             },
             "p5": {
               "spill": 29,
               "k": null,
               "win_prob": 0.21,
-              "result": null,
-              "actual_peak": null
+              "result": "LOSS",
+              "actual_peak": 30.6,
+              "pm_result": "LOSS"
             },
             "mean": {
               "spill": 30,
               "k": 0.0,
               "win_prob": 0.525,
-              "result": null,
-              "actual_peak": null
+              "result": "LOSS",
+              "actual_peak": 30.6,
+              "pm_result": "LOSS"
             }
           },
           "peak_detected_at": null,
@@ -225282,126 +225480,6 @@
           "_lead_days": 0,
           "_bias_correction": -0.229,
           "_mean_corrected": 30.0,
-          "_features": {
-            "model_weighting": true,
-            "dynamic_k": true,
-            "spread_filter": "medium",
-            "uhi_adjusted": false
-          }
-        },
-        "Atlanta, US": {
-          "bma_mean": 31.4,
-          "bma_std": 0.85,
-          "p5": 30.0,
-          "p95": 32.8,
-          "confidence": 0.652,
-          "models": 8,
-          "bma_probs": {
-            "27": 0.0,
-            "28": 0.0,
-            "29": 1.2,
-            "30": 13.2,
-            "31": 40.2,
-            "32": 35.5,
-            "33": 9.1,
-            "34": 0.7,
-            "35": 0.0
-          },
-          "strategies": {
-            "sigma": {
-              "spill": 31,
-              "k": 1.4,
-              "win_prob": 0.263,
-              "result": null,
-              "actual_peak": null
-            },
-            "p5": {
-              "spill": 31,
-              "k": null,
-              "win_prob": 0.263,
-              "result": null,
-              "actual_peak": null
-            },
-            "mean": {
-              "spill": 32,
-              "k": 0.0,
-              "win_prob": 0.441,
-              "result": null,
-              "actual_peak": null
-            }
-          },
-          "peak_detected_at": null,
-          "recommendation": null,
-          "_lat": 33.6407,
-          "_lon": -84.4277,
-          "_tz": "America/New_York",
-          "_peak_hour_start": 14,
-          "_peak_hour_end": 17,
-          "_target_date": "2026-09-11",
-          "_uhi_adjustment": 0.3,
-          "_lead_days": 0,
-          "_bias_correction": -0.52,
-          "_mean_corrected": 31.9,
-          "_features": {
-            "model_weighting": true,
-            "dynamic_k": true,
-            "spread_filter": "medium",
-            "uhi_adjusted": false
-          }
-        },
-        "Tel Aviv, IL": {
-          "bma_mean": 32.4,
-          "bma_std": 0.79,
-          "p5": 31.1,
-          "p95": 33.7,
-          "confidence": 0.645,
-          "models": 7,
-          "bma_probs": {
-            "28": 0.0,
-            "29": 0.0,
-            "30": 0.8,
-            "31": 11.9,
-            "32": 42.3,
-            "33": 36.8,
-            "34": 7.8,
-            "35": 0.4,
-            "36": 0.0
-          },
-          "strategies": {
-            "sigma": {
-              "spill": 32,
-              "k": 0.22,
-              "win_prob": 0.382,
-              "result": null,
-              "actual_peak": null
-            },
-            "p5": {
-              "spill": 31,
-              "k": null,
-              "win_prob": 0.087,
-              "result": null,
-              "actual_peak": null
-            },
-            "mean": {
-              "spill": 33,
-              "k": 0.0,
-              "win_prob": 0.411,
-              "result": null,
-              "actual_peak": null
-            }
-          },
-          "peak_detected_at": null,
-          "recommendation": null,
-          "_lat": 32.0114,
-          "_lon": 34.8867,
-          "_tz": "Asia/Jerusalem",
-          "_peak_hour_start": 13,
-          "_peak_hour_end": 16,
-          "_target_date": "2026-09-11",
-          "_uhi_adjustment": 0.0,
-          "_lead_days": 0,
-          "_bias_correction": -0.152,
-          "_mean_corrected": 32.6,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -225432,25 +225510,25 @@
             "sigma": {
               "spill": 16,
               "k": 1.19,
-              "win_prob": 0.155,
+              "win_prob": 0.149,
               "result": "LOSS",
-              "actual_peak": null,
+              "actual_peak": 16.9,
               "pm_result": "LOSS"
             },
             "p5": {
               "spill": 16,
               "k": null,
-              "win_prob": 0.155,
+              "win_prob": 0.149,
               "result": "LOSS",
-              "actual_peak": null,
+              "actual_peak": 16.9,
               "pm_result": "LOSS"
             },
             "mean": {
               "spill": 17,
               "k": 0.0,
-              "win_prob": 0.418,
+              "win_prob": 0.414,
               "result": "LOSS",
-              "actual_peak": null,
+              "actual_peak": 16.9,
               "pm_result": "LOSS"
             }
           },
@@ -225464,251 +225542,76 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 1.5,
           "_lead_days": 0,
-          "_bias_correction": -0.306,
+          "_bias_correction": -0.331,
           "_mean_corrected": 17.3,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
             "spread_filter": "medium",
             "uhi_adjusted": true
-          }
+          },
+          "_market_resolved": 18.0,
+          "_market_unit": "C",
+          "_market_display": "18°C",
+          "_peak_gap": -1.1,
+          "_verdict": "MINOR"
         },
-        "Buenos Aires, AR": {
-          "bma_mean": 19.0,
-          "bma_std": 0.91,
-          "p5": 17.5,
-          "p95": 20.5,
-          "confidence": 0.622,
+        "Tel Aviv, IL": {
+          "bma_mean": 32.5,
+          "bma_std": 0.85,
+          "p5": 31.1,
+          "p95": 33.9,
+          "confidence": 0.636,
           "models": 7,
           "bma_probs": {
-            "14": 0.0,
-            "15": 0.0,
-            "16": 0.3,
-            "17": 4.7,
-            "18": 24.2,
-            "19": 41.7,
-            "20": 24.2,
-            "21": 4.7,
-            "22": 0.3,
-            "23": 0.0
+            "28": 0.0,
+            "29": 0.0,
+            "30": 0.9,
+            "31": 11.0,
+            "32": 38.0,
+            "33": 38.0,
+            "34": 11.0,
+            "35": 0.9,
+            "36": 0.0
           },
           "strategies": {
             "sigma": {
-              "spill": 18,
-              "k": 1.27,
-              "win_prob": 0.112,
-              "result": null,
-              "actual_peak": null
+              "spill": 33,
+              "k": 0.1,
+              "win_prob": 0.411,
+              "result": "LOSS",
+              "actual_peak": 32.1,
+              "pm_result": "LOSS"
             },
             "p5": {
-              "spill": 18,
+              "spill": 31,
               "k": null,
-              "win_prob": 0.112,
-              "result": null,
-              "actual_peak": null
+              "win_prob": 0.082,
+              "result": "WIN",
+              "actual_peak": 32.1,
+              "pm_result": "WIN"
             },
             "mean": {
-              "spill": 20,
+              "spill": 33,
               "k": 0.0,
-              "win_prob": 0.374,
-              "result": null,
-              "actual_peak": null
+              "win_prob": 0.411,
+              "result": "LOSS",
+              "actual_peak": 32.1,
+              "pm_result": "LOSS"
             }
           },
           "peak_detected_at": null,
           "recommendation": null,
-          "_lat": -34.8222,
-          "_lon": -58.5358,
-          "_tz": "America/Argentina/Buenos_Aires",
-          "_peak_hour_start": 14,
-          "_peak_hour_end": 17,
+          "_lat": 32.0114,
+          "_lon": 34.8867,
+          "_tz": "Asia/Jerusalem",
+          "_peak_hour_start": 13,
+          "_peak_hour_end": 16,
           "_target_date": "2026-09-11",
-          "_uhi_adjustment": 0.8,
+          "_uhi_adjustment": 0.0,
           "_lead_days": 0,
-          "_bias_correction": -0.553,
-          "_mean_corrected": 19.6,
-          "_features": {
-            "model_weighting": true,
-            "dynamic_k": true,
-            "spread_filter": "medium",
-            "uhi_adjusted": true
-          }
-        },
-        "New York, US": {
-          "bma_mean": 27.3,
-          "bma_std": 0.73,
-          "p5": 26.1,
-          "p95": 28.5,
-          "confidence": 0.609,
-          "models": 8,
-          "bma_probs": {
-            "23": 0.0,
-            "24": 0.0,
-            "25": 0.7,
-            "26": 13.0,
-            "27": 47.1,
-            "28": 34.2,
-            "29": 4.9,
-            "30": 0.1,
-            "31": 0.0
-          },
-          "strategies": {
-            "sigma": {
-              "spill": 27,
-              "k": 0.94,
-              "win_prob": 0.439,
-              "result": null,
-              "actual_peak": null
-            },
-            "p5": {
-              "spill": 26,
-              "k": null,
-              "win_prob": 0.099,
-              "result": null,
-              "actual_peak": null
-            },
-            "mean": {
-              "spill": 27,
-              "k": 0.0,
-              "win_prob": 0.439,
-              "result": null,
-              "actual_peak": null
-            }
-          },
-          "peak_detected_at": null,
-          "recommendation": null,
-          "_lat": 40.7772,
-          "_lon": -73.8726,
-          "_tz": "America/New_York",
-          "_peak_hour_start": 14,
-          "_peak_hour_end": 17,
-          "_target_date": "2026-09-11",
-          "_uhi_adjustment": 1.5,
-          "_lead_days": 0,
-          "_bias_correction": -0.122,
-          "_mean_corrected": 27.4,
-          "_features": {
-            "model_weighting": true,
-            "dynamic_k": true,
-            "spread_filter": "medium",
-            "uhi_adjusted": true
-          }
-        },
-        "Milan, IT": {
-          "bma_mean": 24.1,
-          "bma_std": 0.73,
-          "p5": 22.9,
-          "p95": 25.3,
-          "confidence": 0.591,
-          "models": 7,
-          "bma_probs": {
-            "19": 0.0,
-            "20": 0.0,
-            "21": 0.0,
-            "22": 1.4,
-            "23": 19.1,
-            "24": 50.3,
-            "25": 26.4,
-            "26": 2.7,
-            "27": 0.1,
-            "28": 0.0
-          },
-          "strategies": {
-            "sigma": {
-              "spill": 24,
-              "k": 1.32,
-              "win_prob": 0.284,
-              "result": null,
-              "actual_peak": null
-            },
-            "p5": {
-              "spill": 24,
-              "k": null,
-              "win_prob": 0.284,
-              "result": null,
-              "actual_peak": null
-            },
-            "mean": {
-              "spill": 25,
-              "k": 0.0,
-              "win_prob": 0.498,
-              "result": null,
-              "actual_peak": null
-            }
-          },
-          "peak_detected_at": null,
-          "recommendation": null,
-          "_lat": 45.6306,
-          "_lon": 8.7281,
-          "_tz": "Europe/Rome",
-          "_peak_hour_start": 14,
-          "_peak_hour_end": 17,
-          "_target_date": "2026-09-11",
-          "_uhi_adjustment": 0.3,
-          "_lead_days": 0,
-          "_bias_correction": -0.75,
-          "_mean_corrected": 24.9,
-          "_features": {
-            "model_weighting": true,
-            "dynamic_k": true,
-            "spread_filter": "medium",
-            "uhi_adjusted": false
-          }
-        },
-        "London, UK": {
-          "bma_mean": 21.9,
-          "bma_std": 0.91,
-          "p5": 20.4,
-          "p95": 23.4,
-          "confidence": 0.562,
-          "models": 7,
-          "bma_probs": {
-            "17": 0.0,
-            "18": 0.0,
-            "19": 0.4,
-            "20": 5.8,
-            "21": 26.8,
-            "22": 41.5,
-            "23": 21.5,
-            "24": 3.7,
-            "25": 0.2,
-            "26": 0.0
-          },
-          "strategies": {
-            "sigma": {
-              "spill": 21,
-              "k": 1.16,
-              "win_prob": 0.138,
-              "result": null,
-              "actual_peak": null
-            },
-            "p5": {
-              "spill": 21,
-              "k": null,
-              "win_prob": 0.138,
-              "result": null,
-              "actual_peak": null
-            },
-            "mean": {
-              "spill": 22,
-              "k": 0.0,
-              "win_prob": 0.378,
-              "result": null,
-              "actual_peak": null
-            }
-          },
-          "peak_detected_at": null,
-          "recommendation": null,
-          "_lat": 51.505,
-          "_lon": 0.054,
-          "_tz": "Europe/London",
-          "_peak_hour_start": 14,
-          "_peak_hour_end": 17,
-          "_target_date": "2026-09-11",
-          "_uhi_adjustment": 0.5,
-          "_lead_days": 0,
-          "_bias_correction": -0.523,
-          "_mean_corrected": 22.4,
+          "_bias_correction": -0.152,
+          "_mean_corrected": 32.7,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -225717,47 +225620,49 @@
           }
         },
         "Warsaw, PL": {
-          "bma_mean": 16.8,
-          "bma_std": 1.34,
-          "p5": 14.6,
-          "p95": 19.0,
-          "confidence": 0.56,
+          "bma_mean": 16.9,
+          "bma_std": 1.25,
+          "p5": 14.8,
+          "p95": 18.9,
+          "confidence": 0.63,
           "models": 7,
           "bma_probs": {
             "11": 0.0,
-            "12": 0.1,
-            "13": 0.6,
-            "14": 3.6,
-            "15": 12.3,
-            "16": 24.5,
-            "17": 28.8,
-            "18": 19.8,
-            "19": 8.0,
-            "20": 1.9,
-            "21": 0.3,
-            "22": 0.0
+            "12": 0.0,
+            "13": 0.3,
+            "14": 2.4,
+            "15": 10.4,
+            "16": 24.3,
+            "17": 31.0,
+            "18": 21.5,
+            "19": 8.2,
+            "20": 1.7,
+            "21": 0.2
           },
           "strategies": {
             "sigma": {
               "spill": 16,
               "k": 1.31,
-              "win_prob": 0.129,
-              "result": null,
-              "actual_peak": null
+              "win_prob": 0.11,
+              "result": "LOSS",
+              "actual_peak": 15.8,
+              "pm_result": "LOSS"
             },
             "p5": {
               "spill": 16,
               "k": null,
-              "win_prob": 0.129,
-              "result": null,
-              "actual_peak": null
+              "win_prob": 0.11,
+              "result": "LOSS",
+              "actual_peak": 15.8,
+              "pm_result": "LOSS"
             },
             "mean": {
               "spill": 18,
               "k": 0.0,
-              "win_prob": 0.287,
-              "result": null,
-              "actual_peak": null
+              "win_prob": 0.31,
+              "result": "LOSS",
+              "actual_peak": 15.8,
+              "pm_result": "LOSS"
             }
           },
           "peak_detected_at": null,
@@ -225771,7 +225676,7 @@
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
           "_bias_correction": -0.948,
-          "_mean_corrected": 17.7,
+          "_mean_corrected": 17.8,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -225779,47 +225684,106 @@
             "uhi_adjusted": false
           }
         },
+        "Milan, IT": {
+          "bma_mean": 24.3,
+          "bma_std": 0.67,
+          "p5": 23.2,
+          "p95": 25.4,
+          "confidence": 0.599,
+          "models": 7,
+          "bma_probs": {
+            "20": 0.0,
+            "21": 0.0,
+            "22": 0.4,
+            "23": 11.3,
+            "24": 50.1,
+            "25": 34.6,
+            "26": 3.6,
+            "27": 0.1,
+            "28": 0.0
+          },
+          "strategies": {
+            "sigma": {
+              "spill": 24,
+              "k": 1.36,
+              "win_prob": 0.195,
+              "result": null,
+              "actual_peak": 24.1
+            },
+            "p5": {
+              "spill": 24,
+              "k": null,
+              "win_prob": 0.195,
+              "result": null,
+              "actual_peak": 24.1
+            },
+            "mean": {
+              "spill": 25,
+              "k": 0.0,
+              "win_prob": 0.544,
+              "result": null,
+              "actual_peak": 24.1
+            }
+          },
+          "peak_detected_at": null,
+          "recommendation": null,
+          "_lat": 45.6306,
+          "_lon": 8.7281,
+          "_tz": "Europe/Rome",
+          "_peak_hour_start": 14,
+          "_peak_hour_end": 17,
+          "_target_date": "2026-09-11",
+          "_uhi_adjustment": 0.3,
+          "_lead_days": 0,
+          "_bias_correction": -0.75,
+          "_mean_corrected": 25.1,
+          "_features": {
+            "model_weighting": true,
+            "dynamic_k": true,
+            "spread_filter": "medium",
+            "uhi_adjusted": false
+          }
+        },
         "Chicago, US": {
-          "bma_mean": 26.3,
-          "bma_std": 1.16,
-          "p5": 24.4,
-          "p95": 28.2,
-          "confidence": 0.545,
+          "bma_mean": 26.1,
+          "bma_std": 0.91,
+          "p5": 24.6,
+          "p95": 27.6,
+          "confidence": 0.581,
           "models": 8,
           "bma_probs": {
             "21": 0.0,
-            "22": 0.1,
-            "23": 0.7,
-            "24": 5.2,
-            "25": 18.5,
-            "26": 32.3,
-            "27": 28.1,
-            "28": 12.2,
-            "29": 2.6,
-            "30": 0.3,
-            "31": 0.0
+            "22": 0.0,
+            "23": 0.2,
+            "24": 3.7,
+            "25": 21.5,
+            "26": 41.5,
+            "27": 26.8,
+            "28": 5.8,
+            "29": 0.4,
+            "30": 0.0
           },
           "strategies": {
             "sigma": {
               "spill": 25,
-              "k": 1.17,
-              "win_prob": 0.129,
+              "k": 1.22,
+              "win_prob": 0.137,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 24.9
             },
             "p5": {
               "spill": 25,
               "k": null,
-              "win_prob": 0.129,
+              "win_prob": 0.137,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 24.9
             },
             "mean": {
-              "spill": 27,
+              "spill": 26,
               "k": 0.0,
-              "win_prob": 0.32,
+              "win_prob": 0.377,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 24.9
             }
           },
           "peak_detected_at": null,
@@ -225832,8 +225796,8 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 0.7,
           "_lead_days": 0,
-          "_bias_correction": -0.346,
-          "_mean_corrected": 26.6,
+          "_bias_correction": -0.33,
+          "_mean_corrected": 26.4,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -225841,61 +225805,62 @@
             "uhi_adjusted": true
           }
         },
-        "Toronto, CA": {
-          "bma_mean": 22.5,
-          "bma_std": 1.25,
-          "p5": 20.4,
-          "p95": 24.5,
-          "confidence": 0.536,
+        "Austin, US": {
+          "bma_mean": 36.9,
+          "bma_std": 1.37,
+          "p5": 34.7,
+          "p95": 39.2,
+          "confidence": 0.571,
           "models": 8,
           "bma_probs": {
-            "17": 0.0,
-            "18": 0.1,
-            "19": 0.8,
-            "20": 4.7,
-            "21": 15.7,
-            "22": 28.8,
-            "23": 28.8,
-            "24": 15.7,
-            "25": 4.7,
-            "26": 0.8,
-            "27": 0.1
+            "31": 0.0,
+            "32": 0.1,
+            "33": 0.6,
+            "34": 3.3,
+            "35": 11.4,
+            "36": 23.2,
+            "37": 28.4,
+            "38": 20.9,
+            "39": 9.3,
+            "40": 2.5,
+            "41": 0.4,
+            "42": 0.0
           },
           "strategies": {
             "sigma": {
-              "spill": 20,
+              "spill": 36,
               "k": 1.4,
-              "win_prob": 0.074,
+              "win_prob": 0.107,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 37.3
             },
             "p5": {
-              "spill": 20,
+              "spill": 36,
               "k": null,
-              "win_prob": 0.074,
+              "win_prob": 0.107,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 37.3
             },
             "mean": {
-              "spill": 22,
+              "spill": 38,
               "k": 0.0,
-              "win_prob": 0.309,
+              "win_prob": 0.285,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 37.3
             }
           },
           "peak_detected_at": null,
           "recommendation": null,
-          "_lat": 43.6777,
-          "_lon": -79.6248,
-          "_tz": "America/Toronto",
-          "_peak_hour_start": 14,
+          "_lat": 30.1945,
+          "_lon": -97.6699,
+          "_tz": "America/Chicago",
+          "_peak_hour_start": 15,
           "_peak_hour_end": 17,
           "_target_date": "2026-09-11",
-          "_uhi_adjustment": 0.5,
+          "_uhi_adjustment": 0.3,
           "_lead_days": 0,
-          "_bias_correction": 0.33,
-          "_mean_corrected": 22.2,
+          "_bias_correction": -1.061,
+          "_mean_corrected": 38.0,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -225903,44 +225868,289 @@
             "uhi_adjusted": false
           }
         },
+        "Buenos Aires, AR": {
+          "bma_mean": 18.5,
+          "bma_std": 0.94,
+          "p5": 16.9,
+          "p95": 20.0,
+          "confidence": 0.556,
+          "models": 7,
+          "bma_probs": {
+            "13": 0.0,
+            "14": 0.0,
+            "15": 0.1,
+            "16": 1.6,
+            "17": 12.7,
+            "18": 35.6,
+            "19": 35.6,
+            "20": 12.7,
+            "21": 1.6,
+            "22": 0.1,
+            "23": 0.0
+          },
+          "strategies": {
+            "sigma": {
+              "spill": 18,
+              "k": 1.2,
+              "win_prob": 0.229,
+              "result": null,
+              "actual_peak": 19.5
+            },
+            "p5": {
+              "spill": 17,
+              "k": null,
+              "win_prob": 0.046,
+              "result": null,
+              "actual_peak": 19.5
+            },
+            "mean": {
+              "spill": 19,
+              "k": 0.0,
+              "win_prob": 0.404,
+              "result": null,
+              "actual_peak": 19.5
+            }
+          },
+          "peak_detected_at": null,
+          "recommendation": null,
+          "_lat": -34.8222,
+          "_lon": -58.5358,
+          "_tz": "America/Argentina/Buenos_Aires",
+          "_peak_hour_start": 14,
+          "_peak_hour_end": 17,
+          "_target_date": "2026-09-11",
+          "_uhi_adjustment": 0.8,
+          "_lead_days": 0,
+          "_bias_correction": -0.552,
+          "_mean_corrected": 19.1,
+          "_features": {
+            "model_weighting": true,
+            "dynamic_k": true,
+            "spread_filter": "medium",
+            "uhi_adjusted": true
+          }
+        },
+        "London, UK": {
+          "bma_mean": 21.8,
+          "bma_std": 0.97,
+          "p5": 20.2,
+          "p95": 23.4,
+          "confidence": 0.55,
+          "models": 7,
+          "bma_probs": {
+            "17": 0.0,
+            "18": 0.0,
+            "19": 0.9,
+            "20": 8.1,
+            "21": 28.8,
+            "22": 38.6,
+            "23": 19.5,
+            "24": 3.7,
+            "25": 0.3,
+            "26": 0.0
+          },
+          "strategies": {
+            "sigma": {
+              "spill": 21,
+              "k": 1.16,
+              "win_prob": 0.168,
+              "result": null,
+              "actual_peak": 20.9
+            },
+            "p5": {
+              "spill": 21,
+              "k": null,
+              "win_prob": 0.168,
+              "result": null,
+              "actual_peak": 20.9
+            },
+            "mean": {
+              "spill": 22,
+              "k": 0.0,
+              "win_prob": 0.373,
+              "result": null,
+              "actual_peak": 20.9
+            }
+          },
+          "peak_detected_at": null,
+          "recommendation": null,
+          "_lat": 51.505,
+          "_lon": 0.054,
+          "_tz": "Europe/London",
+          "_peak_hour_start": 14,
+          "_peak_hour_end": 17,
+          "_target_date": "2026-09-11",
+          "_uhi_adjustment": 0.5,
+          "_lead_days": 0,
+          "_bias_correction": -0.523,
+          "_mean_corrected": 22.3,
+          "_features": {
+            "model_weighting": true,
+            "dynamic_k": true,
+            "spread_filter": "medium",
+            "uhi_adjusted": false
+          }
+        },
+        "Atlanta, US": {
+          "bma_mean": 31.2,
+          "bma_std": 1.16,
+          "p5": 29.3,
+          "p95": 33.1,
+          "confidence": 0.549,
+          "models": 8,
+          "bma_probs": {
+            "26": 0.0,
+            "27": 0.1,
+            "28": 0.9,
+            "29": 6.1,
+            "30": 20.2,
+            "31": 32.9,
+            "32": 26.7,
+            "33": 10.8,
+            "34": 2.1,
+            "35": 0.2,
+            "36": 0.0
+          },
+          "strategies": {
+            "sigma": {
+              "spill": 30,
+              "k": 1.4,
+              "win_prob": 0.12,
+              "result": null,
+              "actual_peak": 32.0
+            },
+            "p5": {
+              "spill": 30,
+              "k": null,
+              "win_prob": 0.12,
+              "result": null,
+              "actual_peak": 32.0
+            },
+            "mean": {
+              "spill": 32,
+              "k": 0.0,
+              "win_prob": 0.325,
+              "result": null,
+              "actual_peak": 32.0
+            }
+          },
+          "peak_detected_at": null,
+          "recommendation": null,
+          "_lat": 33.6407,
+          "_lon": -84.4277,
+          "_tz": "America/New_York",
+          "_peak_hour_start": 14,
+          "_peak_hour_end": 17,
+          "_target_date": "2026-09-11",
+          "_uhi_adjustment": 0.3,
+          "_lead_days": 0,
+          "_bias_correction": -0.504,
+          "_mean_corrected": 31.7,
+          "_features": {
+            "model_weighting": true,
+            "dynamic_k": true,
+            "spread_filter": "medium",
+            "uhi_adjusted": false
+          }
+        },
+        "New York, US": {
+          "bma_mean": 27.4,
+          "bma_std": 0.82,
+          "p5": 26.1,
+          "p95": 28.8,
+          "confidence": 0.536,
+          "models": 8,
+          "bma_probs": {
+            "23": 0.0,
+            "24": 0.0,
+            "25": 1.0,
+            "26": 12.6,
+            "27": 41.2,
+            "28": 36.2,
+            "29": 8.5,
+            "30": 0.5,
+            "31": 0.0
+          },
+          "strategies": {
+            "sigma": {
+              "spill": 27,
+              "k": 0.88,
+              "win_prob": 0.393,
+              "result": null,
+              "actual_peak": 27.6
+            },
+            "p5": {
+              "spill": 26,
+              "k": null,
+              "win_prob": 0.108,
+              "result": null,
+              "actual_peak": 27.6
+            },
+            "mean": {
+              "spill": 27,
+              "k": 0.0,
+              "win_prob": 0.393,
+              "result": null,
+              "actual_peak": 27.6
+            }
+          },
+          "peak_detected_at": null,
+          "recommendation": null,
+          "_lat": 40.7772,
+          "_lon": -73.8726,
+          "_tz": "America/New_York",
+          "_peak_hour_start": 14,
+          "_peak_hour_end": 17,
+          "_target_date": "2026-09-11",
+          "_uhi_adjustment": 1.5,
+          "_lead_days": 0,
+          "_bias_correction": -0.082,
+          "_mean_corrected": 27.5,
+          "_features": {
+            "model_weighting": true,
+            "dynamic_k": true,
+            "spread_filter": "medium",
+            "uhi_adjusted": true
+          }
+        },
         "Paris, FR": {
           "bma_mean": 23.9,
-          "bma_std": 1.12,
-          "p5": 22.0,
+          "bma_std": 1.09,
+          "p5": 22.1,
           "p95": 25.7,
-          "confidence": 0.529,
+          "confidence": 0.532,
           "models": 7,
           "bma_probs": {
             "19": 0.0,
             "20": 0.1,
-            "21": 1.5,
-            "22": 9.0,
-            "23": 25.5,
-            "24": 34.3,
+            "21": 1.3,
+            "22": 8.6,
+            "23": 25.7,
+            "24": 35.2,
             "25": 22.0,
-            "26": 6.6,
-            "27": 0.9,
-            "28": 0.1
+            "26": 6.3,
+            "27": 0.8,
+            "28": 0.0
           },
           "strategies": {
             "sigma": {
               "spill": 23,
               "k": 1.4,
-              "win_prob": 0.116,
+              "win_prob": 0.113,
               "result": null,
               "actual_peak": null
             },
             "p5": {
               "spill": 23,
               "k": null,
-              "win_prob": 0.116,
+              "win_prob": 0.113,
               "result": null,
               "actual_peak": null
             },
             "mean": {
               "spill": 25,
               "k": 0.0,
-              "win_prob": 0.333,
+              "win_prob": 0.341,
               "result": null,
               "actual_peak": null
             }
@@ -225969,7 +226179,7 @@
           "bma_std": 1.25,
           "p5": 17.1,
           "p95": 21.2,
-          "confidence": 0.512,
+          "confidence": 0.513,
           "models": 7,
           "bma_probs": {
             "14": 0.0,
@@ -225990,21 +226200,21 @@
               "k": 1.32,
               "win_prob": 0.143,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 19.3
             },
             "p5": {
               "spill": 19,
               "k": null,
               "win_prob": 0.143,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 19.3
             },
             "mean": {
               "spill": 21,
               "k": 0.0,
               "win_prob": 0.297,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 19.3
             }
           },
           "peak_detected_at": null,
@@ -226028,44 +226238,43 @@
         },
         "San Francisco, US": {
           "bma_mean": 20.3,
-          "bma_std": 1.46,
-          "p5": 17.9,
+          "bma_std": 1.43,
+          "p5": 18.0,
           "p95": 22.7,
-          "confidence": 0.509,
+          "confidence": 0.512,
           "models": 8,
           "bma_probs": {
-            "14": 0.0,
             "15": 0.0,
             "16": 0.4,
-            "17": 2.3,
-            "18": 8.1,
-            "19": 18.3,
-            "20": 26.3,
-            "21": 24.0,
-            "22": 14.0,
-            "23": 5.2,
-            "24": 1.2,
+            "17": 2.1,
+            "18": 7.9,
+            "19": 18.4,
+            "20": 26.8,
+            "21": 24.4,
+            "22": 13.9,
+            "23": 4.9,
+            "24": 1.1,
             "25": 0.2
           },
           "strategies": {
             "sigma": {
               "spill": 18,
               "k": 1.4,
-              "win_prob": 0.087,
+              "win_prob": 0.089,
               "result": null,
               "actual_peak": null
             },
             "p5": {
               "spill": 18,
               "k": null,
-              "win_prob": 0.087,
+              "win_prob": 0.089,
               "result": null,
               "actual_peak": null
             },
             "mean": {
               "spill": 20,
               "k": 0.0,
-              "win_prob": 0.265,
+              "win_prob": 0.272,
               "result": null,
               "actual_peak": null
             }
@@ -226080,7 +226289,7 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 0.0,
           "_lead_days": 0,
-          "_bias_correction": 0.07,
+          "_bias_correction": 0.12,
           "_mean_corrected": 20.2,
           "_features": {
             "model_weighting": true,
@@ -226090,46 +226299,46 @@
           }
         },
         "Miami, US": {
-          "bma_mean": 30.8,
-          "bma_std": 1.16,
-          "p5": 28.9,
-          "p95": 32.7,
-          "confidence": 0.497,
+          "bma_mean": 30.3,
+          "bma_std": 1.22,
+          "p5": 28.3,
+          "p95": 32.3,
+          "confidence": 0.49,
           "models": 8,
           "bma_probs": {
             "25": 0.0,
-            "26": 0.0,
-            "27": 0.2,
-            "28": 2.1,
-            "29": 10.8,
-            "30": 26.7,
-            "31": 32.9,
-            "32": 20.2,
-            "33": 6.1,
-            "34": 0.9,
-            "35": 0.1
+            "26": 0.1,
+            "27": 1.0,
+            "28": 5.9,
+            "29": 18.6,
+            "30": 30.9,
+            "31": 27.2,
+            "32": 12.7,
+            "33": 3.1,
+            "34": 0.4,
+            "35": 0.0
           },
           "strategies": {
             "sigma": {
-              "spill": 30,
-              "k": 1.32,
-              "win_prob": 0.142,
+              "spill": 29,
+              "k": 1.3,
+              "win_prob": 0.082,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 30.2
             },
             "p5": {
-              "spill": 30,
+              "spill": 29,
               "k": null,
-              "win_prob": 0.142,
+              "win_prob": 0.082,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 30.2
             },
             "mean": {
-              "spill": 32,
+              "spill": 31,
               "k": 0.0,
-              "win_prob": 0.313,
+              "win_prob": 0.319,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 30.2
             }
           },
           "peak_detected_at": null,
@@ -226143,7 +226352,7 @@
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
           "_bias_correction": -0.762,
-          "_mean_corrected": 31.6,
+          "_mean_corrected": 31.1,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -226152,47 +226361,47 @@
           }
         },
         "Sao Paulo, BR": {
-          "bma_mean": 28.5,
-          "bma_std": 1.52,
+          "bma_mean": 28.3,
+          "bma_std": 1.43,
           "p5": 25.9,
-          "p95": 30.9,
-          "confidence": 0.481,
+          "p95": 30.6,
+          "confidence": 0.49,
           "models": 7,
           "bma_probs": {
             "22": 0.0,
             "23": 0.0,
             "24": 0.4,
-            "25": 2.0,
-            "26": 7.0,
-            "27": 16.1,
-            "28": 24.5,
-            "29": 24.5,
-            "30": 16.1,
-            "31": 7.0,
-            "32": 2.0,
-            "33": 0.4
+            "25": 2.1,
+            "26": 7.9,
+            "27": 18.4,
+            "28": 26.8,
+            "29": 24.4,
+            "30": 13.9,
+            "31": 4.9,
+            "32": 1.1,
+            "33": 0.2
           },
           "strategies": {
             "sigma": {
               "spill": 27,
-              "k": 1.0,
-              "win_prob": 0.129,
+              "k": 1.04,
+              "win_prob": 0.148,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 28.0
             },
             "p5": {
               "spill": 26,
               "k": null,
-              "win_prob": 0.049,
+              "win_prob": 0.055,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 28.0
             },
             "mean": {
               "spill": 29,
               "k": 0.0,
-              "win_prob": 0.256,
+              "win_prob": 0.264,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 28.0
             }
           },
           "peak_detected_at": null,
@@ -226206,7 +226415,7 @@
           "_uhi_adjustment": 1.0,
           "_lead_days": 0,
           "_bias_correction": -0.317,
-          "_mean_corrected": 28.8,
+          "_mean_corrected": 28.6,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -226214,234 +226423,109 @@
             "uhi_adjusted": true
           }
         },
-        "Houston, US": {
-          "bma_mean": 32.0,
-          "bma_std": 1.37,
-          "p5": 29.7,
-          "p95": 34.2,
-          "confidence": 0.47,
-          "models": 8,
-          "bma_probs": {
-            "26": 0.0,
-            "27": 0.0,
-            "28": 0.5,
-            "29": 2.9,
-            "30": 10.3,
-            "31": 22.1,
-            "32": 28.5,
-            "33": 22.1,
-            "34": 10.3,
-            "35": 2.9,
-            "36": 0.5,
-            "37": 0.0
-          },
-          "strategies": {
-            "sigma": {
-              "spill": 32,
-              "k": 0.6,
-              "win_prob": 0.254,
-              "result": null,
-              "actual_peak": null
-            },
-            "p5": {
-              "spill": 30,
-              "k": null,
-              "win_prob": 0.046,
-              "result": null,
-              "actual_peak": null
-            },
-            "mean": {
-              "spill": 33,
-              "k": 0.0,
-              "win_prob": 0.278,
-              "result": null,
-              "actual_peak": null
-            }
-          },
-          "peak_detected_at": null,
-          "recommendation": null,
-          "_lat": 29.6454,
-          "_lon": -95.2789,
-          "_tz": "America/Chicago",
-          "_peak_hour_start": 14,
-          "_peak_hour_end": 17,
-          "_target_date": "2026-09-11",
-          "_uhi_adjustment": 0.5,
-          "_lead_days": 0,
-          "_bias_correction": -0.676,
-          "_mean_corrected": 32.7,
-          "_features": {
-            "model_weighting": true,
-            "dynamic_k": true,
-            "spread_filter": "wide",
-            "uhi_adjusted": false
-          }
-        },
-        "Lucknow, IN": {
-          "bma_mean": 31.6,
-          "bma_std": 1.12,
-          "p5": 29.7,
-          "p95": 33.4,
-          "confidence": 0.468,
-          "models": 7,
-          "bma_probs": {
-            "26": 0.0,
-            "27": 0.0,
-            "28": 0.3,
-            "29": 2.8,
-            "30": 13.3,
-            "31": 30.1,
-            "32": 32.5,
-            "33": 16.6,
-            "34": 4.0,
-            "35": 0.5,
-            "36": 0.0
-          },
-          "strategies": {
-            "sigma": {
-              "spill": 31,
-              "k": 1.33,
-              "win_prob": 0.185,
-              "result": null,
-              "actual_peak": null
-            },
-            "p5": {
-              "spill": 30,
-              "k": null,
-              "win_prob": 0.049,
-              "result": null,
-              "actual_peak": null
-            },
-            "mean": {
-              "spill": 32,
-              "k": 0.0,
-              "win_prob": 0.333,
-              "result": null,
-              "actual_peak": null
-            }
-          },
-          "peak_detected_at": null,
-          "recommendation": null,
-          "_lat": 26.7606,
-          "_lon": 80.8893,
-          "_tz": "Asia/Kolkata",
-          "_peak_hour_start": 14,
-          "_peak_hour_end": 16,
-          "_target_date": "2026-09-11",
-          "_uhi_adjustment": 0.3,
-          "_lead_days": 0,
-          "_bias_correction": -0.693,
-          "_mean_corrected": 32.3,
-          "_features": {
-            "model_weighting": true,
-            "dynamic_k": true,
-            "spread_filter": "medium",
-            "uhi_adjusted": false
-          }
-        },
-        "Austin, US": {
-          "bma_mean": 37.0,
-          "bma_std": 1.46,
-          "p5": 34.6,
+        "Dallas, US": {
+          "bma_mean": 36.6,
+          "bma_std": 1.73,
+          "p5": 33.7,
           "p95": 39.4,
-          "confidence": 0.456,
+          "confidence": 0.477,
           "models": 8,
           "bma_probs": {
-            "31": 0.0,
-            "32": 0.1,
-            "33": 0.7,
-            "34": 3.5,
-            "35": 10.9,
-            "36": 21.4,
-            "37": 26.8,
-            "38": 21.4,
-            "39": 10.9,
+            "30": 0.0,
+            "31": 0.1,
+            "32": 0.7,
+            "33": 2.8,
+            "34": 7.6,
+            "35": 15.0,
+            "36": 21.5,
+            "37": 22.2,
+            "38": 16.5,
+            "39": 8.9,
             "40": 3.5,
-            "41": 0.7,
-            "42": 0.1
+            "41": 1.0,
+            "42": 0.2
           },
           "strategies": {
             "sigma": {
               "spill": 36,
-              "k": 1.4,
-              "win_prob": 0.105,
+              "k": 0.1,
+              "win_prob": 0.227,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 36.2
             },
             "p5": {
-              "spill": 36,
+              "spill": 33,
               "k": null,
-              "win_prob": 0.105,
+              "win_prob": 0.052,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 36.2
             },
             "mean": {
-              "spill": 38,
+              "spill": 36,
               "k": 0.0,
-              "win_prob": 0.268,
+              "win_prob": 0.227,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 36.2
             }
           },
           "peak_detected_at": null,
           "recommendation": null,
-          "_lat": 30.1945,
-          "_lon": -97.6699,
+          "_lat": 32.8472,
+          "_lon": -96.8518,
           "_tz": "America/Chicago",
           "_peak_hour_start": 15,
           "_peak_hour_end": 17,
           "_target_date": "2026-09-11",
-          "_uhi_adjustment": 0.3,
+          "_uhi_adjustment": 1.0,
           "_lead_days": 0,
-          "_bias_correction": -1.037,
-          "_mean_corrected": 38.0,
+          "_bias_correction": 0.589,
+          "_mean_corrected": 36.0,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
             "spread_filter": "wide",
-            "uhi_adjusted": false
+            "uhi_adjusted": true
           }
         },
         "Panama City, PA": {
           "bma_mean": 30.2,
-          "bma_std": 1.37,
-          "p5": 27.9,
+          "bma_std": 1.31,
+          "p5": 28.1,
           "p95": 32.4,
           "confidence": 0.443,
           "models": 7,
           "bma_probs": {
-            "24": 0.0,
             "25": 0.0,
-            "26": 0.3,
-            "27": 2.1,
-            "28": 8.3,
-            "29": 19.7,
-            "30": 28.2,
-            "31": 24.2,
-            "32": 12.5,
-            "33": 3.9,
-            "34": 0.7,
-            "35": 0.1
+            "26": 0.2,
+            "27": 1.7,
+            "28": 7.8,
+            "29": 19.9,
+            "30": 29.4,
+            "31": 24.9,
+            "32": 12.1,
+            "33": 3.4,
+            "34": 0.5,
+            "35": 0.0
           },
           "strategies": {
             "sigma": {
               "spill": 29,
               "k": 1.4,
-              "win_prob": 0.093,
+              "win_prob": 0.091,
               "result": null,
               "actual_peak": null
             },
             "p5": {
               "spill": 29,
               "k": null,
-              "win_prob": 0.093,
+              "win_prob": 0.091,
               "result": null,
               "actual_peak": null
             },
             "mean": {
               "spill": 31,
               "k": 0.0,
-              "win_prob": 0.285,
+              "win_prob": 0.298,
               "result": null,
               "actual_peak": null
             }
@@ -226456,7 +226540,7 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 0.3,
           "_lead_days": 0,
-          "_bias_correction": -0.896,
+          "_bias_correction": -0.863,
           "_mean_corrected": 31.1,
           "_features": {
             "model_weighting": true,
@@ -226466,45 +226550,45 @@
           }
         },
         "Istanbul, TR": {
-          "bma_mean": 25.0,
-          "bma_std": 1.4,
-          "p5": 22.7,
+          "bma_mean": 25.1,
+          "bma_std": 1.34,
+          "p5": 22.9,
           "p95": 27.3,
-          "confidence": 0.436,
+          "confidence": 0.442,
           "models": 7,
           "bma_probs": {
             "19": 0.0,
-            "20": 0.1,
-            "21": 0.6,
-            "22": 3.1,
-            "23": 10.5,
-            "24": 21.9,
-            "25": 27.9,
-            "26": 21.9,
-            "27": 10.5,
+            "20": 0.0,
+            "21": 0.3,
+            "22": 2.3,
+            "23": 9.0,
+            "24": 21.1,
+            "25": 29.0,
+            "26": 23.5,
+            "27": 11.1,
             "28": 3.1,
-            "29": 0.6,
-            "30": 0.1
+            "29": 0.5,
+            "30": 0.0
           },
           "strategies": {
             "sigma": {
-              "spill": 22,
+              "spill": 23,
               "k": 1.4,
-              "win_prob": 0.072,
+              "win_prob": 0.166,
               "result": null,
               "actual_peak": null
             },
             "p5": {
               "spill": 22,
               "k": null,
-              "win_prob": 0.072,
+              "win_prob": 0.059,
               "result": null,
               "actual_peak": null
             },
             "mean": {
               "spill": 24,
               "k": 0.0,
-              "win_prob": 0.271,
+              "win_prob": 0.276,
               "result": null,
               "actual_peak": null
             }
@@ -226520,7 +226604,7 @@
           "_uhi_adjustment": 1.0,
           "_lead_days": 0,
           "_bias_correction": 0.648,
-          "_mean_corrected": 24.4,
+          "_mean_corrected": 24.5,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -226528,116 +226612,49 @@
             "uhi_adjusted": true
           }
         },
-        "Karachi, PK": {
-          "bma_mean": 33.2,
-          "bma_std": 1.58,
-          "p5": 30.6,
-          "p95": 35.8,
-          "confidence": 0.417,
-          "models": 7,
-          "bma_probs": {
-            "27": 0.0,
-            "28": 0.1,
-            "29": 0.8,
-            "30": 3.4,
-            "31": 9.7,
-            "32": 18.8,
-            "33": 24.6,
-            "34": 21.9,
-            "35": 13.3,
-            "36": 5.4,
-            "37": 1.5,
-            "38": 0.3
-          },
-          "strategies": {
-            "sigma": {
-              "spill": 31,
-              "k": 1.4,
-              "win_prob": 0.095,
-              "result": "LOSS",
-              "actual_peak": null,
-              "pm_result": "LOSS"
-            },
-            "p5": {
-              "spill": 31,
-              "k": null,
-              "win_prob": 0.095,
-              "result": "LOSS",
-              "actual_peak": null,
-              "pm_result": "LOSS"
-            },
-            "mean": {
-              "spill": 33,
-              "k": 0.0,
-              "win_prob": 0.246,
-              "result": "WIN",
-              "actual_peak": null,
-              "pm_result": "WIN"
-            }
-          },
-          "peak_detected_at": null,
-          "recommendation": null,
-          "_lat": 24.9065,
-          "_lon": 67.1608,
-          "_tz": "Asia/Karachi",
-          "_peak_hour_start": 13,
-          "_peak_hour_end": 16,
-          "_target_date": "2026-09-11",
-          "_uhi_adjustment": 0.5,
-          "_lead_days": 0,
-          "_bias_correction": -0.023,
-          "_mean_corrected": 33.2,
-          "_features": {
-            "model_weighting": true,
-            "dynamic_k": true,
-            "spread_filter": "wide",
-            "uhi_adjusted": false
-          }
-        },
         "Los Angeles, US": {
-          "bma_mean": 31.2,
-          "bma_std": 2.04,
+          "bma_mean": 30.7,
+          "bma_std": 1.73,
           "p5": 27.9,
-          "p95": 34.6,
-          "confidence": 0.405,
+          "p95": 33.6,
+          "confidence": 0.433,
           "models": 8,
           "bma_probs": {
             "24": 0.0,
-            "25": 0.2,
-            "26": 0.8,
-            "27": 2.4,
-            "28": 5.8,
-            "29": 10.9,
-            "30": 16.3,
-            "31": 19.3,
-            "32": 18.0,
-            "33": 13.2,
-            "34": 7.7,
-            "35": 3.5,
-            "36": 1.3,
-            "37": 0.4
+            "25": 0.1,
+            "26": 0.6,
+            "27": 2.5,
+            "28": 7.0,
+            "29": 14.2,
+            "30": 21.0,
+            "31": 22.4,
+            "32": 17.3,
+            "33": 9.6,
+            "34": 3.9,
+            "35": 1.1,
+            "36": 0.2
           },
           "strategies": {
             "sigma": {
-              "spill": 31,
-              "k": 0.1,
-              "win_prob": 0.184,
+              "spill": 30,
+              "k": 0.4,
+              "win_prob": 0.181,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 28.5
             },
             "p5": {
               "spill": 28,
               "k": null,
-              "win_prob": 0.039,
+              "win_prob": 0.044,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 28.5
             },
             "mean": {
-              "spill": 32,
+              "spill": 31,
               "k": 0.0,
-              "win_prob": 0.192,
+              "win_prob": 0.226,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 28.5
             }
           },
           "peak_detected_at": null,
@@ -226650,8 +226667,8 @@
           "_target_date": "2026-09-11",
           "_uhi_adjustment": 0.7,
           "_lead_days": 0,
-          "_bias_correction": -0.484,
-          "_mean_corrected": 31.7,
+          "_bias_correction": -0.477,
+          "_mean_corrected": 31.2,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -226659,49 +226676,114 @@
             "uhi_adjusted": true
           }
         },
-        "Cape Town, ZA": {
+        "Toronto, CA": {
           "bma_mean": 22.3,
-          "bma_std": 1.88,
-          "p5": 19.2,
-          "p95": 25.4,
-          "confidence": 0.392,
-          "models": 7,
+          "bma_std": 1.37,
+          "p5": 20.1,
+          "p95": 24.6,
+          "confidence": 0.421,
+          "models": 8,
           "bma_probs": {
-            "16": 0.1,
-            "17": 0.4,
-            "18": 1.6,
-            "19": 4.7,
-            "20": 10.1,
-            "21": 16.6,
-            "22": 20.7,
-            "23": 19.6,
-            "24": 14.1,
-            "25": 7.7,
-            "26": 3.2,
-            "27": 1.0,
-            "28": 0.2
+            "17": 0.0,
+            "18": 0.3,
+            "19": 1.8,
+            "20": 7.4,
+            "21": 18.5,
+            "22": 27.8,
+            "23": 25.1,
+            "24": 13.6,
+            "25": 4.4,
+            "26": 0.9,
+            "27": 0.1
           },
           "strategies": {
             "sigma": {
               "spill": 20,
-              "k": 1.01,
-              "win_prob": 0.11,
+              "k": 1.4,
+              "win_prob": 0.102,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 22.4
             },
             "p5": {
-              "spill": 19,
+              "spill": 20,
               "k": null,
-              "win_prob": 0.053,
+              "win_prob": 0.102,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 22.4
             },
             "mean": {
               "spill": 22,
               "k": 0.0,
-              "win_prob": 0.209,
+              "win_prob": 0.285,
               "result": null,
-              "actual_peak": null
+              "actual_peak": 22.4
+            }
+          },
+          "peak_detected_at": null,
+          "recommendation": null,
+          "_lat": 43.6777,
+          "_lon": -79.6248,
+          "_tz": "America/Toronto",
+          "_peak_hour_start": 14,
+          "_peak_hour_end": 17,
+          "_target_date": "2026-09-11",
+          "_uhi_adjustment": 0.5,
+          "_lead_days": 0,
+          "_bias_correction": 0.29,
+          "_mean_corrected": 22.0,
+          "_features": {
+            "model_weighting": true,
+            "dynamic_k": true,
+            "spread_filter": "wide",
+            "uhi_adjusted": false
+          }
+        },
+        "Cape Town, ZA": {
+          "bma_mean": 22.3,
+          "bma_std": 1.76,
+          "p5": 19.4,
+          "p95": 25.2,
+          "confidence": 0.401,
+          "models": 7,
+          "bma_probs": {
+            "16": 0.0,
+            "17": 0.3,
+            "18": 1.2,
+            "19": 4.0,
+            "20": 9.7,
+            "21": 17.1,
+            "22": 22.1,
+            "23": 20.7,
+            "24": 14.2,
+            "25": 7.1,
+            "26": 2.6,
+            "27": 0.7,
+            "28": 0.1
+          },
+          "strategies": {
+            "sigma": {
+              "spill": 20,
+              "k": 1.03,
+              "win_prob": 0.108,
+              "result": "LOSS",
+              "actual_peak": 24.2,
+              "pm_result": "LOSS"
+            },
+            "p5": {
+              "spill": 19,
+              "k": null,
+              "win_prob": 0.047,
+              "result": "LOSS",
+              "actual_peak": 24.2,
+              "pm_result": "LOSS"
+            },
+            "mean": {
+              "spill": 22,
+              "k": 0.0,
+              "win_prob": 0.222,
+              "result": "LOSS",
+              "actual_peak": 24.2,
+              "pm_result": "LOSS"
             }
           },
           "peak_detected_at": null,
@@ -226716,135 +226798,6 @@
           "_lead_days": 0,
           "_bias_correction": 0.145,
           "_mean_corrected": 22.2,
-          "_features": {
-            "model_weighting": true,
-            "dynamic_k": true,
-            "spread_filter": "wide",
-            "uhi_adjusted": false
-          }
-        },
-        "Dallas, US": {
-          "bma_mean": 36.8,
-          "bma_std": 1.91,
-          "p5": 33.6,
-          "p95": 39.9,
-          "confidence": 0.369,
-          "models": 8,
-          "bma_probs": {
-            "30": 0.0,
-            "31": 0.2,
-            "32": 0.9,
-            "33": 3.0,
-            "34": 7.2,
-            "35": 13.4,
-            "36": 19.0,
-            "37": 20.5,
-            "38": 17.0,
-            "39": 10.8,
-            "40": 5.2,
-            "41": 1.9,
-            "42": 0.6
-          },
-          "strategies": {
-            "sigma": {
-              "spill": 36,
-              "k": 0.1,
-              "win_prob": 0.205,
-              "result": null,
-              "actual_peak": null
-            },
-            "p5": {
-              "spill": 33,
-              "k": null,
-              "win_prob": 0.051,
-              "result": null,
-              "actual_peak": null
-            },
-            "mean": {
-              "spill": 36,
-              "k": 0.0,
-              "win_prob": 0.205,
-              "result": null,
-              "actual_peak": null
-            }
-          },
-          "peak_detected_at": null,
-          "recommendation": null,
-          "_lat": 32.8472,
-          "_lon": -96.8518,
-          "_tz": "America/Chicago",
-          "_peak_hour_start": 15,
-          "_peak_hour_end": 17,
-          "_target_date": "2026-09-11",
-          "_uhi_adjustment": 1.0,
-          "_lead_days": 0,
-          "_bias_correction": 0.569,
-          "_mean_corrected": 36.2,
-          "_features": {
-            "model_weighting": true,
-            "dynamic_k": true,
-            "spread_filter": "wide",
-            "uhi_adjusted": true
-          }
-        },
-        "Jeddah, SA": {
-          "bma_mean": 37.0,
-          "bma_std": 2.31,
-          "p5": 33.2,
-          "p95": 40.8,
-          "confidence": 0.357,
-          "models": 7,
-          "bma_probs": {
-            "30": 0.2,
-            "31": 0.6,
-            "32": 1.7,
-            "33": 3.9,
-            "34": 7.5,
-            "35": 11.8,
-            "36": 15.6,
-            "37": 17.1,
-            "38": 15.6,
-            "39": 11.8,
-            "40": 7.5,
-            "41": 3.9,
-            "42": 1.7,
-            "43": 0.6
-          },
-          "strategies": {
-            "sigma": {
-              "spill": 34,
-              "k": 1.24,
-              "win_prob": 0.096,
-              "result": null,
-              "actual_peak": null
-            },
-            "p5": {
-              "spill": 33,
-              "k": null,
-              "win_prob": 0.055,
-              "result": null,
-              "actual_peak": null
-            },
-            "mean": {
-              "spill": 37,
-              "k": 0.0,
-              "win_prob": 0.168,
-              "result": null,
-              "actual_peak": null
-            }
-          },
-          "peak_detected_at": null,
-          "recommendation": null,
-          "_lat": 21.6796,
-          "_lon": 39.1565,
-          "_tz": "Asia/Riyadh",
-          "_peak_hour_start": 12,
-          "_peak_hour_end": 15,
-          "_target_date": "2026-09-11",
-          "_uhi_adjustment": 0.5,
-          "_lead_days": 0,
-          "_bias_correction": 0.493,
-          "_mean_corrected": 36.5,
           "_features": {
             "model_weighting": true,
             "dynamic_k": true,
@@ -226933,6 +226886,30 @@
           "pm_value": 33.0,
           "pm_unit": "C",
           "pm_bucket": "33°C"
+        },
+        {
+          "date": "2026-09-11",
+          "city": "Helsinki, FI",
+          "mean_spill": 17,
+          "pm_value": 17.0,
+          "pm_unit": "C",
+          "pm_bucket": "17°C"
+        },
+        {
+          "date": "2026-09-11",
+          "city": "Manila, PH",
+          "mean_spill": 30,
+          "pm_value": 30.0,
+          "pm_unit": "C",
+          "pm_bucket": "30.0°C"
+        },
+        {
+          "date": "2026-09-11",
+          "city": "Jeddah, SA",
+          "mean_spill": 37,
+          "pm_value": 37.0,
+          "pm_unit": "C",
+          "pm_bucket": "37°C"
         }
       ],
       "predictions_multi_day": {
