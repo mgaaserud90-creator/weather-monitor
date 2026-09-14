@@ -21,6 +21,23 @@ among strategies with at least ``REC_BETS_MIN_SAMPLE`` (default 8) resolved
 bets. A city is included while its best-strategy historical win rate is
 >= 60% (it drops out again once the rate falls back below 60%).
 
+Confidence layer (Modifisert-focused)
+-------------------------------------
+The raw Modifisert hit rate is only ~42% overall, but the local research
+(``_modified_research.py``) shows the BMA bucket probability is well
+calibrated and that hit rate rises with model confidence and differs strongly
+by city. So every candidate bet now passes through ``_modified_confidence.py``:
+
+  * ``p_final`` = Beta-Binomial shrinkage of the calibrated BMA bucket
+    probability toward the chosen strategy's own resolved city record;
+  * gates: city sample, Wilson lower bound, ``p_final``, BMA std, liquidity
+    (24h volume), price sanity, minimum edge, and the market bucket must
+    actually contain the spill (threshold markets need double edge);
+  * only fully qualified, open markets are tradeable and are written to the
+    forward ledger ``_modified_bets_log.json`` with the real entry price, so
+    ROI becomes measurable as markets resolve (historical prices were never
+    stored, so pre-ledger ROI cannot be reconstructed).
+
 For each qualifying city we then determine TODAY's bet:
 
   * bucket   — the chosen strategy's spill for today
@@ -107,6 +124,21 @@ from _compute_market_edge import (  # noqa: E402  (import after sys.path setup)
     _normalize_base,
     is_us_city,
     c_to_f,
+)
+
+from _modified_confidence import (  # noqa: E402
+    load_city_stats,
+    evaluate as evaluate_confidence,
+    update_ledger as update_bets_ledger,
+    LEDGER_FILE as MODIFIED_BETS_LEDGER,
+    MIN_CITY_SAMPLE as CONF_MIN_CITY_SAMPLE,
+    MIN_CITY_WILSON_LB as CONF_MIN_CITY_WILSON_LB,
+    MIN_P_FINAL as CONF_MIN_P_FINAL,
+    MAX_BMA_STD as CONF_MAX_BMA_STD,
+    MIN_EDGE as CONF_MIN_EDGE,
+    MIN_VOLUME as CONF_MIN_VOLUME,
+    MIN_PRICE as CONF_MIN_PRICE,
+    MAX_PRICE as CONF_MAX_PRICE,
 )
 
 
@@ -360,6 +392,23 @@ def pick_market_for_spill(spill_c: int, city_base: str, by_city: dict[str, list[
 # Probability helpers
 # ---------------------------------------------------------------------------
 
+def _market_contains_spill(market: dict, spill_c: int, city_base: str) -> bool:
+    """True when the chosen market bucket actually contains the strategy spill."""
+    bounds = _f_bucket_bounds(market)
+    if bounds is not None:
+        lo, hi = bounds
+        return lo <= c_to_f(float(spill_c)) <= hi
+    if market.get("type") in ("exact", None):
+        temp = market.get("temp")
+        if temp is None:
+            return False
+        try:
+            return int(temp) == int(round(float(spill_c)))
+        except (TypeError, ValueError):
+            return False
+    return False
+
+
 def _bma_prob_for_market(bma_mean_c: float, bma_std_c: float, opp: dict) -> float:
     """BMA probability (0-1) for a market bucket, °F-bucket aware."""
     bounds = _f_bucket_bounds(opp)
@@ -394,6 +443,8 @@ def compute_recommended_bets() -> dict:
     rates = compute_historical_win_rates(daily_rows, modified_cities)
     today_spills, spill_date = latest_daily_spills(daily_rows)
     modified_spills = modified_spills_by_date()
+    city_confidence = load_city_stats()
+    qualified_bets: list[dict] = []
 
     market_opps, fetched_at = load_market_prices()
     by_city = group_markets_by_city(market_opps)
@@ -462,6 +513,17 @@ def compute_recommended_bets() -> dict:
             "bucket_label": None,
             "p_bucket": None,
             "p_bucket_pct": None,
+            "p_final": None,
+            "p_final_pct": None,
+            "bma_std": None,
+            "city_n": None,
+            "city_wr": None,
+            "city_wilson_lb": None,
+            "min_edge_required": None,
+            "qualified": False,
+            "exclusion_reasons": [],
+            "edge_model_pp": None,
+            "expected_value_per_dollar": None,
             "prob_source": None,
             "price": None,
             "price_pct": None,
@@ -517,31 +579,69 @@ def compute_recommended_bets() -> dict:
             p_bucket = _bma_prob_for_market(bma_mean, bma_std, market)
             prob_source = "bma_prob (computed)"
 
-        # --- Edge + max stake ----------------------------------------------
+        # --- Confidence-adjusted edge + max stake ---------------------------
         is_resolved = bool(market.get("is_resolved", False))
+        market_type = str(market.get("type") or "")
+        gate = evaluate_confidence(
+            city_confidence, city, p_bucket, bma_std, market_type, price,
+            wins=int((best_stats or {}).get("wins", 0) or 0),
+            n=int((best_stats or {}).get("bets", 0) or 0),
+            volume=float(market.get("volume") or 0.0),
+        )
+        if market_type != "threshold" and not _market_contains_spill(market, bucket, city_base):
+            gate["qualified"] = False
+            gate.setdefault("reasons", []).append("market bucket does not contain the spill")
+        p_final = gate["p_final"]
+        edge_frac = gate["edge_final"]
+
         row["p_bucket"] = round(p_bucket, 4)
         row["p_bucket_pct"] = round(p_bucket * 100, 1)
+        row["p_final"] = p_final
+        row["p_final_pct"] = round(p_final * 100, 1)
         row["price"] = round(price, 4)
         row["price_pct"] = round(price * 100, 1)
         row["prob_source"] = prob_source
         row["market_status"] = "resolved" if is_resolved else "open"
-
-        edge_frac = p_bucket - price
+        row["bma_std"] = bma_std
+        row["city_n"] = gate["city_n"]
+        row["city_wr"] = gate["city_wr"]
+        row["city_wilson_lb"] = gate["city_wilson_lb"]
+        row["min_edge_required"] = gate["min_edge_required"]
+        row["qualified"] = gate["qualified"]
+        row["exclusion_reasons"] = gate["reasons"]
         row["edge_frac"] = round(edge_frac, 4)
         row["edge"] = round(edge_frac * 100, 1)  # percentage points (project convention)
+        row["edge_model_pp"] = round((p_bucket - price) * 100, 1)
+        row["expected_value_per_dollar"] = round(p_final / price - 1.0, 4) if price > 0 else None
 
-        tradeable = (not is_resolved) and edge_frac > 0
+        tradeable = (not is_resolved) and gate["qualified"]
         row["is_tradeable"] = tradeable
 
         if tradeable:
-            kelly_full = compute_kelly_fraction(p_bucket, price)
+            kelly_full = compute_kelly_fraction(p_final, price)
             stake = min(kelly_full * KELLY_FRACTION * BANKROLL, MAX_STAKE_CAP)
             row["max_stake_usd"] = round(stake, 2)
+            qualified_bets.append({
+                "date": market.get("date") or spill_date,
+                "city_key": city,
+                "city": city_display,
+                "strategy": best,
+                "spill": bucket,
+                "bucket_label": row.get("bucket_label"),
+                "market_type": market_type,
+                "price": round(price, 4),
+                "p_final": p_final,
+                "edge": round(edge_frac, 4),
+                "stake": round(stake, 2),
+                "logged_at": datetime.now(timezone.utc).isoformat(),
+            })
         else:
             row["max_stake_usd"] = 0.0
 
         if is_resolved:
             row["note"] = "Market resolved (price at extreme) — max stake 0 (not tradeable)"
+        elif gate["reasons"]:
+            row["note"] = "Gated out: " + "; ".join(gate["reasons"])
         elif edge_frac <= 0:
             row["note"] = "No positive edge — max stake 0"
 
@@ -556,7 +656,20 @@ def compute_recommended_bets() -> dict:
 
     rows.sort(key=_sort_key, reverse=True)
 
+    ledger_summary = update_bets_ledger(qualified_bets)
+
     notes: list[str] = [STAKE_METHOD]
+    notes.append(
+        "Confidence gates: city n>=" f"{CONF_MIN_CITY_SAMPLE}, Wilson LB>={CONF_MIN_CITY_WILSON_LB}, "
+        f"p_final>={CONF_MIN_P_FINAL}, bma_std<={CONF_MAX_BMA_STD}, edge>={CONF_MIN_EDGE}, "
+        f"volume>={CONF_MIN_VOLUME:.0f}, {CONF_MIN_PRICE:.2f}<=price<={CONF_MAX_PRICE:.2f} "
+        "(threshold markets require double edge)."
+    )
+    notes.append(
+        f"Forward bet ledger: {ledger_summary['n_resolved']} resolved "
+        f"(hit_rate={ledger_summary['hit_rate']}, ROI={ledger_summary['roi']}); "
+        "entry prices were never stored before the ledger started, so historical ROI is not reconstructable."
+    )
     if fetched_at:
         notes.append(f"Market prices fetched at: {fetched_at}")
     else:
@@ -585,6 +698,24 @@ def compute_recommended_bets() -> dict:
         "market_prices_fetched_at": fetched_at,
         "count": len(rows),
         "notes": notes,
+        "confidence": {
+            "gates": {
+                "min_city_sample": CONF_MIN_CITY_SAMPLE,
+                "min_city_wilson_lb": CONF_MIN_CITY_WILSON_LB,
+                "min_p_final": CONF_MIN_P_FINAL,
+                "max_bma_std": CONF_MAX_BMA_STD,
+                "min_edge": CONF_MIN_EDGE,
+            },
+            "n_cities_with_confidence": len(city_confidence),
+            "n_qualified_bets": len(qualified_bets),
+            "ledger": ledger_summary,
+            "method": (
+                "p_final = Beta-Binomial shrinkage of the calibrated BMA bucket "
+                "probability toward the city's own resolved Modifisert record; "
+                "only bets passing all gates are tradeable and logged."
+            ),
+        },
+        "modified_bets_ledger": MODIFIED_BETS_LEDGER.name,
         "recommended_bets": rows,
     }
 

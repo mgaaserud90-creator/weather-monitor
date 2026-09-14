@@ -136,6 +136,10 @@ jobs:
       - name: Generate modified strategy (full backfill + today)
         run: python3 _modified_strategy.py
 
+      - name: Modifisert confidence research
+        continue-on-error: true
+        run: python3 _modified_research.py --json > _modified_confidence_report.json
+
       - name: Daily city log
         continue-on-error: true
         run: python3 _daily_city_log.py
@@ -195,6 +199,7 @@ jobs:
             _quality_report.md _quality_report.html _all_cities.html
             index.html _peak_detection.html
             _modified_strategy_log.json _modified_strategy_report.html
+            _modified_bets_log.json _modified_confidence_report.json
             _recommended_bets.json _anbefalt_spill.html
           push_options: '--force-with-lease'
 
