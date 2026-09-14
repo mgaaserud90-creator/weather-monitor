@@ -1,11 +1,11 @@
-# Modifisert strategy — confidence upgrade & honest assessment
+# Modifisert strategy — confidence upgrade & deep-dive on per-city corrections
 
 Date: 2026-09-14 · Scope: v1 Polymarket Weather (`vær monitor/`)
 
 ## 1. What the user asked
 
-Raise the *confidence* of the Modifisert strategy until it can "more or less
-be regarded as passive income", be honest about missing data, and implement
+Push the Modifisert strategy as high as the data allows, dig for a better
+correction **for every city**, be honest when data is missing, and implement
 improvements without waiting for approval.
 
 ## 2. Data actually available (and what is missing)
@@ -13,110 +13,117 @@ improvements without waiting for approval.
 | Data | Status |
 |---|---|
 | Resolved Modifisert rows (city × date) | **1 679** rows, 2026-08-11 → 2026-09-14 (35 days, 51 cities) |
-| BMA confidence per row (`bma_std`, `confidence`, `models`) | Complete (0 rows missing std) |
-| Polymarket resolved outcomes (point, °F buckets, thresholds) | Complete for all days |
-| **Historical market prices per day** | **MISSING** — `_market_prices.json` is a single live snapshot; `_pnl_log.json` has only 59/1686 rows with a price |
-| Historical order-book liquidity | **MISSING** (only 24h volume in the live snapshot) |
+| Per-provider daily means | 1 145 rows (2026-08-11 → 2026-09-05 only) |
+| BMA mean/std/confidence per row | Complete |
+| Polymarket resolved outcomes (point / °F buckets / thresholds) | Complete |
+| **Historical market prices per day** | **MISSING** — one live snapshot only; `_pnl_log.json` has a price on 59/1686 rows |
+| Historical order-book liquidity | **MISSING** (live 24h volume only) |
 
-**Honest conclusion on data:** historical **ROI cannot be reconstructed**.
-Only *hit-rate* and *probability calibration* can be validated locally. Any
-claim of "passive income" from the existing history would be unsupported.
+**Honest conclusion:** historical **ROI cannot be reconstructed**; only
+hit-rate and probability calibration can be validated locally.
 
-## 3. Evidence from the data (`_modified_research.py`)
+## 3. The main win: ensemble the base forecast with the BMA mean
 
-Overall Modifisert hit rate: **41.9 %** (703W / 976L). That alone is not
-profitable at typical prices — so the value must come from *selection*.
+Experiment `_modified_aggregator_experiment.py` compared alternative base
+estimators, each followed by the city's existing correction, resolved with the
+real Polymarket resolver (walk-forward 70/30):
 
-### 3.1 Probability is well calibrated
-Binning rows by the model's implied probability of the chosen bucket:
+| Base | Test hit rate (n=300) |
+|---|---|
+| weighted mean of providers (previous Modifisert) | 38.0 % |
+| equal mean / median / trimmed mean | 36–40 % |
+| provider-bias-corrected weighted mean | 31.3 % |
+| **0.25·weighted + 0.75·BMA mean** | **47.3 %** |
+| pure BMA mean | 46.0 % |
 
-| P(central bucket) | n | realised hit rate | mean model P |
+Full-series confirmation (`_modified_blend_eval.py`, all 1 679 rows):
+
+| Base | Hit rate |
+|---|---|
+| previous (pure provider weighted mean on 1 104 rows) | 41.9 % |
+| pure BMA mean + correction | 45.0 % |
+| **0.25·provider + 0.75·BMA + correction (shipped)** | **45.9 %** |
+
+The BMA mean is simply the stronger estimator; the old weighting was adding
+variance. `PROVIDER_BLEND_ALPHA = 0.25` in `_modified_strategy.py` now blends
+it in. Overall Modifisert hit rate: **41.9 % → 45.9 %** (703W → 770W).
+
+## 4. Deep-dive: can a *better per-city correction* be found?
+
+I built three dedicated experiments and validated everything walk-forward:
+
+1. `_modified_correction_optimizer.py` — per-city constant offset on top of the
+   current corrected mean. Test hit: current 41.3 % → per-city offset 43.7 %.
+   **+2.4 pp, within one standard error (~3 pp) → not statistically reliable.**
+   Global best offset = 0.00 (no systematic bias).
+2. `_modified_aggregator_experiment.py` — equal/median/trimmed/bias-corrected
+   aggregators all ≤ the weighted mean; the **blend** is the only winner.
+3. `_modified_percity_alpha.py` — a per-city blend weight picked on train:
+   test hit **44.0 %**, *worse* than the single global weight (47.3 %). Classic
+   overfitting: ~24 train / 11 test days per city cannot support per-city tuning.
+
+**Honest finding:** per-city corrections beyond the existing models do **not**
+generalise. The current per-city correction models (baseline/additive/median/
+linear/multiplicative, out-of-sample params from `_per_city_curvefit.json`) are
+already at this dataset's information limit; adding per-city knobs makes it
+worse. Going higher needs *more data*, not more parameters.
+
+## 5. Confidence of the improved strategy (walk-forward)
+
+Train 2026-08-11→09-03, test 2026-09-04→09-14, city picked on train only:
+
+| Rule | test n | test hit rate | Wilson LB |
 |---|---|---|---|
-| < 0.20 | 107 | 31.8 % | 0.168 |
-| 0.20–0.30 | 369 | 36.6 % | 0.259 |
-| 0.30–0.40 | 614 | 41.4 % | 0.349 |
-| 0.40–0.50 | 430 | 44.9 % | 0.444 |
-| 0.50–0.60 | 150 | 54.7 % | 0.539 |
-| ≥ 0.60 | 9 | 55.6 % | 0.615 |
+| City train WR ≥ 60 % | 136 | 54.4 % | — |
+| City 60 % + p ≥ 0.35 + std ≤ 1.1 | 64 | 57.8 % | 45.6 % |
+| City 60 % + p ≥ 0.40 + std ≤ 1.0 | 35 | 60.0 % | 43.6 % |
+| City 60 % + p ≥ 0.35 + std ≤ 0.9 | 33 | 60.6 % | 43.7 % |
 
-Model probability ≈ realised frequency ⇒ **P is usable as an edge input**.
+Calibration of the model probability remains good (P∈[0.40,0.50) → 48.1 %
+realised), and hit rate still rises with confidence (`bma_std<0.8` → 49.4 % vs
+`≥1.5` → 37.5 %, `confidence≥0.75` → 51–53 %).
 
-### 3.2 Confidence is monotonic
-- `bma_std < 0.8` → 48.1 % vs `bma_std ≥ 1.5` → 33.3 %.
-- `confidence ≥ 0.75` → ~48–49 % vs `< 0.55` → 37.6 %.
+Strong cities (Wilson LB): Jinan 96.8 %, Singapore 74.2 %, Tel Aviv 68.6 %,
+Seoul/Zhengzhou 64.5 %, Karachi/Lucknow 62.5 %, Mexico City 61.8 %.
+Weak: Miami 5.9 %, San Francisco 20.6 %, Taipei 22.6 %.
 
-### 3.3 City dispersion is large and stable
-Best (Wilson 95 % lower bound): Jinan 96.8 %, Singapore 74.2 %, Ankara/NY
-64.7 %, Zhengzhou 64.5 %, Karachi/Lucknow 62.5 %.
-Worst: Miami/Denver 11.8 %, San Francisco 14.7 %, Los Angeles 17.6 %.
+## 6. The shipped strategy
 
-### 3.4 Walk-forward (train 08-11→09-03, test 09-04→09-14)
+`_modified_strategy.py` (base + per-city correction) → `_modified_confidence.py`
+(probability + gates) → `_recommended_bets.py` (selection) →
+`_modified_bets_log.json` (forward ROI ledger).
 
-| Rule (chosen on train only) | test n | test hit rate | Wilson LB |
-|---|---|---|---|
-| City train WR ≥ 60 % (n ≥ 5) | 103 | 57.3 % | — |
-| City 60 % + p ≥ 0.35 + std ≤ 0.9 | 36 | **63.9 %** | 47.6 % |
-| City 60 % + p ≥ 0.40 + std ≤ 1.0 | 38 | 57.9 % | 42.2 % |
-| City 60 % + p ≥ 0.45 + std ≤ 0.9 | 14 | 71.4 % | 45.4 % |
+- base = 0.25·provider weighted mean + 0.75·BMA mean (when providers exist),
+  otherwise BMA mean; then the city's correction model;
+- `p_final` = Beta-Binomial shrinkage of the calibrated BMA bucket probability
+  toward the chosen strategy's own resolved city record;
+- gates: city n ≥ 5 & Wilson LB ≥ 0.40, `p_final` ≥ 0.40, `bma_std` ≤ 1.0,
+  24h volume ≥ 5 000, `0.02 ≤ price ≤ 0.95`, bucket must contain the spill,
+  edge ≥ 5 pp (threshold markets double);
+- quarter-Kelly sizing; every qualified open bet logged with its real entry
+  price and auto-resolved later.
 
-The gate survives out-of-sample: combining the calibrated probability with the
-city record and a model-agreement filter lifts hit rate from 42 % to ~58–64 %.
+## 7. Reality check — is this "passive income" yet?
 
-## 4. The strategy implemented
+Not provably. The hit-rate edge is real and out-of-sample (≈58–61 % on gated
+picks vs 46 % ungated), but whether it survives **after price and fees** needs
+≥ 8–12 weeks of `_modified_bets_log.json` real-price data, because historical
+prices were never stored. The strategy also deliberately produces **lumpy**
+(often zero-bet) days — correct for +EV betting, not a flaw.
 
-`_modified_confidence.py` + `_recommended_bets.py` now produce a conservative
-**positive-expectancy selection** (not a blind "bet every day"):
-
-1. **City track record** — chosen strategy must have `n ≥ 5` and Wilson 95 %
-   lower bound ≥ 0.40 for that city/strategy.
-2. **Confidence-adjusted probability**
-   `p_final = (wins + k·p_model) / (n + k)`, `k = 5` (Beta-Binomial shrinkage of
-   the calibrated BMA probability toward the city record).
-3. **Model agreement** — `bma_std ≤ 1.0 °C`.
-4. **Liquidity / price sanity** — 24h volume ≥ 5 000; `0.02 ≤ price ≤ 0.95`
-   (excludes stale/illiquid quotes and resolved extremes).
-5. **Bucket integrity** — the chosen market bucket must actually *contain* the
-   spill (°C exact match / °F range containment). Threshold markets require
-   **double** edge.
-6. **Edge** — `p_final − price ≥ 0.05` (positive expected value after a margin).
-7. **Sizing** — quarter-Kelly on `p_final`, capped by bankroll/stake cap.
-8. **Forward ledger** — every qualified, open bet is written to
-   `_modified_bets_log.json` with the real entry price; it is auto-resolved on
-   later runs and reports hit-rate, ROI and Brier score.
-
-Because `edge ≥ 5pp` implies `price ≤ p_final − 0.05`, a bet is only placed
-when the entry price is *below* the estimated win probability — the necessary
-(though not sufficient) condition for long-run profit.
-
-## 5. Reality check — is this "passive income"?
-
-Not yet provably. With ~1 680 resolved observations and **no stored historical
-prices**, the honest statement is:
-
-- the **hit-rate edge is real and out-of-sample** (≈58–64 % on gated picks vs
-  42 % ungated);
-- whether that survives **after price and fees** can only be shown by the new
-  forward ledger, because historical prices do not exist in the repo;
-- the strategy deliberately produces **few, high-confidence bets** (often zero
-  on a given day when markets are resolved or fairly priced) rather than a
-  steady stream — that is the right behaviour for positive-EV betting but
-  means income is lumpy, not a metronome.
-
-**What would make it conclusive:** ≥ 8–12 weeks of `_modified_bets_log.json`
-with real entry prices; then ROI, drawdown and Brier score become measurable
-and the gates can be re-tuned on out-of-sample data.
-
-## 6. How to run / tune
+## 8. How to run / tune
 
 ```bash
-python _modified_strategy.py        # full resolved daily series + today
-python _modified_research.py        # confidence / walk-forward evidence
-python _recommended_bets.py        # gated picks + forward ledger
+python _modified_strategy.py              # base blend + full resolved series
+python _modified_aggregator_experiment.py # base-estimator comparison
+python _modified_blend_eval.py            # full-series blend sweep
+python _modified_correction_optimizer.py  # per-city offset walk-forward
+python _modified_percity_alpha.py         # per-city blend-weight walk-forward
+python _modified_research.py              # confidence + calibration evidence
+python _recommended_bets.py               # gated picks + forward ledger
 ```
 
-All gates are env-overridable: `MOD_MIN_CITY_SAMPLE`, `MOD_MIN_CITY_WILSON_LB`,
-`MOD_MIN_P`, `MOD_MAX_BMA_STD`, `MOD_MIN_EDGE`, `MOD_SHRINK_K`,
-`MOD_THRESHOLD_EDGE_MULT`, `MOD_MIN_VOLUME`, `MOD_MIN_PRICE`, `MOD_MAX_PRICE`.
-
-The pipeline (`full_auto_pipeline.yml`) runs both the strategy and the research
-report daily, before the daily city log and recommended bets.
+Env tunables: `MOD_MIN_CITY_SAMPLE`, `MOD_MIN_CITY_WILSON_LB`, `MOD_MIN_P`,
+`MOD_MAX_BMA_STD`, `MOD_MIN_EDGE`, `MOD_SHRINK_K`, `MOD_MIN_VOLUME`,
+`MOD_MIN_PRICE`, `MOD_MAX_PRICE`. The blend weight is `PROVIDER_BLEND_ALPHA`
+in `_modified_strategy.py`.

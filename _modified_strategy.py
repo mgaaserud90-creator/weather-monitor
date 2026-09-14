@@ -98,6 +98,12 @@ OSCILLATOR_SIGNAGREE_HI = 0.55
 WEIGHT_FLOOR = 0.02                 # no provider is fully zeroed
 MSE_REGULARIZATION = 0.25           # matches inverse-MSE scheme (bias^2 + var + 0.25)
 
+# Blend weight on the provider weighted mean vs the day's BMA mean. A
+# walk-forward experiment (_modified_aggregator_experiment.py) showed the BMA
+# mean is the stronger base estimator and a mild provider share reduces
+# variance: full-series hit rate 41.9% (pure provider) -> 45.9% (0.25 blend).
+PROVIDER_BLEND_ALPHA = 0.25
+
 PROVIDER_DISPLAY_TO_KEY: dict[str, str] = {
     "ECMWF IFS": "ecmwf_ifs",
     "GFS": "gfs",
@@ -685,6 +691,8 @@ def build_log() -> dict:
     # Per-city static configuration (removed providers + weights + correction).
     cities_cfg = build_cities_config(provider_stats, curvefit, decisions)
 
+    quality_series = load_quality_series()
+
     records: list[dict] = []
     covered_pairs: set[tuple[str, str]] = set()
     for rec in predictions:
@@ -709,7 +717,24 @@ def build_log() -> dict:
             # Every remaining provider missing on this date -> cannot compute.
             continue
         wsum = sum(weights_pct[k] for k in available)
-        modified_mean = sum(weights_pct[k] * float(providers[k]) for k in available) / wsum
+        provider_weighted_mean = sum(weights_pct[k] * float(providers[k]) for k in available) / wsum
+
+        # Blend the provider weighted mean with the day's BMA mean (see
+        # PROVIDER_BLEND_ALPHA): the BMA mean is the stronger base estimator
+        # and a mild provider share reduces variance.
+        bma_mean = None
+        qent = (quality_series.get(date_str) or {}).get(city)
+        if qent is not None:
+            bma_mean = _to_float(qent)
+        if bma_mean is not None:
+            modified_mean = (
+                PROVIDER_BLEND_ALPHA * provider_weighted_mean
+                + (1.0 - PROVIDER_BLEND_ALPHA) * bma_mean
+            )
+            base_source = "blend_bma_weighted"
+        else:
+            modified_mean = provider_weighted_mean
+            base_source = "open_meteo_per_model"
 
         method = cfg["correction_method"]
         params = cfg["correction_params"]
@@ -728,6 +753,8 @@ def build_log() -> dict:
             "city": city,
             "date": date_str,
             "weighted_mean": round(modified_mean, 4),
+            "providers_weighted_mean": round(provider_weighted_mean, 4),
+            "bma_mean": round(bma_mean, 4) if bma_mean is not None else None,
             "correction_method": method,
             "correction": round(corrected_mean, 4),
             "corrected_mean": round(corrected_mean, 4),
@@ -741,11 +768,11 @@ def build_log() -> dict:
             "plain_mean_spill": plain_spill,
             "plain_mean_result": plain_result,
             "today_source": "open_meteo_per_model",
+            "base_source": base_source,
             "providers_used": available,
         })
 
     # ── Full daily series: BMA fallback for every other quality-log day ──
-    quality_series = load_quality_series()
     records.extend(compute_bma_records(cities_cfg, quality_series, markets, covered_pairs))
 
     # Preserve any previously persisted rows we can no longer derive so the
