@@ -42,7 +42,7 @@
 <div class="wrap">
   <header>
     <h1>🧪 Modifisert strategi — vektet + korrigert per by</h1>
-    <p>Generert 2026-09-14T16:33:23.482777+00:00 · Selvstendig HTML (inline CSS, ingen eksterne ressurser)</p>
+    <p>Generert 2026-09-14T16:46:15.815426+00:00 · Selvstendig HTML (inline CSS, ingen eksterne ressurser)</p>
   </header>
 
   <div class="cards">
@@ -59,6 +59,8 @@
     <code>|bias| ≥ 1.0°C OG sign-agreement ≥ 70%</code> (konsistent misser),
     ELLER <code>std ≥ 1.0°C OG sign-agreement 45–55%</code> (oscillator).
     Vekting: invers-MSE (<code>1/(bias² + std² + 0.25)</code>) over gjenværende providere, normalisert, gulv 0.02.
+    <b>Ny metode:</b> basis = <code>0.25·provider-vektet + 0.75·BMA</code>
+    (BMA-ensemblet reduserer varians; 41.9% → 45.9% treffsikkerhet), deretter byens egen korreksjonsmodell.
     Korreksjon: byens beste modell fra <code>_per_city_curvefit.json</code> (out-of-sample parametre, °C-skala).
     Spill = <code>round(korrigert_mean)</code> °C. Win-regel: prosjektets — WIN hvis spillet treffer resolved bucket.
   </div>

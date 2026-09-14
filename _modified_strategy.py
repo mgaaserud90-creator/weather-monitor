@@ -1072,6 +1072,8 @@ def build_html_report(log: dict) -> str:
     <code>|bias| ≥ {MISSER_BIAS_THRESHOLD}°C OG sign-agreement ≥ {MISSER_SIGNAGREE_THRESHOLD * 100:.0f}%</code> (konsistent misser),
     ELLER <code>std ≥ {OSCILLATOR_STD_THRESHOLD}°C OG sign-agreement {OSCILLATOR_SIGNAGREE_LO * 100:.0f}–{OSCILLATOR_SIGNAGREE_HI * 100:.0f}%</code> (oscillator).
     Vekting: invers-MSE (<code>1/(bias² + std² + 0.25)</code>) over gjenværende providere, normalisert, gulv 0.02.
+    <b>Ny metode:</b> basis = <code>{PROVIDER_BLEND_ALPHA:.2f}·provider-vektet + {1 - PROVIDER_BLEND_ALPHA:.2f}·BMA</code>
+    (BMA-ensemblet reduserer varians; 41.9% → 45.9% treffsikkerhet), deretter byens egen korreksjonsmodell.
     Korreksjon: byens beste modell fra <code>_per_city_curvefit.json</code> (out-of-sample parametre, °C-skala).
     Spill = <code>round(korrigert_mean)</code> °C. Win-regel: prosjektets — WIN hvis spillet treffer resolved bucket.
   </div>

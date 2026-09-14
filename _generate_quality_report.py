@@ -97,9 +97,9 @@ def _tally_all_strategies_city_records(runs: list) -> dict[str, dict]:
         for city, pdata in run.get("predictions", {}).items():
             strategies = pdata.get("strategies", {}) or {}
             rec = tally.setdefault(
-                city, {sn: {"wins": 0, "losses": 0} for sn in ("sigma", "p5", "mean")}
+                city, {sn: {"wins": 0, "losses": 0} for sn in ("sigma", "modifisert", "mean")}
             )
-            for sn in ("sigma", "p5", "mean"):
+            for sn in ("sigma", "modifisert", "mean"):
                 res = strategies.get(sn, {}).get("result")
                 if res == "WIN":
                     rec[sn]["wins"] += 1
@@ -112,7 +112,9 @@ def _load_log() -> dict:
     """Load existing quality log or return empty structure."""
     if LOG_FILE.exists():
         try:
-            return json.loads(LOG_FILE.read_text(encoding="utf-8"))
+            data = json.loads(LOG_FILE.read_text(encoding="utf-8"))
+            _inject_modifisert(data.get("runs", []) or [])
+            return data
         except (json.JSONDecodeError, KeyError):
             pass
     return {"runs": []}
@@ -150,6 +152,61 @@ def _load_modified_city_records() -> dict[str, dict]:
     return records
 
 
+def _load_modified_index() -> dict:
+    """Return {(city, date): entry} for the Modifisert strategy."""
+    idx: dict = {}
+    if not MODIFIED_LOG_FILE.exists():
+        return idx
+    try:
+        data = json.loads(MODIFIED_LOG_FILE.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return idx
+    for rec in (data.get("records", []) or []):
+        city = str(rec.get("city", "")).strip()
+        date_str = str(rec.get("date", "")).strip()
+        if not city or not date_str:
+            continue
+        idx[(city, date_str)] = {
+            "spill": rec.get("spill"),
+            "result": rec.get("result"),
+            "win_prob": None,
+            "corrected_mean": rec.get("corrected_mean"),
+            "today_source": rec.get("today_source"),
+        }
+    return idx
+
+
+_MOD_INDEX_CACHE: dict | None = None
+
+
+def _modified_index() -> dict:
+    global _MOD_INDEX_CACHE
+    if _MOD_INDEX_CACHE is None:
+        _MOD_INDEX_CACHE = _load_modified_index()
+    return _MOD_INDEX_CACHE
+
+
+def _inject_modifisert(runs: list) -> list:
+    """Inject the Modifisert strategy into each prediction's strategies dict."""
+    if not runs:
+        return runs
+    idx = _modified_index()
+    if not idx:
+        return runs
+    for run in runs:
+        run_date = str(run.get("run_date", ""))
+        run_target = str(run.get("target_date", "")) or run_date
+        for city, pdata in (run.get("predictions", {}) or {}).items():
+            if not isinstance(pdata, dict):
+                continue
+            date_str = str(pdata.get("_target_date") or run_target or run_date)
+            entry = idx.get((city, date_str)) or idx.get((city.split(",")[0].strip(), date_str))
+            if entry is None:
+                continue
+            pdata.setdefault("strategies", {})["modifisert"] = dict(entry)
+    return runs
+
+
 def _tally_from_predictions(runs: list) -> dict:
     """Compute per-strategy win/loss totals from predictions (ground truth).
 
@@ -167,7 +224,7 @@ def _tally_from_predictions(runs: list) -> dict:
             strategies = pdata.get("strategies", {}) or {}
             for sn, win_key, loss_key in (
                 ("sigma", "sigma_wins", "sigma_losses"),
-                ("p5", "p5_wins", "p5_losses"),
+                ("modifisert", "p5_wins", "p5_losses"),
                 ("mean", "mean_wins", "mean_losses"),
             ):
                 result = strategies.get(sn, {}).get("result")
@@ -632,31 +689,25 @@ def _generate_report() -> str:
     lines.append(f"Dager kjørt: {total_days}")
     lines.append("")
 
-    modified_wins, modified_losses = _load_modified_totals()
-    modified_total = modified_wins + modified_losses
-
     lines.append("📊 PER-STRATEGI RESULTATER (KUMULATIV):")
     lines.append(f"   🎯 Sigma (μ−kσ): V:{sigma_wins} T:{sigma_losses}  "
                  f"({round(sigma_wins/max(1,sigma_total)*100,1)}%)")
-    lines.append(f"   🛡️ P5-basert:     V:{p5_wins} T:{p5_losses}  "
+    lines.append(f"   🧪 Modifisert:   V:{p5_wins} T:{p5_losses}  "
                  f"({round(p5_wins/max(1,p5_total)*100,1)}%)")
-    lines.append(f"   📊 Mean-basert:   V:{mean_wins} T:{mean_losses}  "
+    lines.append(f"   📊 Mean-basert:  V:{mean_wins} T:{mean_losses}  "
                  f"({round(mean_wins/max(1,mean_total)*100,1)}%)")
-    lines.append(f"   🧪 Modifisert:    V:{modified_wins} T:{modified_losses}  "
-                 f"({round(modified_wins/max(1,modified_total)*100,1)}%)")
     lines.append("")
 
-    # Per-city 4-strategy W/L with min-sample.
-    modified_city_records = _load_modified_city_records()
+    # Per-city 3-strategy W/L with min-sample (Sigma / Modifisert / Mean).
     city_tally = _tally_all_strategies_city_records(runs)
-    all_cities = sorted(set(city_tally) | set(modified_city_records))
+    all_cities = sorted(city_tally)
 
-    lines.append("🏙️ PER-BY 4-STRATEGI W/L (KUMULATIV, MIN-SAMPLE):")
-    lines.append(f"   {'By':<28s} {'Sigma':>16s} {'P5':>16s} {'Mean':>16s} {'Modifisert':>22s}")
+    lines.append("🏙️ PER-BY 3-STRATEGI W/L (KUMULATIV, MIN-SAMPLE):")
+    lines.append(f"   {'By':<28s} {'Sigma':>16s} {'Modifisert':>16s} {'Mean':>16s}")
     for city in all_cities:
         rec = city_tally.get(city, {})
         cells: list[str] = []
-        for sn in ("sigma", "p5", "mean"):
+        for sn in ("sigma", "modifisert", "mean"):
             stats = rec.get(sn, {"wins": 0, "losses": 0})
             w = stats["wins"]
             l = stats["losses"]
@@ -665,15 +716,7 @@ def _generate_report() -> str:
                 cells.append(f"{w}W/{l}L ({round(w/max(1,n)*100,1)}%, n={n})")
             else:
                 cells.append(f"{w}W/{l}L (N/A — not enough data, n={n})")
-        mrec = modified_city_records.get(city, {"wins": 0, "losses": 0})
-        mw = mrec["wins"]
-        ml = mrec["losses"]
-        mn = mw + ml
-        if mn >= MIN_SAMPLE:
-            mcell = f"{mw}W/{ml}L ({round(mw/max(1,mn)*100,1)}%, n={mn})"
-        else:
-            mcell = f"{mw}W/{ml}L (N/A — not enough data, n={mn})"
-        lines.append(f"   {city:<28s} {cells[0]:>16s} {cells[1]:>16s} {cells[2]:>16s} {mcell:>22s}")
+        lines.append(f"   {city:<28s} {cells[0]:>16s} {cells[1]:>16s} {cells[2]:>16s}")
     lines.append("")
 
     # Latest-day resolved table (AVGJORTE RESULTATER).
@@ -686,11 +729,11 @@ def _generate_report() -> str:
         return "✅" if r == "WIN" else ("❌" if r == "LOSS" else "⏳")
 
     lines.append(f"📋 AVGJORTE RESULTATER — SISTE DAG ({resolved_target_date}):")
-    lines.append(f"   {'By':<28s} {'Sigma':>8s} {'P5':>8s} {'Mean':>8s} {'Marked':>14s}")
+    lines.append(f"   {'By':<28s} {'Sigma':>8s} {'Modifisert':>8s} {'Mean':>8s} {'Marked':>14s}")
     for city, pdata in sorted(resolved_preds.items()):
         strategies = pdata.get("strategies", {}) or {}
         sigma = strategies.get("sigma", {}) or {}
-        p5s = strategies.get("p5", {}) or {}
+        p5s = strategies.get("modifisert", {}) or {}
         means = strategies.get("mean", {}) or {}
         target = pdata.get("_target_date") or resolved_target_date
         market_info = _pm_market_info_for_city(city, target, resolved_markets)
@@ -762,11 +805,11 @@ def _get_best_strategy_per_city(runs: list) -> dict:
             if city not in city_stats:
                 city_stats[city] = {
                     "sigma": {"wins": 0, "losses": 0},
-                    "p5": {"wins": 0, "losses": 0},
+                    "modifisert": {"wins": 0, "losses": 0},
                     "mean": {"wins": 0, "losses": 0},
                 }
             strategies = pdata.get("strategies", {})
-            for sn in ("sigma", "p5", "mean"):
+            for sn in ("sigma", "modifisert", "mean"):
                 s = strategies.get(sn, {})
                 if s.get("result") == "WIN":
                     city_stats[city][sn]["wins"] += 1
@@ -776,19 +819,19 @@ def _get_best_strategy_per_city(runs: list) -> dict:
     result: dict[str, dict] = {}
     for city, stats in city_stats.items():
         sigma_t = stats["sigma"]["wins"] + stats["sigma"]["losses"]
-        p5_t = stats["p5"]["wins"] + stats["p5"]["losses"]
+        p5_t = stats["modifisert"]["wins"] + stats["modifisert"]["losses"]
         mean_t = stats["mean"]["wins"] + stats["mean"]["losses"]
         total_resolved = sigma_t
 
         sigma_rate = round(stats["sigma"]["wins"] / max(1, sigma_t) * 100, 1)
-        p5_rate = round(stats["p5"]["wins"] / max(1, p5_t) * 100, 1)
+        p5_rate = round(stats["modifisert"]["wins"] / max(1, p5_t) * 100, 1)
         mean_rate = round(stats["mean"]["wins"] / max(1, mean_t) * 100, 1)
 
         sigma_wl = f"{stats['sigma']['wins']}W/{stats['sigma']['losses']}L"
-        p5_wl = f"{stats['p5']['wins']}W/{stats['p5']['losses']}L"
+        p5_wl = f"{stats['modifisert']['wins']}W/{stats['modifisert']['losses']}L"
         mean_wl = f"{stats['mean']['wins']}W/{stats['mean']['losses']}L"
 
-        rates = {"sigma": sigma_rate, "p5": p5_rate, "mean": mean_rate}
+        rates = {"sigma": sigma_rate, "modifisert": p5_rate, "mean": mean_rate}
         if total_resolved == 0:
             best = "none"
         else:
@@ -797,10 +840,10 @@ def _get_best_strategy_per_city(runs: list) -> dict:
         result[city] = {
             "best": best,
             "sigma_rate": sigma_rate,
-            "p5_rate": p5_rate,
+            "modifisert_rate": p5_rate,
             "mean_rate": mean_rate,
             "sigma_wl": sigma_wl,
-            "p5_wl": p5_wl,
+            "modifisert_wl": p5_wl,
             "mean_wl": mean_wl,
             "total_resolved": total_resolved,
         }
@@ -877,13 +920,13 @@ def _build_strat_rec_cell(city: str, best_per_city: dict) -> str:
     if not info or info["total_resolved"] == 0:
         return '<span style="color: var(--text-dim);">— (ingen data)</span>'
 
-    best_name = {"sigma": "Sigma", "p5": "P5", "mean": "Mean"}.get(info["best"], info["best"])
+    best_name = {"sigma": "Sigma", "modifisert": "Modifisert", "mean": "Mean"}.get(info["best"], info["best"])
     rate = info[f"{info['best']}_rate"]
-    emoji = {"sigma": "🎯", "p5": "🛡️", "mean": "📊"}.get(info["best"], "")
+    emoji = {"sigma": "🎯", "modifisert": "🧪", "mean": "📊"}.get(info["best"], "")
 
     if best_name == "Sigma":
         color = "#3fb950"
-    elif best_name == "P5":
+    elif best_name == "Modifisert":
         color = "#58a6ff"
     else:
         color = "#d2991d"
@@ -903,7 +946,7 @@ def _build_strat_rec_html_section(best_per_city: dict) -> str:
     # Count how many cities have each best strategy
     sigma_cities = [c for c, d in best_per_city.items() if d["best"] == "sigma"]
     mean_cities = [c for c, d in best_per_city.items() if d["best"] == "mean"]
-    p5_cities = [c for c, d in best_per_city.items() if d["best"] == "p5"]
+    modifisert_cities = [c for c, d in best_per_city.items() if d["best"] == "modifisert"]
     total_with_data = len(best_per_city)
 
     # Calculate samplet edge
@@ -921,7 +964,7 @@ def _build_strat_rec_html_section(best_per_city: dict) -> str:
 
     sigma_pct = round(len(sigma_cities) / max(1, total_with_data) * 100, 1)
     mean_pct = round(len(mean_cities) / max(1, total_with_data) * 100, 1)
-    p5_pct = round(len(p5_cities) / max(1, total_with_data) * 100, 1)
+    modifisert_pct = round(len(modifisert_cities) / max(1, total_with_data) * 100, 1)
 
     # Top 10 rows — only show cities with resolved data
     cities_with_data = [(c, d) for c, d in best_per_city.items() if d["total_resolved"] > 0]
@@ -929,9 +972,9 @@ def _build_strat_rec_html_section(best_per_city: dict) -> str:
     top10_rows = ""
     if sorted_cities:
         for i, (city, d) in enumerate(sorted_cities[:10]):
-            best_name = {"sigma": "Sigma", "p5": "P5", "mean": "Mean"}.get(d["best"], d["best"])
+            best_name = {"sigma": "Sigma", "modifisert": "Modifisert", "mean": "Mean"}.get(d["best"], d["best"])
             rate = d[f"{d['best']}_rate"]
-            emoji = {"sigma": "🎯", "p5": "🛡️", "mean": "📊"}.get(d["best"], "")
+            emoji = {"sigma": "🎯", "modifisert": "🧪", "mean": "📊"}.get(d["best"], "")
             top10_rows += (
                 f'<tr><td>{i+1}</td><td><strong>{city}</strong></td>'
                 f'<td>{emoji} {best_name}</td>'
@@ -969,13 +1012,13 @@ def _build_strat_rec_html_section(best_per_city: dict) -> str:
 # HTML Report Generator (Dark Theme Dashboard — 4-Strategy Edition)
 # =============================================================================
 
-def _build_top5_rows_html(predictions: dict, top5_cities: list[str], peak_data: dict | None = None) -> str:
+def _build_top5_rows_html(predictions: dict, tomodifisert_cities: list[str], peak_data: dict | None = None) -> str:
     """Build HTML table rows for top 5 cities with all 3 strategy results."""
     if peak_data is None:
         peak_data = {}
     resolved_markets = _load_pm_resolved_details()
     rows = ""
-    for i, city in enumerate(top5_cities):
+    for i, city in enumerate(tomodifisert_cities):
         pdata = predictions.get(city, {})
         if not pdata:
             continue
@@ -986,7 +1029,7 @@ def _build_top5_rows_html(predictions: dict, top5_cities: list[str], peak_data: 
         strategies = pdata.get("strategies", {})
 
         sigma = strategies.get("sigma", {})
-        p5s = strategies.get("p5", {})
+        p5s = strategies.get("modifisert", {})
         means = strategies.get("mean", {})
 
         sigma_spill = sigma.get("spill", "?")
@@ -1100,7 +1143,7 @@ def _build_strategy_comparison_section(predictions: dict) -> str:
     for city, pdata in sorted(predictions.items()):
         strategies = pdata.get("strategies", {})
         sigma = strategies.get("sigma", {})
-        p5s = strategies.get("p5", {})
+        p5s = strategies.get("modifisert", {})
         means = strategies.get("mean", {})
 
         sigma_result = sigma.get("result", "")
@@ -1113,7 +1156,7 @@ def _build_strategy_comparison_section(predictions: dict) -> str:
         # Find best strategy for this city
         results_map = {
             "sigma": sigma_result,
-            "p5": p5_result,
+            "modifisert": p5_result,
             "mean": mean_result,
         }
         best_strat = None
@@ -1122,12 +1165,12 @@ def _build_strategy_comparison_section(predictions: dict) -> str:
             if sigma_result == "WIN":
                 best_strat = "sigma"
             elif p5_result == "WIN":
-                best_strat = "p5"
+                best_strat = "modifisert"
             elif mean_result == "WIN":
                 best_strat = "mean"
 
         sigma_hl = 'style="color:#3fb950;font-weight:600;"' if best_strat == "sigma" else ""
-        p5_hl = 'style="color:#3fb950;font-weight:600;"' if best_strat == "p5" else ""
+        p5_hl = 'style="color:#3fb950;font-weight:600;"' if best_strat == "modifisert" else ""
         mean_hl = 'style="color:#3fb950;font-weight:600;"' if best_strat == "mean" else ""
 
         rows += f"""
@@ -1150,7 +1193,7 @@ def _build_strategy_comparison_section(predictions: dict) -> str:
        <thead><tr>
          <th onclick="sortTable(0)">City ↕</th>
          <th onclick="sortTable(1)">🎯 Sigma (μ−kσ) ↕</th>
-         <th onclick="sortTable(2)">🛡️ P5-Basert ↕</th>
+         <th onclick="sortTable(2)">🧪 Modifisert ↕</th>
          <th onclick="sortTable(3)">📊 Mean-Basert ↕</th>
        </tr></thead>
        <tbody>{rows}
@@ -1165,12 +1208,10 @@ def _build_strategy_summary_cards(
     p5_wins: int, p5_losses: int,
     mean_wins: int, mean_losses: int,
 ) -> str:
-    """Build the cumulative per-strategy performance table (4 rows).
+    """Build the cumulative per-strategy performance table (3 rows).
 
-    Rows: Sigma (μ−kσ), P5, Mean and Modifisert (the modified strategy).
-    The modified strategy's W/L is read from ``_modified_strategy_log.json``.
+    Rows: Sigma (μ−kσ), Modifisert (the new weighted+corrected strategy) and Mean.
     """
-    modified_wins, modified_losses = _load_modified_totals()
 
     def _rate(w: int, l: int) -> tuple[int, float]:
         total = w + l
@@ -1186,7 +1227,6 @@ def _build_strategy_summary_cards(
     sigma_total, sigma_rate = _rate(sigma_wins, sigma_losses)
     p5_total, p5_rate = _rate(p5_wins, p5_losses)
     mean_total, mean_rate = _rate(mean_wins, mean_losses)
-    mod_total, mod_rate = _rate(modified_wins, modified_losses)
 
     def _row(icon: str, name: str, w: int, l: int, total: int, rate: float) -> str:
         return (
@@ -1197,28 +1237,26 @@ def _build_strategy_summary_cards(
 
     return f"""
    <div class="section">
-     <h2>📊 Per-Strategi Resultater — Kumulativ (4 strategier)</h2>
+     <h2>📊 Per-Strategi Resultater — Kumulativ (3 strategier)</h2>
      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
        Kumulativ W/L på tvers av alle dager. WIN = vår bøtte == Polymarkets resolusjon.
-       Modifisert er den nye 4. strategien: per-by fjerning av upresise/inkonsistente
-       providere, invers-MSE-vekting og per-by korreksjon.
+       Modifisert = BMA-ensemble + per-by korreksjon (erstatter P5).
      </p>
      <table>
        <thead><tr><th>Strategi</th><th>Wins</th><th>Losses</th><th>Win Rate</th><th>Resolved</th></tr></thead>
        <tbody>
          {_row("🎯", "Sigma (μ−kσ)", sigma_wins, sigma_losses, sigma_total, sigma_rate)}
-         {_row("🛡️", "P5-Basert", p5_wins, p5_losses, p5_total, p5_rate)}
+         {_row("🧪", "Modifisert", p5_wins, p5_losses, p5_total, p5_rate)}
          {_row("📊", "Mean-Basert", mean_wins, mean_losses, mean_total, mean_rate)}
-         {_row("🧪", "Modifisert", modified_wins, modified_losses, mod_total, mod_rate)}
        </tbody>
      </table>
    </div>"""
 
 
-def _build_flip_recommendations_section(predictions: dict, top5_cities: list[str]) -> str:
+def _build_flip_recommendations_section(predictions: dict, tomodifisert_cities: list[str]) -> str:
     """Build section showing flip recommendations for cities that need them."""
     rows = ""
-    for city in top5_cities:
+    for city in tomodifisert_cities:
         pdata = predictions.get(city, {})
         if not pdata:
             continue
@@ -1231,7 +1269,7 @@ def _build_flip_recommendations_section(predictions: dict, top5_cities: list[str
         actual = sigma.get("actual_peak", "—")
         spill = sigma.get("spill", "?")
         sigma_result = sigma.get("result", "")
-        p5_result = strategies.get("p5", {}).get("result", "")
+        p5_result = strategies.get("modifisert", {}).get("result", "")
 
         # Did flip make sense? If P5 would have won, the temperature didn't reach the very conservative level
         flip_profitable = p5_result == "WIN"
@@ -1274,7 +1312,7 @@ def _build_city_divergence_section(predictions: dict) -> str:
     for city, pdata in predictions.items():
         strategies = pdata.get("strategies", {})
         city_strats[city] = {}
-        for sn in ("sigma", "p5", "mean"):
+        for sn in ("sigma", "modifisert", "mean"):
             s = strategies.get(sn, {})
             city_strats[city][sn] = {
                 "result": s.get("result", ""),
@@ -1283,7 +1321,7 @@ def _build_city_divergence_section(predictions: dict) -> str:
 
     rows = ""
     for city, stats in sorted(city_strats.items()):
-        results = {sn: stats[sn]["result"] for sn in ("sigma", "p5", "mean")}
+        results = {sn: stats[sn]["result"] for sn in ("sigma", "modifisert", "mean")}
         # Only show if there's divergence (one wins, another loses)
         has_win = "WIN" in results.values()
         has_loss = "LOSS" in results.values()
@@ -1294,14 +1332,14 @@ def _build_city_divergence_section(predictions: dict) -> str:
             return "✅" if r == "WIN" else ("❌" if r == "LOSS" else "⏳")
 
         sigma_icon = _icon(results.get("sigma", ""))
-        p5_icon = _icon(results.get("p5", ""))
+        p5_icon = _icon(results.get("modifisert", ""))
         mean_icon = _icon(results.get("mean", ""))
 
         rows += f"""
             <tr>
                 <td><strong>{city}</strong></td>
                 <td>{sigma_icon} {stats['sigma']['spill']}°C</td>
-                <td>{p5_icon} {stats['p5']['spill']}°C</td>
+                <td>{p5_icon} {stats['modifisert']['spill']}°C</td>
                 <td>{mean_icon} {stats['mean']['spill']}°C</td>
             </tr>"""
 
@@ -1316,7 +1354,7 @@ def _build_city_divergence_section(predictions: dict) -> str:
        These are candidates for strategy optimization.
      </p>
      <table>
-       <thead><tr><th>City</th><th>🎯 Sigma</th><th>🛡️ P5</th><th>📊 Mean</th></tr></thead>
+       <thead><tr><th>City</th><th>🎯 Sigma</th><th>🧪 Modifisert</th><th>📊 Mean</th></tr></thead>
        <tbody>{rows}
        </tbody>
      </table>
@@ -1333,8 +1371,8 @@ def _build_today_tomorrow_section(runs: list) -> str:
     Iterates ALL runs, checks resolved predictions' _lead_days field,
     and computes separate win rates for today (lead_days=0) vs tomorrow (lead_days=1).
     """
-    today_counts = {"sigma": {"wins": 0, "losses": 0}, "p5": {"wins": 0, "losses": 0}, "mean": {"wins": 0, "losses": 0}}
-    tomorrow_counts = {"sigma": {"wins": 0, "losses": 0}, "p5": {"wins": 0, "losses": 0}, "mean": {"wins": 0, "losses": 0}}
+    today_counts = {"sigma": {"wins": 0, "losses": 0}, "modifisert": {"wins": 0, "losses": 0}, "mean": {"wins": 0, "losses": 0}}
+    tomorrow_counts = {"sigma": {"wins": 0, "losses": 0}, "modifisert": {"wins": 0, "losses": 0}, "mean": {"wins": 0, "losses": 0}}
 
     for run in runs:
         # Check multi_day first (richer source), fall back to flat predictions
@@ -1360,7 +1398,7 @@ def _build_today_tomorrow_section(runs: list) -> str:
 
         for pdata, ld in sources:
             strategies = pdata.get("strategies", {})
-            for sn in ("sigma", "p5", "mean"):
+            for sn in ("sigma", "modifisert", "mean"):
                 s = strategies.get(sn, {})
                 result = s.get("result", "")
                 if result not in ("WIN", "LOSS"):
@@ -1376,17 +1414,17 @@ def _build_today_tomorrow_section(runs: list) -> str:
         return round(wins / max(1, total) * 100, 1)
 
     today_sigma_r = _rate(today_counts["sigma"]["wins"], today_counts["sigma"]["losses"])
-    today_p5_r = _rate(today_counts["p5"]["wins"], today_counts["p5"]["losses"])
+    today_p5_r = _rate(today_counts["modifisert"]["wins"], today_counts["modifisert"]["losses"])
     today_mean_r = _rate(today_counts["mean"]["wins"], today_counts["mean"]["losses"])
 
     tomorrow_sigma_r = _rate(tomorrow_counts["sigma"]["wins"], tomorrow_counts["sigma"]["losses"])
-    tomorrow_p5_r = _rate(tomorrow_counts["p5"]["wins"], tomorrow_counts["p5"]["losses"])
+    tomorrow_p5_r = _rate(tomorrow_counts["modifisert"]["wins"], tomorrow_counts["modifisert"]["losses"])
     tomorrow_mean_r = _rate(tomorrow_counts["mean"]["wins"], tomorrow_counts["mean"]["losses"])
 
     today_sigma_total = today_counts["sigma"]["wins"] + today_counts["sigma"]["losses"]
     tomorrow_sigma_total = tomorrow_counts["sigma"]["wins"] + tomorrow_counts["sigma"]["losses"]
-    today_p5_total = today_counts["p5"]["wins"] + today_counts["p5"]["losses"]
-    tomorrow_p5_total = tomorrow_counts["p5"]["wins"] + tomorrow_counts["p5"]["losses"]
+    today_p5_total = today_counts["modifisert"]["wins"] + today_counts["modifisert"]["losses"]
+    tomorrow_p5_total = tomorrow_counts["modifisert"]["wins"] + tomorrow_counts["modifisert"]["losses"]
     today_mean_total = today_counts["mean"]["wins"] + today_counts["mean"]["losses"]
     tomorrow_mean_total = tomorrow_counts["mean"]["wins"] + tomorrow_counts["mean"]["losses"]
 
@@ -1414,7 +1452,7 @@ def _build_today_tomorrow_section(runs: list) -> str:
             <thead><tr><th>Strategy</th><th>Record</th><th>Win Rate</th></tr></thead>
             <tbody>
               <tr><td><strong>🎯 Sigma</strong></td><td>{today_counts['sigma']['wins']}W/{today_counts['sigma']['losses']}L</td><td style="font-weight:600;">{today_sigma_r}%</td></tr>
-              <tr><td><strong>🛡️ P5</strong></td><td>{today_counts['p5']['wins']}W/{today_counts['p5']['losses']}L</td><td style="font-weight:600;">{today_p5_r}%</td></tr>
+              <tr><td><strong>🧪 Modifisert</strong></td><td>{today_counts['modifisert']['wins']}W/{today_counts['modifisert']['losses']}L</td><td style="font-weight:600;">{today_p5_r}%</td></tr>
               <tr><td><strong>📊 Mean</strong></td><td>{today_counts['mean']['wins']}W/{today_counts['mean']['losses']}L</td><td style="font-weight:600;">{today_mean_r}%</td></tr>
             </tbody>
           </table>
@@ -1425,7 +1463,7 @@ def _build_today_tomorrow_section(runs: list) -> str:
             <thead><tr><th>Strategy</th><th>Record</th><th>Win Rate</th></tr></thead>
             <tbody>
               <tr><td><strong>🎯 Sigma</strong></td><td>{tomorrow_counts['sigma']['wins']}W/{tomorrow_counts['sigma']['losses']}L</td><td style="font-weight:600;">{tomorrow_sigma_r}%</td></tr>
-              <tr><td><strong>🛡️ P5</strong></td><td>{tomorrow_counts['p5']['wins']}W/{tomorrow_counts['p5']['losses']}L</td><td style="font-weight:600;">{tomorrow_p5_r}%</td></tr>
+              <tr><td><strong>🧪 Modifisert</strong></td><td>{tomorrow_counts['modifisert']['wins']}W/{tomorrow_counts['modifisert']['losses']}L</td><td style="font-weight:600;">{tomorrow_p5_r}%</td></tr>
               <tr><td><strong>📊 Mean</strong></td><td>{tomorrow_counts['mean']['wins']}W/{tomorrow_counts['mean']['losses']}L</td><td style="font-weight:600;">{tomorrow_mean_r}%</td></tr>
             </tbody>
           </table>
@@ -1436,7 +1474,7 @@ def _build_today_tomorrow_section(runs: list) -> str:
           📊 EDGE DECAY: Tomorrow predictions are {abs(decay_sigma)}% {'less' if decay_sigma >= 0 else 'more'} accurate (Sigma)
         </span>
         <br/><span style="color: var(--text-dim); font-size: 0.8rem;">
-          P5 decay: {decay_p5}% | Mean decay: {decay_mean}%
+          Modifisert decay: {decay_p5}% | Mean decay: {decay_mean}%
         </span>
       </div>
     </div>"""
@@ -1657,7 +1695,7 @@ def _build_optimal_strategy_by_confidence_section(runs: list) -> str:
        results.append({
            "label": label, "icon": icon,
            "sigma_pos": 0, "sigma_wins": 0,
-           "p5_pos": 0, "p5_wins": 0,
+           "modifisert_pos": 0, "modifisert_wins": 0,
            "mean_pos": 0, "mean_wins": 0,
        })
 
@@ -1667,7 +1705,7 @@ def _build_optimal_strategy_by_confidence_section(runs: list) -> str:
            strategies = pdata.get("strategies", {})
            for i, (label, lo, hi, icon) in enumerate(conf_tiers):
                if lo <= conf < hi or (hi == 1.0 and conf >= 0.8):
-                   for sn in ("sigma", "p5", "mean"):
+                   for sn in ("sigma", "modifisert", "mean"):
                        s = strategies.get(sn, {})
                        r = s.get("result", "")
                        if r in ("WIN", "LOSS"):
@@ -1679,13 +1717,13 @@ def _build_optimal_strategy_by_confidence_section(runs: list) -> str:
    rows = ""
    for r in results:
        sigma_wr = round(r["sigma_wins"] / max(1, r["sigma_pos"]) * 100, 1) if r["sigma_pos"] > 0 else 0
-       p5_wr = round(r["p5_wins"] / max(1, r["p5_pos"]) * 100, 1) if r["p5_pos"] > 0 else 0
+       p5_wr = round(r["modifisert_wins"] / max(1, r["modifisert_pos"]) * 100, 1) if r["modifisert_pos"] > 0 else 0
        mean_wr = round(r["mean_wins"] / max(1, r["mean_pos"]) * 100, 1) if r["mean_pos"] > 0 else 0
 
        best_name = "Sigma"
        best_rate = sigma_wr
        if p5_wr > best_rate:
-           best_name = "P5"
+           best_name = "Modifisert"
            best_rate = p5_wr
        if mean_wr > best_rate:
            best_name = "Mean"
@@ -1699,7 +1737,7 @@ def _build_optimal_strategy_by_confidence_section(runs: list) -> str:
        rows += (
            f'<tr><td>{r["icon"]} {r["label"]}</td>'
            f'<td>{_hl(sigma_wr, best_name == "Sigma")}</td>'
-           f'<td>{_hl(p5_wr, best_name == "P5")}</td>'
+           f'<td>{_hl(p5_wr, best_name == "Modifisert")}</td>'
            f'<td>{_hl(mean_wr, best_name == "Mean")}</td>'
            f'<td><span class="best-strategy">{best_name} ({best_rate}%)</span></td></tr>'
        )
@@ -1714,7 +1752,7 @@ def _build_optimal_strategy_by_confidence_section(runs: list) -> str:
        Which strategy performs best at each confidence tier? Green = best.
      </p>
      <table>
-       <thead><tr><th>Tier</th><th>🎯 Sigma</th><th>🛡️ P5</th><th>📊 Mean</th><th>🏆 Best</th></tr></thead>
+       <thead><tr><th>Tier</th><th>🎯 Sigma</th><th>🧪 Modifisert</th><th>📊 Mean</th><th>🏆 Best</th></tr></thead>
        <tbody>{rows}</tbody>
      </table>
    </div>"""
@@ -3139,15 +3177,14 @@ def _build_expandable_market_section_html() -> str:
 
 
 def _build_city_3strategy_section(runs: list) -> str:
-    """HTML section: per-city cumulative W/L for sigma/p5/mean/modifisert with min-sample."""
+    """HTML section: per-city cumulative W/L for sigma/modifisert/mean with min-sample."""
     recs = _tally_all_strategies_city_records(runs)
-    modified_city_records = _load_modified_city_records()
-    all_cities = sorted(set(recs) | set(modified_city_records))
+    all_cities = sorted(recs)
     rows = ""
     for city in all_cities:
         rec = recs.get(city, {})
         cells: list[str] = []
-        for sn in ("sigma", "p5", "mean"):
+        for sn in ("sigma", "modifisert", "mean"):
             stats = rec.get(sn, {"wins": 0, "losses": 0})
             w = stats["wins"]
             l = stats["losses"]
@@ -3160,29 +3197,17 @@ def _build_city_3strategy_section(runs: list) -> str:
                 rate = "N/A — not enough data"
                 rate_color = "#8b949e"
             cells.append(f'<td>{w}W/{l}L (n={n})</td><td style="color:{rate_color};font-weight:600;">{rate}</td>')
-        mrec = modified_city_records.get(city, {"wins": 0, "losses": 0})
-        mw = mrec["wins"]
-        ml = mrec["losses"]
-        mn = mw + ml
-        if mn >= MIN_SAMPLE:
-            mpct = round(mw / mn * 100, 1)
-            mrate = f"{mpct}%"
-            mrate_color = "#3fb950" if mpct >= 60 else ("#d2991d" if mpct >= 40 else "#f85149")
-        else:
-            mrate = "N/A — not enough data"
-            mrate_color = "#8b949e"
-        cells.append(f'<td>{mw}W/{ml}L (n={mn})</td><td style="color:{mrate_color};font-weight:600;">{mrate}</td>')
         rows += f'<tr><td><strong>{city}</strong></td>' + "".join(cells) + "</tr>"
     return f"""
    <div class="section">
-     <h2>🏙️ Per-City 4-Strategy W/L (Cumulative)</h2>
+     <h2>🏙️ Per-City 3-Strategy W/L (Cumulative)</h2>
      <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
        Kumulativ per by på tvers av alle dager. Rater vises kun med minst {MIN_SAMPLE}
        avgjorte spill; ellers "N/A — not enough data". Sample size (n) vises for alle.
      </p>
      <div style="overflow-x: auto;">
      <table>
-       <thead><tr><th>City</th><th>Sigma W/L</th><th>Sigma Rate</th><th>P5 W/L</th><th>P5 Rate</th><th>Mean W/L</th><th>Mean Rate</th><th>Modifisert W/L</th><th>Modifisert Rate</th></tr></thead>
+       <thead><tr><th>City</th><th>Sigma W/L</th><th>Sigma Rate</th><th>Modifisert W/L</th><th>Modifisert Rate</th><th>Mean W/L</th><th>Mean Rate</th></tr></thead>
        <tbody>{rows}</tbody>
      </table>
      </div>
@@ -3396,7 +3421,7 @@ def _build_edge_enhancer_html_section() -> str:
           <th>BMA-MAE før</th><th>BMA-MAE etter</th>
           <th>🎯 Sigma før</th><th>🎯 Sigma etter</th>
           <th>📊 Mean før</th><th>📊 Mean etter</th>
-          <th>🛡️ P5 før</th><th>🛡️ P5 etter</th>
+          <th>🧪 Modifisert før</th><th>🧪 Modifisert etter</th>
         </tr></thead>
         <tbody>{rows}</tbody>
       </table>
@@ -3546,7 +3571,7 @@ def _generate_html_report() -> str:
     resolved_run = _pick_latest_resolved_run(runs)
 
     if latest_run:
-        top5_cities = latest_run.get("top_5_confidence", [])
+        tomodifisert_cities = latest_run.get("top_5_confidence", [])
         preds = latest_run.get("predictions", {})
         multi_day = latest_run.get("predictions_multi_day", {})
         target_date = latest_run.get("target_date", latest_run.get("run_date", ""))
@@ -3560,7 +3585,7 @@ def _generate_html_report() -> str:
         for city, pdata in sorted(resolved_preds.items()):
             strategies = pdata.get("strategies", {})
             sigma = strategies.get("sigma", {})
-            p5s = strategies.get("p5", {})
+            p5s = strategies.get("modifisert", {})
             means = strategies.get("mean", {})
             target = pdata.get("_target_date") or resolved_target_date
             market_info = _pm_market_info_for_city(city, target, resolved_markets)
@@ -3622,7 +3647,7 @@ def _generate_html_report() -> str:
       </p>
      <div style="max-height: 600px; overflow-y: auto;">
      <table>
-       <thead><tr><th>By</th><th>Sigma Spill</th><th>Sigma Utfall</th><th>P5 Spill</th><th>P5 Utfall</th><th>Mean Spill</th><th>Mean Utfall</th><th>Marked</th><th>⚠️ Avvik</th></tr></thead>
+       <thead><tr><th>By</th><th>Sigma Spill</th><th>Sigma Utfall</th><th>Modifisert Spill</th><th>Modifisert Utfall</th><th>Mean Spill</th><th>Mean Utfall</th><th>Marked</th><th>⚠️ Avvik</th></tr></thead>
        <tbody>{resolved_rows}
        </tbody>
      </table>
@@ -3954,7 +3979,7 @@ function sortTable(colIdx) {{
 
 </div>
 <footer>
-  Model Quality Dashboard · 4-Strategy Comparison · Sigma (μ−kσ) vs P5 vs Mean vs Modifisert · GitHub Pages Deploy
+  Model Quality Dashboard · 3-Strategy Comparison · Sigma (μ−kσ) vs Modifisert vs Mean · GitHub Pages Deploy
 </footer>
 
 </body>
@@ -4044,7 +4069,7 @@ def _generate_all_cities_html() -> str:
             model_ct = pdata.get("models", 0)
             strategies = pdata.get("strategies", {})
             sigma = strategies.get("sigma", {})
-            p5s = strategies.get("p5", {})
+            p5s = strategies.get("modifisert", {})
             means = strategies.get("mean", {})
             rec = pdata.get("recommendation", "—") or "—"
             actual_peak = sigma.get("actual_peak")
@@ -4077,12 +4102,12 @@ def _generate_all_cities_html() -> str:
     # ---- Compute today vs tomorrow resolved win rates ----
     def _compute_lead_rates(city_tbl: dict, ld: int):
         """Compute resolved win rates for a given lead_days value."""
-        counts = {"sigma": {"wins": 0, "losses": 0}, "p5": {"wins": 0, "losses": 0}, "mean": {"wins": 0, "losses": 0}}
+        counts = {"sigma": {"wins": 0, "losses": 0}, "modifisert": {"wins": 0, "losses": 0}, "mean": {"wins": 0, "losses": 0}}
         for city, leads in city_tbl.items():
             d = leads.get(ld)
             if d is None:
                 continue
-            for sn in ("sigma", "p5", "mean"):
+            for sn in ("sigma", "modifisert", "mean"):
                 r = d.get(f"{sn}_result", "")
                 if r == "WIN":
                     counts[sn]["wins"] += 1
@@ -4098,11 +4123,11 @@ def _generate_all_cities_html() -> str:
     tomorrow_rates = _compute_lead_rates(city_table, 1)
 
     today_sigma_wr = _rate_str(today_rates["sigma"]["wins"], today_rates["sigma"]["losses"])
-    today_p5_wr = _rate_str(today_rates["p5"]["wins"], today_rates["p5"]["losses"])
+    today_p5_wr = _rate_str(today_rates["modifisert"]["wins"], today_rates["modifisert"]["losses"])
     today_mean_wr = _rate_str(today_rates["mean"]["wins"], today_rates["mean"]["losses"])
 
     tomorrow_sigma_wr = _rate_str(tomorrow_rates["sigma"]["wins"], tomorrow_rates["sigma"]["losses"])
-    tomorrow_p5_wr = _rate_str(tomorrow_rates["p5"]["wins"], tomorrow_rates["p5"]["losses"])
+    tomorrow_p5_wr = _rate_str(tomorrow_rates["modifisert"]["wins"], tomorrow_rates["modifisert"]["losses"])
     tomorrow_mean_wr = _rate_str(tomorrow_rates["mean"]["wins"], tomorrow_rates["mean"]["losses"])
 
     # Edge decay
@@ -4133,7 +4158,7 @@ def _generate_all_cities_html() -> str:
         <table><thead><tr><th>Strategy</th><th>W/L</th><th>Rate</th></tr></thead>
         <tbody>
           <tr><td>Sigma</td><td>{today_rates['sigma']['wins']}W/{today_rates['sigma']['losses']}L</td><td>{today_sigma_wr}</td></tr>
-          <tr><td>P5</td><td>{today_rates['p5']['wins']}W/{today_rates['p5']['losses']}L</td><td>{today_p5_wr}</td></tr>
+          <tr><td>Modifisert</td><td>{today_rates['modifisert']['wins']}W/{today_rates['modifisert']['losses']}L</td><td>{today_p5_wr}</td></tr>
           <tr><td>Mean</td><td>{today_rates['mean']['wins']}W/{today_rates['mean']['losses']}L</td><td>{today_mean_wr}</td></tr>
         </tbody></table>
       </div>
@@ -4355,7 +4380,7 @@ def _generate_all_cities_html() -> str:
 <body>
 <header>
   <h1>🌍 ALLE 51 BYER — BMA Ensemble</h1>
-  <div class="subtitle">Generert: {now_str} | Multi-Strategy: 🎯 Sigma · 🛡️ P5 · 📊 Mean</div>
+  <div class="subtitle">Generert: {now_str} | Multi-Strategy: 🎯 Sigma · 🧪 Modifisert · 📊 Mean</div>
 </header>
 <div class="live-bar">
   <button class="live-btn" onclick="fetchLivePeak()" id="fetch-btn">🔄 Hent Nåværende Temperatur & Døgnmaks</button>
@@ -4388,7 +4413,7 @@ def _generate_all_cities_html() -> str:
           <th onclick="sortTable(2)">BMA μ</th>
           <th onclick="sortTable(3)">P5–P95</th>
           <th onclick="sortTable(4)">🎯 Sigma</th>
-          <th onclick="sortTable(5)">🛡️ P5</th>
+          <th onclick="sortTable(5)">🧪 Modifisert</th>
           <th onclick="sortTable(6)">📊 Mean</th>
           <th onclick="sortTable(7)">Konf</th>
           <th onclick="sortTable(8)">Modeller</th>
@@ -4779,7 +4804,7 @@ def _generate_index_html() -> str:
   <div class="nav-grid">
     <a href="_quality_report.html" class="nav-card">
       <span class="nav-icon">📊</span>
-      <span class="nav-text"><h3>Kvalitetsrapport</h3><p>4-strategi dashboard · Sigma / P5 / Mean / Modifisert · Edge Validation</p></span>
+      <span class="nav-text"><h3>Kvalitetsrapport</h3><p>3-strategi dashboard · Sigma / Modifisert / Mean · Edge Validation</p></span>
     </a>
     <a href="_all_cities.html" class="nav-card">
       <span class="nav-icon">🌍</span>
@@ -4792,6 +4817,10 @@ def _generate_index_html() -> str:
     <a href="_anbefalt_spill.html" class="nav-card">
       <span class="nav-icon">🎯</span>
       <span class="nav-text"><h3>Anbefalt spill</h3><p>Beste strategi per by · Edge · Max stake · 🔄 Refresh</p></span>
+    </a>
+    <a href="_modified_strategy_report.html" class="nav-card">
+      <span class="nav-icon">🧪</span>
+      <span class="nav-text"><h3>Modifisert (ny metode)</h3><p>BMA-ensemble + per-by korreksjon · Confidence-gates · ROI-ledger</p></span>
     </a>
     <a href="brukermanual.html" class="nav-card">
       <span class="nav-icon">📖</span>
