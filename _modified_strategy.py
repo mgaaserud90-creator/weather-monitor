@@ -42,8 +42,16 @@ Pipeline (fully deterministic, zero API calls):
      binary bound comparison. See ``_model_quality_tracker``.
 
 Outputs:
-    _modified_strategy_log.json     — per (city,date) rows + per-city aggregates
+    _modified_strategy_log.json     — full per-(city,date) series (resolved
+                                      against Polymarket) + per-city aggregates
+                                      + a self-contained ``today`` section
     _modified_strategy_report.html  — full self-contained HTML documentation
+
+Every day in ``_model_quality_log.json`` contributes a row: the per-provider
+weighted path is used where ``_weighted_mean_predictions.json`` has values,
+otherwise the day's BMA mean is corrected with the city's model. Each row is
+resolved, so past days count toward the cumulative statistics and today's row
+is available to ``_recommended_bets.py``.
 
 Usage:
     python _modified_strategy.py                 # backfill (default)
@@ -541,6 +549,85 @@ def compute_today_records(
     return records, summary
 
 
+def load_quality_series(path: Path = QUALITY_LOG_FILE) -> dict[str, dict[str, float]]:
+    """Return ``{date_iso: {city: bma_mean}}`` from every quality-log run.
+
+    Later runs override earlier ones for the same ``(date, city)``. The date is
+    taken from ``pdata["_target_date"] or run.target_date or run.run_date`` —
+    the exact same source ``_daily_city_log.py`` uses — so the modified series
+    lines up day-for-day with the other strategies.
+    """
+    series: dict[str, dict[str, float]] = {}
+    if not path.exists():
+        return series
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return series
+    for run in data.get("runs", []) or []:
+        run_date = str(run.get("run_date", ""))
+        run_target = str(run.get("target_date", "")) or run_date
+        for city, pdata in (run.get("predictions", {}) or {}).items():
+            if not isinstance(pdata, dict):
+                continue
+            date_str = str(pdata.get("_target_date") or run_target or run_date)
+            bma = _to_float(pdata.get("bma_mean"))
+            if date_str and bma is not None:
+                series.setdefault(date_str, {})[city] = bma
+    return series
+
+
+def compute_bma_records(
+    cities_cfg: dict[str, dict],
+    quality_series: dict[str, dict[str, float]],
+    markets: dict,
+    covered_pairs: set[tuple[str, str]],
+) -> list[dict]:
+    """BMA-mean fallback rows for every (city, date) not already covered.
+
+    Applies each city's own correction model to that day's BMA mean and
+    resolves the spill against the resolved market for the (city, date), so
+    every day in ``_model_quality_log.json`` contributes to the statistics.
+    """
+    records: list[dict] = []
+    for date_str in sorted(quality_series):
+        for city, bma_mean in sorted(quality_series[date_str].items()):
+            if (city, date_str) in covered_pairs:
+                continue
+            cfg = cities_cfg.get(city)
+            if cfg is None:
+                continue
+            method = cfg["correction_method"]
+            params = cfg["correction_params"]
+            corrected_mean = apply_correction(method, params, bma_mean)
+            spill = int(round(corrected_mean))
+
+            market_info = market_info_for(city, date_str, markets)
+            result = resolve_spill(spill, market_info)
+            resolved_c = resolved_value_c(market_info)
+
+            records.append({
+                "city": city,
+                "date": date_str,
+                "weighted_mean": round(bma_mean, 4),
+                "correction_method": method,
+                "correction": round(corrected_mean, 4),
+                "corrected_mean": round(corrected_mean, 4),
+                "spill": spill,
+                "resolved": round(resolved_c, 2) if resolved_c is not None else None,
+                "resolved_bucket": (market_info or {}).get("bucket"),
+                "market_type": (market_info or {}).get("type"),
+                "market_unit": (market_info or {}).get("unit") or cfg.get("unit"),
+                "result": result,
+                "plain_mean": None,
+                "plain_mean_spill": None,
+                "plain_mean_result": None,
+                "today_source": "bma_mean_fallback",
+                "providers_used": [],
+            })
+    return records
+
+
 # =============================================================================
 # Resolution (project win rule)
 # =============================================================================
@@ -599,6 +686,7 @@ def build_log() -> dict:
     cities_cfg = build_cities_config(provider_stats, curvefit, decisions)
 
     records: list[dict] = []
+    covered_pairs: set[tuple[str, str]] = set()
     for rec in predictions:
         city = rec.get("city", "")
         date_str = rec.get("date", "")
@@ -613,7 +701,10 @@ def build_log() -> dict:
         if cfg is None:
             continue
         weights_pct = cfg["remaining_weights"]
-        available = [k for k in providers.keys() if k in weights_pct]
+        available = [
+            k for k in providers.keys()
+            if k in weights_pct and _to_float(providers[k]) is not None
+        ]
         if not available:
             # Every remaining provider missing on this date -> cannot compute.
             continue
@@ -632,11 +723,7 @@ def build_log() -> dict:
         plain_spill = int(round(plain_mean)) if plain_mean is not None else None
         plain_result = resolve_spill(plain_spill, market_info) if plain_spill is not None else None
 
-        if result == "WIN":
-            cfg["wins"] += 1
-        elif result == "LOSS":
-            cfg["losses"] += 1
-
+        covered_pairs.add((city, date_str))
         records.append({
             "city": city,
             "date": date_str,
@@ -648,22 +735,60 @@ def build_log() -> dict:
             "resolved": round(resolved_c, 2) if resolved_c is not None else None,
             "resolved_bucket": (market_info or {}).get("bucket"),
             "market_type": (market_info or {}).get("type"),
-            "market_unit": (market_info or {}).get("unit"),
+            "market_unit": (market_info or {}).get("unit") or cfg.get("unit"),
             "result": result,
             "plain_mean": round(plain_mean, 4) if plain_mean is not None else None,
             "plain_mean_spill": plain_spill,
             "plain_mean_result": plain_result,
+            "today_source": "open_meteo_per_model",
+            "providers_used": available,
         })
 
-    # ── Today's modified spill (per city, self-contained) ──
-    today_str = resolve_today_str()
-    today_records, today_summary = compute_today_records(
-        cities_cfg, today_str, predictions, load_latest_bma_predictions()
-    )
-    existing_pairs = {(r["city"], r["date"]) for r in records}
-    for tr in today_records:
-        if (tr["city"], tr["date"]) not in existing_pairs:
-            records.append(tr)
+    # ── Full daily series: BMA fallback for every other quality-log day ──
+    quality_series = load_quality_series()
+    records.extend(compute_bma_records(cities_cfg, quality_series, markets, covered_pairs))
+
+    # Preserve any previously persisted rows we can no longer derive so the
+    # history is never lost (e.g. if the quality log is pruned upstream).
+    covered_pairs = {(r["city"], r["date"]) for r in records}
+    for old in (load_modified_log().get("records", []) or []):
+        pair = (str(old.get("city", "")), str(old.get("date", "")))
+        if pair in covered_pairs or pair[0] not in cities_cfg or old.get("spill") is None:
+            continue
+        records.append(old)
+        covered_pairs.add(pair)
+
+    records.sort(key=lambda r: (r["date"], r["city"]))
+
+    # ── Aggregate wins/losses over every resolved row ──
+    for rec in records:
+        cfg = cities_cfg.get(rec["city"])
+        if cfg is None:
+            continue
+        if rec.get("result") == "WIN":
+            cfg["wins"] += 1
+        elif rec.get("result") == "LOSS":
+            cfg["losses"] += 1
+
+    # Today = latest date in the computed series; build a self-contained summary.
+    today_str = max((r["date"] for r in records), default=resolve_today_str())
+    today_summary: dict = {}
+    for rec in records:
+        if rec["date"] != today_str:
+            continue
+        cfg = cities_cfg.get(rec["city"], {})
+        today_summary[rec["city"]] = {
+            "date": rec["date"],
+            "spill": rec.get("spill"),
+            "today_source": rec.get("today_source"),
+            "providers_used": rec.get("providers_used", []),
+            "weighted_mean": rec.get("weighted_mean"),
+            "corrected_mean": rec.get("corrected_mean"),
+            "correction_method": rec.get("correction_method"),
+            "correction_params": cfg.get("correction_params", {}),
+            "remaining_weights": cfg.get("remaining_weights", {}),
+            "result": rec.get("result"),
+        }
 
     # Per-city aggregates.
     cities_out: dict[str, dict] = {}
@@ -717,6 +842,14 @@ def build_log() -> dict:
             "n_cities_with_config": len(cities_out),
             "n_cities_with_bets": sum(1 for c in cities_out.values() if c["bets"] > 0),
             "n_cities_with_today_spill": sum(1 for v in today_summary.values() if v.get("spill") is not None),
+            "backfill_first_date": records[0]["date"] if records else None,
+            "backfill_last_date": records[-1]["date"] if records else None,
+            "n_resolved_rows": sum(1 for r in records if r.get("result") in ("WIN", "LOSS")),
+            "n_unresolved_rows": sum(1 for r in records if r.get("result") not in ("WIN", "LOSS")),
+            "history_source": (
+                "per-provider _weighted_mean_predictions.json + BMA fallback from "
+                "_model_quality_log.json; resolved vs _resolved_markets_log.json"
+            ),
             "avg_providers_removed_per_city": round(removed_total / len(cities_out), 2) if cities_out else 0.0,
             "total_providers_removed": removed_total,
         },
@@ -735,10 +868,12 @@ def build_log() -> dict:
             "date": today_str,
             "computed_at": _now_iso(),
             "source_priority": (
-                "1) today's per-provider values from _weighted_mean_predictions.json "
-                "(Open-Meteo per-model source); 2) latest-run BMA mean from "
-                "_model_quality_log.json + city correction (fallback). "
-                "Each city's chosen path is recorded in rows[].today_source."
+                "Full daily series: 1) per-provider values from "
+                "_weighted_mean_predictions.json (Open-Meteo per-model source); "
+                "2) BMA mean from every _model_quality_log.json run + city correction "
+                "(fallback). Every row is resolved against _resolved_markets_log.json "
+                "and contributes to the cumulative statistics. Each city's chosen "
+                "path is recorded in rows[].today_source."
             ),
             "rows": today_summary,
         },
@@ -946,6 +1081,10 @@ def backfill() -> int:
 
     print(f"   Byer med konfig:        {meta.get('n_cities_with_config')}")
     print(f"   Byer med resolvede spill: {meta.get('n_cities_with_bets')}")
+    print(f"   Backfill-periode:       {meta.get('backfill_first_date')} → {meta.get('backfill_last_date')}")
+    print(f"   Resolverte/uavklarte:   {meta.get('n_resolved_rows')} / {meta.get('n_unresolved_rows')}")
+    print(f"   I dag:                  {meta.get('n_cities_with_today_spill')} byer "
+          f"({log.get('today', {}).get('date')})")
     print(f"   Fjernede providere:     {meta.get('total_providers_removed')} "
           f"(snitt {meta.get('avg_providers_removed_per_city')}/by)")
     print(f"   Modifisert: {overall.get('wins')}W/{overall.get('losses')}L "

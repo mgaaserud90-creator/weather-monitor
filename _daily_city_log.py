@@ -9,8 +9,11 @@ user can see exactly why a city missed on a given day:
     city, date, predicted_mean_c, predicted_spill_c, strategy,
     resolved_c, resolved_unit, deviation_c, win_loss, bucket_label
 
-Rows are emitted for all three strategies (sigma / p5 / mean) so every bet is
-accounted for. Unresolved rows keep win_loss empty and resolved_c null.
+Rows are emitted for all four strategies (sigma / p5 / mean / modifisert) so
+every bet is accounted for. The Modifisert spill comes from
+``_modified_strategy_log.json`` (which resolves its full daily series), so the
+daily statistics and CSV include it automatically. Unresolved rows keep
+win_loss empty and resolved_c null.
 
 Safe to re-run daily — the files are rebuilt idempotently from the quality log.
 """
@@ -33,6 +36,7 @@ if sys.platform == "win32":
 
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_QUALITY_LOG = BASE_DIR / "_model_quality_log.json"
+MODIFIED_LOG = BASE_DIR / "_modified_strategy_log.json"
 DAILY_CSV = BASE_DIR / "_daily_city_log.csv"
 DAILY_JSON = BASE_DIR / "_daily_city_log.json"
 
@@ -98,6 +102,80 @@ def _win_loss(pdata: dict, strategy: str, market_info: dict | None) -> str:
         return ""
 
 
+def _load_modified_records() -> list[dict]:
+    if not MODIFIED_LOG.exists():
+        return []
+    try:
+        data = json.loads(MODIFIED_LOG.read_text(encoding="utf-8"))
+        return data.get("records", []) or []
+    except (json.JSONDecodeError, OSError):
+        return []
+
+
+def _modified_rows(resolved: dict) -> list[dict]:
+    """Rows for the Modifisert strategy, sourced from _modified_strategy_log.json."""
+    rows: list[dict] = []
+    for rec in _load_modified_records():
+        city = str(rec.get("city", "")).strip()
+        date_str = str(rec.get("date", "")).strip()
+        spill = rec.get("spill")
+        if not city or not date_str or spill is None:
+            continue
+        try:
+            spill_i = int(spill)
+        except (TypeError, ValueError):
+            continue
+
+        base = city.split(",")[0].strip()
+        market_info = resolved.get((city, date_str)) or resolved.get((base, date_str))
+        resolved_c = _resolved_value_c(market_info)
+        bucket = _bucket_label(market_info)
+        resolved_unit = (market_info.get("unit") or "C").upper() if market_info else ""
+
+        win_loss = rec.get("result")
+        if win_loss not in ("WIN", "LOSS"):
+            win_loss = ""
+            if market_info:
+                try:
+                    from _model_quality_tracker import (  # type: ignore
+                        _spill_vs_polymarket_result,
+                        _spill_vs_threshold_result,
+                    )
+                    if market_info.get("type") == "threshold":
+                        res = _spill_vs_threshold_result(spill_i, market_info)
+                    else:
+                        res = _spill_vs_polymarket_result(spill_i, market_info)
+                    if res in ("WIN", "LOSS"):
+                        win_loss = res
+                except Exception:
+                    win_loss = ""
+
+        mean_c = rec.get("weighted_mean")
+        try:
+            mean_f = float(mean_c) if mean_c is not None else None
+        except (TypeError, ValueError):
+            mean_f = None
+        deviation_c = (
+            round(mean_f - resolved_c, 2)
+            if (mean_f is not None and resolved_c is not None)
+            else None
+        )
+
+        rows.append({
+            "city": city,
+            "date": date_str,
+            "predicted_mean_c": round(mean_f, 2) if mean_f is not None else None,
+            "predicted_spill_c": spill_i,
+            "strategy": "modifisert",
+            "resolved_c": resolved_c,
+            "resolved_unit": resolved_unit,
+            "deviation_c": deviation_c,
+            "win_loss": win_loss,
+            "bucket_label": bucket,
+        })
+    return rows
+
+
 def build_rows() -> list[dict]:
     runs = _load_quality_runs()
     resolved = _load_resolved_markets()
@@ -156,6 +234,8 @@ def build_rows() -> list[dict]:
                     "win_loss": _win_loss(pdata, sn, market_info),
                     "bucket_label": bucket,
                 })
+
+    rows.extend(_modified_rows(resolved))
 
     rows.sort(key=lambda r: (r["date"], r["city"], r["strategy"]))
     return rows

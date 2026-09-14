@@ -133,6 +133,9 @@ jobs:
         continue-on-error: true
         run: python3 _diagnose_city_errors.py
 
+      - name: Generate modified strategy (full backfill + today)
+        run: python3 _modified_strategy.py
+
       - name: Daily city log
         continue-on-error: true
         run: python3 _daily_city_log.py
@@ -163,9 +166,6 @@ jobs:
 
       - name: Generate peak detection page
         run: python3 _generate_quality_report.py --peak
-
-      - name: Generate modified strategy (today + backfill)
-        run: python3 _modified_strategy.py
 
       - name: Generate recommended bets (Anbefalt spill)
         continue-on-error: true

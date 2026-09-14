@@ -233,12 +233,13 @@ def latest_daily_spills(daily_rows: list[dict]) -> tuple[dict[str, dict], str]:
     return spills, latest
 
 
-def modified_latest_spills() -> dict[str, dict]:
-    """Return {city: {"spill": int, "date": str}} from _modified_strategy records.
+def modified_spills_by_date() -> dict[str, dict[str, int]]:
+    """Return {city: {date: spill}} from the modified strategy records.
 
-    ``_modified_strategy_log.json`` only stores per-city aggregates, so we
-    recompute the deterministic per-(city,date) records via
-    ``_modified_strategy.build_log()`` and take each city's latest spill.
+    ``_modified_strategy.build_log()`` computes the full daily series (per
+    provider where available, BMA-mean fallback otherwise) and persists it, so
+    the modified bucket can be aligned with any target date — in particular the
+    daily-log ``spill_date`` the other strategies use.
     """
     try:
         import _modified_strategy as mod  # type: ignore
@@ -246,16 +247,14 @@ def modified_latest_spills() -> dict[str, dict]:
     except Exception as exc:  # noqa: BLE001
         print(f"[WARN] Could not compute modified-strategy spills: {exc}", file=sys.stderr)
         return {}
-    out: dict[str, dict] = {}
+    out: dict[str, dict[str, int]] = {}
     for rec in (log.get("records", []) or []):
         city = str(rec.get("city", "")).strip()
         date_str = str(rec.get("date", "")).strip()
         spill = rec.get("spill")
-        if not city or spill is None:
+        if not city or not date_str or spill is None:
             continue
-        cur = out.get(city)
-        if cur is None or date_str > cur["date"]:
-            out[city] = {"spill": int(spill), "date": date_str}
+        out.setdefault(city, {})[date_str] = int(spill)
     return out
 
 
@@ -394,7 +393,7 @@ def compute_recommended_bets() -> dict:
 
     rates = compute_historical_win_rates(daily_rows, modified_cities)
     today_spills, spill_date = latest_daily_spills(daily_rows)
-    modified_spills = modified_latest_spills()
+    modified_spills = modified_spills_by_date()
 
     market_opps, fetched_at = load_market_prices()
     by_city = group_markets_by_city(market_opps)
@@ -424,10 +423,13 @@ def compute_recommended_bets() -> dict:
         bucket_date = spill_date
         bucket_note: str | None = None
         if best == "modifisert":
-            ms = modified_spills.get(city)
-            if ms:
-                bucket = int(ms["spill"])
-                bucket_date = ms["date"]
+            city_map = modified_spills.get(city, {})
+            if spill_date in city_map:
+                bucket = int(city_map[spill_date])
+                bucket_date = spill_date
+            elif city_map:
+                bucket_date = max(city_map)
+                bucket = int(city_map[bucket_date])
                 if bucket_date and bucket_date != spill_date:
                     bucket_note = (
                         f"Modifisert today spill unavailable — using latest available record ({bucket_date})"
