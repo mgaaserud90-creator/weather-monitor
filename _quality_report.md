@@ -1,127 +1,179 @@
-# Model Quality Report
+════════════════════════════════════════════════════════════
+     MODELLKVALITET — KUMULATIV RAPPORT
+════════════════════════════════════════════════════════════
 
-**Generated:** 2026-09-16T10:09:17.956471+00:00
-**Days tracked:** 37
+Generert: 2026-09-16
 
-## Cumulative Strategy Performance
+Dager kjørt: 37
 
-| Strategy | Wins | Losses | Win Rate |
-|----------|------|--------|----------|
-| 🎯 Sigma (μ−kσ) | 220 | 1622 | 11.9% |
-| 🛡️ P5-Basert | 129 | 1713 | 7.0% |
-| 📊 Mean-Basert | 539 | 1303 | 29.3% |
-| 🧪 Modifisert | 778 | 928 | 45.6% |
+📊 PER-STRATEGI RESULTATER (KUMULATIV):
+   🎯 Sigma (μ−kσ): V:227 T:1634  (12.2%)
+   🧪 Modifisert:   V:835 T:1026  (44.9%)
+   📊 Mean-basert:  V:542 T:1319  (29.1%)
 
-## Per-City 4-Strategy W/L (Cumulative)
+🏙️ PER-BY 3-STRATEGI W/L (KUMULATIV, MIN-SAMPLE):
+   By                                      Sigma       Modifisert             Mean
+   Amsterdam, NL                2W/34L (5.6%, n=36) 13W/23L (36.1%, n=36) 12W/24L (33.3%, n=36)
+   Ankara, TR                   1W/35L (2.8%, n=36) 20W/16L (55.6%, n=36) 8W/28L (22.2%, n=36)
+   Atlanta, US                  0W/36L (0.0%, n=36) 10W/26L (27.8%, n=36) 5W/31L (13.9%, n=36)
+   Austin, US                   0W/36L (0.0%, n=36) 18W/18L (50.0%, n=36) 7W/29L (19.4%, n=36)
+   Beijing, CN                  4W/33L (10.8%, n=37) 19W/18L (51.4%, n=37) 9W/28L (24.3%, n=37)
+   Buenos Aires, AR             2W/34L (5.6%, n=36) 17W/19L (47.2%, n=36) 17W/19L (47.2%, n=36)
+   Busan, KR                    6W/31L (16.2%, n=37) 19W/18L (51.4%, n=37) 12W/25L (32.4%, n=37)
+   Cape Town, ZA                3W/33L (8.3%, n=36) 12W/24L (33.3%, n=36) 9W/27L (25.0%, n=36)
+   Chengdu, CN                  6W/31L (16.2%, n=37) 10W/27L (27.0%, n=37) 3W/34L (8.1%, n=37)
+   Chicago, US                  3W/33L (8.3%, n=36) 9W/27L (25.0%, n=36) 17W/19L (47.2%, n=36)
+   Chongqing, CN                3W/34L (8.1%, n=37) 18W/19L (48.6%, n=37) 2W/35L (5.4%, n=37)
+   Dallas, US                   14W/22L (38.9%, n=36) 15W/21L (41.7%, n=36) 13W/23L (36.1%, n=36)
+   Denver, US                   2W/34L (5.6%, n=36) 10W/26L (27.8%, n=36) 3W/33L (8.3%, n=36)
+   Guangzhou, CN                4W/33L (10.8%, n=37) 12W/25L (32.4%, n=37) 7W/30L (18.9%, n=37)
+   Helsinki, FI                 3W/33L (8.3%, n=36) 20W/16L (55.6%, n=36) 16W/20L (44.4%, n=36)
+   Hong Kong, HK                5W/32L (13.5%, n=37) 15W/22L (40.5%, n=37) 12W/25L (32.4%, n=37)
+   Houston, US                  10W/26L (27.8%, n=36) 14W/22L (38.9%, n=36) 14W/22L (38.9%, n=36)
+   Istanbul, TR                 0W/37L (0.0%, n=37) 20W/17L (54.1%, n=37) 15W/22L (40.5%, n=37)
+   Jeddah, SA                   1W/36L (2.7%, n=37) 16W/21L (43.2%, n=37) 13W/24L (35.1%, n=37)
+   Jinan, CN                    34W/3L (91.9%, n=37) 36W/1L (97.3%, n=37) 34W/3L (91.9%, n=37)
+   Karachi, PK                  0W/37L (0.0%, n=37) 21W/16L (56.8%, n=37) 15W/22L (40.5%, n=37)
+   Kuala Lumpur, MY             0W/37L (0.0%, n=37) 20W/17L (54.1%, n=37) 5W/32L (13.5%, n=37)
+   London, UK                   4W/32L (11.1%, n=36) 17W/19L (47.2%, n=36) 13W/23L (36.1%, n=36)
+   Los Angeles, US              8W/28L (22.2%, n=36) 11W/25L (30.6%, n=36) 5W/31L (13.9%, n=36)
+   Lucknow, IN                  1W/36L (2.7%, n=37) 23W/14L (62.2%, n=37) 20W/17L (54.1%, n=37)
+   Madrid, ES                   1W/35L (2.8%, n=36) 20W/16L (55.6%, n=36) 12W/24L (33.3%, n=36)
+   Manila, PH                   1W/36L (2.7%, n=37) 14W/23L (37.8%, n=37) 9W/28L (24.3%, n=37)
+   Mexico City, MX              12W/24L (33.3%, n=36) 21W/15L (58.3%, n=36) 16W/20L (44.4%, n=36)
+   Miami, US                    1W/35L (2.8%, n=36) 2W/34L (5.6%, n=36) 0W/36L (0.0%, n=36)
+   Milan, IT                    2W/34L (5.6%, n=36) 21W/15L (58.3%, n=36) 13W/23L (36.1%, n=36)
+   Moscow, RU                   4W/32L (11.1%, n=36) 17W/19L (47.2%, n=36) 15W/21L (41.7%, n=36)
+   Munich, DE                   2W/35L (5.4%, n=37) 14W/23L (37.8%, n=37) 9W/28L (24.3%, n=37)
+   New York, US                 10W/26L (27.8%, n=36) 20W/16L (55.6%, n=36) 15W/21L (41.7%, n=36)
+   Panama City, PA              0W/36L (0.0%, n=36) 18W/18L (50.0%, n=36) 3W/33L (8.3%, n=36)
+   Paris, FR                    0W/36L (0.0%, n=36) 9W/27L (25.0%, n=36) 11W/25L (30.6%, n=36)
+   Qingdao, CN                  0W/37L (0.0%, n=37) 15W/22L (40.5%, n=37) 11W/26L (29.7%, n=37)
+   San Francisco, US            0W/36L (0.0%, n=36) 7W/29L (19.4%, n=36) 1W/35L (2.8%, n=36)
+   Sao Paulo, BR                6W/30L (16.7%, n=36) 9W/27L (25.0%, n=36) 9W/27L (25.0%, n=36)
+   Seattle, US                  2W/34L (5.6%, n=36) 12W/24L (33.3%, n=36) 7W/29L (19.4%, n=36)
+   Seoul (Incheon), KR          3W/34L (8.1%, n=37) 23W/14L (62.2%, n=37) 12W/25L (32.4%, n=37)
+   Shanghai, CN                 1W/36L (2.7%, n=37) 10W/27L (27.0%, n=37) 3W/34L (8.1%, n=37)
+   Shenzhen, CN                 6W/31L (16.2%, n=37) 17W/20L (45.9%, n=37) 14W/23L (37.8%, n=37)
+   Singapore, SG                1W/36L (2.7%, n=37) 25W/12L (67.6%, n=37) 2W/35L (5.4%, n=37)
+   Taipei, TW                   0W/37L (0.0%, n=37) 8W/29L (21.6%, n=37) 8W/29L (21.6%, n=37)
+   Tel Aviv, IL                 21W/16L (56.8%, n=37) 26W/11L (70.3%, n=37) 9W/28L (24.3%, n=37)
+   Tokyo, JP                    13W/24L (35.1%, n=37) 16W/21L (43.2%, n=37) 12W/25L (32.4%, n=37)
+   Toronto, CA                  1W/35L (2.8%, n=36) 20W/16L (55.6%, n=36) 17W/19L (47.2%, n=36)
+   Warsaw, PL                   3W/33L (8.3%, n=36) 22W/14L (61.1%, n=36) 20W/16L (55.6%, n=36)
+   Wellington, NZ               7W/30L (18.9%, n=37) 20W/17L (54.1%, n=37) 10W/27L (27.0%, n=37)
+   Wuhan, CN                    10W/27L (27.0%, n=37) 10W/27L (27.0%, n=37) 3W/34L (8.1%, n=37)
+   Zhengzhou, CN                4W/33L (10.8%, n=37) 24W/13L (64.9%, n=37) 15W/22L (40.5%, n=37)
 
-| City | Sigma W/L | Sigma Rate | P5 W/L | P5 Rate | Mean W/L | Mean Rate | Modifisert W/L | Modifisert Rate |
-|------|-----------|------------|--------|---------|----------|-----------|----------------|-----------------|
-| Amsterdam, NL | 2W/34L (n=36) | 5.6% | 1W/35L (n=36) | 2.8% | 12W/24L (n=36) | 33.3% | 13W/22L (n=35) | 37.1% |
-| Ankara, TR | 1W/35L (n=36) | 2.8% | 1W/35L (n=36) | 2.8% | 8W/28L (n=36) | 22.2% | 19W/16L (n=35) | 54.3% |
-| Atlanta, US | 0W/36L (n=36) | 0.0% | 0W/36L (n=36) | 0.0% | 5W/31L (n=36) | 13.9% | 10W/25L (n=35) | 28.6% |
-| Austin, US | 0W/36L (n=36) | 0.0% | 0W/36L (n=36) | 0.0% | 7W/29L (n=36) | 19.4% | 18W/17L (n=35) | 51.4% |
-| Beijing, CN | 4W/33L (n=37) | 10.8% | 6W/31L (n=37) | 16.2% | 9W/28L (n=37) | 24.3% | 17W/14L (n=31) | 54.8% |
-| Buenos Aires, AR | 2W/34L (n=36) | 5.6% | 2W/34L (n=36) | 5.6% | 17W/19L (n=36) | 47.2% | 17W/18L (n=35) | 48.6% |
-| Busan, KR | 6W/31L (n=37) | 16.2% | 2W/35L (n=37) | 5.4% | 12W/25L (n=37) | 32.4% | 15W/16L (n=31) | 48.4% |
-| Cape Town, ZA | 3W/33L (n=36) | 8.3% | 1W/35L (n=36) | 2.8% | 9W/27L (n=36) | 25.0% | 12W/23L (n=35) | 34.3% |
-| Chengdu, CN | 6W/29L (n=35) | 17.1% | 2W/33L (n=35) | 5.7% | 3W/32L (n=35) | 8.6% | 9W/22L (n=31) | 29.0% |
-| Chicago, US | 3W/33L (n=36) | 8.3% | 1W/35L (n=36) | 2.8% | 17W/19L (n=36) | 47.2% | 9W/26L (n=35) | 25.7% |
-| Chongqing, CN | 1W/34L (n=35) | 2.9% | 0W/35L (n=35) | 0.0% | 2W/33L (n=35) | 5.7% | 16W/15L (n=31) | 51.6% |
-| Dallas, US | 14W/22L (n=36) | 38.9% | 8W/28L (n=36) | 22.2% | 13W/23L (n=36) | 36.1% | 14W/21L (n=35) | 40.0% |
-| Denver, US | 2W/34L (n=36) | 5.6% | 1W/35L (n=36) | 2.8% | 3W/33L (n=36) | 8.3% | 10W/25L (n=35) | 28.6% |
-| Guangzhou, CN | 3W/32L (n=35) | 8.6% | 3W/32L (n=35) | 8.6% | 6W/29L (n=35) | 17.1% | 11W/20L (n=31) | 35.5% |
-| Helsinki, FI | 3W/33L (n=36) | 8.3% | 1W/35L (n=36) | 2.8% | 16W/20L (n=36) | 44.4% | 20W/15L (n=35) | 57.1% |
-| Hong Kong, HK | 5W/30L (n=35) | 14.3% | 2W/33L (n=35) | 5.7% | 12W/23L (n=35) | 34.3% | 13W/18L (n=31) | 41.9% |
-| Houston, US | 10W/26L (n=36) | 27.8% | 2W/34L (n=36) | 5.6% | 14W/22L (n=36) | 38.9% | 14W/21L (n=35) | 40.0% |
-| Istanbul, TR | 0W/36L (n=36) | 0.0% | 0W/36L (n=36) | 0.0% | 15W/21L (n=36) | 41.7% | 19W/16L (n=35) | 54.3% |
-| Jeddah, SA | 1W/35L (n=36) | 2.8% | 0W/36L (n=36) | 0.0% | 13W/23L (n=36) | 36.1% | 15W/20L (n=35) | 42.9% |
-| Jinan, CN | 34W/3L (n=37) | 91.9% | 30W/7L (n=37) | 81.1% | 34W/3L (n=37) | 91.9% | 31W/1L (n=32) | 96.9% |
-| Karachi, PK | 0W/35L (n=35) | 0.0% | 0W/35L (n=35) | 0.0% | 15W/20L (n=35) | 42.9% | 20W/12L (n=32) | 62.5% |
-| Kuala Lumpur, MY | 0W/37L (n=37) | 0.0% | 0W/37L (n=37) | 0.0% | 5W/32L (n=37) | 13.5% | 18W/13L (n=31) | 58.1% |
-| London, UK | 4W/32L (n=36) | 11.1% | 3W/33L (n=36) | 8.3% | 13W/23L (n=36) | 36.1% | 16W/19L (n=35) | 45.7% |
-| Los Angeles, US | 8W/28L (n=36) | 22.2% | 2W/34L (n=36) | 5.6% | 5W/31L (n=36) | 13.9% | 11W/24L (n=35) | 31.4% |
-| Lucknow, IN | 1W/36L (n=37) | 2.7% | 2W/35L (n=37) | 5.4% | 20W/17L (n=37) | 54.1% | 20W/12L (n=32) | 62.5% |
-| Madrid, ES | 1W/35L (n=36) | 2.8% | 1W/35L (n=36) | 2.8% | 12W/24L (n=36) | 33.3% | 19W/16L (n=35) | 54.3% |
-| Manila, PH | 1W/36L (n=37) | 2.7% | 1W/36L (n=37) | 2.7% | 9W/28L (n=37) | 24.3% | 14W/17L (n=31) | 45.2% |
-| Mexico City, MX | 12W/24L (n=36) | 33.3% | 5W/31L (n=36) | 13.9% | 16W/20L (n=36) | 44.4% | 21W/14L (n=35) | 60.0% |
-| Miami, US | 1W/35L (n=36) | 2.8% | 1W/35L (n=36) | 2.8% | 0W/36L (n=36) | 0.0% | 2W/33L (n=35) | 5.7% |
-| Milan, IT | 2W/34L (n=36) | 5.6% | 0W/36L (n=36) | 0.0% | 13W/23L (n=36) | 36.1% | 21W/14L (n=35) | 60.0% |
-| Moscow, RU | 4W/32L (n=36) | 11.1% | 3W/33L (n=36) | 8.3% | 15W/21L (n=36) | 41.7% | 16W/19L (n=35) | 45.7% |
-| Munich, DE | 2W/34L (n=36) | 5.6% | 1W/35L (n=36) | 2.8% | 9W/27L (n=36) | 25.0% | 14W/21L (n=35) | 40.0% |
-| New York, US | 10W/26L (n=36) | 27.8% | 3W/33L (n=36) | 8.3% | 15W/21L (n=36) | 41.7% | 20W/15L (n=35) | 57.1% |
-| Panama City, PA | 0W/36L (n=36) | 0.0% | 0W/36L (n=36) | 0.0% | 3W/33L (n=36) | 8.3% | 18W/17L (n=35) | 51.4% |
-| Paris, FR | 0W/36L (n=36) | 0.0% | 0W/36L (n=36) | 0.0% | 11W/25L (n=36) | 30.6% | 9W/26L (n=35) | 25.7% |
-| Qingdao, CN | 0W/37L (n=37) | 0.0% | 0W/37L (n=37) | 0.0% | 11W/26L (n=37) | 29.7% | 11W/20L (n=31) | 35.5% |
-| San Francisco, US | 0W/36L (n=36) | 0.0% | 0W/36L (n=36) | 0.0% | 1W/35L (n=36) | 2.8% | 7W/28L (n=35) | 20.0% |
-| Sao Paulo, BR | 6W/30L (n=36) | 16.7% | 6W/30L (n=36) | 16.7% | 9W/27L (n=36) | 25.0% | 9W/26L (n=35) | 25.7% |
-| Seattle, US | 2W/35L (n=37) | 5.4% | 1W/36L (n=37) | 2.7% | 7W/30L (n=37) | 18.9% | 11W/24L (n=35) | 31.4% |
-| Seoul (Incheon), KR | 3W/34L (n=37) | 8.1% | 3W/34L (n=37) | 8.1% | 12W/25L (n=37) | 32.4% | 20W/11L (n=31) | 64.5% |
-| Shanghai, CN | 1W/36L (n=37) | 2.7% | 0W/37L (n=37) | 0.0% | 3W/34L (n=37) | 8.1% | 10W/21L (n=31) | 32.3% |
-| Shenzhen, CN | 4W/31L (n=35) | 11.4% | 3W/32L (n=35) | 8.6% | 14W/21L (n=35) | 40.0% | 15W/16L (n=31) | 48.4% |
-| Singapore, SG | 1W/36L (n=37) | 2.7% | 1W/36L (n=37) | 2.7% | 2W/35L (n=37) | 5.4% | 23W/8L (n=31) | 74.2% |
-| Taipei, TW | 0W/37L (n=37) | 0.0% | 0W/37L (n=37) | 0.0% | 8W/29L (n=37) | 21.6% | 7W/24L (n=31) | 22.6% |
-| Tel Aviv, IL | 21W/15L (n=36) | 58.3% | 9W/27L (n=36) | 25.0% | 9W/27L (n=36) | 25.0% | 24W/11L (n=35) | 68.6% |
-| Tokyo, JP | 13W/24L (n=37) | 35.1% | 7W/30L (n=37) | 18.9% | 12W/25L (n=37) | 32.4% | 14W/17L (n=31) | 45.2% |
-| Toronto, CA | 1W/35L (n=36) | 2.8% | 1W/35L (n=36) | 2.8% | 17W/19L (n=36) | 47.2% | 20W/15L (n=35) | 57.1% |
-| Warsaw, PL | 3W/33L (n=36) | 8.3% | 3W/33L (n=36) | 8.3% | 20W/16L (n=36) | 55.6% | 21W/14L (n=35) | 60.0% |
-| Wellington, NZ | 7W/30L (n=37) | 18.9% | 3W/34L (n=37) | 8.1% | 10W/27L (n=37) | 27.0% | 16W/17L (n=33) | 48.5% |
-| Wuhan, CN | 8W/27L (n=35) | 22.9% | 4W/31L (n=35) | 11.4% | 2W/33L (n=35) | 5.7% | 9W/22L (n=31) | 29.0% |
-| Zhengzhou, CN | 4W/31L (n=35) | 11.4% | 3W/32L (n=35) | 8.6% | 14W/21L (n=35) | 40.0% | 20W/11L (n=31) | 64.5% |
+📋 AVGJORTE RESULTATER — SISTE DAG (2026-09-16):
+   By                              Sigma Modifisert     Mean         Marked
+   Amsterdam, NL                       ⏳        ⏳        ⏳              —
+   Ankara, TR                          ⏳        ⏳        ⏳              —
+   Atlanta, US                         ⏳        ⏳        ⏳              —
+   Austin, US                          ⏳        ⏳        ⏳              —
+   Beijing, CN                         ❌        ❌        ❌         31.0°C
+   Buenos Aires, AR                    ⏳        ⏳        ⏳              —
+   Busan, KR                           ❌        ✅        ✅         29.0°C
+   Cape Town, ZA                       ⏳        ⏳        ⏳              —
+   Chengdu, CN                         ❌        ❌        ❌         26.0°C
+   Chicago, US                         ⏳        ⏳        ⏳              —
+   Chongqing, CN                       ✅        ❌        ❌           20°C
+   Dallas, US                          ⏳        ⏳        ⏳              —
+   Denver, US                          ⏳        ⏳        ⏳              —
+   Guangzhou, CN                       ✅        ❌        ❌         31.0°C
+   Helsinki, FI                        ⏳        ⏳        ⏳              —
+   Hong Kong, HK                       ❌        ❌        ❌         31.0°C
+   Houston, US                         ⏳        ⏳        ⏳              —
+   Istanbul, TR                        ❌        ✅        ❌           22°C
+   Jeddah, SA                          ❌        ✅        ❌           39°C
+   Jinan, CN                           ✅        ✅        ✅ 26°C or higher
+   Karachi, PK                         ❌        ❌        ❌         36.0°C
+   Kuala Lumpur, MY                    ❌        ❌        ✅         33.0°C
+   London, UK                          ⏳        ⏳        ⏳              —
+   Los Angeles, US                     ⏳        ⏳        ⏳              —
+   Lucknow, IN                         ❌        ❌        ✅ 33°C or higher
+   Madrid, ES                          ⏳        ⏳        ⏳              —
+   Manila, PH                          ❌        ❌        ❌         32.0°C
+   Mexico City, MX                     ⏳        ⏳        ⏳              —
+   Miami, US                           ⏳        ⏳        ⏳              —
+   Milan, IT                           ⏳        ⏳        ⏳              —
+   Moscow, RU                          ⏳        ⏳        ⏳              —
+   Munich, DE                          ❌        ❌        ❌           27°C
+   New York, US                        ⏳        ⏳        ⏳              —
+   Panama City, PA                     ⏳        ⏳        ⏳              —
+   Paris, FR                           ⏳        ⏳        ⏳              —
+   Qingdao, CN                         ❌        ✅        ❌         32.0°C
+   San Francisco, US                   ⏳        ⏳        ⏳              —
+   Sao Paulo, BR                       ⏳        ⏳        ⏳              —
+   Seattle, US                         ⏳        ⏳        ⏳              —
+   Seoul (Incheon), KR                 ❌        ❌        ✅         27.0°C
+   Shanghai, CN                        ❌        ❌        ❌         28.0°C
+   Shenzhen, CN                        ✅        ❌        ❌         30.0°C
+   Singapore, SG                       ❌        ❌        ❌         34.0°C
+   Taipei, TW                          ❌        ❌        ✅         30.0°C
+   Tel Aviv, IL                        ❌        ✅        ❌           33°C
+   Tokyo, JP                           ✅        ✅        ❌         23.0°C
+   Toronto, CA                         ⏳        ⏳        ⏳              —
+   Warsaw, PL                          ⏳        ⏳        ⏳              —
+   Wellington, NZ                      ❌        ✅        ✅         15.0°C
+   Wuhan, CN                           ✅        ❌        ❌         27.0°C
+   Zhengzhou, CN                       ❌        ✅        ❌         29.0°C
 
-## 🌡️ PEAK vs RESOLUTION — Cumulative
+════════════════════════════════════════════════════════════
 
-- **Samples:** 1663  ·  **Bias (mean deviation):** -0.530°C  ·  **MAE:** 1.006°C  ·  **RMSE:** 1.287°C  ·  **Std:** 1.173°C
+🌡️ PEAK vs RESOLUTION — KUMULATIV
 
-| City | n | Bias °C | MAE °C | RMSE °C | Std °C | Flag |
-|------|---|---------|--------|---------|--------|------|
-| Taipei, TW | 32 | -1.67 | 1.75 | 2.00 | 1.13 |  |
-| Munich, DE | 35 | -1.59 | 1.66 | 2.00 | 1.22 |  |
-| Busan, KR | 32 | -1.57 | 1.59 | 1.83 | 0.95 |  |
-| Zhengzhou, CN | 22 | -1.56 | 1.65 | 1.91 | 1.12 |  |
-| Beijing, CN | 32 | -1.54 | 1.64 | 1.87 | 1.08 |  |
-| Guangzhou, CN | 29 | -1.47 | 1.64 | 1.89 | 1.21 |  |
-| Mexico City, MX | 31 | -1.26 | 1.36 | 1.54 | 0.91 |  |
-| Chengdu, CN | 31 | -1.23 | 1.89 | 2.18 | 1.84 |  |
-| Austin, US | 35 | -1.11 | 1.16 | 1.44 | 0.92 |  |
-| Wuhan, CN | 31 | -1.00 | 1.33 | 1.54 | 1.20 |  |
-| Warsaw, PL | 33 | -0.93 | 0.99 | 1.16 | 0.69 | ⚠️ station-bias |
-| Panama City, PA | 31 | -0.92 | 1.09 | 1.37 | 1.04 |  |
-| Wellington, NZ | 32 | -0.90 | 0.90 | 1.17 | 0.77 |  |
-| Manila, PH | 32 | -0.89 | 1.12 | 1.24 | 0.87 |  |
-| Amsterdam, NL | 36 | -0.88 | 0.93 | 1.21 | 0.83 |  |
-| Paris, FR | 35 | -0.85 | 0.95 | 1.15 | 0.79 |  |
-| Houston, US | 35 | -0.83 | 1.04 | 1.43 | 1.18 |  |
-| Miami, US | 34 | -0.79 | 1.25 | 1.44 | 1.22 |  |
-| Milan, IT | 33 | -0.77 | 0.96 | 1.15 | 0.88 |  |
-| Seoul (Incheon), KR | 32 | -0.74 | 0.94 | 1.14 | 0.87 |  |
-| Tokyo, JP | 32 | -0.72 | 1.03 | 1.27 | 1.07 |  |
-| Lucknow, IN | 34 | -0.69 | 0.85 | 1.05 | 0.80 |  |
-| Chongqing, CN | 32 | -0.66 | 0.89 | 1.12 | 0.92 |  |
-| Istanbul, TR | 36 | +0.62 | 0.85 | 1.01 | 0.81 |  |
-| Jeddah, SA | 33 | +0.61 | 0.88 | 1.12 | 0.95 |  |
-| Hong Kong, HK | 31 | -0.60 | 0.95 | 1.26 | 1.12 |  |
-| Denver, US | 34 | -0.57 | 1.07 | 1.25 | 1.13 |  |
-| Buenos Aires, AR | 35 | -0.56 | 0.83 | 0.96 | 0.79 |  |
-| London, UK | 35 | -0.55 | 0.93 | 1.14 | 1.02 |  |
-| Dallas, US | 34 | +0.54 | 0.79 | 0.94 | 0.78 |  |
-| Madrid, ES | 35 | -0.47 | 0.72 | 0.92 | 0.81 |  |
-| Atlanta, US | 35 | -0.46 | 0.93 | 1.20 | 1.13 |  |
-| Los Angeles, US | 33 | -0.44 | 0.88 | 1.31 | 1.26 |  |
-| Chicago, US | 35 | -0.42 | 0.89 | 1.17 | 1.11 |  |
-| Shenzhen, CN | 32 | -0.42 | 1.02 | 1.22 | 1.17 |  |
-| Moscow, RU | 35 | -0.40 | 0.79 | 0.99 | 0.92 |  |
-| Seattle, US | 35 | +0.33 | 0.88 | 1.22 | 1.19 |  |
-| Jinan, CN | 6 | +0.32 | 0.35 | 0.47 | 0.39 |  |
-| Shanghai, CN | 32 | -0.29 | 0.74 | 0.88 | 0.85 |  |
-| Ankara, TR | 36 | -0.26 | 0.50 | 0.64 | 0.59 |  |
-| Cape Town, ZA | 34 | +0.23 | 1.01 | 1.18 | 1.17 |  |
-| Kuala Lumpur, MY | 32 | +0.23 | 0.68 | 0.88 | 0.86 |  |
-| Toronto, CA | 34 | +0.22 | 0.78 | 1.15 | 1.14 |  |
-| Sao Paulo, BR | 34 | -0.14 | 1.31 | 1.65 | 1.67 |  |
-| Tel Aviv, IL | 36 | -0.13 | 0.48 | 0.59 | 0.59 |  |
-| New York, US | 35 | -0.12 | 0.71 | 0.87 | 0.88 |  |
-| Helsinki, FI | 33 | -0.09 | 0.66 | 0.80 | 0.81 |  |
-| Qingdao, CN | 32 | +0.08 | 0.64 | 0.92 | 0.93 |  |
-| Karachi, PK | 33 | +0.04 | 0.62 | 0.79 | 0.80 |  |
-| San Francisco, US | 35 | +0.03 | 1.12 | 1.39 | 1.41 |  |
-| Singapore, SG | 32 | +0.02 | 0.69 | 0.94 | 0.96 |  |
+   Samples: 1701  ·  Bias (snitt avvik): -0.529°C  ·  MAE: 1.005°C  ·  RMSE: 1.284°C  ·  Std: 1.171°C
+
+   By                         n   Bias °C     MAE    RMSE     Std  Flagg
+   Taipei, TW                32     -1.67    1.75    2.00    1.13  
+   Munich, DE                37     -1.59    1.65    1.98    1.21  
+   Busan, KR                 33     -1.57    1.58    1.82    0.94  
+   Zhengzhou, CN             23     -1.54    1.62    1.88    1.10  
+   Beijing, CN               33     -1.49    1.59    1.84    1.10  
+   Guangzhou, CN             30     -1.44    1.60    1.86    1.20  
+   Chengdu, CN               32     -1.27    1.91    2.19    1.82  
+   Mexico City, MX           31     -1.26    1.36    1.54    0.91  
+   Austin, US                36     -1.10    1.15    1.42    0.91  
+   Wuhan, CN                 33     -0.98    1.30    1.52    1.18  
+   Warsaw, PL                34     -0.93    0.98    1.15    0.68  STASJONSBIAS
+   Wellington, NZ            35     -0.92    0.93    1.18    0.74  STASJONSBIAS
+   Amsterdam, NL             36     -0.88    0.93    1.21    0.83  
+   Manila, PH                33     -0.87    1.09    1.22    0.87  
+   Panama City, PA           32     -0.85    1.10    1.37    1.09  
+   Paris, FR                 35     -0.85    0.95    1.15    0.79  
+   Houston, US               35     -0.83    1.04    1.43    1.18  
+   Miami, US                 34     -0.79    1.25    1.44    1.22  
+   Milan, IT                 33     -0.77    0.96    1.15    0.88  
+   Seoul (Incheon), KR       33     -0.75    0.94    1.13    0.86  
+   Tokyo, JP                 32     -0.72    1.03    1.27    1.07  
+   Lucknow, IN               34     -0.69    0.85    1.05    0.80  
+   Hong Kong, HK             32     -0.64    0.97    1.27    1.12  
+   Istanbul, TR              37     +0.60    0.84    1.00    0.81  
+   Chongqing, CN             33     -0.60    0.91    1.13    0.97  
+   Jeddah, SA                34     +0.59    0.86    1.10    0.94  
+   Dallas, US                35     +0.57    0.81    0.96    0.79  
+   Buenos Aires, AR          36     -0.56    0.82    0.95    0.78  
+   London, UK                35     -0.55    0.93    1.14    1.02  
+   Denver, US                36     -0.54    1.02    1.22    1.11  
+   Chicago, US               36     -0.47    0.93    1.22    1.15  
+   Atlanta, US               36     -0.47    0.93    1.19    1.11  
+   Madrid, ES                35     -0.47    0.72    0.92    0.81  
+   Los Angeles, US           34     -0.46    0.89    1.31    1.25  
+   Moscow, RU                35     -0.40    0.79    0.99    0.92  
+   Shenzhen, CN              33     -0.37    1.02    1.21    1.17  
+   Jinan, CN                  6     +0.32    0.35    0.47    0.39  
+   Seattle, US               36     +0.29    0.88    1.21    1.19  
+   Shanghai, CN              33     -0.27    0.73    0.87    0.84  
+   Ankara, TR                36     -0.26    0.50    0.64    0.59  
+   Kuala Lumpur, MY          33     +0.25    0.69    0.89    0.86  
+   Cape Town, ZA             34     +0.23    1.01    1.18    1.17  
+   Toronto, CA               34     +0.22    0.78    1.15    1.14  
+   New York, US              36     -0.12    0.70    0.86    0.87  
+   Tel Aviv, IL              37     -0.11    0.48    0.59    0.59  
+   Sao Paulo, BR             35     -0.11    1.30    1.64    1.66  
+   Qingdao, CN               33     +0.10    0.64    0.92    0.93  
+   Helsinki, FI              33     -0.09    0.66    0.80    0.81  
+   San Francisco, US         36     -0.02    1.14    1.40    1.42  
+   Singapore, SG             32     +0.02    0.69    0.94    0.96  
+   Karachi, PK               34     -0.01    0.64    0.82    0.83  
