@@ -194,30 +194,15 @@ const ALL_CITIES = [
   {name: "Jinan, CN", lat: 36.8572, lon: 117.2158, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16}
 ];
 const ACTUAL_PEAK_DATA = {
-  "Hong Kong, HK": {actual_peak: 33.5, peak_detected_at: "", recommendation: "None", spill: 31},
   "Seattle, US": {actual_peak: 17.6, peak_detected_at: "", recommendation: "None", spill: 17},
   "Lucknow, IN": {actual_peak: 30.8, peak_detected_at: "", recommendation: "None", spill: 30},
   "Mexico City, MX": {actual_peak: 24.6, peak_detected_at: "", recommendation: "None", spill: 26},
-  "Shanghai, CN": {actual_peak: 27.0, peak_detected_at: "", recommendation: "None", spill: 25},
-  "Dallas, US": {actual_peak: 30.8, peak_detected_at: "", recommendation: "None", spill: 32},
-  "Beijing, CN": {actual_peak: 23.9, peak_detected_at: "", recommendation: "None", spill: 25},
-  "Qingdao, CN": {actual_peak: 24.4, peak_detected_at: "", recommendation: "None", spill: 24},
-  "Jinan, CN": {actual_peak: 27.5, peak_detected_at: "", recommendation: "None", spill: 27},
+  "Dallas, US": {actual_peak: 30.8, peak_detected_at: "", recommendation: "None", spill: 33},
   "Houston, US": {actual_peak: 31.8, peak_detected_at: "", recommendation: "None", spill: 33},
-  "Manila, PH": {actual_peak: 32.1, peak_detected_at: "", recommendation: "None", spill: 31},
-  "Chongqing, CN": {actual_peak: 27.8, peak_detected_at: "", recommendation: "None", spill: 26},
-  "Wuhan, CN": {actual_peak: 27.3, peak_detected_at: "", recommendation: "None", spill: 26},
-  "Singapore, SG": {actual_peak: 30.0, peak_detected_at: "", recommendation: "None", spill: 29},
-  "Chengdu, CN": {actual_peak: 24.3, peak_detected_at: "", recommendation: "None", spill: 26},
   "San Francisco, US": {actual_peak: 22.1, peak_detected_at: "", recommendation: "None", spill: 18},
-  "Zhengzhou, CN": {actual_peak: 21.2, peak_detected_at: "", recommendation: "None", spill: 22},
-  "Kuala Lumpur, MY": {actual_peak: 32.8, peak_detected_at: "", recommendation: "None", spill: 30},
   "Karachi, PK": {actual_peak: 32.1, peak_detected_at: "", recommendation: "None", spill: 30},
-  "Shenzhen, CN": {actual_peak: 32.8, peak_detected_at: "", recommendation: "None", spill: 31},
   "Austin, US": {actual_peak: 35.2, peak_detected_at: "", recommendation: "None", spill: 34},
-  "Guangzhou, CN": {actual_peak: 35.3, peak_detected_at: "", recommendation: "None", spill: 34},
   "Chicago, US": {actual_peak: 20.4, peak_detected_at: "", recommendation: "None", spill: 21},
-  "Taipei, TW": {actual_peak: 35.7, peak_detected_at: "", recommendation: "None", spill: 34},
   "Los Angeles, US": {actual_peak: 24.3, peak_detected_at: "", recommendation: "None", spill: 26},
   "Helsinki, FI": {actual_peak: 15.7, peak_detected_at: "", recommendation: "None", spill: 14},
   "London, UK": {actual_peak: 19.4, peak_detected_at: "", recommendation: "None", spill: 19},
@@ -234,15 +219,15 @@ const ACTUAL_PEAK_DATA = {
   "Jeddah, SA": {actual_peak: 36.6, peak_detected_at: "", recommendation: "None", spill: 33},
   "Miami, US": {actual_peak: 31.0, peak_detected_at: "", recommendation: "None", spill: 30},
   "Buenos Aires, AR": {actual_peak: 21.0, peak_detected_at: "", recommendation: "None", spill: 19},
-  "New York, US": {actual_peak: 17.4, peak_detected_at: "", recommendation: "None", spill: 16},
+  "New York, US": {actual_peak: 17.4, peak_detected_at: "", recommendation: "None", spill: 17},
   "Toronto, CA": {actual_peak: 21.8, peak_detected_at: "", recommendation: "None", spill: 19},
   "Panama City, PA": {actual_peak: 28.6, peak_detected_at: "", recommendation: "None", spill: 29},
   "Atlanta, US": {actual_peak: 26.4, peak_detected_at: "", recommendation: "None", spill: 25},
   "Sao Paulo, BR": {actual_peak: 32.1, peak_detected_at: "", recommendation: "None", spill: 29}
 };
 const MARKET_PRICES = {};
-const AUTO_SELECT_CITIES = ["New York, US", "Los Angeles, US", "Dallas, US", "Houston, US", "Atlanta, US", "Chicago, US", "Toronto, CA", "Austin, US", "Miami, US", "Buenos Aires, AR", "Denver, US", "San Francisco, US", "Mexico City, MX", "Seattle, US", "Sao Paulo, BR", "Panama City, PA"];
-const AUTO_SELECT_GENERATED = "2026-09-28 20:31:12 UTC";
+const AUTO_SELECT_CITIES = ["Los Angeles, US", "Dallas, US", "Houston, US", "Chicago, US", "Austin, US", "Denver, US", "San Francisco, US", "Mexico City, MX", "Seattle, US", "Panama City, PA"];
+const AUTO_SELECT_GENERATED = "2026-09-28 23:05:25 UTC";
 
 // ---- State ----
 const activeCities = new Set();  // city names currently monitored
