@@ -193,10 +193,52 @@ const ALL_CITIES = [
   {name: "Panama City, PA", lat: 8.9733, lon: -79.5556, tz: "America/Panama", peakStart: 14, peakEnd: 17},
   {name: "Jinan, CN", lat: 36.8572, lon: 117.2158, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16}
 ];
-const ACTUAL_PEAK_DATA = {};
+const ACTUAL_PEAK_DATA = {
+  "Jinan, CN": {actual_peak: 29.7, peak_detected_at: "", recommendation: "None", spill: 29},
+  "Shenzhen, CN": {actual_peak: 30.1, peak_detected_at: "", recommendation: "None", spill: 28},
+  "Chongqing, CN": {actual_peak: 26.5, peak_detected_at: "", recommendation: "None", spill: 26},
+  "Qingdao, CN": {actual_peak: 27.0, peak_detected_at: "", recommendation: "None", spill: 24},
+  "Seoul (Incheon), KR": {actual_peak: 21.4, peak_detected_at: "", recommendation: "None", spill: 21},
+  "Busan, KR": {actual_peak: 23.3, peak_detected_at: "", recommendation: "None", spill: 25},
+  "Singapore, SG": {actual_peak: 32.5, peak_detected_at: "", recommendation: "None", spill: 32},
+  "Ankara, TR": {actual_peak: 19.3, peak_detected_at: "", recommendation: "None", spill: 19},
+  "Warsaw, PL": {actual_peak: 20.3, peak_detected_at: "", recommendation: "None", spill: 20},
+  "Zhengzhou, CN": {actual_peak: 26.6, peak_detected_at: "", recommendation: "None", spill: 27},
+  "Manila, PH": {actual_peak: 32.5, peak_detected_at: "", recommendation: "None", spill: 32},
+  "Shanghai, CN": {actual_peak: 25.9, peak_detected_at: "", recommendation: "None", spill: 23},
+  "Guangzhou, CN": {actual_peak: 28.5, peak_detected_at: "", recommendation: "None", spill: 29},
+  "Tokyo, JP": {actual_peak: 24.7, peak_detected_at: "", recommendation: "None", spill: 24},
+  "Tel Aviv, IL": {actual_peak: 28.8, peak_detected_at: "", recommendation: "None", spill: 28},
+  "London, UK": {actual_peak: 14.8, peak_detected_at: "", recommendation: "None", spill: 15},
+  "Chengdu, CN": {actual_peak: 24.1, peak_detected_at: "", recommendation: "None", spill: 26},
+  "Milan, IT": {actual_peak: 17.1, peak_detected_at: "", recommendation: "None", spill: 17},
+  "Madrid, ES": {actual_peak: 21.3, peak_detected_at: "", recommendation: "None", spill: 21},
+  "Wuhan, CN": {actual_peak: 25.7, peak_detected_at: "", recommendation: "None", spill: 26},
+  "Karachi, PK": {actual_peak: 31.9, peak_detected_at: "", recommendation: "None", spill: 30},
+  "Cape Town, ZA": {actual_peak: 18.8, peak_detected_at: "", recommendation: "None", spill: 17},
+  "Beijing, CN": {actual_peak: 25.9, peak_detected_at: "", recommendation: "None", spill: 27},
+  "Amsterdam, NL": {actual_peak: 19.9, peak_detected_at: "", recommendation: "None", spill: 20},
+  "Paris, FR": {actual_peak: 17.4, peak_detected_at: "", recommendation: "None", spill: 18},
+  "Taipei, TW": {actual_peak: 25.5, peak_detected_at: "", recommendation: "None", spill: 26},
+  "Lucknow, IN": {actual_peak: 30.6, peak_detected_at: "", recommendation: "None", spill: 30},
+  "Kuala Lumpur, MY": {actual_peak: 32.8, peak_detected_at: "", recommendation: "None", spill: 31},
+  "Seattle, US": {actual_peak: 17.3, peak_detected_at: "", recommendation: "None", spill: 17},
+  "Jeddah, SA": {actual_peak: 37.4, peak_detected_at: "", recommendation: "None", spill: 32},
+  "Mexico City, MX": {actual_peak: 21.7, peak_detected_at: "", recommendation: "None", spill: 23},
+  "Atlanta, US": {actual_peak: 25.4, peak_detected_at: "", recommendation: "None", spill: 25},
+  "Dallas, US": {actual_peak: 27.7, peak_detected_at: "", recommendation: "None", spill: 28},
+  "Chicago, US": {actual_peak: 23.7, peak_detected_at: "", recommendation: "None", spill: 24},
+  "Austin, US": {actual_peak: 30.4, peak_detected_at: "", recommendation: "None", spill: 30},
+  "Miami, US": {actual_peak: 31.2, peak_detected_at: "", recommendation: "None", spill: 31},
+  "Denver, US": {actual_peak: 26.6, peak_detected_at: "", recommendation: "None", spill: 27},
+  "Sao Paulo, BR": {actual_peak: 25.1, peak_detected_at: "", recommendation: "None", spill: 25},
+  "Buenos Aires, AR": {actual_peak: 18.2, peak_detected_at: "", recommendation: "None", spill: 18},
+  "Los Angeles, US": {actual_peak: 30.9, peak_detected_at: "", recommendation: "None", spill: 33},
+  "San Francisco, US": {actual_peak: 29.3, peak_detected_at: "", recommendation: "None", spill: 21}
+};
 const MARKET_PRICES = {};
-const AUTO_SELECT_CITIES = ["Madrid, ES", "Paris, FR", "Munich, DE", "London, UK", "Milan, IT", "Helsinki, FI", "Amsterdam, NL", "Warsaw, PL", "Cape Town, ZA", "Buenos Aires, AR", "Sao Paulo, BR", "Moscow, RU"];
-const AUTO_SELECT_GENERATED = "2026-10-07 16:25:04 UTC";
+const AUTO_SELECT_CITIES = ["New York, US", "Dallas, US", "Houston, US", "Atlanta, US", "Chicago, US", "Toronto, CA", "Austin, US", "Miami, US", "Buenos Aires, AR", "Denver, US", "Mexico City, MX", "Sao Paulo, BR", "Panama City, PA"];
+const AUTO_SELECT_GENERATED = "2026-10-07 19:39:14 UTC";
 
 // ---- State ----
 const activeCities = new Set();  // city names currently monitored
