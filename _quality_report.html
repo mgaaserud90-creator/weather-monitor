@@ -161,7 +161,7 @@
 // No auto-refresh — manual refresh only
 // Dynamic "last updated" countdown + next pipeline indicator
 (function() {
-    var deployTime = new Date('2026-10-10T21:07:56Z');
+    var deployTime = new Date('2026-10-16T17:22:41Z');
     var HAS_DATA = true;
 
     function getNextPipelineUTC() {
@@ -244,7 +244,7 @@ function sortTable(colIdx) {
 <body>
 <header>
   <h1>🌡️ Model Quality Dashboard <span class="rapid-badge">3 STRATEGIES</span></h1>
-  <div class="subtitle" id="last-updated">🤖 Siste pipeline: 20:15 UTC | Neste pipeline-oppdatering: …</div>
+  <div class="subtitle" id="last-updated">🤖 Siste pipeline: 16:25 UTC | Neste pipeline-oppdatering: …</div>
   <a href="_anbefalt_spill.html" style="display:inline-block;margin-top:10px;color:var(--orange);text-decoration:none;font-weight:700;">🎯 Anbefalt spill →</a>
   
 <style>
@@ -326,15 +326,15 @@ function sortTable(colIdx) {
 
   <div class="card-grid">
     <div class="card">
-      <div class="value" style="color: var(--blue);">61</div>
+      <div class="value" style="color: var(--blue);">67</div>
       <div class="label">Days Tracked</div>
     </div>
     <div class="card">
-      <div class="value" style="color: var(--purple);">3048</div>
+      <div class="value" style="color: var(--purple);">3355</div>
       <div class="label">Total Resolved (Mean)</div>
     </div>
     <div class="card">
-      <div class="value" style="color: #F44336;">30.5%</div>
+      <div class="value" style="color: #F44336;">31.0%</div>
       <div class="label">Overall Win Rate (Mean)</div>
     </div>
   </div>
@@ -350,9 +350,9 @@ function sortTable(colIdx) {
      <table>
        <thead><tr><th>Strategi</th><th>Wins</th><th>Losses</th><th>Win Rate</th><th>Resolved</th></tr></thead>
        <tbody>
-         <tr><td>🎯 Sigma (μ−kσ)</td><td>436</td><td>2612</td><td style="color:#f85149;font-weight:600;">14.3%</td><td>3048</td></tr>
-         <tr><td>🧪 Modifisert</td><td>1255</td><td>1793</td><td style="color:#f85149;font-weight:600;">41.2%</td><td>3048</td></tr>
-         <tr><td>📊 Mean-Basert</td><td>929</td><td>2119</td><td style="color:#f85149;font-weight:600;">30.5%</td><td>3048</td></tr>
+         <tr><td>🎯 Sigma (μ−kσ)</td><td>494</td><td>2861</td><td style="color:#f85149;font-weight:600;">14.7%</td><td>3355</td></tr>
+         <tr><td>🧪 Modifisert</td><td>1359</td><td>1996</td><td style="color:#f85149;font-weight:600;">40.5%</td><td>3355</td></tr>
+         <tr><td>📊 Mean-Basert</td><td>1041</td><td>2314</td><td style="color:#f85149;font-weight:600;">31.0%</td><td>3355</td></tr>
        </tbody>
      </table>
    </div>
@@ -368,7 +368,7 @@ function sortTable(colIdx) {
      <div style="overflow-x: auto;">
      <table>
        <thead><tr><th>City</th><th>Sigma W/L</th><th>Sigma Rate</th><th>Modifisert W/L</th><th>Modifisert Rate</th><th>Mean W/L</th><th>Mean Rate</th></tr></thead>
-       <tbody><tr><td><strong>Amsterdam, NL</strong></td><td>10W/51L (n=61)</td><td style="color:#f85149;font-weight:600;">16.4%</td><td>26W/35L (n=61)</td><td style="color:#d2991d;font-weight:600;">42.6%</td><td>23W/38L (n=61)</td><td style="color:#f85149;font-weight:600;">37.7%</td></tr><tr><td><strong>Ankara, TR</strong></td><td>3W/58L (n=61)</td><td style="color:#f85149;font-weight:600;">4.9%</td><td>27W/34L (n=61)</td><td style="color:#d2991d;font-weight:600;">44.3%</td><td>10W/51L (n=61)</td><td style="color:#f85149;font-weight:600;">16.4%</td></tr><tr><td><strong>Atlanta, US</strong></td><td>2W/58L (n=60)</td><td style="color:#f85149;font-weight:600;">3.3%</td><td>10W/50L (n=60)</td><td style="color:#f85149;font-weight:600;">16.7%</td><td>13W/47L (n=60)</td><td style="color:#f85149;font-weight:600;">21.7%</td></tr><tr><td><strong>Austin, US</strong></td><td>1W/58L (n=59)</td><td style="color:#f85149;font-weight:600;">1.7%</td><td>27W/32L (n=59)</td><td style="color:#d2991d;font-weight:600;">45.8%</td><td>17W/42L (n=59)</td><td style="color:#f85149;font-weight:600;">28.8%</td></tr><tr><td><strong>Beijing, CN</strong></td><td>17W/43L (n=60)</td><td style="color:#f85149;font-weight:600;">28.3%</td><td>27W/33L (n=60)</td><td style="color:#d2991d;font-weight:600;">45.0%</td><td>14W/46L (n=60)</td><td style="color:#f85149;font-weight:600;">23.3%</td></tr><tr><td><strong>Buenos Aires, AR</strong></td><td>8W/52L (n=60)</td><td style="color:#f85149;font-weight:600;">13.3%</td><td>28W/32L (n=60)</td><td style="color:#d2991d;font-weight:600;">46.7%</td><td>25W/35L (n=60)</td><td style="color:#d2991d;font-weight:600;">41.7%</td></tr><tr><td><strong>Busan, KR</strong></td><td>15W/45L (n=60)</td><td style="color:#f85149;font-weight:600;">25.0%</td><td>28W/32L (n=60)</td><td style="color:#d2991d;font-weight:600;">46.7%</td><td>21W/39L (n=60)</td><td style="color:#f85149;font-weight:600;">35.0%</td></tr><tr><td><strong>Cape Town, ZA</strong></td><td>3W/58L (n=61)</td><td style="color:#f85149;font-weight:600;">4.9%</td><td>24W/37L (n=61)</td><td style="color:#f85149;font-weight:600;">39.3%</td><td>18W/43L (n=61)</td><td style="color:#f85149;font-weight:600;">29.5%</td></tr><tr><td><strong>Chengdu, CN</strong></td><td>16W/44L (n=60)</td><td style="color:#f85149;font-weight:600;">26.7%</td><td>17W/43L (n=60)</td><td style="color:#f85149;font-weight:600;">28.3%</td><td>9W/51L (n=60)</td><td style="color:#f85149;font-weight:600;">15.0%</td></tr><tr><td><strong>Chicago, US</strong></td><td>6W/53L (n=59)</td><td style="color:#f85149;font-weight:600;">10.2%</td><td>11W/48L (n=59)</td><td style="color:#f85149;font-weight:600;">18.6%</td><td>22W/37L (n=59)</td><td style="color:#f85149;font-weight:600;">37.3%</td></tr><tr><td><strong>Chongqing, CN</strong></td><td>10W/50L (n=60)</td><td style="color:#f85149;font-weight:600;">16.7%</td><td>21W/39L (n=60)</td><td style="color:#f85149;font-weight:600;">35.0%</td><td>7W/53L (n=60)</td><td style="color:#f85149;font-weight:600;">11.7%</td></tr><tr><td><strong>Dallas, US</strong></td><td>14W/45L (n=59)</td><td style="color:#f85149;font-weight:600;">23.7%</td><td>15W/44L (n=59)</td><td style="color:#f85149;font-weight:600;">25.4%</td><td>14W/45L (n=59)</td><td style="color:#f85149;font-weight:600;">23.7%</td></tr><tr><td><strong>Denver, US</strong></td><td>4W/55L (n=59)</td><td style="color:#f85149;font-weight:600;">6.8%</td><td>13W/46L (n=59)</td><td style="color:#f85149;font-weight:600;">22.0%</td><td>10W/49L (n=59)</td><td style="color:#f85149;font-weight:600;">16.9%</td></tr><tr><td><strong>Guangzhou, CN</strong></td><td>6W/54L (n=60)</td><td style="color:#f85149;font-weight:600;">10.0%</td><td>24W/36L (n=60)</td><td style="color:#d2991d;font-weight:600;">40.0%</td><td>15W/45L (n=60)</td><td style="color:#f85149;font-weight:600;">25.0%</td></tr><tr><td><strong>Helsinki, FI</strong></td><td>6W/55L (n=61)</td><td style="color:#f85149;font-weight:600;">9.8%</td><td>37W/24L (n=61)</td><td style="color:#3fb950;font-weight:600;">60.7%</td><td>27W/34L (n=61)</td><td style="color:#d2991d;font-weight:600;">44.3%</td></tr><tr><td><strong>Hong Kong, HK</strong></td><td>6W/54L (n=60)</td><td style="color:#f85149;font-weight:600;">10.0%</td><td>22W/38L (n=60)</td><td style="color:#f85149;font-weight:600;">36.7%</td><td>18W/42L (n=60)</td><td style="color:#f85149;font-weight:600;">30.0%</td></tr><tr><td><strong>Houston, US</strong></td><td>10W/49L (n=59)</td><td style="color:#f85149;font-weight:600;">16.9%</td><td>15W/44L (n=59)</td><td style="color:#f85149;font-weight:600;">25.4%</td><td>18W/41L (n=59)</td><td style="color:#f85149;font-weight:600;">30.5%</td></tr><tr><td><strong>Istanbul, TR</strong></td><td>0W/61L (n=61)</td><td style="color:#f85149;font-weight:600;">0.0%</td><td>34W/27L (n=61)</td><td style="color:#d2991d;font-weight:600;">55.7%</td><td>18W/43L (n=61)</td><td style="color:#f85149;font-weight:600;">29.5%</td></tr><tr><td><strong>Jeddah, SA</strong></td><td>1W/60L (n=61)</td><td style="color:#f85149;font-weight:600;">1.6%</td><td>21W/40L (n=61)</td><td style="color:#f85149;font-weight:600;">34.4%</td><td>27W/34L (n=61)</td><td style="color:#d2991d;font-weight:600;">44.3%</td></tr><tr><td><strong>Jinan, CN</strong></td><td>45W/4L (n=49)</td><td style="color:#3fb950;font-weight:600;">91.8%</td><td>47W/2L (n=49)</td><td style="color:#3fb950;font-weight:600;">95.9%</td><td>45W/4L (n=49)</td><td style="color:#3fb950;font-weight:600;">91.8%</td></tr><tr><td><strong>Karachi, PK</strong></td><td>1W/60L (n=61)</td><td style="color:#f85149;font-weight:600;">1.6%</td><td>28W/33L (n=61)</td><td style="color:#d2991d;font-weight:600;">45.9%</td><td>25W/36L (n=61)</td><td style="color:#d2991d;font-weight:600;">41.0%</td></tr><tr><td><strong>Kuala Lumpur, MY</strong></td><td>0W/60L (n=60)</td><td style="color:#f85149;font-weight:600;">0.0%</td><td>29W/31L (n=60)</td><td style="color:#d2991d;font-weight:600;">48.3%</td><td>5W/55L (n=60)</td><td style="color:#f85149;font-weight:600;">8.3%</td></tr><tr><td><strong>London, UK</strong></td><td>9W/52L (n=61)</td><td style="color:#f85149;font-weight:600;">14.8%</td><td>30W/31L (n=61)</td><td style="color:#d2991d;font-weight:600;">49.2%</td><td>23W/38L (n=61)</td><td style="color:#f85149;font-weight:600;">37.7%</td></tr><tr><td><strong>Los Angeles, US</strong></td><td>14W/45L (n=59)</td><td style="color:#f85149;font-weight:600;">23.7%</td><td>21W/38L (n=59)</td><td style="color:#f85149;font-weight:600;">35.6%</td><td>11W/48L (n=59)</td><td style="color:#f85149;font-weight:600;">18.6%</td></tr><tr><td><strong>Lucknow, IN</strong></td><td>7W/54L (n=61)</td><td style="color:#f85149;font-weight:600;">11.5%</td><td>38W/23L (n=61)</td><td style="color:#3fb950;font-weight:600;">62.3%</td><td>33W/28L (n=61)</td><td style="color:#d2991d;font-weight:600;">54.1%</td></tr><tr><td><strong>Madrid, ES</strong></td><td>1W/60L (n=61)</td><td style="color:#f85149;font-weight:600;">1.6%</td><td>33W/28L (n=61)</td><td style="color:#d2991d;font-weight:600;">54.1%</td><td>17W/44L (n=61)</td><td style="color:#f85149;font-weight:600;">27.9%</td></tr><tr><td><strong>Manila, PH</strong></td><td>4W/56L (n=60)</td><td style="color:#f85149;font-weight:600;">6.7%</td><td>25W/35L (n=60)</td><td style="color:#d2991d;font-weight:600;">41.7%</td><td>18W/42L (n=60)</td><td style="color:#f85149;font-weight:600;">30.0%</td></tr><tr><td><strong>Mexico City, MX</strong></td><td>23W/36L (n=59)</td><td style="color:#f85149;font-weight:600;">39.0%</td><td>32W/27L (n=59)</td><td style="color:#d2991d;font-weight:600;">54.2%</td><td>20W/39L (n=59)</td><td style="color:#f85149;font-weight:600;">33.9%</td></tr><tr><td><strong>Miami, US</strong></td><td>6W/55L (n=61)</td><td style="color:#f85149;font-weight:600;">9.8%</td><td>5W/56L (n=61)</td><td style="color:#f85149;font-weight:600;">8.2%</td><td>3W/58L (n=61)</td><td style="color:#f85149;font-weight:600;">4.9%</td></tr><tr><td><strong>Milan, IT</strong></td><td>5W/56L (n=61)</td><td style="color:#f85149;font-weight:600;">8.2%</td><td>28W/33L (n=61)</td><td style="color:#d2991d;font-weight:600;">45.9%</td><td>24W/37L (n=61)</td><td style="color:#f85149;font-weight:600;">39.3%</td></tr><tr><td><strong>Moscow, RU</strong></td><td>10W/51L (n=61)</td><td style="color:#f85149;font-weight:600;">16.4%</td><td>26W/35L (n=61)</td><td style="color:#d2991d;font-weight:600;">42.6%</td><td>22W/39L (n=61)</td><td style="color:#f85149;font-weight:600;">36.1%</td></tr><tr><td><strong>Munich, DE</strong></td><td>9W/52L (n=61)</td><td style="color:#f85149;font-weight:600;">14.8%</td><td>24W/37L (n=61)</td><td style="color:#f85149;font-weight:600;">39.3%</td><td>20W/41L (n=61)</td><td style="color:#f85149;font-weight:600;">32.8%</td></tr><tr><td><strong>New York, US</strong></td><td>13W/47L (n=60)</td><td style="color:#f85149;font-weight:600;">21.7%</td><td>29W/31L (n=60)</td><td style="color:#d2991d;font-weight:600;">48.3%</td><td>22W/38L (n=60)</td><td style="color:#f85149;font-weight:600;">36.7%</td></tr><tr><td><strong>Panama City, PA</strong></td><td>4W/55L (n=59)</td><td style="color:#f85149;font-weight:600;">6.8%</td><td>29W/30L (n=59)</td><td style="color:#d2991d;font-weight:600;">49.2%</td><td>10W/49L (n=59)</td><td style="color:#f85149;font-weight:600;">16.9%</td></tr><tr><td><strong>Paris, FR</strong></td><td>4W/57L (n=61)</td><td style="color:#f85149;font-weight:600;">6.6%</td><td>15W/46L (n=61)</td><td style="color:#f85149;font-weight:600;">24.6%</td><td>20W/41L (n=61)</td><td style="color:#f85149;font-weight:600;">32.8%</td></tr><tr><td><strong>Qingdao, CN</strong></td><td>1W/59L (n=60)</td><td style="color:#f85149;font-weight:600;">1.7%</td><td>26W/34L (n=60)</td><td style="color:#d2991d;font-weight:600;">43.3%</td><td>19W/41L (n=60)</td><td style="color:#f85149;font-weight:600;">31.7%</td></tr><tr><td><strong>San Francisco, US</strong></td><td>1W/58L (n=59)</td><td style="color:#f85149;font-weight:600;">1.7%</td><td>10W/49L (n=59)</td><td style="color:#f85149;font-weight:600;">16.9%</td><td>8W/51L (n=59)</td><td style="color:#f85149;font-weight:600;">13.6%</td></tr><tr><td><strong>Sao Paulo, BR</strong></td><td>11W/49L (n=60)</td><td style="color:#f85149;font-weight:600;">18.3%</td><td>15W/45L (n=60)</td><td style="color:#f85149;font-weight:600;">25.0%</td><td>15W/45L (n=60)</td><td style="color:#f85149;font-weight:600;">25.0%</td></tr><tr><td><strong>Seattle, US</strong></td><td>2W/58L (n=60)</td><td style="color:#f85149;font-weight:600;">3.3%</td><td>20W/40L (n=60)</td><td style="color:#f85149;font-weight:600;">33.3%</td><td>13W/47L (n=60)</td><td style="color:#f85149;font-weight:600;">21.7%</td></tr><tr><td><strong>Seoul (Incheon), KR</strong></td><td>7W/53L (n=60)</td><td style="color:#f85149;font-weight:600;">11.7%</td><td>30W/30L (n=60)</td><td style="color:#d2991d;font-weight:600;">50.0%</td><td>24W/36L (n=60)</td><td style="color:#d2991d;font-weight:600;">40.0%</td></tr><tr><td><strong>Shanghai, CN</strong></td><td>4W/56L (n=60)</td><td style="color:#f85149;font-weight:600;">6.7%</td><td>17W/43L (n=60)</td><td style="color:#f85149;font-weight:600;">28.3%</td><td>7W/53L (n=60)</td><td style="color:#f85149;font-weight:600;">11.7%</td></tr><tr><td><strong>Shenzhen, CN</strong></td><td>16W/44L (n=60)</td><td style="color:#f85149;font-weight:600;">26.7%</td><td>26W/34L (n=60)</td><td style="color:#d2991d;font-weight:600;">43.3%</td><td>23W/37L (n=60)</td><td style="color:#f85149;font-weight:600;">38.3%</td></tr><tr><td><strong>Singapore, SG</strong></td><td>1W/59L (n=60)</td><td style="color:#f85149;font-weight:600;">1.7%</td><td>35W/25L (n=60)</td><td style="color:#d2991d;font-weight:600;">58.3%</td><td>11W/49L (n=60)</td><td style="color:#f85149;font-weight:600;">18.3%</td></tr><tr><td><strong>Taipei, TW</strong></td><td>1W/59L (n=60)</td><td style="color:#f85149;font-weight:600;">1.7%</td><td>18W/42L (n=60)</td><td style="color:#f85149;font-weight:600;">30.0%</td><td>16W/44L (n=60)</td><td style="color:#f85149;font-weight:600;">26.7%</td></tr><tr><td><strong>Tel Aviv, IL</strong></td><td>31W/30L (n=61)</td><td style="color:#d2991d;font-weight:600;">50.8%</td><td>36W/25L (n=61)</td><td style="color:#d2991d;font-weight:600;">59.0%</td><td>19W/42L (n=61)</td><td style="color:#f85149;font-weight:600;">31.1%</td></tr><tr><td><strong>Tokyo, JP</strong></td><td>21W/39L (n=60)</td><td style="color:#f85149;font-weight:600;">35.0%</td><td>26W/34L (n=60)</td><td style="color:#d2991d;font-weight:600;">43.3%</td><td>22W/38L (n=60)</td><td style="color:#f85149;font-weight:600;">36.7%</td></tr><tr><td><strong>Toronto, CA</strong></td><td>2W/58L (n=60)</td><td style="color:#f85149;font-weight:600;">3.3%</td><td>28W/32L (n=60)</td><td style="color:#d2991d;font-weight:600;">46.7%</td><td>24W/36L (n=60)</td><td style="color:#d2991d;font-weight:600;">40.0%</td></tr><tr><td><strong>Warsaw, PL</strong></td><td>7W/54L (n=61)</td><td style="color:#f85149;font-weight:600;">11.5%</td><td>27W/34L (n=61)</td><td style="color:#d2991d;font-weight:600;">44.3%</td><td>32W/29L (n=61)</td><td style="color:#d2991d;font-weight:600;">52.5%</td></tr><tr><td><strong>Wellington, NZ</strong></td><td>16W/44L (n=60)</td><td style="color:#f85149;font-weight:600;">26.7%</td><td>33W/27L (n=60)</td><td style="color:#d2991d;font-weight:600;">55.0%</td><td>22W/38L (n=60)</td><td style="color:#f85149;font-weight:600;">36.7%</td></tr><tr><td><strong>Wuhan, CN</strong></td><td>14W/46L (n=60)</td><td style="color:#f85149;font-weight:600;">23.3%</td><td>17W/43L (n=60)</td><td style="color:#f85149;font-weight:600;">28.3%</td><td>11W/49L (n=60)</td><td style="color:#f85149;font-weight:600;">18.3%</td></tr><tr><td><strong>Zhengzhou, CN</strong></td><td>8W/43L (n=51)</td><td style="color:#f85149;font-weight:600;">15.7%</td><td>25W/26L (n=51)</td><td style="color:#d2991d;font-weight:600;">49.0%</td><td>19W/32L (n=51)</td><td style="color:#f85149;font-weight:600;">37.3%</td></tr></tbody>
+       <tbody><tr><td><strong>Amsterdam, NL</strong></td><td>12W/55L (n=67)</td><td style="color:#f85149;font-weight:600;">17.9%</td><td>32W/35L (n=67)</td><td style="color:#d2991d;font-weight:600;">47.8%</td><td>29W/38L (n=67)</td><td style="color:#d2991d;font-weight:600;">43.3%</td></tr><tr><td><strong>Ankara, TR</strong></td><td>5W/62L (n=67)</td><td style="color:#f85149;font-weight:600;">7.5%</td><td>30W/37L (n=67)</td><td style="color:#d2991d;font-weight:600;">44.8%</td><td>12W/55L (n=67)</td><td style="color:#f85149;font-weight:600;">17.9%</td></tr><tr><td><strong>Atlanta, US</strong></td><td>3W/63L (n=66)</td><td style="color:#f85149;font-weight:600;">4.5%</td><td>10W/56L (n=66)</td><td style="color:#f85149;font-weight:600;">15.2%</td><td>17W/49L (n=66)</td><td style="color:#f85149;font-weight:600;">25.8%</td></tr><tr><td><strong>Austin, US</strong></td><td>2W/64L (n=66)</td><td style="color:#f85149;font-weight:600;">3.0%</td><td>28W/38L (n=66)</td><td style="color:#d2991d;font-weight:600;">42.4%</td><td>18W/48L (n=66)</td><td style="color:#f85149;font-weight:600;">27.3%</td></tr><tr><td><strong>Beijing, CN</strong></td><td>17W/50L (n=67)</td><td style="color:#f85149;font-weight:600;">25.4%</td><td>29W/38L (n=67)</td><td style="color:#d2991d;font-weight:600;">43.3%</td><td>15W/52L (n=67)</td><td style="color:#f85149;font-weight:600;">22.4%</td></tr><tr><td><strong>Buenos Aires, AR</strong></td><td>8W/58L (n=66)</td><td style="color:#f85149;font-weight:600;">12.1%</td><td>31W/35L (n=66)</td><td style="color:#d2991d;font-weight:600;">47.0%</td><td>28W/38L (n=66)</td><td style="color:#d2991d;font-weight:600;">42.4%</td></tr><tr><td><strong>Busan, KR</strong></td><td>17W/50L (n=67)</td><td style="color:#f85149;font-weight:600;">25.4%</td><td>30W/37L (n=67)</td><td style="color:#d2991d;font-weight:600;">44.8%</td><td>23W/44L (n=67)</td><td style="color:#f85149;font-weight:600;">34.3%</td></tr><tr><td><strong>Cape Town, ZA</strong></td><td>3W/64L (n=67)</td><td style="color:#f85149;font-weight:600;">4.5%</td><td>25W/42L (n=67)</td><td style="color:#f85149;font-weight:600;">37.3%</td><td>21W/46L (n=67)</td><td style="color:#f85149;font-weight:600;">31.3%</td></tr><tr><td><strong>Chengdu, CN</strong></td><td>20W/47L (n=67)</td><td style="color:#f85149;font-weight:600;">29.9%</td><td>18W/49L (n=67)</td><td style="color:#f85149;font-weight:600;">26.9%</td><td>10W/57L (n=67)</td><td style="color:#f85149;font-weight:600;">14.9%</td></tr><tr><td><strong>Chicago, US</strong></td><td>7W/58L (n=65)</td><td style="color:#f85149;font-weight:600;">10.8%</td><td>13W/52L (n=65)</td><td style="color:#f85149;font-weight:600;">20.0%</td><td>25W/40L (n=65)</td><td style="color:#f85149;font-weight:600;">38.5%</td></tr><tr><td><strong>Chongqing, CN</strong></td><td>10W/57L (n=67)</td><td style="color:#f85149;font-weight:600;">14.9%</td><td>23W/44L (n=67)</td><td style="color:#f85149;font-weight:600;">34.3%</td><td>10W/57L (n=67)</td><td style="color:#f85149;font-weight:600;">14.9%</td></tr><tr><td><strong>Dallas, US</strong></td><td>14W/51L (n=65)</td><td style="color:#f85149;font-weight:600;">21.5%</td><td>15W/50L (n=65)</td><td style="color:#f85149;font-weight:600;">23.1%</td><td>14W/51L (n=65)</td><td style="color:#f85149;font-weight:600;">21.5%</td></tr><tr><td><strong>Denver, US</strong></td><td>4W/61L (n=65)</td><td style="color:#f85149;font-weight:600;">6.2%</td><td>15W/50L (n=65)</td><td style="color:#f85149;font-weight:600;">23.1%</td><td>13W/52L (n=65)</td><td style="color:#f85149;font-weight:600;">20.0%</td></tr><tr><td><strong>Guangzhou, CN</strong></td><td>6W/61L (n=67)</td><td style="color:#f85149;font-weight:600;">9.0%</td><td>28W/39L (n=67)</td><td style="color:#d2991d;font-weight:600;">41.8%</td><td>18W/49L (n=67)</td><td style="color:#f85149;font-weight:600;">26.9%</td></tr><tr><td><strong>Helsinki, FI</strong></td><td>8W/59L (n=67)</td><td style="color:#f85149;font-weight:600;">11.9%</td><td>40W/27L (n=67)</td><td style="color:#d2991d;font-weight:600;">59.7%</td><td>29W/38L (n=67)</td><td style="color:#d2991d;font-weight:600;">43.3%</td></tr><tr><td><strong>Hong Kong, HK</strong></td><td>6W/61L (n=67)</td><td style="color:#f85149;font-weight:600;">9.0%</td><td>24W/43L (n=67)</td><td style="color:#f85149;font-weight:600;">35.8%</td><td>22W/45L (n=67)</td><td style="color:#f85149;font-weight:600;">32.8%</td></tr><tr><td><strong>Houston, US</strong></td><td>11W/54L (n=65)</td><td style="color:#f85149;font-weight:600;">16.9%</td><td>15W/50L (n=65)</td><td style="color:#f85149;font-weight:600;">23.1%</td><td>18W/47L (n=65)</td><td style="color:#f85149;font-weight:600;">27.7%</td></tr><tr><td><strong>Istanbul, TR</strong></td><td>0W/67L (n=67)</td><td style="color:#f85149;font-weight:600;">0.0%</td><td>36W/31L (n=67)</td><td style="color:#d2991d;font-weight:600;">53.7%</td><td>20W/47L (n=67)</td><td style="color:#f85149;font-weight:600;">29.9%</td></tr><tr><td><strong>Jeddah, SA</strong></td><td>1W/66L (n=67)</td><td style="color:#f85149;font-weight:600;">1.5%</td><td>23W/44L (n=67)</td><td style="color:#f85149;font-weight:600;">34.3%</td><td>29W/38L (n=67)</td><td style="color:#d2991d;font-weight:600;">43.3%</td></tr><tr><td><strong>Jinan, CN</strong></td><td>45W/4L (n=49)</td><td style="color:#3fb950;font-weight:600;">91.8%</td><td>47W/2L (n=49)</td><td style="color:#3fb950;font-weight:600;">95.9%</td><td>45W/4L (n=49)</td><td style="color:#3fb950;font-weight:600;">91.8%</td></tr><tr><td><strong>Karachi, PK</strong></td><td>1W/66L (n=67)</td><td style="color:#f85149;font-weight:600;">1.5%</td><td>30W/37L (n=67)</td><td style="color:#d2991d;font-weight:600;">44.8%</td><td>27W/40L (n=67)</td><td style="color:#d2991d;font-weight:600;">40.3%</td></tr><tr><td><strong>Kuala Lumpur, MY</strong></td><td>0W/67L (n=67)</td><td style="color:#f85149;font-weight:600;">0.0%</td><td>30W/37L (n=67)</td><td style="color:#d2991d;font-weight:600;">44.8%</td><td>8W/59L (n=67)</td><td style="color:#f85149;font-weight:600;">11.9%</td></tr><tr><td><strong>London, UK</strong></td><td>11W/56L (n=67)</td><td style="color:#f85149;font-weight:600;">16.4%</td><td>34W/33L (n=67)</td><td style="color:#d2991d;font-weight:600;">50.7%</td><td>27W/40L (n=67)</td><td style="color:#d2991d;font-weight:600;">40.3%</td></tr><tr><td><strong>Los Angeles, US</strong></td><td>14W/51L (n=65)</td><td style="color:#f85149;font-weight:600;">21.5%</td><td>22W/43L (n=65)</td><td style="color:#f85149;font-weight:600;">33.8%</td><td>13W/52L (n=65)</td><td style="color:#f85149;font-weight:600;">20.0%</td></tr><tr><td><strong>Lucknow, IN</strong></td><td>10W/57L (n=67)</td><td style="color:#f85149;font-weight:600;">14.9%</td><td>43W/24L (n=67)</td><td style="color:#3fb950;font-weight:600;">64.2%</td><td>35W/32L (n=67)</td><td style="color:#d2991d;font-weight:600;">52.2%</td></tr><tr><td><strong>Madrid, ES</strong></td><td>1W/65L (n=66)</td><td style="color:#f85149;font-weight:600;">1.5%</td><td>36W/30L (n=66)</td><td style="color:#d2991d;font-weight:600;">54.5%</td><td>19W/47L (n=66)</td><td style="color:#f85149;font-weight:600;">28.8%</td></tr><tr><td><strong>Manila, PH</strong></td><td>4W/63L (n=67)</td><td style="color:#f85149;font-weight:600;">6.0%</td><td>27W/40L (n=67)</td><td style="color:#d2991d;font-weight:600;">40.3%</td><td>21W/46L (n=67)</td><td style="color:#f85149;font-weight:600;">31.3%</td></tr><tr><td><strong>Mexico City, MX</strong></td><td>25W/40L (n=65)</td><td style="color:#f85149;font-weight:600;">38.5%</td><td>32W/33L (n=65)</td><td style="color:#d2991d;font-weight:600;">49.2%</td><td>24W/41L (n=65)</td><td style="color:#f85149;font-weight:600;">36.9%</td></tr><tr><td><strong>Miami, US</strong></td><td>5W/61L (n=66)</td><td style="color:#f85149;font-weight:600;">7.6%</td><td>5W/61L (n=66)</td><td style="color:#f85149;font-weight:600;">7.6%</td><td>3W/63L (n=66)</td><td style="color:#f85149;font-weight:600;">4.5%</td></tr><tr><td><strong>Milan, IT</strong></td><td>6W/61L (n=67)</td><td style="color:#f85149;font-weight:600;">9.0%</td><td>28W/39L (n=67)</td><td style="color:#d2991d;font-weight:600;">41.8%</td><td>27W/40L (n=67)</td><td style="color:#d2991d;font-weight:600;">40.3%</td></tr><tr><td><strong>Moscow, RU</strong></td><td>14W/52L (n=66)</td><td style="color:#f85149;font-weight:600;">21.2%</td><td>28W/38L (n=66)</td><td style="color:#d2991d;font-weight:600;">42.4%</td><td>24W/42L (n=66)</td><td style="color:#f85149;font-weight:600;">36.4%</td></tr><tr><td><strong>Munich, DE</strong></td><td>12W/54L (n=66)</td><td style="color:#f85149;font-weight:600;">18.2%</td><td>28W/38L (n=66)</td><td style="color:#d2991d;font-weight:600;">42.4%</td><td>22W/44L (n=66)</td><td style="color:#f85149;font-weight:600;">33.3%</td></tr><tr><td><strong>New York, US</strong></td><td>16W/50L (n=66)</td><td style="color:#f85149;font-weight:600;">24.2%</td><td>32W/34L (n=66)</td><td style="color:#d2991d;font-weight:600;">48.5%</td><td>23W/43L (n=66)</td><td style="color:#f85149;font-weight:600;">34.8%</td></tr><tr><td><strong>Panama City, PA</strong></td><td>6W/59L (n=65)</td><td style="color:#f85149;font-weight:600;">9.2%</td><td>31W/34L (n=65)</td><td style="color:#d2991d;font-weight:600;">47.7%</td><td>13W/52L (n=65)</td><td style="color:#f85149;font-weight:600;">20.0%</td></tr><tr><td><strong>Paris, FR</strong></td><td>4W/62L (n=66)</td><td style="color:#f85149;font-weight:600;">6.1%</td><td>15W/51L (n=66)</td><td style="color:#f85149;font-weight:600;">22.7%</td><td>22W/44L (n=66)</td><td style="color:#f85149;font-weight:600;">33.3%</td></tr><tr><td><strong>Qingdao, CN</strong></td><td>1W/66L (n=67)</td><td style="color:#f85149;font-weight:600;">1.5%</td><td>29W/38L (n=67)</td><td style="color:#d2991d;font-weight:600;">43.3%</td><td>21W/46L (n=67)</td><td style="color:#f85149;font-weight:600;">31.3%</td></tr><tr><td><strong>San Francisco, US</strong></td><td>1W/64L (n=65)</td><td style="color:#f85149;font-weight:600;">1.5%</td><td>12W/53L (n=65)</td><td style="color:#f85149;font-weight:600;">18.5%</td><td>10W/55L (n=65)</td><td style="color:#f85149;font-weight:600;">15.4%</td></tr><tr><td><strong>Sao Paulo, BR</strong></td><td>12W/54L (n=66)</td><td style="color:#f85149;font-weight:600;">18.2%</td><td>17W/49L (n=66)</td><td style="color:#f85149;font-weight:600;">25.8%</td><td>16W/50L (n=66)</td><td style="color:#f85149;font-weight:600;">24.2%</td></tr><tr><td><strong>Seattle, US</strong></td><td>2W/64L (n=66)</td><td style="color:#f85149;font-weight:600;">3.0%</td><td>23W/43L (n=66)</td><td style="color:#f85149;font-weight:600;">34.8%</td><td>16W/50L (n=66)</td><td style="color:#f85149;font-weight:600;">24.2%</td></tr><tr><td><strong>Seoul (Incheon), KR</strong></td><td>9W/58L (n=67)</td><td style="color:#f85149;font-weight:600;">13.4%</td><td>30W/37L (n=67)</td><td style="color:#d2991d;font-weight:600;">44.8%</td><td>26W/41L (n=67)</td><td style="color:#f85149;font-weight:600;">38.8%</td></tr><tr><td><strong>Shanghai, CN</strong></td><td>5W/62L (n=67)</td><td style="color:#f85149;font-weight:600;">7.5%</td><td>17W/50L (n=67)</td><td style="color:#f85149;font-weight:600;">25.4%</td><td>9W/58L (n=67)</td><td style="color:#f85149;font-weight:600;">13.4%</td></tr><tr><td><strong>Shenzhen, CN</strong></td><td>20W/47L (n=67)</td><td style="color:#f85149;font-weight:600;">29.9%</td><td>27W/40L (n=67)</td><td style="color:#d2991d;font-weight:600;">40.3%</td><td>24W/43L (n=67)</td><td style="color:#f85149;font-weight:600;">35.8%</td></tr><tr><td><strong>Singapore, SG</strong></td><td>1W/66L (n=67)</td><td style="color:#f85149;font-weight:600;">1.5%</td><td>40W/27L (n=67)</td><td style="color:#d2991d;font-weight:600;">59.7%</td><td>12W/55L (n=67)</td><td style="color:#f85149;font-weight:600;">17.9%</td></tr><tr><td><strong>Taipei, TW</strong></td><td>2W/65L (n=67)</td><td style="color:#f85149;font-weight:600;">3.0%</td><td>20W/47L (n=67)</td><td style="color:#f85149;font-weight:600;">29.9%</td><td>20W/47L (n=67)</td><td style="color:#f85149;font-weight:600;">29.9%</td></tr><tr><td><strong>Tel Aviv, IL</strong></td><td>32W/35L (n=67)</td><td style="color:#d2991d;font-weight:600;">47.8%</td><td>37W/30L (n=67)</td><td style="color:#d2991d;font-weight:600;">55.2%</td><td>20W/47L (n=67)</td><td style="color:#f85149;font-weight:600;">29.9%</td></tr><tr><td><strong>Tokyo, JP</strong></td><td>24W/43L (n=67)</td><td style="color:#f85149;font-weight:600;">35.8%</td><td>28W/39L (n=67)</td><td style="color:#d2991d;font-weight:600;">41.8%</td><td>22W/45L (n=67)</td><td style="color:#f85149;font-weight:600;">32.8%</td></tr><tr><td><strong>Toronto, CA</strong></td><td>3W/64L (n=67)</td><td style="color:#f85149;font-weight:600;">4.5%</td><td>34W/33L (n=67)</td><td style="color:#d2991d;font-weight:600;">50.7%</td><td>30W/37L (n=67)</td><td style="color:#d2991d;font-weight:600;">44.8%</td></tr><tr><td><strong>Warsaw, PL</strong></td><td>11W/56L (n=67)</td><td style="color:#f85149;font-weight:600;">16.4%</td><td>32W/35L (n=67)</td><td style="color:#d2991d;font-weight:600;">47.8%</td><td>33W/34L (n=67)</td><td style="color:#d2991d;font-weight:600;">49.3%</td></tr><tr><td><strong>Wellington, NZ</strong></td><td>18W/48L (n=66)</td><td style="color:#f85149;font-weight:600;">27.3%</td><td>36W/30L (n=66)</td><td style="color:#d2991d;font-weight:600;">54.5%</td><td>26W/40L (n=66)</td><td style="color:#f85149;font-weight:600;">39.4%</td></tr><tr><td><strong>Wuhan, CN</strong></td><td>17W/50L (n=67)</td><td style="color:#f85149;font-weight:600;">25.4%</td><td>19W/48L (n=67)</td><td style="color:#f85149;font-weight:600;">28.4%</td><td>13W/54L (n=67)</td><td style="color:#f85149;font-weight:600;">19.4%</td></tr><tr><td><strong>Zhengzhou, CN</strong></td><td>8W/43L (n=51)</td><td style="color:#f85149;font-weight:600;">15.7%</td><td>25W/26L (n=51)</td><td style="color:#d2991d;font-weight:600;">49.0%</td><td>19W/32L (n=51)</td><td style="color:#f85149;font-weight:600;">37.3%</td></tr></tbody>
      </table>
      </div>
    </div>
@@ -376,7 +376,7 @@ function sortTable(colIdx) {
   <!-- AVGJORTE RESULTATER -->
   
    <div class="section">
-      <h2>📊 AVGJORTE RESULTATER (51 byer, 2026-10-10)</h2>
+      <h2>📊 AVGJORTE RESULTATER (51 byer, 2026-10-16)</h2>
       <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
         Kun siste dag vises (alle dager logges). ✅ WIN = vår bøtte == Polymarkets resolusjon.
         📡 = vår live peak | Marked = Polymarket utfall | ⚠️ Avvik = stasjonsfeil hvis >2°C
@@ -387,262 +387,185 @@ function sortTable(colIdx) {
        <tbody>
                 <tr>
                     <td><strong>Amsterdam, NL</strong></td>
-                    <td>15°C</td>
-                    <td>❌ LOSS (14.2°C)</td>
-                    <td>15°C</td>
-                    <td>❌ LOSS</td>
-                    <td>15°C</td>
-                    <td>❌ LOSS</td>
-                    <td>14°C</td>
-                    <td><span style="color:#3fb950;font-weight:600;">✅ +0.2°C</span></td>
+                    <td>18°C</td>
+                    <td>❌ LOSS (17.3°C)</td>
+                    <td>19°C</td>
+                    <td>✅ WIN</td>
+                    <td>19°C</td>
+                    <td>✅ WIN</td>
+                    <td>19.0°C</td>
+                    <td><span style="color:#d2991d;font-weight:600;">🟡 -1.7°C</span></td>
                 </tr>
                 <tr>
                     <td><strong>Ankara, TR</strong></td>
-                    <td>22°C</td>
-                    <td>❌ LOSS (23.7°C)</td>
-                    <td>24°C</td>
-                    <td>✅ WIN</td>
-                    <td>23°C</td>
+                    <td>11°C</td>
+                    <td>❌ LOSS (11.9°C)</td>
+                    <td>13°C</td>
                     <td>❌ LOSS</td>
-                    <td>24.0°C</td>
-                    <td><span style="color:#3fb950;font-weight:600;">✅ -0.3°C</span></td>
+                    <td>12°C</td>
+                    <td>✅ WIN</td>
+                    <td>12.0°C</td>
+                    <td><span style="color:#3fb950;font-weight:600;">✅ -0.1°C</span></td>
                 </tr>
                 <tr>
                     <td><strong>Atlanta, US</strong></td>
-                    <td>20°C</td>
-                    <td>⏳ ULAVKLART (23.2°C)</td>
                     <td>28°C</td>
+                    <td>⏳ ULAVKLART (28.1°C)</td>
+                    <td>32°C</td>
                     <td>⏳ ULAVKLART</td>
-                    <td>21°C</td>
+                    <td>29°C</td>
                     <td>⏳ ULAVKLART</td>
                     <td>—</td>
                     <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Austin, US</strong></td>
-                    <td>32°C</td>
-                    <td>⏳ ULAVKLART (32.0°C)</td>
-                    <td>33°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>33°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>—</td>
-                    <td>—</td>
+                    <td>24°C</td>
+                    <td>✅ WIN (24.3°C)</td>
+                    <td>26°C</td>
+                    <td>❌ LOSS</td>
+                    <td>26°C</td>
+                    <td>❌ LOSS</td>
+                    <td>74.5°F</td>
+                    <td><span style="color:#3fb950;font-weight:600;">✅ +0.7°C</span></td>
                 </tr>
                 <tr>
                     <td><strong>Beijing, CN</strong></td>
-                    <td>26°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>27°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>27°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>—</td>
-                    <td>—</td>
+                    <td>21°C</td>
+                    <td>❌ LOSS (18.9°C)</td>
+                    <td>21°C</td>
+                    <td>❌ LOSS</td>
+                    <td>21°C</td>
+                    <td>❌ LOSS</td>
+                    <td>20.0°C</td>
+                    <td><span style="color:#d2991d;font-weight:600;">🟡 -1.1°C</span></td>
                 </tr>
                 <tr>
                     <td><strong>Buenos Aires, AR</strong></td>
-                    <td>13°C</td>
-                    <td>⏳ ULAVKLART (14.9°C)</td>
-                    <td>15°C</td>
+                    <td>16°C</td>
+                    <td>⏳ ULAVKLART (15.8°C)</td>
+                    <td>17°C</td>
                     <td>⏳ ULAVKLART</td>
-                    <td>15°C</td>
+                    <td>17°C</td>
                     <td>⏳ ULAVKLART</td>
                     <td>—</td>
                     <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Busan, KR</strong></td>
-                    <td>27°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>28°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>28°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>—</td>
-                    <td>—</td>
+                    <td>25°C</td>
+                    <td>✅ WIN (24.6°C)</td>
+                    <td>26°C</td>
+                    <td>❌ LOSS</td>
+                    <td>26°C</td>
+                    <td>❌ LOSS</td>
+                    <td>25.0°C</td>
+                    <td><span style="color:#3fb950;font-weight:600;">✅ -0.4°C</span></td>
                 </tr>
                 <tr>
                     <td><strong>Cape Town, ZA</strong></td>
-                    <td>23°C</td>
+                    <td>20°C</td>
                     <td>❌ LOSS (25.4°C)</td>
-                    <td>26°C</td>
+                    <td>23°C</td>
                     <td>❌ LOSS</td>
-                    <td>25°C</td>
+                    <td>22°C</td>
                     <td>✅ WIN</td>
-                    <td>25°C</td>
-                    <td><span style="color:#3fb950;font-weight:600;">✅ +0.4°C</span></td>
+                    <td>22.0°C</td>
+                    <td><span style="color:#f85149;font-weight:600;">⚠️ +3.4°C</span></td>
                 </tr>
                 <tr>
                     <td><strong>Chengdu, CN</strong></td>
                     <td>23°C</td>
-                    <td>⏳ ULAVKLART</td>
+                    <td>❌ LOSS (23.1°C)</td>
                     <td>24°C</td>
-                    <td>⏳ ULAVKLART</td>
+                    <td>❌ LOSS</td>
                     <td>24°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>—</td>
-                    <td>—</td>
+                    <td>❌ LOSS</td>
+                    <td>21.0°C</td>
+                    <td><span style="color:#f85149;font-weight:600;">⚠️ +2.1°C</span></td>
                 </tr>
                 <tr>
                     <td><strong>Chicago, US</strong></td>
-                    <td>26°C</td>
-                    <td>⏳ ULAVKLART (24.8°C)</td>
-                    <td>26°C</td>
+                    <td>15°C</td>
+                    <td>⏳ ULAVKLART (14.5°C)</td>
+                    <td>15°C</td>
                     <td>⏳ ULAVKLART</td>
-                    <td>27°C</td>
+                    <td>16°C</td>
                     <td>⏳ ULAVKLART</td>
                     <td>—</td>
                     <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Chongqing, CN</strong></td>
-                    <td>25°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>27°C</td>
-                    <td>⏳ ULAVKLART</td>
+                    <td>23°C</td>
+                    <td>❌ LOSS (25.4°C)</td>
                     <td>26°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>—</td>
-                    <td>—</td>
+                    <td>❌ LOSS</td>
+                    <td>25°C</td>
+                    <td>❌ LOSS</td>
+                    <td>24.0°C</td>
+                    <td><span style="color:#d2991d;font-weight:600;">🟡 +1.4°C</span></td>
                 </tr>
                 <tr>
                     <td><strong>Dallas, US</strong></td>
-                    <td>30°C</td>
-                    <td>⏳ ULAVKLART (30.1°C)</td>
-                    <td>29°C</td>
+                    <td>21°C</td>
                     <td>⏳ ULAVKLART</td>
-                    <td>31°C</td>
+                    <td>18°C</td>
+                    <td>⏳ ULAVKLART</td>
+                    <td>21°C</td>
                     <td>⏳ ULAVKLART</td>
                     <td>—</td>
                     <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Denver, US</strong></td>
-                    <td>27°C</td>
-                    <td>⏳ ULAVKLART (28.2°C)</td>
-                    <td>29°C</td>
+                    <td>12°C</td>
                     <td>⏳ ULAVKLART</td>
-                    <td>28°C</td>
+                    <td>14°C</td>
+                    <td>⏳ ULAVKLART</td>
+                    <td>13°C</td>
                     <td>⏳ ULAVKLART</td>
                     <td>—</td>
                     <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Guangzhou, CN</strong></td>
-                    <td>32°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>34°C</td>
-                    <td>⏳ ULAVKLART</td>
+                    <td>31°C</td>
+                    <td>❌ LOSS</td>
                     <td>33°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>—</td>
+                    <td>✅ WIN</td>
+                    <td>32°C</td>
+                    <td>❌ LOSS</td>
+                    <td>33.0°C</td>
                     <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Helsinki, FI</strong></td>
-                    <td>8°C</td>
+                    <td>12°C</td>
                     <td>❌ LOSS</td>
-                    <td>9°C</td>
+                    <td>13°C</td>
                     <td>✅ WIN</td>
-                    <td>9°C</td>
+                    <td>13°C</td>
                     <td>✅ WIN</td>
-                    <td>9.0°C</td>
+                    <td>13°C</td>
                     <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Hong Kong, HK</strong></td>
+                    <td>28°C</td>
+                    <td>❌ LOSS (29.5°C)</td>
+                    <td>30°C</td>
+                    <td>❌ LOSS</td>
                     <td>29°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>30°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>30°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>—</td>
-                    <td>—</td>
+                    <td>✅ WIN</td>
+                    <td>29°C</td>
+                    <td><span style="color:#3fb950;font-weight:600;">✅ +0.5°C</span></td>
                 </tr>
                 <tr>
                     <td><strong>Houston, US</strong></td>
-                    <td>31°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>31°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>31°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Istanbul, TR</strong></td>
-                    <td>21°C</td>
-                    <td>❌ LOSS (26.7°C)</td>
-                    <td>25°C</td>
-                    <td>❌ LOSS</td>
-                    <td>24°C</td>
-                    <td>❌ LOSS</td>
-                    <td>27.0°C</td>
-                    <td><span style="color:#3fb950;font-weight:600;">✅ -0.3°C</span></td>
-                </tr>
-                <tr>
-                    <td><strong>Jeddah, SA</strong></td>
-                    <td>32°C</td>
-                    <td>❌ LOSS (35.2°C)</td>
-                    <td>35°C</td>
-                    <td>✅ WIN</td>
-                    <td>34°C</td>
-                    <td>❌ LOSS</td>
-                    <td>35.0°C</td>
-                    <td><span style="color:#3fb950;font-weight:600;">✅ +0.2°C</span></td>
-                </tr>
-                <tr>
-                    <td><strong>Jinan, CN</strong></td>
-                    <td>29°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>28°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>29°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>Karachi, PK</strong></td>
-                    <td>31°C</td>
-                    <td>❌ LOSS (33.0°C)</td>
-                    <td>32°C</td>
-                    <td>❌ LOSS</td>
-                    <td>32°C</td>
-                    <td>❌ LOSS</td>
-                    <td>33.0°C</td>
-                    <td><span style="color:#3fb950;font-weight:600;">✅ +0.0°C</span></td>
-                </tr>
-                <tr>
-                    <td><strong>Kuala Lumpur, MY</strong></td>
-                    <td>29°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>33°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>31°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>—</td>
-                    <td>—</td>
-                </tr>
-                <tr>
-                    <td><strong>London, UK</strong></td>
-                    <td>15°C</td>
-                    <td>❌ LOSS (14.9°C)</td>
-                    <td>15°C</td>
-                    <td>❌ LOSS</td>
-                    <td>15°C</td>
-                    <td>❌ LOSS</td>
-                    <td>16°C</td>
-                    <td><span style="color:#d2991d;font-weight:600;">🟡 -1.1°C</span></td>
-                </tr>
-                <tr>
-                    <td><strong>Los Angeles, US</strong></td>
                     <td>26°C</td>
-                    <td>⏳ ULAVKLART (25.0°C)</td>
-                    <td>25°C</td>
+                    <td>⏳ ULAVKLART (25.4°C)</td>
+                    <td>27°C</td>
                     <td>⏳ ULAVKLART</td>
                     <td>27°C</td>
                     <td>⏳ ULAVKLART</td>
@@ -650,43 +573,120 @@ function sortTable(colIdx) {
                     <td>—</td>
                 </tr>
                 <tr>
-                    <td><strong>Lucknow, IN</strong></td>
+                    <td><strong>Istanbul, TR</strong></td>
+                    <td>13°C</td>
+                    <td>❌ LOSS (14.0°C)</td>
+                    <td>15°C</td>
+                    <td>❌ LOSS</td>
+                    <td>14°C</td>
+                    <td>✅ WIN</td>
+                    <td>14°C</td>
+                    <td><span style="color:#3fb950;font-weight:600;">✅ +0.0°C</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Jeddah, SA</strong></td>
+                    <td>32°C</td>
+                    <td>❌ LOSS (35.2°C)</td>
+                    <td>35°C</td>
+                    <td>❌ LOSS</td>
+                    <td>34°C</td>
+                    <td>✅ WIN</td>
+                    <td>34.0°C</td>
+                    <td><span style="color:#d2991d;font-weight:600;">🟡 +1.2°C</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Jinan, CN</strong></td>
+                    <td>27°C</td>
+                    <td>⏳ ULAVKLART (28.2°C)</td>
+                    <td>27°C</td>
+                    <td>⏳ ULAVKLART</td>
+                    <td>27°C</td>
+                    <td>⏳ ULAVKLART</td>
+                    <td>—</td>
+                    <td>—</td>
+                </tr>
+                <tr>
+                    <td><strong>Karachi, PK</strong></td>
+                    <td>33°C</td>
+                    <td>❌ LOSS (37.0°C)</td>
+                    <td>38°C</td>
+                    <td>❌ LOSS</td>
+                    <td>35°C</td>
+                    <td>❌ LOSS</td>
+                    <td>37.0°C</td>
+                    <td><span style="color:#3fb950;font-weight:600;">✅ +0.0°C</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Kuala Lumpur, MY</strong></td>
                     <td>30°C</td>
-                    <td>✅ WIN (29.3°C)</td>
-                    <td>31°C</td>
+                    <td>❌ LOSS (34.2°C)</td>
+                    <td>34°C</td>
                     <td>❌ LOSS</td>
-                    <td>31°C</td>
+                    <td>32°C</td>
                     <td>❌ LOSS</td>
-                    <td>30.0°C</td>
-                    <td><span style="color:#3fb950;font-weight:600;">✅ -0.7°C</span></td>
+                    <td>33.0°C</td>
+                    <td><span style="color:#d2991d;font-weight:600;">🟡 +1.2°C</span></td>
+                </tr>
+                <tr>
+                    <td><strong>London, UK</strong></td>
+                    <td>16°C</td>
+                    <td>❌ LOSS (16.2°C)</td>
+                    <td>17°C</td>
+                    <td>✅ WIN</td>
+                    <td>17°C</td>
+                    <td>✅ WIN</td>
+                    <td>17°C</td>
+                    <td><span style="color:#3fb950;font-weight:600;">✅ -0.8°C</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Los Angeles, US</strong></td>
+                    <td>35°C</td>
+                    <td>⏳ ULAVKLART (35.4°C)</td>
+                    <td>29°C</td>
+                    <td>⏳ ULAVKLART</td>
+                    <td>36°C</td>
+                    <td>⏳ ULAVKLART</td>
+                    <td>—</td>
+                    <td>—</td>
+                </tr>
+                <tr>
+                    <td><strong>Lucknow, IN</strong></td>
+                    <td>31°C</td>
+                    <td>✅ WIN (30.7°C)</td>
+                    <td>31°C</td>
+                    <td>✅ WIN</td>
+                    <td>32°C</td>
+                    <td>❌ LOSS</td>
+                    <td>31.0°C</td>
+                    <td><span style="color:#3fb950;font-weight:600;">✅ -0.3°C</span></td>
                 </tr>
                 <tr>
                     <td><strong>Madrid, ES</strong></td>
-                    <td>23°C</td>
-                    <td>❌ LOSS (23.7°C)</td>
-                    <td>24°C</td>
-                    <td>❌ LOSS</td>
-                    <td>24°C</td>
-                    <td>❌ LOSS</td>
-                    <td>25.0°C</td>
-                    <td><span style="color:#d2991d;font-weight:600;">🟡 -1.3°C</span></td>
+                    <td>25°C</td>
+                    <td>⏳ ULAVKLART (25.9°C)</td>
+                    <td>27°C</td>
+                    <td>⏳ ULAVKLART</td>
+                    <td>26°C</td>
+                    <td>⏳ ULAVKLART</td>
+                    <td>—</td>
+                    <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Manila, PH</strong></td>
-                    <td>31°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>32°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>31°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>—</td>
+                    <td>33°C</td>
+                    <td>❌ LOSS</td>
+                    <td>33°C</td>
+                    <td>❌ LOSS</td>
+                    <td>33°C</td>
+                    <td>❌ LOSS</td>
+                    <td>34.0°C</td>
                     <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Mexico City, MX</strong></td>
                     <td>22°C</td>
-                    <td>⏳ ULAVKLART (20.5°C)</td>
-                    <td>21°C</td>
+                    <td>⏳ ULAVKLART</td>
+                    <td>22°C</td>
                     <td>⏳ ULAVKLART</td>
                     <td>22°C</td>
                     <td>⏳ ULAVKLART</td>
@@ -695,64 +695,64 @@ function sortTable(colIdx) {
                 </tr>
                 <tr>
                     <td><strong>Miami, US</strong></td>
-                    <td>32°C</td>
-                    <td>✅ WIN (31.5°C)</td>
-                    <td>32°C</td>
-                    <td>✅ WIN</td>
-                    <td>32°C</td>
-                    <td>✅ WIN</td>
-                    <td>90.5°F</td>
-                    <td><span style="color:#3fb950;font-weight:600;">✅ -1.0°C</span></td>
+                    <td>30°C</td>
+                    <td>⏳ ULAVKLART</td>
+                    <td>31°C</td>
+                    <td>⏳ ULAVKLART</td>
+                    <td>31°C</td>
+                    <td>⏳ ULAVKLART</td>
+                    <td>—</td>
+                    <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Milan, IT</strong></td>
                     <td>20°C</td>
-                    <td>❌ LOSS (19.8°C)</td>
+                    <td>✅ WIN</td>
+                    <td>23°C</td>
+                    <td>❌ LOSS</td>
                     <td>22°C</td>
                     <td>❌ LOSS</td>
-                    <td>21°C</td>
-                    <td>✅ WIN</td>
-                    <td>21.0°C</td>
-                    <td><span style="color:#d2991d;font-weight:600;">🟡 -1.2°C</span></td>
+                    <td>20.0°C</td>
+                    <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Moscow, RU</strong></td>
-                    <td>11°C</td>
-                    <td>❌ LOSS</td>
-                    <td>11°C</td>
-                    <td>❌ LOSS</td>
-                    <td>11°C</td>
-                    <td>❌ LOSS</td>
-                    <td>10.0°C</td>
+                    <td>14°C</td>
+                    <td>⏳ ULAVKLART (16.2°C)</td>
+                    <td>15°C</td>
+                    <td>⏳ ULAVKLART</td>
+                    <td>15°C</td>
+                    <td>⏳ ULAVKLART</td>
+                    <td>—</td>
                     <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Munich, DE</strong></td>
-                    <td>14°C</td>
-                    <td>❌ LOSS</td>
-                    <td>14°C</td>
-                    <td>❌ LOSS</td>
-                    <td>14°C</td>
-                    <td>❌ LOSS</td>
-                    <td>13.0°C</td>
+                    <td>18°C</td>
+                    <td>⏳ ULAVKLART (17.1°C)</td>
+                    <td>19°C</td>
+                    <td>⏳ ULAVKLART</td>
+                    <td>19°C</td>
+                    <td>⏳ ULAVKLART</td>
+                    <td>—</td>
                     <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>New York, US</strong></td>
-                    <td>20°C</td>
+                    <td>23°C</td>
+                    <td>⏳ ULAVKLART (24.9°C)</td>
+                    <td>23°C</td>
                     <td>⏳ ULAVKLART</td>
-                    <td>20°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>21°C</td>
+                    <td>23°C</td>
                     <td>⏳ ULAVKLART</td>
                     <td>—</td>
                     <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Panama City, PA</strong></td>
-                    <td>31°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>33°C</td>
+                    <td>32°C</td>
+                    <td>⏳ ULAVKLART (32.2°C)</td>
+                    <td>34°C</td>
                     <td>⏳ ULAVKLART</td>
                     <td>33°C</td>
                     <td>⏳ ULAVKLART</td>
@@ -761,187 +761,187 @@ function sortTable(colIdx) {
                 </tr>
                 <tr>
                     <td><strong>Paris, FR</strong></td>
-                    <td>17°C</td>
-                    <td>❌ LOSS (16.6°C)</td>
-                    <td>16°C</td>
-                    <td>❌ LOSS</td>
-                    <td>17°C</td>
-                    <td>❌ LOSS</td>
-                    <td>18.0°C</td>
-                    <td><span style="color:#d2991d;font-weight:600;">🟡 -1.4°C</span></td>
+                    <td>20°C</td>
+                    <td>⏳ ULAVKLART (21.4°C)</td>
+                    <td>21°C</td>
+                    <td>⏳ ULAVKLART</td>
+                    <td>22°C</td>
+                    <td>⏳ ULAVKLART</td>
+                    <td>—</td>
+                    <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Qingdao, CN</strong></td>
+                    <td>23°C</td>
+                    <td>❌ LOSS (25.2°C)</td>
                     <td>25°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>27°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>26°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>—</td>
-                    <td>—</td>
+                    <td>✅ WIN</td>
+                    <td>24°C</td>
+                    <td>❌ LOSS</td>
+                    <td>25.0°C</td>
+                    <td><span style="color:#3fb950;font-weight:600;">✅ +0.2°C</span></td>
                 </tr>
                 <tr>
                     <td><strong>San Francisco, US</strong></td>
-                    <td>15°C</td>
-                    <td>⏳ ULAVKLART (17.1°C)</td>
-                    <td>18°C</td>
+                    <td>26°C</td>
+                    <td>⏳ ULAVKLART (32.8°C)</td>
+                    <td>30°C</td>
                     <td>⏳ ULAVKLART</td>
-                    <td>16°C</td>
+                    <td>29°C</td>
                     <td>⏳ ULAVKLART</td>
                     <td>—</td>
                     <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Sao Paulo, BR</strong></td>
-                    <td>28°C</td>
-                    <td>⏳ ULAVKLART (29.2°C)</td>
-                    <td>29°C</td>
+                    <td>24°C</td>
+                    <td>⏳ ULAVKLART (25.5°C)</td>
+                    <td>25°C</td>
                     <td>⏳ ULAVKLART</td>
-                    <td>29°C</td>
+                    <td>25°C</td>
                     <td>⏳ ULAVKLART</td>
                     <td>—</td>
                     <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Seattle, US</strong></td>
-                    <td>13°C</td>
-                    <td>⏳ ULAVKLART (13.1°C)</td>
-                    <td>14°C</td>
+                    <td>21°C</td>
+                    <td>⏳ ULAVKLART (24.7°C)</td>
+                    <td>23°C</td>
                     <td>⏳ ULAVKLART</td>
-                    <td>13°C</td>
+                    <td>22°C</td>
                     <td>⏳ ULAVKLART</td>
                     <td>—</td>
                     <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Seoul (Incheon), KR</strong></td>
-                    <td>23°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>24°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>25°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>—</td>
-                    <td>—</td>
+                    <td>21°C</td>
+                    <td>❌ LOSS (21.2°C)</td>
+                    <td>21°C</td>
+                    <td>❌ LOSS</td>
+                    <td>22°C</td>
+                    <td>❌ LOSS</td>
+                    <td>23.0°C</td>
+                    <td><span style="color:#d2991d;font-weight:600;">🟡 -1.8°C</span></td>
                 </tr>
                 <tr>
                     <td><strong>Shanghai, CN</strong></td>
                     <td>24°C</td>
-                    <td>⏳ ULAVKLART</td>
+                    <td>❌ LOSS (26.0°C)</td>
                     <td>23°C</td>
-                    <td>⏳ ULAVKLART</td>
+                    <td>❌ LOSS</td>
                     <td>25°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>—</td>
-                    <td>—</td>
+                    <td>✅ WIN</td>
+                    <td>25.0°C</td>
+                    <td><span style="color:#3fb950;font-weight:600;">✅ +1.0°C</span></td>
                 </tr>
                 <tr>
                     <td><strong>Shenzhen, CN</strong></td>
+                    <td>30°C</td>
+                    <td>✅ WIN (32.3°C)</td>
+                    <td>32°C</td>
+                    <td>❌ LOSS</td>
                     <td>31°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>32°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>32°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>—</td>
-                    <td>—</td>
+                    <td>❌ LOSS</td>
+                    <td>30.0°C</td>
+                    <td><span style="color:#f85149;font-weight:600;">⚠️ +2.3°C</span></td>
                 </tr>
                 <tr>
                     <td><strong>Singapore, SG</strong></td>
-                    <td>30°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>33°C</td>
-                    <td>⏳ ULAVKLART</td>
                     <td>31°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>—</td>
+                    <td>❌ LOSS</td>
+                    <td>33°C</td>
+                    <td>✅ WIN</td>
+                    <td>32°C</td>
+                    <td>❌ LOSS</td>
+                    <td>33.0°C</td>
                     <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Taipei, TW</strong></td>
-                    <td>29°C</td>
-                    <td>⏳ ULAVKLART</td>
                     <td>31°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>30°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>—</td>
-                    <td>—</td>
+                    <td>❌ LOSS (32.0°C)</td>
+                    <td>34°C</td>
+                    <td>❌ LOSS</td>
+                    <td>33°C</td>
+                    <td>✅ WIN</td>
+                    <td>33.0°C</td>
+                    <td><span style="color:#3fb950;font-weight:600;">✅ -1.0°C</span></td>
                 </tr>
                 <tr>
                     <td><strong>Tel Aviv, IL</strong></td>
-                    <td>30°C</td>
-                    <td>❌ LOSS (30.6°C)</td>
-                    <td>29°C</td>
-                    <td>✅ WIN</td>
-                    <td>30°C</td>
+                    <td>26°C</td>
+                    <td>❌ LOSS (26.2°C)</td>
+                    <td>26°C</td>
                     <td>❌ LOSS</td>
-                    <td>29.0°C</td>
-                    <td><span style="color:#d2991d;font-weight:600;">🟡 +1.6°C</span></td>
+                    <td>26°C</td>
+                    <td>❌ LOSS</td>
+                    <td>27.0°C</td>
+                    <td><span style="color:#3fb950;font-weight:600;">✅ -0.8°C</span></td>
                 </tr>
                 <tr>
                     <td><strong>Tokyo, JP</strong></td>
                     <td>26°C</td>
-                    <td>⏳ ULAVKLART</td>
+                    <td>❌ LOSS (25.7°C)</td>
                     <td>26°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>27°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>—</td>
-                    <td>—</td>
+                    <td>❌ LOSS</td>
+                    <td>26°C</td>
+                    <td>❌ LOSS</td>
+                    <td>25.0°C</td>
+                    <td><span style="color:#3fb950;font-weight:600;">✅ +0.7°C</span></td>
                 </tr>
                 <tr>
                     <td><strong>Toronto, CA</strong></td>
-                    <td>15°C</td>
-                    <td>⏳ ULAVKLART (15.7°C)</td>
-                    <td>16°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>16°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>—</td>
+                    <td>17°C</td>
+                    <td>✅ WIN (18.9°C)</td>
+                    <td>18°C</td>
+                    <td>✅ WIN</td>
+                    <td>18°C</td>
+                    <td>✅ WIN</td>
+                    <td>16°C or higher</td>
                     <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Warsaw, PL</strong></td>
-                    <td>14°C</td>
-                    <td>❌ LOSS</td>
-                    <td>14°C</td>
-                    <td>❌ LOSS</td>
-                    <td>15°C</td>
-                    <td>❌ LOSS</td>
                     <td>13°C</td>
+                    <td>❌ LOSS</td>
+                    <td>14°C</td>
+                    <td>✅ WIN</td>
+                    <td>14°C</td>
+                    <td>✅ WIN</td>
+                    <td>14°C or higher</td>
                     <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Wellington, NZ</strong></td>
-                    <td>16°C</td>
+                    <td>12°C</td>
                     <td>⏳ ULAVKLART</td>
-                    <td>17°C</td>
+                    <td>13°C</td>
                     <td>⏳ ULAVKLART</td>
-                    <td>17°C</td>
+                    <td>13°C</td>
                     <td>⏳ ULAVKLART</td>
                     <td>—</td>
                     <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Wuhan, CN</strong></td>
-                    <td>29°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>30°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>30°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>—</td>
+                    <td>24°C</td>
+                    <td>❌ LOSS</td>
+                    <td>25°C</td>
+                    <td>❌ LOSS</td>
+                    <td>24°C</td>
+                    <td>❌ LOSS</td>
+                    <td>23.0°C</td>
                     <td>—</td>
                 </tr>
                 <tr>
                     <td><strong>Zhengzhou, CN</strong></td>
-                    <td>27°C</td>
+                    <td>23°C</td>
+                    <td>⏳ ULAVKLART (24.1°C)</td>
+                    <td>24°C</td>
                     <td>⏳ ULAVKLART</td>
-                    <td>28°C</td>
-                    <td>⏳ ULAVKLART</td>
-                    <td>28°C</td>
+                    <td>24°C</td>
                     <td>⏳ ULAVKLART</td>
                     <td>—</td>
                     <td>—</td>
@@ -962,30 +962,30 @@ function sortTable(colIdx) {
       </p>
       <div class="card-grid" style="margin-bottom: 16px;">
         <div class="card">
-          <div class="value" style="color: var(--blue);">2827</div>
+          <div class="value" style="color: var(--blue);">3083</div>
           <div class="label">Samples</div>
         </div>
         <div class="card">
-          <div class="value" style="color: var(--purple);">-0.48</div>
+          <div class="value" style="color: var(--purple);">-0.46</div>
           <div class="label">Bias (snitt avvik °C)</div>
         </div>
         <div class="card">
-          <div class="value">+1.02</div>
+          <div class="value">+1.01</div>
           <div class="label">MAE °C</div>
         </div>
         <div class="card">
-          <div class="value">+1.30</div>
+          <div class="value">+1.29</div>
           <div class="label">RMSE °C</div>
         </div>
         <div class="card">
-          <div class="value">+1.21</div>
+          <div class="value">+1.20</div>
           <div class="label">Std °C</div>
         </div>
       </div>
       <div style="max-height: 640px; overflow-y: auto;">
       <table>
         <thead><tr><th>By</th><th>n</th><th>Bias °C</th><th>MAE °C</th><th>RMSE °C</th><th>Std °C</th><th>Flagg</th></tr></thead>
-        <tbody><tr><td><strong>Taipei, TW</strong></td><td>55</td><td>-1.58</td><td>+1.66</td><td>+1.91</td><td>+1.08</td><td></td></tr><tr><td><strong>Munich, DE</strong></td><td>56</td><td>-1.54</td><td>+1.60</td><td>+1.88</td><td>+1.09</td><td></td></tr><tr><td><strong>Guangzhou, CN</strong></td><td>53</td><td>-1.35</td><td>+1.46</td><td>+1.76</td><td>+1.14</td><td></td></tr><tr><td><strong>Busan, KR</strong></td><td>55</td><td>-1.32</td><td>+1.33</td><td>+1.59</td><td>+0.89</td><td></td></tr><tr><td><strong>Beijing, CN</strong></td><td>54</td><td>-1.14</td><td>+1.31</td><td>+1.60</td><td>+1.14</td><td></td></tr><tr><td><strong>Panama City, PA</strong></td><td>50</td><td>-1.04</td><td>+1.21</td><td>+1.53</td><td>+1.13</td><td></td></tr><tr><td><strong>Chengdu, CN</strong></td><td>54</td><td>-1.01</td><td>+1.64</td><td>+1.94</td><td>+1.67</td><td></td></tr><tr><td><strong>Zhengzhou, CN</strong></td><td>37</td><td>-0.96</td><td>+1.43</td><td>+1.67</td><td>+1.38</td><td></td></tr><tr><td><strong>Mexico City, MX</strong></td><td>55</td><td>-0.91</td><td>+1.31</td><td>+1.50</td><td>+1.20</td><td></td></tr><tr><td><strong>Houston, US</strong></td><td>55</td><td>-0.89</td><td>+1.08</td><td>+1.38</td><td>+1.06</td><td></td></tr><tr><td><strong>Paris, FR</strong></td><td>60</td><td>-0.89</td><td>+0.98</td><td>+1.14</td><td>+0.72</td><td><span style="color:#f85149;font-weight:700;">⚠️ stasjonsbias</span></td></tr><tr><td><strong>Warsaw, PL</strong></td><td>58</td><td>-0.88</td><td>+1.02</td><td>+1.20</td><td>+0.83</td><td></td></tr><tr><td><strong>Wellington, NZ</strong></td><td>53</td><td>-0.87</td><td>+0.91</td><td>+1.13</td><td>+0.72</td><td><span style="color:#f85149;font-weight:700;">⚠️ stasjonsbias</span></td></tr><tr><td><strong>Milan, IT</strong></td><td>60</td><td>-0.83</td><td>+0.98</td><td>+1.16</td><td>+0.81</td><td></td></tr><tr><td><strong>Austin, US</strong></td><td>59</td><td>-0.80</td><td>+1.16</td><td>+1.44</td><td>+1.21</td><td></td></tr><tr><td><strong>Amsterdam, NL</strong></td><td>61</td><td>-0.79</td><td>+0.87</td><td>+1.11</td><td>+0.78</td><td></td></tr><tr><td><strong>Manila, PH</strong></td><td>54</td><td>-0.78</td><td>+1.10</td><td>+1.26</td><td>+0.99</td><td></td></tr><tr><td><strong>Miami, US</strong></td><td>61</td><td>-0.74</td><td>+1.09</td><td>+1.33</td><td>+1.11</td><td></td></tr><tr><td><strong>Seoul (Incheon), KR</strong></td><td>55</td><td>-0.73</td><td>+0.94</td><td>+1.09</td><td>+0.82</td><td></td></tr><tr><td><strong>Denver, US</strong></td><td>59</td><td>-0.70</td><td>+1.10</td><td>+1.35</td><td>+1.16</td><td></td></tr><tr><td><strong>Jeddah, SA</strong></td><td>58</td><td>+0.69</td><td>+0.90</td><td>+1.11</td><td>+0.88</td><td></td></tr><tr><td><strong>Lucknow, IN</strong></td><td>56</td><td>-0.68</td><td>+0.84</td><td>+1.01</td><td>+0.75</td><td></td></tr><tr><td><strong>Chicago, US</strong></td><td>59</td><td>-0.68</td><td>+1.21</td><td>+1.59</td><td>+1.45</td><td></td></tr><tr><td><strong>Madrid, ES</strong></td><td>60</td><td>-0.63</td><td>+0.90</td><td>+1.12</td><td>+0.93</td><td></td></tr><tr><td><strong>San Francisco, US</strong></td><td>58</td><td>+0.63</td><td>+1.45</td><td>+1.95</td><td>+1.86</td><td></td></tr><tr><td><strong>London, UK</strong></td><td>60</td><td>-0.58</td><td>+0.96</td><td>+1.16</td><td>+1.02</td><td></td></tr><tr><td><strong>Hong Kong, HK</strong></td><td>50</td><td>-0.57</td><td>+0.99</td><td>+1.25</td><td>+1.13</td><td></td></tr><tr><td><strong>Buenos Aires, AR</strong></td><td>59</td><td>-0.51</td><td>+0.96</td><td>+1.18</td><td>+1.07</td><td></td></tr><tr><td><strong>Tokyo, JP</strong></td><td>55</td><td>-0.45</td><td>+0.94</td><td>+1.13</td><td>+1.05</td><td></td></tr><tr><td><strong>Moscow, RU</strong></td><td>59</td><td>-0.39</td><td>+0.78</td><td>+0.97</td><td>+0.89</td><td></td></tr><tr><td><strong>Singapore, SG</strong></td><td>54</td><td>-0.32</td><td>+0.78</td><td>+1.09</td><td>+1.05</td><td></td></tr><tr><td><strong>Jinan, CN</strong></td><td>6</td><td>+0.32</td><td>+0.35</td><td>+0.47</td><td>+0.39</td><td></td></tr><tr><td><strong>Wuhan, CN</strong></td><td>53</td><td>-0.29</td><td>+1.45</td><td>+1.66</td><td>+1.65</td><td></td></tr><tr><td><strong>Los Angeles, US</strong></td><td>56</td><td>-0.28</td><td>+0.92</td><td>+1.24</td><td>+1.21</td><td></td></tr><tr><td><strong>New York, US</strong></td><td>60</td><td>-0.27</td><td>+0.76</td><td>+0.97</td><td>+0.94</td><td></td></tr><tr><td><strong>Atlanta, US</strong></td><td>60</td><td>-0.24</td><td>+0.90</td><td>+1.15</td><td>+1.13</td><td></td></tr><tr><td><strong>Sao Paulo, BR</strong></td><td>58</td><td>-0.23</td><td>+1.29</td><td>+1.58</td><td>+1.58</td><td></td></tr><tr><td><strong>Istanbul, TR</strong></td><td>61</td><td>+0.23</td><td>+0.76</td><td>+0.93</td><td>+0.91</td><td></td></tr><tr><td><strong>Cape Town, ZA</strong></td><td>58</td><td>+0.22</td><td>+0.98</td><td>+1.15</td><td>+1.14</td><td></td></tr><tr><td><strong>Ankara, TR</strong></td><td>61</td><td>-0.21</td><td>+0.81</td><td>+1.11</td><td>+1.10</td><td></td></tr><tr><td><strong>Chongqing, CN</strong></td><td>54</td><td>-0.19</td><td>+0.98</td><td>+1.21</td><td>+1.21</td><td></td></tr><tr><td><strong>Qingdao, CN</strong></td><td>54</td><td>+0.14</td><td>+0.69</td><td>+0.89</td><td>+0.89</td><td></td></tr><tr><td><strong>Seattle, US</strong></td><td>58</td><td>-0.09</td><td>+1.02</td><td>+1.32</td><td>+1.33</td><td></td></tr><tr><td><strong>Shanghai, CN</strong></td><td>55</td><td>-0.09</td><td>+0.72</td><td>+0.89</td><td>+0.89</td><td></td></tr><tr><td><strong>Shenzhen, CN</strong></td><td>55</td><td>+0.05</td><td>+0.99</td><td>+1.18</td><td>+1.19</td><td></td></tr><tr><td><strong>Tel Aviv, IL</strong></td><td>61</td><td>-0.05</td><td>+0.58</td><td>+0.77</td><td>+0.77</td><td></td></tr><tr><td><strong>Helsinki, FI</strong></td><td>56</td><td>-0.04</td><td>+0.66</td><td>+0.82</td><td>+0.83</td><td></td></tr><tr><td><strong>Kuala Lumpur, MY</strong></td><td>55</td><td>-0.03</td><td>+0.74</td><td>+0.93</td><td>+0.94</td><td></td></tr><tr><td><strong>Karachi, PK</strong></td><td>56</td><td>+0.02</td><td>+0.61</td><td>+0.77</td><td>+0.78</td><td></td></tr><tr><td><strong>Dallas, US</strong></td><td>58</td><td>-0.01</td><td>+1.05</td><td>+1.35</td><td>+1.36</td><td></td></tr><tr><td><strong>Toronto, CA</strong></td><td>60</td><td>-0.01</td><td>+0.82</td><td>+1.11</td><td>+1.12</td><td></td></tr></tbody>
+        <tbody><tr><td><strong>Taipei, TW</strong></td><td>63</td><td>-1.54</td><td>+1.61</td><td>+1.85</td><td>+1.04</td><td></td></tr><tr><td><strong>Munich, DE</strong></td><td>65</td><td>-1.45</td><td>+1.50</td><td>+1.79</td><td>+1.05</td><td></td></tr><tr><td><strong>Guangzhou, CN</strong></td><td>53</td><td>-1.35</td><td>+1.46</td><td>+1.76</td><td>+1.14</td><td></td></tr><tr><td><strong>Busan, KR</strong></td><td>63</td><td>-1.27</td><td>+1.29</td><td>+1.53</td><td>+0.85</td><td></td></tr><tr><td><strong>Beijing, CN</strong></td><td>62</td><td>-1.07</td><td>+1.26</td><td>+1.55</td><td>+1.13</td><td></td></tr><tr><td><strong>Chengdu, CN</strong></td><td>62</td><td>-0.99</td><td>+1.62</td><td>+1.93</td><td>+1.67</td><td></td></tr><tr><td><strong>Panama City, PA</strong></td><td>60</td><td>-0.99</td><td>+1.18</td><td>+1.47</td><td>+1.10</td><td></td></tr><tr><td><strong>Zhengzhou, CN</strong></td><td>37</td><td>-0.96</td><td>+1.43</td><td>+1.67</td><td>+1.38</td><td></td></tr><tr><td><strong>Mexico City, MX</strong></td><td>56</td><td>-0.92</td><td>+1.31</td><td>+1.50</td><td>+1.19</td><td></td></tr><tr><td><strong>Paris, FR</strong></td><td>65</td><td>-0.89</td><td>+0.98</td><td>+1.14</td><td>+0.71</td><td><span style="color:#f85149;font-weight:700;">⚠️ stasjonsbias</span></td></tr><tr><td><strong>Warsaw, PL</strong></td><td>58</td><td>-0.88</td><td>+1.02</td><td>+1.20</td><td>+0.83</td><td></td></tr><tr><td><strong>Wellington, NZ</strong></td><td>53</td><td>-0.87</td><td>+0.91</td><td>+1.13</td><td>+0.72</td><td><span style="color:#f85149;font-weight:700;">⚠️ stasjonsbias</span></td></tr><tr><td><strong>Milan, IT</strong></td><td>60</td><td>-0.83</td><td>+0.98</td><td>+1.16</td><td>+0.81</td><td></td></tr><tr><td><strong>Amsterdam, NL</strong></td><td>67</td><td>-0.80</td><td>+0.87</td><td>+1.10</td><td>+0.76</td><td></td></tr><tr><td><strong>Houston, US</strong></td><td>65</td><td>-0.80</td><td>+1.02</td><td>+1.31</td><td>+1.05</td><td></td></tr><tr><td><strong>Manila, PH</strong></td><td>54</td><td>-0.78</td><td>+1.10</td><td>+1.26</td><td>+0.99</td><td></td></tr><tr><td><strong>Austin, US</strong></td><td>66</td><td>-0.77</td><td>+1.11</td><td>+1.39</td><td>+1.17</td><td></td></tr><tr><td><strong>Seoul (Incheon), KR</strong></td><td>63</td><td>-0.76</td><td>+0.95</td><td>+1.12</td><td>+0.83</td><td></td></tr><tr><td><strong>Miami, US</strong></td><td>61</td><td>-0.74</td><td>+1.09</td><td>+1.33</td><td>+1.11</td><td></td></tr><tr><td><strong>Chicago, US</strong></td><td>65</td><td>-0.71</td><td>+1.19</td><td>+1.56</td><td>+1.40</td><td></td></tr><tr><td><strong>Lucknow, IN</strong></td><td>60</td><td>-0.70</td><td>+0.85</td><td>+1.02</td><td>+0.74</td><td></td></tr><tr><td><strong>Jeddah, SA</strong></td><td>63</td><td>+0.69</td><td>+0.90</td><td>+1.10</td><td>+0.87</td><td></td></tr><tr><td><strong>Denver, US</strong></td><td>60</td><td>-0.68</td><td>+1.09</td><td>+1.34</td><td>+1.16</td><td></td></tr><tr><td><strong>Madrid, ES</strong></td><td>65</td><td>-0.63</td><td>+0.88</td><td>+1.09</td><td>+0.89</td><td></td></tr><tr><td><strong>London, UK</strong></td><td>66</td><td>-0.59</td><td>+0.94</td><td>+1.15</td><td>+0.99</td><td></td></tr><tr><td><strong>San Francisco, US</strong></td><td>64</td><td>+0.57</td><td>+1.42</td><td>+1.91</td><td>+1.84</td><td></td></tr><tr><td><strong>Buenos Aires, AR</strong></td><td>65</td><td>-0.54</td><td>+0.95</td><td>+1.17</td><td>+1.05</td><td></td></tr><tr><td><strong>Hong Kong, HK</strong></td><td>61</td><td>-0.52</td><td>+0.90</td><td>+1.16</td><td>+1.05</td><td></td></tr><tr><td><strong>Cape Town, ZA</strong></td><td>64</td><td>+0.43</td><td>+1.12</td><td>+1.39</td><td>+1.34</td><td></td></tr><tr><td><strong>Singapore, SG</strong></td><td>54</td><td>-0.32</td><td>+0.78</td><td>+1.09</td><td>+1.05</td><td></td></tr><tr><td><strong>Jinan, CN</strong></td><td>6</td><td>+0.32</td><td>+0.35</td><td>+0.47</td><td>+0.39</td><td></td></tr><tr><td><strong>Moscow, RU</strong></td><td>65</td><td>-0.31</td><td>+0.79</td><td>+0.97</td><td>+0.92</td><td></td></tr><tr><td><strong>Wuhan, CN</strong></td><td>53</td><td>-0.29</td><td>+1.45</td><td>+1.66</td><td>+1.65</td><td></td></tr><tr><td><strong>Los Angeles, US</strong></td><td>62</td><td>-0.28</td><td>+0.88</td><td>+1.19</td><td>+1.17</td><td></td></tr><tr><td><strong>New York, US</strong></td><td>66</td><td>-0.28</td><td>+0.75</td><td>+0.95</td><td>+0.92</td><td></td></tr><tr><td><strong>Tokyo, JP</strong></td><td>63</td><td>-0.27</td><td>+0.94</td><td>+1.12</td><td>+1.10</td><td></td></tr><tr><td><strong>Shenzhen, CN</strong></td><td>63</td><td>+0.27</td><td>+1.09</td><td>+1.30</td><td>+1.28</td><td></td></tr><tr><td><strong>Sao Paulo, BR</strong></td><td>64</td><td>-0.24</td><td>+1.25</td><td>+1.54</td><td>+1.53</td><td></td></tr><tr><td><strong>Ankara, TR</strong></td><td>66</td><td>-0.20</td><td>+0.77</td><td>+1.07</td><td>+1.06</td><td></td></tr><tr><td><strong>Atlanta, US</strong></td><td>66</td><td>-0.19</td><td>+0.89</td><td>+1.16</td><td>+1.15</td><td></td></tr><tr><td><strong>Qingdao, CN</strong></td><td>62</td><td>+0.19</td><td>+0.70</td><td>+0.90</td><td>+0.89</td><td></td></tr><tr><td><strong>Istanbul, TR</strong></td><td>67</td><td>+0.16</td><td>+0.74</td><td>+0.92</td><td>+0.91</td><td></td></tr><tr><td><strong>Chongqing, CN</strong></td><td>62</td><td>-0.13</td><td>+1.02</td><td>+1.25</td><td>+1.26</td><td></td></tr><tr><td><strong>Shanghai, CN</strong></td><td>63</td><td>-0.10</td><td>+0.73</td><td>+0.91</td><td>+0.91</td><td></td></tr><tr><td><strong>Seattle, US</strong></td><td>64</td><td>-0.06</td><td>+0.98</td><td>+1.28</td><td>+1.28</td><td></td></tr><tr><td><strong>Kuala Lumpur, MY</strong></td><td>63</td><td>-0.05</td><td>+0.80</td><td>+1.00</td><td>+1.00</td><td></td></tr><tr><td><strong>Karachi, PK</strong></td><td>60</td><td>+0.05</td><td>+0.60</td><td>+0.76</td><td>+0.77</td><td></td></tr><tr><td><strong>Tel Aviv, IL</strong></td><td>67</td><td>-0.05</td><td>+0.57</td><td>+0.75</td><td>+0.75</td><td></td></tr><tr><td><strong>Helsinki, FI</strong></td><td>56</td><td>-0.04</td><td>+0.66</td><td>+0.82</td><td>+0.83</td><td></td></tr><tr><td><strong>Dallas, US</strong></td><td>59</td><td>-0.03</td><td>+1.05</td><td>+1.35</td><td>+1.36</td><td></td></tr><tr><td><strong>Toronto, CA</strong></td><td>66</td><td>-0.00</td><td>+0.78</td><td>+1.07</td><td>+1.08</td><td></td></tr></tbody>
       </table>
       </div>
       <p style="color:#f85149;font-size:0.85rem;margin-top:10px;">⚠️ Stasjonsbias-kandidater (|bias| ≥ 0.75 °C og std ≤ 0.75 °C): Paris, FR, Wellington, NZ</p>
@@ -1006,18 +1006,18 @@ function sortTable(colIdx) {
           <div class="label">STATION_BIAS</div>
         </div>
         <div class="card">
-          <div class="value" style="color: var(--orange);">35</div>
+          <div class="value" style="color: var(--orange);">36</div>
           <div class="label">HIGH_VARIANCE</div>
         </div>
         <div class="card">
-          <div class="value" style="color: var(--green);">14</div>
+          <div class="value" style="color: var(--green);">13</div>
           <div class="label">OK</div>
         </div>
       </div>
       <div style="overflow-x: auto;">
       <table>
         <thead><tr><th>By</th><th>n</th><th>Mean err °C</th><th>MAE °C</th><th>Std °C</th><th>Klassifisering</th><th>Årsak</th></tr></thead>
-        <tbody><tr><td><strong>Taipei, TW</strong></td><td>55</td><td>-1.58</td><td>1.66</td><td>1.08</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.08°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Munich, DE</strong></td><td>56</td><td>-1.54</td><td>1.60</td><td>1.09</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.09°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Guangzhou, CN</strong></td><td>53</td><td>-1.35</td><td>1.46</td><td>1.14</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.14°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Busan, KR</strong></td><td>55</td><td>-1.32</td><td>1.33</td><td>0.89</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 0.89°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Beijing, CN</strong></td><td>54</td><td>-1.14</td><td>1.31</td><td>1.14</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.14°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Panama City, PA</strong></td><td>50</td><td>-1.04</td><td>1.21</td><td>1.13</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.13°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Chengdu, CN</strong></td><td>54</td><td>-1.01</td><td>1.64</td><td>1.68</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.67°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Zhengzhou, CN</strong></td><td>37</td><td>-0.96</td><td>1.43</td><td>1.38</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.38°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Mexico City, MX</strong></td><td>55</td><td>-0.91</td><td>1.31</td><td>1.20</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.20°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Houston, US</strong></td><td>55</td><td>-0.89</td><td>1.08</td><td>1.06</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.06°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Paris, FR</strong></td><td>60</td><td>-0.89</td><td>0.98</td><td>0.72</td><td style="color:#f85149;font-weight:700;">STATION_BIAS</td><td style="color:var(--text-dim);">consistent under-predicts offset (mean -0.88°C, std 0.72°C) — likely different station/source vs Polymarket</td></tr><tr><td><strong>Warsaw, PL</strong></td><td>58</td><td>-0.88</td><td>1.02</td><td>0.83</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 0.83°C) — model/noise error rather than a fixed station offset</td></tr></tbody>
+        <tbody><tr><td><strong>Taipei, TW</strong></td><td>63</td><td>-1.54</td><td>1.61</td><td>1.04</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.04°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Munich, DE</strong></td><td>65</td><td>-1.45</td><td>1.50</td><td>1.05</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.05°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Guangzhou, CN</strong></td><td>53</td><td>-1.35</td><td>1.46</td><td>1.14</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.14°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Busan, KR</strong></td><td>63</td><td>-1.27</td><td>1.29</td><td>0.85</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 0.85°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Beijing, CN</strong></td><td>62</td><td>-1.07</td><td>1.26</td><td>1.13</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.13°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Chengdu, CN</strong></td><td>62</td><td>-0.99</td><td>1.62</td><td>1.67</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.67°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Panama City, PA</strong></td><td>60</td><td>-0.99</td><td>1.18</td><td>1.10</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.10°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Zhengzhou, CN</strong></td><td>37</td><td>-0.96</td><td>1.43</td><td>1.38</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.38°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Mexico City, MX</strong></td><td>56</td><td>-0.92</td><td>1.31</td><td>1.19</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 1.19°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Paris, FR</strong></td><td>65</td><td>-0.89</td><td>0.98</td><td>0.71</td><td style="color:#f85149;font-weight:700;">STATION_BIAS</td><td style="color:var(--text-dim);">consistent under-predicts offset (mean -0.89°C, std 0.71°C) — likely different station/source vs Polymarket</td></tr><tr><td><strong>Warsaw, PL</strong></td><td>58</td><td>-0.88</td><td>1.02</td><td>0.83</td><td style="color:#d2991d;font-weight:700;">HIGH_VARIANCE</td><td style="color:var(--text-dim);">high scatter (std 0.83°C) — model/noise error rather than a fixed station offset</td></tr><tr><td><strong>Wellington, NZ</strong></td><td>53</td><td>-0.87</td><td>0.91</td><td>0.72</td><td style="color:#f85149;font-weight:700;">STATION_BIAS</td><td style="color:var(--text-dim);">consistent under-predicts offset (mean -0.87°C, std 0.72°C) — likely different station/source vs Polymarket</td></tr></tbody>
       </table>
       </div>
     </div>
@@ -1040,7 +1040,7 @@ function sortTable(colIdx) {
           <th>📊 Mean før</th><th>📊 Mean etter</th>
           <th>🧪 Modifisert før</th><th>🧪 Modifisert etter</th>
         </tr></thead>
-        <tbody><tr><td><strong>n≥5</strong></td><td>2668</td><td>1.019</td><td>0.9</td><td>258W/2410L (9.7%)</td><td>451W/2217L (16.9%)</td><td>729W/1939L (27.3%)</td><td>829W/1839L (31.1%)</td><td>76W/2592L (2.8%)</td><td>227W/2441L (8.5%)</td></tr><tr><td><strong>n≥8</strong></td><td>2516</td><td>1.0059</td><td>0.8755</td><td>234W/2282L (9.3%)</td><td>411W/2105L (16.3%)</td><td>687W/1829L (27.3%)</td><td>787W/1729L (31.3%)</td><td>66W/2450L (2.6%)</td><td>211W/2305L (8.4%)</td></tr><tr><td><strong>n≥10</strong></td><td>2417</td><td>0.9966</td><td>0.8658</td><td>226W/2191L (9.4%)</td><td>396W/2021L (16.4%)</td><td>663W/1754L (27.4%)</td><td>756W/1661L (31.3%)</td><td>61W/2356L (2.5%)</td><td>207W/2210L (8.6%)</td></tr></tbody>
+        <tbody><tr><td><strong>n≥5</strong></td><td>2969</td><td>1.0074</td><td>0.8877</td><td>289W/2680L (9.7%)</td><td>512W/2457L (17.2%)</td><td>823W/2146L (27.7%)</td><td>943W/2026L (31.8%)</td><td>87W/2882L (2.9%)</td><td>260W/2709L (8.8%)</td></tr><tr><td><strong>n≥8</strong></td><td>2817</td><td>0.9952</td><td>0.8652</td><td>265W/2552L (9.4%)</td><td>472W/2345L (16.8%)</td><td>781W/2036L (27.7%)</td><td>901W/1916L (32.0%)</td><td>77W/2740L (2.7%)</td><td>244W/2573L (8.7%)</td></tr><tr><td><strong>n≥10</strong></td><td>2718</td><td>0.9865</td><td>0.8562</td><td>257W/2461L (9.5%)</td><td>457W/2261L (16.8%)</td><td>757W/1961L (27.9%)</td><td>870W/1848L (32.0%)</td><td>72W/2646L (2.6%)</td><td>240W/2478L (8.8%)</td></tr></tbody>
       </table>
       </div>
     </div>
