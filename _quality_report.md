@@ -1,15 +1,15 @@
 # Model Quality Report
 
-**Generated:** 2026-10-19T00:18:09.031894+00:00
-**Days tracked:** 69
+**Generated:** 2026-10-19T04:59:01.495529+00:00
+**Days tracked:** 70
 
 ## Cumulative Strategy Performance
 
 | Strategy | Wins | Losses | Win Rate |
 |----------|------|--------|----------|
-| 🎯 Sigma (μ−kσ) | 519 | 2933 | 15.0% |
-| 🛡️ P5-Basert | 294 | 3158 | 8.5% |
-| 📊 Mean-Basert | 1075 | 2377 | 31.1% |
+| 🎯 Sigma (μ−kσ) | 519 | 2935 | 15.0% |
+| 🛡️ P5-Basert | 294 | 3160 | 8.5% |
+| 📊 Mean-Basert | 1075 | 2379 | 31.1% |
 | 🧪 Modifisert | 1315 | 1948 | 40.3% |
 
 ## Per-City 4-Strategy W/L (Cumulative)
@@ -54,7 +54,7 @@
 | Qingdao, CN | 1W/67L (n=68) | 1.5% | 0W/68L (n=68) | 0.0% | 23W/45L (n=68) | 33.8% | 24W/38L (n=62) | 38.7% |
 | San Francisco, US | 1W/67L (n=68) | 1.5% | 1W/67L (n=68) | 1.5% | 11W/57L (n=68) | 16.2% | 12W/53L (n=65) | 18.5% |
 | Sao Paulo, BR | 12W/57L (n=69) | 17.4% | 9W/60L (n=69) | 13.0% | 17W/52L (n=69) | 24.6% | 17W/49L (n=66) | 25.8% |
-| Seattle, US | 2W/66L (n=68) | 2.9% | 1W/67L (n=68) | 1.5% | 16W/52L (n=68) | 23.5% | 23W/42L (n=65) | 35.4% |
+| Seattle, US | 2W/68L (n=70) | 2.9% | 1W/69L (n=70) | 1.4% | 16W/54L (n=70) | 22.9% | 23W/42L (n=65) | 35.4% |
 | Seoul (Incheon), KR | 9W/59L (n=68) | 13.2% | 6W/62L (n=68) | 8.8% | 27W/41L (n=68) | 39.7% | 28W/35L (n=63) | 44.4% |
 | Shanghai, CN | 5W/63L (n=68) | 7.4% | 1W/67L (n=68) | 1.5% | 8W/60L (n=68) | 11.8% | 16W/47L (n=63) | 25.4% |
 | Shenzhen, CN | 19W/49L (n=68) | 27.9% | 8W/60L (n=68) | 11.8% | 26W/42L (n=68) | 38.2% | 25W/38L (n=63) | 39.7% |
