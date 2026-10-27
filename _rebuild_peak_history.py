@@ -121,6 +121,8 @@ def _backfill_actual_peaks(log_data: dict) -> tuple[int, int, int, int]:
     city_days_backfilled = 0
     rows_updated = 0
 
+    # ---- fetch phase: plan one request per city with missing days -----------
+    pending: list[tuple[str, list[str], float, float, str, str]] = []
     for city in sorted(missing_dates):
         lat, lon, tz = city_meta.get(city, (None, None, "UTC"))
         if lat is None or lon is None:
@@ -132,10 +134,39 @@ def _backfill_actual_peaks(log_data: dict) -> tuple[int, int, int, int]:
         if end < dates[0]:
             print(f"  ⏭️ {city}: no finalized archive day yet ({dates[0]}..{dates[-1]})")
             continue
+        pending.append((city, dates, lat, lon, tz, end))
+
+    # ---- fetch phase: parallel, one HTTP request per city ------------------
+    # Sequentially this was ~8 s per request; with 51 cities the rebuild alone
+    # could take minutes. The calls are independent read-only GETs, so a small
+    # thread pool removes almost all of the wall-clock time.
+    fetched: dict[str, dict[str, float]] = {}
+    if pending:
+        max_workers = min(8, len(pending))
         try:
-            day_max = _fetch_city_daily_max(lat, lon, tz, dates[0], end)
-        except Exception as exc:  # pragma: no cover - network is best-effort
-            print(f"  ⚠️ archive fetch failed for {city}: {exc}")
+            from concurrent.futures import ThreadPoolExecutor
+
+            with ThreadPoolExecutor(max_workers=max_workers) as pool:
+                futures = {
+                    pool.submit(_fetch_city_daily_max, lat, lon, tz, dates[0], end): city
+                    for (city, dates, lat, lon, tz, end) in pending
+                }
+                for future, city in futures.items():
+                    try:
+                        fetched[city] = future.result()
+                    except Exception as exc:  # pragma: no cover - network is best-effort
+                        print(f"  ⚠️ archive fetch failed for {city}: {exc}")
+        except Exception:  # pragma: no cover - fall back to sequential
+            for (city, dates, lat, lon, tz, end) in pending:
+                try:
+                    fetched[city] = _fetch_city_daily_max(lat, lon, tz, dates[0], end)
+                except Exception as exc:  # pragma: no cover
+                    print(f"  ⚠️ archive fetch failed for {city}: {exc}")
+
+    # ---- merge phase: sequential and deterministic -------------------------
+    for (city, dates, *_meta) in pending:
+        day_max = fetched.get(city)
+        if day_max is None:
             continue
         cities_fetched += 1
 
