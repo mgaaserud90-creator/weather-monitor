@@ -92,17 +92,24 @@ jobs:
           # why the old commit messages contained it verbatim. run_id is unique.
           git commit -m "Auto: market prices (run ${RUN_ID})"
 
-          for attempt in 1 2 3; do
+          pushed=0
+          for attempt in 1 2 3 4 5; do
             git fetch --quiet origin main || true
-            if git -c rebase.autoStash=true rebase -X theirs origin/main; then
+            if ! git -c rebase.autoStash=true rebase -X theirs origin/main; then
+              echo "::warning::rebase attempt ${attempt} failed, retrying"
+              git rebase --abort >/dev/null 2>&1 || true
+              sleep 5
+              continue
+            fi
+            if git push origin HEAD:main; then
+              pushed=1
               break
             fi
-            echo "::warning::rebase attempt ${attempt} failed, retrying"
-            git rebase --abort >/dev/null 2>&1 || true
+            echo "::warning::push attempt ${attempt} rejected, retrying"
             sleep 5
           done
 
-          if git push origin HEAD:main; then
+          if [ "$pushed" = "1" ]; then
             echo "Pushed $(git rev-parse --short HEAD) to main"
           else
             echo "::warning::push failed — the next run will commit this data"

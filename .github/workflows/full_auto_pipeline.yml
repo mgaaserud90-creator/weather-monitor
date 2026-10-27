@@ -289,20 +289,29 @@ jobs:
           git commit -m "Auto: full pipeline ${STAMP} (run ${RUN_ID})"
           echo "changes_detected=true" >> "$GITHUB_OUTPUT"
 
-          # Rebase onto the current remote head. These logs are regenerated in
-          # full every run, so on a conflict our fresh content must win. During
-          # a rebase `-X theirs` refers to the commit being replayed (ours).
-          for attempt in 1 2 3; do
+          # Fetch → rebase → push, retried as a unit. These logs are regenerated
+          # in full every run, so on a conflict our fresh content must win
+          # (during a rebase `-X theirs` refers to the commit being replayed).
+          # Both the rebase and the push can lose a race against a concurrent
+          # workflow, so the whole sequence is retried, not just the rebase.
+          pushed=0
+          for attempt in 1 2 3 4 5; do
             git fetch --quiet origin main || true
-            if git -c rebase.autoStash=true rebase -X theirs origin/main; then
+            if ! git -c rebase.autoStash=true rebase -X theirs origin/main; then
+              echo "::warning::rebase attempt ${attempt} failed, retrying"
+              git rebase --abort >/dev/null 2>&1 || true
+              sleep 5
+              continue
+            fi
+            if git push origin HEAD:main; then
+              pushed=1
               break
             fi
-            echo "::warning::rebase attempt ${attempt} failed, retrying"
-            git rebase --abort >/dev/null 2>&1 || true
+            echo "::warning::push attempt ${attempt} rejected, retrying"
             sleep 5
           done
 
-          if git push origin HEAD:main; then
+          if [ "$pushed" = "1" ]; then
             echo "Pushed $(git rev-parse --short HEAD) to main"
           else
             echo "::warning::push failed — the next run will commit this data"
@@ -397,17 +406,24 @@ jobs:
           git commit -m "Auto: peak history rebuild ${STAMP} (run ${RUN_ID})"
           echo "changes_detected=true" >> "$GITHUB_OUTPUT"
 
-          for attempt in 1 2 3; do
+          pushed=0
+          for attempt in 1 2 3 4 5; do
             git fetch --quiet origin main || true
-            if git -c rebase.autoStash=true rebase -X theirs origin/main; then
+            if ! git -c rebase.autoStash=true rebase -X theirs origin/main; then
+              echo "::warning::rebase attempt ${attempt} failed, retrying"
+              git rebase --abort >/dev/null 2>&1 || true
+              sleep 5
+              continue
+            fi
+            if git push origin HEAD:main; then
+              pushed=1
               break
             fi
-            echo "::warning::rebase attempt ${attempt} failed, retrying"
-            git rebase --abort >/dev/null 2>&1 || true
+            echo "::warning::push attempt ${attempt} rejected, retrying"
             sleep 5
           done
 
-          if git push origin HEAD:main; then
+          if [ "$pushed" = "1" ]; then
             echo "Pushed $(git rev-parse --short HEAD) to main"
           else
             echo "::warning::push failed — the next run will commit this data"
