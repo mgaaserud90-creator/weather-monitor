@@ -310,12 +310,19 @@ def _load_log() -> dict:
 
 
 def _save_log(data: dict) -> None:
-    """Thread-safe log write with 90-day rotation."""
+    """Thread-safe log write with 90-day rotation.
+
+    Compact separators (no ``indent=2``): this log is machine-generated and
+    14 MB+, so pretty-printing roughly doubles both the serialisation time and
+    the repo growth per run. Consumers always ``json.load`` the whole file.
+    """
     LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
     runs = data.get("runs", [])
     if len(runs) > MAX_LOG_DAYS:
         data["runs"] = runs[-MAX_LOG_DAYS:]
-    LOG_FILE.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    LOG_FILE.write_text(
+        json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
+    )
 
 
 def _modified_strategy_totals() -> tuple[int, int]:
@@ -3489,40 +3496,37 @@ def _load_market_resolved_temps() -> dict[tuple[str, str], int]:
     return resolved
 
 
-def _log_peak_verification(
-    city: str, date_str: str, our_peak: float,
-    our_lat: float, our_lon: float,
-    market_resolved: float | None, our_station: str = "",
-    unit: str = "C", bucket: str | None = None,
-) -> None:
-    """Log peak verification: our archive peak vs Polymarket resolved outcome.
+def _build_peak_entry(
+    city: str, date_str: str, our_peak: float | None,
+    our_lat: float, our_lon: float, market_resolved: float | None,
+    our_station: str = "", unit: str = "C", bucket: str | None = None,
+) -> dict | None:
+    """Build one peak-verification entry (unit-aware gap + verdict).
 
-    Comparison runs in the market's native unit (°C or °F). °F markets are
-    compared in °F — our °C peak is converted for the gap and nothing is
-    converted back to °C for display.
+    Pure in-memory helper — no file I/O. Comparison runs in the market's
+    native unit (°C or °F). °F markets are compared in °F — our °C peak is
+    converted for the gap and nothing is converted back to °C for display.
+
+    Returns ``None`` when there is no market resolution to compare against.
+    Shared by the single-record and batch logging paths so both produce
+    identical entries.
     """
     unit = (unit or "C").upper()
-    if market_resolved is None:
-        return
+    if market_resolved is None or our_peak is None:
+        return None
+    peak_c = float(our_peak)
     if unit == "F":
-        our_native = float(our_peak) * 9.0 / 5.0 + 32.0
+        our_native = peak_c * 9.0 / 5.0 + 32.0
         market_native = float(market_resolved)
         ok_threshold = 1.0 * 9.0 / 5.0     # 1°C tolerance in °F
         minor_threshold = 2.0 * 9.0 / 5.0   # 2°C tolerance in °F
     else:
-        our_native = float(our_peak)
+        our_native = peak_c
         market_native = float(market_resolved)
         ok_threshold = 1.0
         minor_threshold = 2.0
     unit_label = "F" if unit == "F" else "C"
 
-    pv_data = {"last_updated": _now_utc(), "verifications": {}}
-    if PEAK_VERIFICATION_LOG.exists():
-        try:
-            pv_data = json.loads(PEAK_VERIFICATION_LOG.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, KeyError):
-            pass
-    verifications = pv_data.setdefault("verifications", {})
     gap = round(our_native - market_native, 1)
     abs_gap = abs(gap)
     if abs_gap <= ok_threshold:
@@ -3542,7 +3546,7 @@ def _log_peak_verification(
         note = f"Small gap of {gap:+.1f}{unit_label} - likely calibration or timing difference."
     else:
         note = f"Within {ok_threshold:.1f}{unit_label} tolerance - station match confirmed."
-    entry = {
+    return {
         "date": date_str, "our_peak": round(our_native, 1),
         "our_station": our_station or f"lat={our_lat},lon={our_lon}",
         "our_lat": our_lat, "our_lon": our_lon,
@@ -3552,48 +3556,207 @@ def _log_peak_verification(
         "verdict": verdict, "note": note, "logged_at": _now_utc(),
     }
 
-    # Accumulate into the persistent daily peak-deviation tracker so the
-    # daily-close path also builds history even when the stats script does
-    # not run. Exception-safe: peak verification must never crash because of
-    # tracker issues.
+
+def _inject_market_resolution(
+    log_data: dict, city: str, target_date: str, entry: dict
+) -> bool:
+    """Attach the market resolution to the matching run's prediction (in memory).
+
+    Mirror of the historical inline loop: the first run that matches the target
+    date *and* holds a prediction for ``city`` is updated. Returns True when a
+    prediction was mutated (the caller then saves the log once).
+    """
+    for run in log_data.get("runs", []) or []:
+        if run.get("run_date") == target_date or run.get("target_date") == target_date:
+            pdata = (run.get("predictions") or {}).get(city)
+            if pdata is None:
+                continue
+            pdata["_market_resolved"] = entry["market_resolved"]
+            pdata["_market_unit"] = entry["unit"]
+            pdata["_market_display"] = entry["market_display"]
+            pdata["_peak_gap"] = entry["gap"]
+            pdata["_verdict"] = entry["verdict"]
+            return True
+    return False
+
+
+def _flush_peak_verification_records(records: list[dict], verbose: bool = True) -> int:
+    """Write many peak-verification records with ONE load/write per file.
+
+    The original per-record helper re-read and re-serialised the whole quality
+    log (14 MB+), the peak-verification log and the peak-deviation log for every
+    single (city, date) pair. With ~4 000 pairs that is O(n) full-file I/O per
+    record, i.e. ~57 GB of JSON parse+serialise per rebuild. Here each file is
+    read once, mutated in memory and written once at the end.
+
+    Record keys mirror ``_log_peak_verification``'s keyword arguments:
+    ``city``, ``date_str``, ``our_peak``, ``our_lat``, ``our_lon``,
+    ``market_resolved``, optional ``our_station``, ``unit`` and ``bucket``.
+
+    Returns the number of verification entries that changed on disk.
+    """
+    pv_data: dict = {"last_updated": _now_utc(), "verifications": {}}
+    if PEAK_VERIFICATION_LOG.exists():
+        try:
+            pv_data = json.loads(PEAK_VERIFICATION_LOG.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, KeyError):
+            pass
+    verifications = pv_data.setdefault("verifications", {})
+
+    log_data: dict | None = None
+    log_dirty = False
+    samples: list[dict] = []
+    deviation = None
     try:
         import _peak_deviation_stats  # type: ignore[import-not-found]  # local import — same directory as tracker
-        _peak_deviation_stats.upsert_peak_sample(
-            city=city,
-            date_str=date_str,
-            our_peak=round(our_native, 1),
-            market_resolved=round(market_native, 1),
-            unit=unit_label,
-            gap=gap,
-            verdict=verdict,
-        )
+        deviation = _peak_deviation_stats
     except Exception:
-        pass
+        deviation = None
 
-    existing = verifications.get(city, {})
-    if not (existing.get("date") == date_str and existing.get("our_peak") == round(our_native, 1)):
-        verifications[city] = entry
-        pv_data["last_updated"] = _now_utc()
-        PEAK_VERIFICATION_LOG.write_text(
-            json.dumps(pv_data, indent=2, ensure_ascii=False), encoding="utf-8"
+    written = 0
+    for record in records:
+        entry = _build_peak_entry(
+            city=record.get("city", ""),
+            date_str=record.get("date_str", ""),
+            our_peak=record.get("our_peak"),
+            our_lat=record.get("our_lat", 0),
+            our_lon=record.get("our_lon", 0),
+            market_resolved=record.get("market_resolved"),
+            our_station=record.get("our_station", "") or "",
+            unit=record.get("unit") or "C",
+            bucket=record.get("bucket"),
         )
-        verdict_icon = {"OK": "OK", "MINOR": "MINOR", "STATION_MISMATCH": "STASJONSFEIL"}.get(verdict, "?")
-        print(f"  PEAK VERIFY: {verdict_icon} {city}: var={our_native:.1f}{unit_label} vs "
-              f"marked={market_native:.1f}{unit_label} gap={gap:+.1f}{unit_label} [{verdict}]")
-    # Inject market_resolved into quality log for dashboard
-    log_data = _load_log()
-    target_date = date_str if date_str else _today_iso()
-    for run in log_data.get("runs", []):
-        if run.get("run_date") == target_date or run.get("target_date") == target_date:
-            pdata = run.get("predictions", {}).get(city)
-            if pdata is not None:
-                pdata["_market_resolved"] = round(market_native, 1)
-                pdata["_market_unit"] = unit_label
-                pdata["_market_display"] = bucket
-                pdata["_peak_gap"] = gap
-                pdata["_verdict"] = verdict
-                _save_log(log_data)
-                break
+        if entry is None:
+            continue
+        city = record.get("city", "")
+        date_str = record.get("date_str", "") or ""
+
+        # Accumulate into the persistent daily peak-deviation tracker so the
+        # daily-close path also builds history even when the stats script does
+        # not run. Exception-safe: peak verification must never crash because
+        # of tracker issues. Written once after the loop.
+        if deviation is not None:
+            try:
+                sample = deviation.build_sample(
+                    city=city,
+                    date_str=date_str,
+                    our_peak=entry["our_peak"],
+                    market_resolved=entry["market_resolved"],
+                    unit=entry["unit"],
+                    gap=entry["gap"],
+                    verdict=entry["verdict"],
+                )
+            except Exception:
+                sample = None
+            if sample is not None:
+                samples.append(sample)
+
+        existing = verifications.get(city, {})
+        if not (existing.get("date") == date_str and existing.get("our_peak") == entry["our_peak"]):
+            verifications[city] = entry
+            pv_data["last_updated"] = _now_utc()
+            written += 1
+            if verbose:
+                verdict_icon = {"OK": "OK", "MINOR": "MINOR", "STATION_MISMATCH": "STASJONSFEIL"}.get(entry["verdict"], "?")
+                print(f"  PEAK VERIFY: {verdict_icon} {city}: var={entry['our_peak']:.1f}{entry['unit']} vs "
+                      f"marked={entry['market_resolved']:.1f}{entry['unit']} gap={entry['gap']:+.1f}{entry['unit']} [{entry['verdict']}]")
+
+        # Inject market_resolved into quality log for dashboard (in memory).
+        if log_data is None:
+            log_data = _load_log()
+        target_date = date_str if date_str else _today_iso()
+        if _inject_market_resolution(log_data, city, target_date, entry):
+            log_dirty = True
+
+    # ---- single write per output file -------------------------------------
+    if written:
+        PEAK_VERIFICATION_LOG.parent.mkdir(parents=True, exist_ok=True)
+        PEAK_VERIFICATION_LOG.write_text(
+            json.dumps(pv_data, ensure_ascii=False, separators=(",", ":")),
+            encoding="utf-8",
+        )
+    if log_dirty and log_data is not None:
+        _save_log(log_data)
+    if deviation is not None and samples:
+        try:
+            deviation.upsert_peak_samples(samples)
+        except Exception:
+            pass
+    return written
+
+
+class _PeakVerificationBatch:
+    """Accumulate verification records and flush them with one write per file.
+
+    Usage::
+
+        with peak_verification_batch() as batch:
+            batch.add_many(records)
+        # flush happens automatically on clean exit
+    """
+
+    def __init__(self, verbose: bool = True) -> None:
+        self.verbose = verbose
+        self.records: list[dict] = []
+
+    def add(self, **record) -> None:
+        self.records.append(record)
+
+    def add_many(self, records) -> None:
+        self.records.extend(records)
+
+    def flush(self) -> int:
+        if not self.records:
+            return 0
+        pending, self.records = self.records, []
+        return _flush_peak_verification_records(pending, verbose=self.verbose)
+
+    def __enter__(self) -> "_PeakVerificationBatch":
+        return self
+
+    def __exit__(self, exc_type, exc, tb) -> bool:
+        if exc_type is None:
+            self.flush()
+        return False
+
+
+def peak_verification_batch(verbose: bool = True) -> _PeakVerificationBatch:
+    """Context manager for bulk peak-verification logging."""
+    return _PeakVerificationBatch(verbose=verbose)
+
+
+def _log_peak_verification_batch(records) -> int:
+    """Bulk variant of :func:`_log_peak_verification` (one load/write per file).
+
+    ``records`` is an iterable of dicts with the same keys as the keyword
+    arguments of :func:`_log_peak_verification`.
+    """
+    return _flush_peak_verification_records(list(records), verbose=True)
+
+
+def _log_peak_verification(
+    city: str, date_str: str, our_peak: float,
+    our_lat: float, our_lon: float,
+    market_resolved: float | None, our_station: str = "",
+    unit: str = "C", bucket: str | None = None,
+) -> None:
+    """Log peak verification: our archive peak vs Polymarket resolved outcome.
+
+    Comparison runs in the market's native unit (°C or °F). °F markets are
+    compared in °F — our °C peak is converted for the gap and nothing is
+    converted back to °C for display.
+
+    Backwards-compatible single-record wrapper: delegates to the batch writer
+    so both paths share exactly one implementation of the semantics.
+    """
+    _flush_peak_verification_records([
+        {
+            "city": city, "date_str": date_str, "our_peak": our_peak,
+            "our_lat": our_lat, "our_lon": our_lon,
+            "market_resolved": market_resolved,
+            "our_station": our_station, "unit": unit, "bucket": bucket,
+        }
+    ], verbose=True)
 
 
 def _spill_vs_polymarket_result(

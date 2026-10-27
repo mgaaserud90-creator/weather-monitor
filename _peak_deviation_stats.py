@@ -381,7 +381,11 @@ def compute_daily_aggregates(samples: list[dict]) -> list[dict]:
 
 
 def _recompute_and_write(samples_by_key: dict) -> dict:
-    """Sort the samples and write the log with recomputed aggregates."""
+    """Sort the samples and write the log with recomputed aggregates.
+
+    Compact separators: this file is machine-generated and grows with every
+    (city, date) sample, so pretty-printing only costs time and repo size.
+    """
     samples = sorted(
         samples_by_key.values(), key=lambda s: (s["date"], s["city"])
     )
@@ -401,9 +405,30 @@ def _recompute_and_write(samples_by_key: dict) -> dict:
     }
 
     with open(PEAK_DEVIATION_LOG, "w", encoding="utf-8") as fh:
-        json.dump(output, fh, ensure_ascii=False, indent=2)
+        json.dump(output, fh, ensure_ascii=False, separators=(",", ":"))
         fh.write("\n")
     return output
+
+
+def upsert_peak_samples(samples: list[dict]) -> int:
+    """Batch upsert already-built samples; recompute aggregates exactly once.
+
+    ``upsert_peak_sample`` above re-reads and re-writes the whole deviation log
+    on every call, which is O(n²) file I/O when a rebuild supplies thousands of
+    (city, date) pairs. This variant loads the existing samples once, applies
+    every upsert in memory and writes once. Returns the number applied.
+    """
+    try:
+        pending = [s for s in (samples or []) if isinstance(s, dict) and s.get("city") and s.get("date")]
+        if not pending:
+            return 0
+        samples_by_key = load_existing_samples()
+        for sample in pending:
+            samples_by_key[(sample["city"], sample["date"])] = sample
+        _recompute_and_write(samples_by_key)
+        return len(pending)
+    except Exception:
+        return 0
 
 
 def upsert_peak_sample(

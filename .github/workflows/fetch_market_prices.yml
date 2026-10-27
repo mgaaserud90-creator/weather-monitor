@@ -1,20 +1,22 @@
 name: Fetch Market Prices
 
-# Base cadence: every 5 minutes — the maximum cron granularity on
-# GitHub-hosted runners ('*/5 * * * *').
+# Cadence: hourly.
 #
-# The optimized `_fetch_market_prices.py` (tag-slug primary + one fallback)
-# typically finishes in well under 1 minute, so a 4-minute timeout gives the
-# job ample headroom while still guaranteeing it is killed before the next
-# cron trigger. Sub-5-minute price updates are handled by the separate
-# `fetch_market_prices_rapid.yml` workflow (see that file); this workflow
-# remains the baseline/fallback cadence.
+# This workflow used to run `*/5 * * * *` with `cancel-in-progress: true` and a
+# 4-minute job timeout. In practice GitHub throttles cron on public repos
+# (observed: 6–8 runs/day, median 4.12 h between runs), so the every-5-minutes
+# schedule only produced a queue: each newly queued run cancelled the run that
+# was already executing (including its commit step).
 #
-# Output: _market_prices.json (each commit re-triggers the Pages deploy).
+# Now: a realistic hourly cron that matches what GitHub actually delivers, no
+# self-cancelling, and a timeout large enough for checkout + fetch + commit.
+# Sub-hour price updates are handled by the separate rapid workflow.
+#
+# Output: _market_prices.json (committed by the auto-commit step below).
 
 on:
   schedule:
-    - cron: '*/5 * * * *'     # Every 5 minutes (cron max)
+    - cron: '0 * * * *'       # Hourly — matches GitHub's actual delivery rate
   workflow_dispatch:
 
 permissions:
@@ -22,12 +24,12 @@ permissions:
 
 concurrency:
   group: fetch-market-prices
-  cancel-in-progress: true
+  cancel-in-progress: false   # never cancel a run that is mid-commit
 
 jobs:
   fetch:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
@@ -39,12 +41,14 @@ jobs:
           python-version: '3.11'
 
       - name: Fetch Polymarket prices
+        timeout-minutes: 8
         run: |
           set -x
           python3 _fetch_market_prices.py
           echo "Exit code: $?"
 
       - name: Verify output
+        timeout-minutes: 2
         run: |
           if [ -f "_market_prices.json" ]; then
             echo "OK: _market_prices.json ($(wc -c < _market_prices.json) bytes)"
@@ -53,13 +57,19 @@ jobs:
           fi
 
       - name: Sync before commit
+        if: always()
+        timeout-minutes: 5
+        continue-on-error: true
         env:
           GIT_TERMINAL_PROMPT: '0'
         run: git -c core.askPass=true pull --rebase --autostash origin main
 
       - uses: stefanzweifel/git-auto-commit-action@v5
+        if: always()
         continue-on-error: true
         with:
-          commit_message: "Auto: market prices $(date -u +%Y-%m-%dT%H:%M)"
+          # $(date ...) is not shell context inside "with:" — it was committed
+          # literally. github.run_id is always available and unique.
+          commit_message: "Auto: market prices (run ${{ github.run_id }})"
           file_pattern: '_market_prices.json'
           push_options: '--force-with-lease'

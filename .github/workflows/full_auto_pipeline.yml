@@ -9,16 +9,25 @@ name: Full Auto Pipeline (v1)
 #   30 8  * * *  → Americas daily close(08:30 UTC = 04:30 America/New_York next day)
 #   0  12 * * *  → Backstop full run   (12:00 UTC — catch-all + daily_bma refresh)
 #
-# Step order:
-#   a. fetch predictions (hourly_active) + daily_close for the region that just closed
-#   b. fetch resolved Polymarket markets + backfill strategy resolutions
-#   c. fetch Wunderground real (finalized) daily max temperatures
-#   d. rebuild peak history → populate peak verify → peak deviation stats
-#      → city error diagnostics → daily city log → PnL ledger → edge enhancer
-#   e. generate MD/HTML reports → verify all data integrity
+# Job layout (robustness):
+#   pipeline      a. fetch predictions + daily close for the region that closed
+#                 b. resolved markets + strategy backfill
+#                 c. Wunderground real daily max
+#                 d. derived stats / diagnostics / logs
+#                 e. reports → commit (always)
+#   peak-rebuild  Separate, non-critical job: rebuilds historical peak data.
+#                 It used to sit in the critical path and burned the whole job
+#                 budget (55 min of a 60 min job), which killed every remaining
+#                 step including the commit and the deploy. It is now its own
+#                 job with its own bounded steps, and it is incremental.
+#   deploy        Real Pages deployment as a job in THIS workflow. Pushes made
+#                 with GITHUB_TOKEN never trigger other workflows (GitHub's
+#                 recursion guard), so deploy_dashboard.yml could not be relied
+#                 on to run after the auto-commit. A job needs no trigger.
 #
-# Outputs are committed back to the repo by the auto-commit step below, which
-# also re-triggers the Pages deploy.
+# Every slow step carries its own `timeout-minutes` and `continue-on-error`, so
+# one slow/failing step is cut without taking the job — and therefore without
+# taking the commit and the deploy — down with it.
 
 on:
   schedule:
@@ -38,8 +47,10 @@ concurrency:
 
 jobs:
   pipeline:
+    name: Data pipeline
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # Safety net only — the per-step timeouts below are the real guard.
+    timeout-minutes: 90
 
     steps:
       - name: Checkout
@@ -53,14 +64,18 @@ jobs:
           python-version: '3.11'
 
       - name: Configure git
+        timeout-minutes: 2
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Install dependencies
+        timeout-minutes: 10
+        continue-on-error: true
         run: pip install httpx structlog tenacity pydantic pydantic-settings python-dotenv orjson redis
 
       - name: Create minimal .env
+        timeout-minutes: 2
         run: |
           cat > .env << 'EOF'
           ENV=production
@@ -69,9 +84,17 @@ jobs:
           WEATHER_ENSEMBLE_CONFIDENCE_FLOOR=0.5
           EOF
 
+      # commit_message is not a shell context, so the old
+      # "$(date -u +%Y-%m-%dT%H:%M)" was committed literally. Precompute it.
+      - name: Compute build stamp
+        id: stamp
+        shell: bash
+        run: echo "iso=$(date -u +%Y-%m-%dT%H:%MZ)" >> "$GITHUB_OUTPUT"
+
       - name: Determine region close date
         id: close_date
         shell: bash
+        timeout-minutes: 2
         run: |
           HOUR=$(date -u +%H)
           if [ "$HOUR" = "16" ]; then
@@ -84,10 +107,13 @@ jobs:
 
       # ---- a. fetch predictions + daily close --------------------------------
       - name: Fetch predictions (hourly active)
+        timeout-minutes: 15
         run: python3 _model_quality_tracker.py --mode hourly_active
 
       - name: Daily BMA refresh (backstop hour only)
         shell: bash
+        timeout-minutes: 15
+        continue-on-error: true
         run: |
           if [ "$(date -u +%H)" = "12" ]; then
             python3 _model_quality_tracker.py --mode daily_bma
@@ -96,10 +122,13 @@ jobs:
           fi
 
       - name: Run daily close (region)
+        timeout-minutes: 15
         run: python3 _model_quality_tracker.py --mode daily_close --date "${{ steps.close_date.outputs.close_date }}"
 
       # ---- b. resolved markets + backfill ------------------------------------
       - name: Fetch resolved markets (rolling 7 days)
+        timeout-minutes: 12
+        continue-on-error: true
         run: |
           DATES=$(python3 -c "
           from datetime import date, timedelta
@@ -110,86 +139,114 @@ jobs:
           python3 _fetch_resolved_markets.py --dates $DATES
 
       - name: Backfill strategy resolutions
+        timeout-minutes: 15
+        continue-on-error: true
         run: python3 _model_quality_tracker.py --mode backfill
 
       # ---- c. Wunderground real resolutions -----------------------------------
       - name: Fetch Wunderground real resolutions
+        timeout-minutes: 12
+        continue-on-error: true
         run: python3 _fetch_wunderground_real.py
 
       # ---- d. derived stats / diagnostics / logs ------------------------------
-      - name: Rebuild peak history
-        continue-on-error: true
-        run: python3 _rebuild_peak_history.py
-
+      # "Rebuild peak history" moved to the peak-rebuild job below.
       - name: Populate peak verification
+        timeout-minutes: 10
         continue-on-error: true
         run: python3 _populate_peak_verify.py
 
       - name: Peak deviation stats
+        timeout-minutes: 10
         continue-on-error: true
         run: python3 _peak_deviation_stats.py
 
       - name: City error diagnostics
+        timeout-minutes: 10
         continue-on-error: true
         run: python3 _diagnose_city_errors.py
 
       - name: Generate modified strategy (full backfill + today)
+        timeout-minutes: 20
         run: python3 _modified_strategy.py
 
       - name: Modifisert confidence research
+        timeout-minutes: 12
         continue-on-error: true
         run: python3 _modified_research.py --json > _modified_confidence_report.json
 
       - name: Daily city log
+        timeout-minutes: 10
         continue-on-error: true
         run: python3 _daily_city_log.py
 
       - name: PnL ledger
+        timeout-minutes: 10
         continue-on-error: true
         run: python3 _pnl_tracker.py
 
       - name: Edge enhancer backtest
+        timeout-minutes: 12
         continue-on-error: true
         run: python3 _edge_enhancer.py
 
       # ---- e. reports + verification ------------------------------------------
       - name: Generate full report (tracker)
+        timeout-minutes: 20
+        continue-on-error: true
         run: python3 _model_quality_tracker.py --mode full_report
 
       - name: Generate MD report
+        timeout-minutes: 12
+        continue-on-error: true
         run: python3 _generate_quality_report.py
 
       - name: Generate HTML dashboard
+        timeout-minutes: 12
+        continue-on-error: true
         run: python3 _generate_quality_report.py --html
 
       - name: Generate all-cities HTML
+        timeout-minutes: 12
+        continue-on-error: true
         run: python3 _generate_quality_report.py --all-cities
 
       - name: Generate index
+        timeout-minutes: 12
+        continue-on-error: true
         run: python3 _generate_quality_report.py --index
 
       - name: Generate peak detection page
+        timeout-minutes: 12
+        continue-on-error: true
         run: python3 _generate_quality_report.py --peak
 
       - name: Generate recommended bets (Anbefalt spill)
+        timeout-minutes: 12
         continue-on-error: true
         run: python3 _recommended_bets.py
 
       - name: Verify all data integrity
+        timeout-minutes: 10
         continue-on-error: true
         run: python3 _verify_all_data.py
 
-      # ---- commit + deploy ----------------------------------------------------
+      # ---- commit (always: never lose derived data because a step was slow) ---
       - name: Sync before commit
+        if: always()
+        timeout-minutes: 6
+        continue-on-error: true
         env:
           GIT_TERMINAL_PROMPT: '0'
         run: git -c core.askPass=true pull --rebase --autostash origin main
 
       - uses: stefanzweifel/git-auto-commit-action@v5
+        id: commit
+        if: always()
         continue-on-error: true
         with:
-          commit_message: "Auto: full pipeline $(date -u +%Y-%m-%dT%H:%M)"
-          file_pattern: >
+          commit_message: "Auto: full pipeline ${{ steps.stamp.outputs.iso }} (run ${{ github.run_id }})"
+          file_pattern: >-
             _model_quality_log.json _resolved_markets_log.json _resolved_markets.csv
             _wunderground_real.json _wunderground_real.csv
             _peak_verification_log.json _peak_deviation_log.json
@@ -203,11 +260,153 @@ jobs:
             _recommended_bets.json _anbefalt_spill.html
           push_options: '--force-with-lease'
 
-      - name: Trigger deploy to GitHub Pages
-        if: success()
+  # ---------------------------------------------------------------------------
+  # Non-critical history rebuild. Isolated so a slow archive API can never eat
+  # the pipeline budget again. Incremental: costs seconds when nothing is new.
+  # ---------------------------------------------------------------------------
+  peak-rebuild:
+    name: Peak history rebuild (non-critical)
+    needs: pipeline
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Configure git
+        timeout-minutes: 2
         run: |
-          curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/deploy_dashboard.yml/dispatches" \
-            -d '{"ref":"main"}'
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Install dependencies
+        timeout-minutes: 10
+        continue-on-error: true
+        run: pip install httpx structlog tenacity pydantic pydantic-settings python-dotenv orjson redis
+
+      - name: Compute build stamp
+        id: stamp
+        shell: bash
+        run: echo "iso=$(date -u +%Y-%m-%dT%H:%MZ)" >> "$GITHUB_OUTPUT"
+
+      - name: Rebuild peak history (incremental)
+        timeout-minutes: 15
+        continue-on-error: true
+        run: python3 _rebuild_peak_history.py
+
+      - name: Peak deviation stats
+        timeout-minutes: 8
+        continue-on-error: true
+        run: python3 _peak_deviation_stats.py
+
+      - name: Sync before commit
+        if: always()
+        timeout-minutes: 6
+        continue-on-error: true
+        env:
+          GIT_TERMINAL_PROMPT: '0'
+        run: git -c core.askPass=true pull --rebase --autostash origin main
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        id: commit
+        if: always()
+        continue-on-error: true
+        with:
+          commit_message: "Auto: peak history rebuild ${{ steps.stamp.outputs.iso }} (run ${{ github.run_id }})"
+          file_pattern: >-
+            _model_quality_log.json _peak_verification_log.json
+            _peak_deviation_log.json
+          push_options: '--force-with-lease'
+
+  # ---------------------------------------------------------------------------
+  # Real Pages deployment, as a job. Works even though the auto-commit above was
+  # pushed with GITHUB_TOKEN (which never triggers other workflows).
+  # ---------------------------------------------------------------------------
+  deploy:
+    name: Deploy dashboard to GitHub Pages
+    needs: [pipeline, peak-rebuild]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        timeout-minutes: 10
+        continue-on-error: true
+        run: pip install httpx structlog tenacity pydantic pydantic-settings python-dotenv orjson redis
+
+      - name: Create minimal .env
+        timeout-minutes: 2
+        run: |
+          cat > .env << 'EOF'
+          ENV=production
+          WEATHER_BMA_ENABLED=true
+          WEATHER_SATELLITE_ENABLED=false
+          WEATHER_ENSEMBLE_CONFIDENCE_FLOOR=0.5
+          EOF
+
+      - name: Generate HTML dashboard
+        timeout-minutes: 12
+        continue-on-error: true
+        run: python _generate_quality_report.py --html
+
+      - name: Generate all-cities HTML
+        timeout-minutes: 12
+        continue-on-error: true
+        run: python _generate_quality_report.py --all-cities
+
+      - name: Generate index
+        timeout-minutes: 12
+        continue-on-error: true
+        run: python _generate_quality_report.py --index
+
+      - name: Generate peak detection page
+        timeout-minutes: 12
+        continue-on-error: true
+        run: python _generate_quality_report.py --peak
+
+      - name: Generate recommended bets (Anbefalt spill)
+        timeout-minutes: 12
+        continue-on-error: true
+        run: python _recommended_bets.py
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

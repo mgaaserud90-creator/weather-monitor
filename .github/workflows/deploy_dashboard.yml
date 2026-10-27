@@ -1,6 +1,12 @@
 # Deploy Model Quality Dashboard to GitHub Pages
 # Trigger: push to main branch + manual dispatch
 # Carnivore pattern: build → upload artifact → deploy pages
+#
+# NOTE: pushes made by a workflow using GITHUB_TOKEN do NOT trigger this
+# workflow — GitHub blocks that to prevent recursive runs. The automated
+# pipeline therefore deploys through the `deploy` job in
+# full_auto_pipeline.yml instead (a job needs no trigger). This file still
+# covers human pushes and manual dispatches.
 name: Deploy Dashboard to GitHub Pages
 
 on:

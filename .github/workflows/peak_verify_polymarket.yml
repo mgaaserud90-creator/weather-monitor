@@ -21,7 +21,11 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    # Was 5 minutes, while every observed run took 5m18s–5m21s and was always
+    # cancelled just before the commit step. The batch API in
+    # _model_quality_tracker makes the verification itself take seconds, but the
+    # budget stays generous so checkout/pip/commit/push never get cut.
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
@@ -33,14 +37,18 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
+        timeout-minutes: 8
+        continue-on-error: true
         run: pip install httpx structlog tenacity pydantic pydantic-settings python-dotenv orjson redis
 
       - name: Verify peaks vs Polymarket
+        timeout-minutes: 10
         run: |
           set -x
           python3 _populate_peak_verify.py
 
       - name: Summary
+        timeout-minutes: 2
         run: |
           if [ -f "_peak_verification_log.json" ]; then
             echo "=== Verification complete ==="
@@ -50,16 +58,24 @@ jobs:
           fi
 
       - name: Peak deviation stats (cumulative)
+        timeout-minutes: 8
+        continue-on-error: true
         run: python3 _peak_deviation_stats.py
 
       - name: Sync before commit
+        if: always()
+        timeout-minutes: 5
+        continue-on-error: true
         env:
           GIT_TERMINAL_PROMPT: '0'
         run: git -c core.askPass=true pull --rebase --autostash origin main
 
       - uses: stefanzweifel/git-auto-commit-action@v5
+        if: always()
         continue-on-error: true
         with:
-          commit_message: "Auto: peak verification vs Polymarket $(date -u +%Y-%m-%dT%H:%M)"
+          # $(date ...) is not shell context inside "with:" — it was committed
+          # literally. github.run_id is always available and unique.
+          commit_message: "Auto: peak verification vs Polymarket (run ${{ github.run_id }})"
           file_pattern: '_peak_verification_log.json _peak_deviation_log.json'
           push_options: '--force-with-lease'

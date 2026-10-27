@@ -7,22 +7,28 @@ Unit-aware rebuild:
     is silently converted to °C.
   * Iterates ALL runs (not only yesterday) and rebuilds the whole log, so stale
     entries (e.g. a threshold misread as a 26°C point) are dropped on re-run.
+
+Performance: every (city, date) pair is collected first and written through the
+batch API (_log_peak_verification_batch). That loads and serialises each target
+JSON file once instead of once per pair — previously ~4 000 pairs × 14 MB of
+quality log meant tens of gigabytes of JSON parse/serialise per run.
 """
-import json, sys, os
-from datetime import datetime, timezone
+import json, sys, os, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from _model_quality_tracker import (
     _load_market_resolved_details,
     _load_log,
-    _log_peak_verification,
+    _log_peak_verification_batch,
     PEAK_VERIFICATION_LOG,
 )
+
+started = time.perf_counter()
 
 # Rebuild from scratch FIRST so stale/threshold entries disappear from the
 # loader's view before it merges the peak-verification log as a source.
 PEAK_VERIFICATION_LOG.write_text(
-    json.dumps({"last_updated": "", "verifications": {}}, indent=2, ensure_ascii=False),
+    json.dumps({"last_updated": "", "verifications": {}}, separators=(",", ":"), ensure_ascii=False),
     encoding="utf-8",
 )
 
@@ -35,7 +41,7 @@ if not runs:
     print("No runs in quality log.")
     sys.exit(1)
 
-verified = 0
+records = []
 for entry in runs:
     run_date = entry.get("run_date", "")
     preds = entry.get("predictions", {})
@@ -54,17 +60,24 @@ for entry in runs:
         value = info.get("value")
         if value is None:
             continue
-        _log_peak_verification(
-            city=city,
-            date_str=target,
-            our_peak=float(actual),
-            our_lat=pdata.get("_lat", 0),
-            our_lon=pdata.get("_lon", 0),
-            market_resolved=float(value),
-            unit=(info.get("unit") or "C").upper(),
-            bucket=info.get("bucket"),
+        records.append(
+            {
+                "city": city,
+                "date_str": target,
+                "our_peak": float(actual),
+                "our_lat": pdata.get("_lat", 0),
+                "our_lon": pdata.get("_lon", 0),
+                "market_resolved": float(value),
+                "unit": (info.get("unit") or "C").upper(),
+                "bucket": info.get("bucket"),
+            }
         )
-        verified += 1
-        print(f"  {city} ({target}): our={float(actual)} market={float(value)} unit={(info.get('unit') or 'C').upper()}")
 
-print(f"\nVerified: {verified} city/date pairs written to {PEAK_VERIFICATION_LOG}")
+written = _log_peak_verification_batch(records)
+elapsed = time.perf_counter() - started
+
+print(
+    f"\nVerified: {len(records)} city/date pairs considered, "
+    f"{written} verification entries changed in {PEAK_VERIFICATION_LOG.name} "
+    f"({elapsed:.1f}s)"
+)
