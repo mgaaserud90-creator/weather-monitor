@@ -73,6 +73,12 @@ jobs:
         env:
           RUN_ID: ${{ github.run_id }}
           GIT_TERMINAL_PROMPT: '0'
+          # This workflow has no `git config` step; a manual commit needs an
+          # identity or git dies with "Author identity unknown" (exit 128).
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
           FILES: '_peak_verification_log.json _peak_deviation_log.json'
         run: |
           set -uo pipefail

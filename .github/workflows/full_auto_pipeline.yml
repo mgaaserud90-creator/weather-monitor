@@ -248,6 +248,12 @@ jobs:
           STAMP: ${{ steps.stamp.outputs.iso }}
           RUN_ID: ${{ github.run_id }}
           GIT_TERMINAL_PROMPT: '0'
+          # Belt and braces: a manual `git commit` needs an identity even when
+          # the "Configure git" step was skipped (or a cancelled earlier run).
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
           FILES: >-
             _model_quality_log.json _resolved_markets_log.json _resolved_markets.csv
             _wunderground_real.json _wunderground_real.csv
@@ -363,6 +369,10 @@ jobs:
           STAMP: ${{ steps.stamp.outputs.iso }}
           RUN_ID: ${{ github.run_id }}
           GIT_TERMINAL_PROMPT: '0'
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
           FILES: >-
             _model_quality_log.json _peak_verification_log.json
             _peak_deviation_log.json
