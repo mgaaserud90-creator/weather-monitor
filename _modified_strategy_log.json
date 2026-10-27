@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated": "2026-10-27T20:10:59.265993+00:00",
+    "generated": "2026-10-27T20:33:32.916095+00:00",
     "description": "Modifisert strategy: per-city provider removal + inverse-MSE reweighting + per-city correction.",
     "removal_rule": {
       "consistent_misser": "|bias| >= 1.0°C AND sign-agreement >= 70%",
@@ -2638,7 +2638,7 @@
   },
   "today": {
     "date": "2026-10-28",
-    "computed_at": "2026-10-27T20:10:59.266647+00:00",
+    "computed_at": "2026-10-27T20:33:32.916811+00:00",
     "source_priority": "Full daily series: 1) per-provider values from _weighted_mean_predictions.json (Open-Meteo per-model source); 2) BMA mean from every _model_quality_log.json run + city correction (fallback). Every row is resolved against _resolved_markets_log.json and contributes to the cumulative statistics. Each city's chosen path is recorded in rows[].today_source.",
     "rows": {
       "Beijing, CN": {
@@ -84879,10 +84879,10 @@
     {
       "city": "Denver, US",
       "date": "2026-10-27",
-      "weighted_mean": 18.0,
+      "weighted_mean": 17.8,
       "correction_method": "median",
-      "correction": 19.4,
-      "corrected_mean": 19.4,
+      "correction": 19.2,
+      "corrected_mean": 19.2,
       "spill": 19,
       "resolved": null,
       "resolved_bucket": null,
@@ -84955,10 +84955,10 @@
     {
       "city": "Houston, US",
       "date": "2026-10-27",
-      "weighted_mean": 26.2,
+      "weighted_mean": 25.9,
       "correction_method": "linear",
-      "correction": 27.2977,
-      "corrected_mean": 27.2977,
+      "correction": 27.044,
+      "corrected_mean": 27.044,
       "spill": 27,
       "resolved": null,
       "resolved_bucket": null,
@@ -85360,7 +85360,7 @@
       "corrected_mean": 21.9596,
       "spill": 22,
       "resolved": 21.0,
-      "resolved_bucket": "21°C",
+      "resolved_bucket": "21.0°C",
       "market_type": "point",
       "market_unit": "C",
       "result": "LOSS",

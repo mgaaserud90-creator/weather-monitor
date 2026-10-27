@@ -7,7 +7,7 @@ Generert: 2026-10-27
 Dager kjørt: 78
 
 📊 PER-STRATEGI RESULTATER (KUMULATIV):
-   🎯 Sigma (μ−kσ): V:605 T:3275  (15.6%)
+   🎯 Sigma (μ−kσ): V:604 T:3276  (15.6%)
    🧪 Modifisert:   V:1523 T:2357  (39.3%)
    📊 Mean-basert:  V:1236 T:2644  (31.9%)
 
@@ -50,7 +50,7 @@ Dager kjørt: 78
    Paris, FR                    11W/67L (14.1%, n=78) 22W/56L (28.2%, n=78) 26W/52L (33.3%, n=78)
    Qingdao, CN                  2W/75L (2.6%, n=77) 29W/48L (37.7%, n=77) 29W/48L (37.7%, n=77)
    San Francisco, US            2W/74L (2.6%, n=76) 15W/61L (19.7%, n=76) 12W/64L (15.8%, n=76)
-   Sao Paulo, BR                17W/61L (21.8%, n=78) 21W/57L (26.9%, n=78) 20W/58L (25.6%, n=78)
+   Sao Paulo, BR                16W/62L (20.5%, n=78) 21W/57L (26.9%, n=78) 20W/58L (25.6%, n=78)
    Seattle, US                  2W/75L (2.6%, n=77) 24W/53L (31.2%, n=77) 17W/60L (22.1%, n=77)
    Seoul (Incheon), KR          13W/64L (16.9%, n=77) 31W/46L (40.3%, n=77) 30W/47L (39.0%, n=77)
    Shanghai, CN                 8W/69L (10.4%, n=77) 18W/59L (23.4%, n=77) 11W/66L (14.3%, n=77)
@@ -104,7 +104,7 @@ Dager kjørt: 78
    Paris, FR                           ❌        ❌        ❌           16°C
    Qingdao, CN                         ⏳        ⏳        ⏳              —
    San Francisco, US                   ⏳        ⏳        ⏳              —
-   Sao Paulo, BR                       ✅        ❌        ❌           21°C
+   Sao Paulo, BR                       ❌        ❌        ❌         21.0°C
    Seattle, US                         ⏳        ⏳        ⏳              —
    Seoul (Incheon), KR                 ⏳        ⏳        ⏳              —
    Shanghai, CN                        ⏳        ⏳        ⏳              —
@@ -123,57 +123,57 @@ Dager kjørt: 78
 
 🌡️ PEAK vs RESOLUTION — KUMULATIV
 
-   Samples: 3100  ·  Bias (snitt avvik): -0.459°C  ·  MAE: 1.016°C  ·  RMSE: 1.290°C  ·  Std: 1.206°C
+   Samples: 3548  ·  Bias (snitt avvik): -0.431°C  ·  MAE: 0.992°C  ·  RMSE: 1.262°C  ·  Std: 1.187°C
 
    By                         n   Bias °C     MAE    RMSE     Std  Flagg
-   Taipei, TW                63     -1.55    1.62    1.86    1.04  
    Munich, DE                66     -1.47    1.52    1.81    1.06  
+   Taipei, TW                73     -1.46    1.58    1.80    1.06  
    Guangzhou, CN             53     -1.35    1.46    1.76    1.14  
-   Busan, KR                 63     -1.28    1.29    1.53    0.85  
-   Beijing, CN               62     -1.08    1.27    1.56    1.13  
-   Chengdu, CN               62     -1.05    1.61    1.92    1.62  
+   Busan, KR                 74     -1.19    1.24    1.47    0.87  
+   Beijing, CN               72     -1.06    1.24    1.52    1.10  
    Panama City, PA           61     -0.98    1.18    1.46    1.09  
    Zhengzhou, CN             37     -0.96    1.43    1.67    1.38  
-   Mexico City, MX           56     -0.92    1.31    1.50    1.19  
-   Warsaw, PL                58     -0.88    1.02    1.20    0.83  
-   Paris, FR                 66     -0.87    0.97    1.13    0.72  STASJONSBIAS
+   Chengdu, CN               72     -0.92    1.50    1.83    1.59  
+   Mexico City, MX           69     -0.88    1.27    1.48    1.19  
    Wellington, NZ            53     -0.87    0.91    1.13    0.72  STASJONSBIAS
-   Milan, IT                 60     -0.83    0.98    1.16    0.81  
-   Amsterdam, NL             68     -0.80    0.87    1.10    0.76  
+   Paris, FR                 77     -0.81    0.95    1.11    0.76  
    Houston, US               66     -0.79    1.01    1.31    1.05  
-   Manila, PH                54     -0.78    1.10    1.26    0.99  
-   Austin, US                66     -0.77    1.11    1.39    1.17  
-   Seoul (Incheon), KR       63     -0.75    0.93    1.10    0.82  
-   Miami, US                 61     -0.74    1.09    1.33    1.11  
-   Lucknow, IN               60     -0.70    0.85    1.02    0.74  
-   Jeddah, SA                63     +0.69    0.90    1.10    0.87  
-   Chicago, US               66     -0.68    1.18    1.55    1.40  
-   Denver, US                60     -0.68    1.09    1.34    1.16  
-   Madrid, ES                66     -0.64    0.88    1.09    0.89  
-   San Francisco, US         65     +0.62    1.45    1.95    1.86  
-   London, UK                66     -0.59    0.94    1.15    0.99  
+   Austin, US                76     -0.76    1.09    1.35    1.12  
+   Lucknow, IN               70     -0.75    0.87    1.03    0.71  
+   Amsterdam, NL             78     -0.74    0.83    1.05    0.75  
+   Miami, US                 77     -0.72    1.03    1.25    1.03  
+   Warsaw, PL                75     -0.72    0.91    1.10    0.84  
+   Seoul (Incheon), KR       74     -0.71    0.93    1.11    0.85  
+   Chicago, US               76     -0.67    1.11    1.47    1.31  
+   Milan, IT                 77     -0.66    0.90    1.09    0.87  
+   Madrid, ES                77     -0.66    0.89    1.09    0.88  
+   San Francisco, US         75     +0.65    1.48    1.99    1.89  
+   Denver, US                76     -0.65    1.04    1.29    1.12  
+   Jeddah, SA                74     +0.65    0.87    1.07    0.85  
+   London, UK                77     -0.63    0.93    1.12    0.93  
+   Buenos Aires, AR          76     -0.55    0.95    1.17    1.03  
    Hong Kong, HK             61     -0.53    0.90    1.16    1.04  
-   Buenos Aires, AR          66     -0.52    0.95    1.17    1.05  
-   Cape Town, ZA             64     +0.43    1.12    1.39    1.34  
-   Singapore, SG             54     -0.32    0.78    1.09    1.05  
+   Manila, PH                72     -0.49    1.12    1.28    1.20  
+   Cape Town, ZA             74     +0.46    1.07    1.36    1.29  
+   Singapore, SG             72     -0.35    0.81    1.09    1.04  
+   Shenzhen, CN              73     +0.35    1.09    1.29    1.25  
+   Los Angeles, US           73     -0.33    0.87    1.18    1.14  
    Jinan, CN                  6     +0.32    0.35    0.47    0.39  
-   Los Angeles, US           63     -0.30    0.89    1.20    1.17  
    Wuhan, CN                 53     -0.29    1.45    1.66    1.65  
-   Tokyo, JP                 63     -0.27    0.94    1.12    1.10  
-   Sao Paulo, BR             65     -0.26    1.25    1.54    1.53  
    New York, US              67     -0.26    0.76    0.96    0.93  
-   Shenzhen, CN              63     +0.25    1.07    1.28    1.26  
+   Atlanta, US               77     -0.25    0.85    1.11    1.09  
    Moscow, RU                66     -0.25    0.84    1.09    1.07  
-   Ankara, TR                66     -0.20    0.77    1.07    1.06  
-   Atlanta, US               67     -0.19    0.88    1.15    1.14  
-   Istanbul, TR              67     +0.16    0.74    0.92    0.91  
-   Qingdao, CN               62     +0.15    0.73    0.94    0.93  
-   Chongqing, CN             62     -0.14    1.02    1.25    1.25  
-   Shanghai, CN              63     -0.12    0.72    0.90    0.90  
-   Kuala Lumpur, MY          63     -0.06    0.79    0.99    0.99  
+   Tokyo, JP                 74     -0.23    0.93    1.11    1.10  
+   Ankara, TR                76     -0.23    0.73    1.02    1.00  
+   Sao Paulo, BR             76     -0.20    1.14    1.44    1.44  
+   Qingdao, CN               72     +0.19    0.71    0.92    0.91  
+   Istanbul, TR              76     +0.15    0.70    0.88    0.88  
+   Seattle, US               75     -0.12    0.97    1.24    1.24  
+   Toronto, CA               76     -0.07    0.76    1.04    1.04  
+   Kuala Lumpur, MY          73     -0.07    0.81    1.04    1.05  
+   Shanghai, CN              73     -0.06    0.71    0.88    0.88  
+   Chongqing, CN             72     -0.06    0.97    1.20    1.21  
+   Dallas, US                75     -0.05    0.95    1.24    1.25  
    Helsinki, FI              57     -0.05    0.66    0.82    0.83  
-   Tel Aviv, IL              68     -0.05    0.56    0.74    0.75  
-   Karachi, PK               60     +0.05    0.60    0.76    0.77  
-   Seattle, US               65     -0.04    0.99    1.27    1.28  
-   Dallas, US                59     -0.03    1.05    1.35    1.36  
-   Toronto, CA               66     -0.00    0.78    1.07    1.08  
+   Tel Aviv, IL              78     +0.04    0.61    0.78    0.79  
+   Karachi, PK               70     -0.01    0.60    0.76    0.77  
