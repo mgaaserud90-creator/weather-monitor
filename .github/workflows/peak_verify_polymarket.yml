@@ -62,20 +62,50 @@ jobs:
         continue-on-error: true
         run: python3 _peak_deviation_stats.py
 
-      - name: Sync before commit
+      # Explicit commit instead of `pull --rebase --autostash` + auto-commit:
+      # those logs are also written by the pipeline, so a concurrent commit
+      # makes the pull leave a conflicted index and the commit silently dies.
+      - name: Commit verification logs (always)
         if: always()
-        timeout-minutes: 5
+        timeout-minutes: 10
         continue-on-error: true
+        shell: bash
         env:
+          RUN_ID: ${{ github.run_id }}
           GIT_TERMINAL_PROMPT: '0'
-        run: git -c core.askPass=true pull --rebase --autostash origin main
+          FILES: '_peak_verification_log.json _peak_deviation_log.json'
+        run: |
+          set -uo pipefail
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
-        if: always()
-        continue-on-error: true
-        with:
-          # $(date ...) is not shell context inside "with:" — it was committed
-          # literally. github.run_id is always available and unique.
-          commit_message: "Auto: peak verification vs Polymarket (run ${{ github.run_id }})"
-          file_pattern: '_peak_verification_log.json _peak_deviation_log.json'
-          push_options: '--force-with-lease'
+          git rebase --abort >/dev/null 2>&1 || true
+          git merge --abort >/dev/null 2>&1 || true
+          git reset -q >/dev/null 2>&1 || true
+
+          for f in $FILES; do
+            [ -f "$f" ] && git add -- "$f"
+          done
+
+          if git diff --cached --quiet; then
+            echo "::notice::Verification logs unchanged — nothing to commit."
+            exit 0
+          fi
+
+          # $(date ...) is not shell context inside "with:" of an action — that
+          # is why the old commit messages contained it verbatim.
+          git commit -m "Auto: peak verification vs Polymarket (run ${RUN_ID})"
+
+          for attempt in 1 2 3; do
+            git fetch --quiet origin main || true
+            if git -c rebase.autoStash=true rebase -X theirs origin/main; then
+              break
+            fi
+            echo "::warning::rebase attempt ${attempt} failed, retrying"
+            git rebase --abort >/dev/null 2>&1 || true
+            sleep 5
+          done
+
+          if git push origin HEAD:main; then
+            echo "Pushed $(git rev-parse --short HEAD) to main"
+          else
+            echo "::warning::push failed — the next run will commit this data"
+          fi

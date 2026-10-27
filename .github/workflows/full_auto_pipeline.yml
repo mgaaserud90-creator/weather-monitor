@@ -232,21 +232,23 @@ jobs:
         run: python3 _verify_all_data.py
 
       # ---- commit (always: never lose derived data because a step was slow) ---
-      - name: Sync before commit
-        if: always()
-        timeout-minutes: 6
-        continue-on-error: true
-        env:
-          GIT_TERMINAL_PROMPT: '0'
-        run: git -c core.askPass=true pull --rebase --autostash origin main
-
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      # Not git-auto-commit-action: it cannot rebase, and a plain
+      # `git pull --rebase --autostash` leaves a *conflicted index* behind
+      # whenever a concurrent workflow (hourly active, peak verify, market
+      # prices) committed the same 14 MB generated log in the meantime. That is
+      # what silently killed the commit ("_model_quality_log.json: needs merge")
+      # while the deploy step still reported success.
+      - name: Commit derived data (always)
         id: commit
         if: always()
+        timeout-minutes: 15
         continue-on-error: true
-        with:
-          commit_message: "Auto: full pipeline ${{ steps.stamp.outputs.iso }} (run ${{ github.run_id }})"
-          file_pattern: >-
+        shell: bash
+        env:
+          STAMP: ${{ steps.stamp.outputs.iso }}
+          RUN_ID: ${{ github.run_id }}
+          GIT_TERMINAL_PROMPT: '0'
+          FILES: >-
             _model_quality_log.json _resolved_markets_log.json _resolved_markets.csv
             _wunderground_real.json _wunderground_real.csv
             _peak_verification_log.json _peak_deviation_log.json
@@ -258,7 +260,47 @@ jobs:
             _modified_strategy_log.json _modified_strategy_report.html
             _modified_bets_log.json _modified_confidence_report.json
             _recommended_bets.json _anbefalt_spill.html
-          push_options: '--force-with-lease'
+        run: |
+          set -uo pipefail
+
+          # Clear any rebase/merge/cherry-pick state left behind by an earlier
+          # or cancelled run; git refuses to commit onto a conflicted index.
+          git rebase --abort >/dev/null 2>&1 || true
+          git merge --abort >/dev/null 2>&1 || true
+          git cherry-pick --abort >/dev/null 2>&1 || true
+          git reset -q >/dev/null 2>&1 || true   # unstage only, worktree untouched
+
+          for f in $FILES; do
+            [ -f "$f" ] && git add -- "$f"
+          done
+
+          if git diff --cached --quiet; then
+            echo "::notice::No generated data changed — nothing to commit."
+            echo "changes_detected=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git commit -m "Auto: full pipeline ${STAMP} (run ${RUN_ID})"
+          echo "changes_detected=true" >> "$GITHUB_OUTPUT"
+
+          # Rebase onto the current remote head. These logs are regenerated in
+          # full every run, so on a conflict our fresh content must win. During
+          # a rebase `-X theirs` refers to the commit being replayed (ours).
+          for attempt in 1 2 3; do
+            git fetch --quiet origin main || true
+            if git -c rebase.autoStash=true rebase -X theirs origin/main; then
+              break
+            fi
+            echo "::warning::rebase attempt ${attempt} failed, retrying"
+            git rebase --abort >/dev/null 2>&1 || true
+            sleep 5
+          done
+
+          if git push origin HEAD:main; then
+            echo "Pushed $(git rev-parse --short HEAD) to main"
+          else
+            echo "::warning::push failed — the next run will commit this data"
+          fi
 
   # ---------------------------------------------------------------------------
   # Non-critical history rebuild. Isolated so a slow archive API can never eat
@@ -308,24 +350,58 @@ jobs:
         continue-on-error: true
         run: python3 _peak_deviation_stats.py
 
-      - name: Sync before commit
-        if: always()
-        timeout-minutes: 6
-        continue-on-error: true
-        env:
-          GIT_TERMINAL_PROMPT: '0'
-        run: git -c core.askPass=true pull --rebase --autostash origin main
-
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      # Same robust commit path as the data job: no `pull --rebase --autostash`
+      # (it leaves a conflicted index when a concurrent workflow touched the
+      # same generated log), rebase with ours-wins instead.
+      - name: Commit peak history (always)
         id: commit
         if: always()
+        timeout-minutes: 15
         continue-on-error: true
-        with:
-          commit_message: "Auto: peak history rebuild ${{ steps.stamp.outputs.iso }} (run ${{ github.run_id }})"
-          file_pattern: >-
+        shell: bash
+        env:
+          STAMP: ${{ steps.stamp.outputs.iso }}
+          RUN_ID: ${{ github.run_id }}
+          GIT_TERMINAL_PROMPT: '0'
+          FILES: >-
             _model_quality_log.json _peak_verification_log.json
             _peak_deviation_log.json
-          push_options: '--force-with-lease'
+        run: |
+          set -uo pipefail
+
+          git rebase --abort >/dev/null 2>&1 || true
+          git merge --abort >/dev/null 2>&1 || true
+          git cherry-pick --abort >/dev/null 2>&1 || true
+          git reset -q >/dev/null 2>&1 || true
+
+          for f in $FILES; do
+            [ -f "$f" ] && git add -- "$f"
+          done
+
+          if git diff --cached --quiet; then
+            echo "::notice::Peak history unchanged — nothing to commit."
+            echo "changes_detected=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git commit -m "Auto: peak history rebuild ${STAMP} (run ${RUN_ID})"
+          echo "changes_detected=true" >> "$GITHUB_OUTPUT"
+
+          for attempt in 1 2 3; do
+            git fetch --quiet origin main || true
+            if git -c rebase.autoStash=true rebase -X theirs origin/main; then
+              break
+            fi
+            echo "::warning::rebase attempt ${attempt} failed, retrying"
+            git rebase --abort >/dev/null 2>&1 || true
+            sleep 5
+          done
+
+          if git push origin HEAD:main; then
+            echo "Pushed $(git rev-parse --short HEAD) to main"
+          else
+            echo "::warning::push failed — the next run will commit this data"
+          fi
 
   # ---------------------------------------------------------------------------
   # Real Pages deployment, as a job. Works even though the auto-commit above was
