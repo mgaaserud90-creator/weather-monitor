@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated": "2026-10-28T06:02:17.003587+00:00",
+    "generated": "2026-10-28T15:23:36.293988+00:00",
     "description": "Modifisert strategy: per-city provider removal + inverse-MSE reweighting + per-city correction.",
     "removal_rule": {
       "consistent_misser": "|bias| >= 1.0°C AND sign-agreement >= 70%",
@@ -11,20 +11,20 @@
     "win_rule": "WIN iff spill matches the resolved bucket (project _spill_vs_polymarket_result / _spill_vs_threshold_result)",
     "n_cities_with_config": 51,
     "n_cities_with_bets": 51,
-    "n_cities_with_today_spill": 35,
+    "n_cities_with_today_spill": 1,
     "backfill_first_date": "2026-08-11",
-    "backfill_last_date": "2026-10-28",
-    "n_resolved_rows": 3807,
-    "n_unresolved_rows": 91,
+    "backfill_last_date": "2026-10-29",
+    "n_resolved_rows": 3826,
+    "n_unresolved_rows": 89,
     "history_source": "per-provider _weighted_mean_predictions.json + BMA fallback from _model_quality_log.json; resolved vs _resolved_markets_log.json",
     "avg_providers_removed_per_city": 3.0,
     "total_providers_removed": 153
   },
   "overall": {
-    "wins": 1482,
-    "losses": 2325,
-    "bets": 3807,
-    "win_rate": 38.9,
+    "wins": 1484,
+    "losses": 2342,
+    "bets": 3826,
+    "win_rate": 38.8,
     "plain_mean_wins": 314,
     "plain_mean_losses": 790,
     "plain_mean_bets": 1104,
@@ -145,9 +145,9 @@
         "params_source": "oos"
       },
       "wins": 35,
-      "losses": 43,
-      "bets": 78,
-      "win_rate": 44.9
+      "losses": 44,
+      "bets": 79,
+      "win_rate": 44.3
     },
     "Atlanta, US": {
       "unit": "F",
@@ -294,9 +294,9 @@
         "params_source": "oos"
       },
       "wins": 28,
-      "losses": 44,
-      "bets": 72,
-      "win_rate": 38.9
+      "losses": 45,
+      "bets": 73,
+      "win_rate": 38.4
     },
     "Buenos Aires, AR": {
       "unit": "C",
@@ -395,10 +395,10 @@
         },
         "params_source": "oos"
       },
-      "wins": 31,
+      "wins": 32,
       "losses": 43,
-      "bets": 74,
-      "win_rate": 41.9
+      "bets": 75,
+      "win_rate": 42.7
     },
     "Cape Town, ZA": {
       "unit": "C",
@@ -523,9 +523,9 @@
         "params_source": "oos"
       },
       "wins": 18,
-      "losses": 55,
-      "bets": 73,
-      "win_rate": 24.7
+      "losses": 56,
+      "bets": 74,
+      "win_rate": 24.3
     },
     "Chicago, US": {
       "unit": "F",
@@ -634,9 +634,9 @@
         "params_source": "oos"
       },
       "wins": 22,
-      "losses": 51,
-      "bets": 73,
-      "win_rate": 30.1
+      "losses": 52,
+      "bets": 74,
+      "win_rate": 29.7
     },
     "Dallas, US": {
       "unit": "F",
@@ -804,9 +804,9 @@
         "params_source": "oos"
       },
       "wins": 31,
-      "losses": 42,
-      "bets": 73,
-      "win_rate": 42.5
+      "losses": 43,
+      "bets": 74,
+      "win_rate": 41.9
     },
     "Helsinki, FI": {
       "unit": "C",
@@ -882,9 +882,9 @@
         "params_source": "oos"
       },
       "wins": 28,
-      "losses": 45,
-      "bets": 73,
-      "win_rate": 38.4
+      "losses": 46,
+      "bets": 74,
+      "win_rate": 37.8
     },
     "Houston, US": {
       "unit": "F",
@@ -1150,10 +1150,10 @@
         },
         "params_source": "oos"
       },
-      "wins": 32,
+      "wins": 33,
       "losses": 41,
-      "bets": 73,
-      "win_rate": 43.8
+      "bets": 74,
+      "win_rate": 44.6
     },
     "London, UK": {
       "unit": "C",
@@ -1291,9 +1291,9 @@
         "params_source": "oos"
       },
       "wins": 43,
-      "losses": 26,
-      "bets": 69,
-      "win_rate": 62.3
+      "losses": 27,
+      "bets": 70,
+      "win_rate": 61.4
     },
     "Madrid, ES": {
       "unit": "C",
@@ -1385,9 +1385,9 @@
         "params_source": "oos"
       },
       "wins": 28,
-      "losses": 44,
-      "bets": 72,
-      "win_rate": 38.9
+      "losses": 45,
+      "bets": 73,
+      "win_rate": 38.4
     },
     "Mexico City, MX": {
       "unit": "C",
@@ -1567,9 +1567,9 @@
         "params_source": "oos"
       },
       "wins": 29,
-      "losses": 49,
-      "bets": 78,
-      "win_rate": 37.2
+      "losses": 50,
+      "bets": 79,
+      "win_rate": 36.7
     },
     "Munich, DE": {
       "unit": "C",
@@ -1827,9 +1827,9 @@
         "params_source": "oos"
       },
       "wins": 25,
-      "losses": 47,
-      "bets": 72,
-      "win_rate": 34.7
+      "losses": 48,
+      "bets": 73,
+      "win_rate": 34.2
     },
     "San Francisco, US": {
       "unit": "F",
@@ -2075,9 +2075,9 @@
         "params_source": "oos"
       },
       "wins": 29,
-      "losses": 45,
-      "bets": 74,
-      "win_rate": 39.2
+      "losses": 46,
+      "bets": 75,
+      "win_rate": 38.7
     },
     "Shanghai, CN": {
       "unit": "C",
@@ -2151,9 +2151,9 @@
         "params_source": "oos"
       },
       "wins": 17,
-      "losses": 56,
-      "bets": 73,
-      "win_rate": 23.3
+      "losses": 57,
+      "bets": 74,
+      "win_rate": 23.0
     },
     "Shenzhen, CN": {
       "unit": "C",
@@ -2202,9 +2202,9 @@
         "params_source": "oos"
       },
       "wins": 28,
-      "losses": 45,
-      "bets": 73,
-      "win_rate": 38.4
+      "losses": 46,
+      "bets": 74,
+      "win_rate": 37.8
     },
     "Singapore, SG": {
       "unit": "C",
@@ -2246,9 +2246,9 @@
         "params_source": "oos"
       },
       "wins": 40,
-      "losses": 32,
-      "bets": 72,
-      "win_rate": 55.6
+      "losses": 33,
+      "bets": 73,
+      "win_rate": 54.8
     },
     "Taipei, TW": {
       "unit": "C",
@@ -2328,9 +2328,9 @@
         "params_source": "oos"
       },
       "wins": 23,
-      "losses": 50,
-      "bets": 73,
-      "win_rate": 31.5
+      "losses": 51,
+      "bets": 74,
+      "win_rate": 31.1
     },
     "Tel Aviv, IL": {
       "unit": "C",
@@ -2396,9 +2396,9 @@
         "params_source": "none"
       },
       "wins": 31,
-      "losses": 43,
-      "bets": 74,
-      "win_rate": 41.9
+      "losses": 44,
+      "bets": 75,
+      "win_rate": 41.3
     },
     "Toronto, CA": {
       "unit": "C",
@@ -2588,9 +2588,9 @@
         "params_source": "oos"
       },
       "wins": 21,
-      "losses": 52,
-      "bets": 73,
-      "win_rate": 28.8
+      "losses": 53,
+      "bets": 74,
+      "win_rate": 28.4
     },
     "Zhengzhou, CN": {
       "unit": "C",
@@ -2637,610 +2637,17 @@
     }
   },
   "today": {
-    "date": "2026-10-28",
-    "computed_at": "2026-10-28T06:02:17.004211+00:00",
+    "date": "2026-10-29",
+    "computed_at": "2026-10-28T15:23:36.294657+00:00",
     "source_priority": "Full daily series: 1) per-provider values from _weighted_mean_predictions.json (Open-Meteo per-model source); 2) BMA mean from every _model_quality_log.json run + city correction (fallback). Every row is resolved against _resolved_markets_log.json and contributes to the cumulative statistics. Each city's chosen path is recorded in rows[].today_source.",
     "rows": {
-      "Amsterdam, NL": {
-        "date": "2026-10-28",
-        "spill": 15,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 14.1,
-        "corrected_mean": 14.85,
-        "correction_method": "median",
-        "correction_params": {
-          "c": 0.75
-        },
-        "remaining_weights": {
-          "ecmwf_ifs": 18.44,
-          "icon": 26.02,
-          "gem": 26.06,
-          "ukmo": 29.48
-        },
-        "result": null
-      },
-      "Ankara, TR": {
-        "date": "2026-10-28",
-        "spill": 18,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 17.4,
-        "corrected_mean": 18.075,
-        "correction_method": "additive",
-        "correction_params": {
-          "c": 0.6750000000000002
-        },
-        "remaining_weights": {
-          "ecmwf_ifs": 53.59,
-          "gem": 46.41
-        },
-        "result": null
-      },
-      "Beijing, CN": {
-        "date": "2026-10-28",
-        "spill": 17,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 14.4,
-        "corrected_mean": 16.8693,
-        "correction_method": "linear",
-        "correction_params": {
-          "a": 4.227900241351566,
-          "b": 0.8778761061946903
-        },
-        "remaining_weights": {
-          "ecmwf_ifs": 18.57,
-          "gfs": 15.37,
-          "gem": 25.59,
-          "ukmo": 23.73,
-          "jma": 16.74
-        },
-        "result": null
-      },
-      "Busan, KR": {
-        "date": "2026-10-28",
-        "spill": 17,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 15.9,
-        "corrected_mean": 17.3091,
-        "correction_method": "additive",
-        "correction_params": {
-          "c": 1.4090909090909092
-        },
-        "remaining_weights": {
-          "gfs": 55.24,
-          "gem": 44.76
-        },
-        "result": null
-      },
-      "Cape Town, ZA": {
-        "date": "2026-10-28",
-        "spill": 24,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 23.6,
-        "corrected_mean": 24.4935,
-        "correction_method": "linear",
-        "correction_params": {
-          "a": -1.9392793169605085,
-          "b": 1.1200320061102573
-        },
-        "remaining_weights": {
-          "gem": 29.71,
-          "ukmo": 70.29
-        },
-        "result": null
-      },
-      "Chengdu, CN": {
-        "date": "2026-10-28",
-        "spill": 21,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 20.0,
-        "corrected_mean": 21.04,
-        "correction_method": "additive",
-        "correction_params": {
-          "c": 1.040000000000001
-        },
-        "remaining_weights": {
-          "icon": 38.67,
-          "gem": 26.55,
-          "ukmo": 34.78
-        },
-        "result": null
-      },
-      "Chongqing, CN": {
-        "date": "2026-10-28",
-        "spill": 19,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 16.8,
-        "corrected_mean": 18.55,
-        "correction_method": "additive",
-        "correction_params": {
-          "c": 1.7499999999999987
-        },
-        "remaining_weights": {
-          "icon": 100.0
-        },
-        "result": null
-      },
-      "Guangzhou, CN": {
-        "date": "2026-10-28",
-        "spill": 31,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 29.3,
-        "corrected_mean": 31.41,
-        "correction_method": "additive",
-        "correction_params": {
-          "c": 2.1099999999999994
-        },
-        "remaining_weights": {},
-        "result": null
-      },
-      "Helsinki, FI": {
-        "date": "2026-10-28",
-        "spill": 11,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 10.3,
-        "corrected_mean": 10.9417,
-        "correction_method": "additive",
-        "correction_params": {
-          "c": 0.6416666666666669
-        },
-        "remaining_weights": {
-          "ecmwf_ifs": 9.61,
-          "gfs": 17.5,
-          "icon": 20.42,
-          "gem": 16.99,
-          "ukmo": 18.47,
-          "jma": 17.0
-        },
-        "result": "WIN"
-      },
-      "Hong Kong, HK": {
-        "date": "2026-10-28",
-        "spill": 28,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 26.9,
-        "corrected_mean": 27.7,
-        "correction_method": "additive",
-        "correction_params": {
-          "c": 0.7999999999999997
-        },
-        "remaining_weights": {
-          "ecmwf_ifs": 28.11,
-          "gfs": 19.57,
-          "icon": 21.06,
-          "gem": 16.97,
-          "jma": 14.3
-        },
-        "result": null
-      },
-      "Istanbul, TR": {
-        "date": "2026-10-28",
-        "spill": 16,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 15.0,
-        "corrected_mean": 15.5,
-        "correction_method": "median",
-        "correction_params": {
-          "c": 0.5
-        },
-        "remaining_weights": {
-          "ecmwf_ifs": 25.48,
-          "icon": 19.32,
-          "gem": 27.55,
-          "aifs": 27.65
-        },
-        "result": null
-      },
-      "Jeddah, SA": {
-        "date": "2026-10-28",
-        "spill": 36,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 36.2,
-        "corrected_mean": 36.4,
-        "correction_method": "additive",
-        "correction_params": {
-          "c": 0.19999999999999896
-        },
-        "remaining_weights": {
-          "icon": 28.29,
-          "gem": 17.37,
-          "ukmo": 19.74,
-          "aifs": 34.6
-        },
-        "result": null
-      },
-      "Jinan, CN": {
-        "date": "2026-10-28",
-        "spill": 19,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 19.8,
-        "corrected_mean": 19.1,
-        "correction_method": "additive",
-        "correction_params": {
-          "c": -0.6999999999999993
-        },
-        "remaining_weights": {},
-        "result": null
-      },
-      "Karachi, PK": {
-        "date": "2026-10-28",
-        "spill": 40,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 36.3,
-        "corrected_mean": 39.6267,
-        "correction_method": "linear",
-        "correction_params": {
-          "a": -25.159400544959066,
-          "b": 1.784741144414167
-        },
-        "remaining_weights": {
-          "ecmwf_ifs": 25.56,
-          "gfs": 29.24,
-          "icon": 45.2
-        },
-        "result": null
-      },
-      "Kuala Lumpur, MY": {
-        "date": "2026-10-28",
-        "spill": 33,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 31.4,
-        "corrected_mean": 33.3822,
-        "correction_method": "linear",
-        "correction_params": {
-          "a": 22.17556623198351,
-          "b": 0.35689773507206635
-        },
-        "remaining_weights": {
-          "ecmwf_ifs": 21.51,
-          "icon": 27.56,
-          "ukmo": 35.93,
-          "aifs": 15.0
-        },
-        "result": null
-      },
-      "London, UK": {
-        "date": "2026-10-28",
-        "spill": 16,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 15.3,
-        "corrected_mean": 15.95,
-        "correction_method": "median",
-        "correction_params": {
-          "c": 0.6499999999999986
-        },
-        "remaining_weights": {
-          "ecmwf_ifs": 11.64,
-          "gfs": 22.96,
-          "icon": 19.93,
-          "gem": 17.34,
-          "ukmo": 19.61,
-          "aifs": 8.52
-        },
-        "result": null
-      },
-      "Lucknow, IN": {
-        "date": "2026-10-28",
-        "spill": 30,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 30.0,
-        "corrected_mean": 30.2523,
-        "correction_method": "linear",
-        "correction_params": {
-          "a": 2.792427398603124,
-          "b": 0.9153290037985538
-        },
-        "remaining_weights": {
-          "ecmwf_ifs": 21.61,
-          "icon": 20.11,
-          "ukmo": 22.14,
-          "aifs": 36.13
-        },
-        "result": null
-      },
-      "Madrid, ES": {
-        "date": "2026-10-28",
-        "spill": 23,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 21.5,
-        "corrected_mean": 22.525,
-        "correction_method": "additive",
-        "correction_params": {
-          "c": 1.0249999999999997
-        },
-        "remaining_weights": {
-          "ecmwf_ifs": 20.36,
-          "gfs": 18.84,
-          "icon": 19.68,
-          "ukmo": 27.06,
-          "jma": 14.06
-        },
-        "result": null
-      },
-      "Manila, PH": {
-        "date": "2026-10-28",
-        "spill": 33,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 32.6,
-        "corrected_mean": 33.4091,
-        "correction_method": "additive",
-        "correction_params": {
-          "c": 0.8090909090909086
-        },
-        "remaining_weights": {
-          "gfs": 15.41,
-          "icon": 28.85,
-          "ukmo": 38.01,
-          "jma": 17.73
-        },
-        "result": null
-      },
-      "Milan, IT": {
-        "date": "2026-10-28",
-        "spill": 19,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 16.6,
-        "corrected_mean": 19.3075,
-        "correction_method": "linear",
-        "correction_params": {
-          "a": 5.005141686318474,
-          "b": 0.8615868352211955
-        },
-        "remaining_weights": {
-          "icon": 37.81,
-          "gem": 36.2,
-          "ukmo": 26.0
-        },
-        "result": null
-      },
-      "Moscow, RU": {
-        "date": "2026-10-28",
-        "spill": 10,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 9.8,
-        "corrected_mean": 10.15,
-        "correction_method": "median",
-        "correction_params": {
-          "c": 0.34999999999999964
-        },
-        "remaining_weights": {
-          "ecmwf_ifs": 18.11,
-          "icon": 14.65,
-          "gem": 20.48,
-          "ukmo": 16.48,
-          "jma": 15.5,
-          "aifs": 14.77
-        },
-        "result": null
-      },
-      "Munich, DE": {
-        "date": "2026-10-28",
-        "spill": 12,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 11.4,
-        "corrected_mean": 12.2997,
-        "correction_method": "multiplicative",
-        "correction_params": {
-          "k": 1.0789215200690312
-        },
-        "remaining_weights": {
-          "gem": 100.0
-        },
-        "result": null
-      },
-      "Paris, FR": {
-        "date": "2026-10-28",
-        "spill": 14,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 14.5,
-        "corrected_mean": 14.5,
-        "correction_method": "baseline",
-        "correction_params": {},
-        "remaining_weights": {
-          "gfs": 43.16,
-          "icon": 23.69,
-          "gem": 33.14
-        },
-        "result": null
-      },
-      "Qingdao, CN": {
-        "date": "2026-10-28",
-        "spill": 18,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 17.2,
-        "corrected_mean": 18.2182,
-        "correction_method": "additive",
-        "correction_params": {
-          "c": 1.018181818181818
-        },
-        "remaining_weights": {
-          "ecmwf_ifs": 18.92,
-          "gfs": 14.83,
-          "icon": 26.78,
-          "gem": 19.08,
-          "ukmo": 20.39
-        },
-        "result": null
-      },
-      "Seoul (Incheon), KR": {
-        "date": "2026-10-28",
-        "spill": 8,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 11.6,
-        "corrected_mean": 8.3416,
-        "correction_method": "linear",
-        "correction_params": {
-          "a": -6.225986944358098,
-          "b": 1.2558284115635685
-        },
-        "remaining_weights": {
-          "ecmwf_ifs": 24.28,
-          "icon": 37.12,
-          "gem": 20.22,
-          "aifs": 18.38
-        },
-        "result": null
-      },
-      "Shanghai, CN": {
-        "date": "2026-10-28",
-        "spill": 15,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 19.7,
-        "corrected_mean": 14.9662,
-        "correction_method": "linear",
-        "correction_params": {
-          "a": -16.978574650428488,
-          "b": 1.621560667568786
-        },
-        "remaining_weights": {
-          "ukmo": 100.0
-        },
-        "result": null
-      },
-      "Shenzhen, CN": {
-        "date": "2026-10-28",
-        "spill": 30,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 29.2,
-        "corrected_mean": 29.5,
-        "correction_method": "median",
-        "correction_params": {
-          "c": 0.3000000000000007
-        },
-        "remaining_weights": {
-          "ecmwf_ifs": 19.44,
-          "icon": 18.85,
-          "gem": 25.24,
-          "ukmo": 36.47
-        },
-        "result": null
-      },
-      "Singapore, SG": {
-        "date": "2026-10-28",
-        "spill": 33,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 30.1,
-        "corrected_mean": 32.6161,
-        "correction_method": "linear",
-        "correction_params": {
-          "a": 27.937352802637786,
-          "b": 0.15544041450777182
-        },
-        "remaining_weights": {
-          "ecmwf_ifs": 17.72,
-          "icon": 22.22,
-          "gem": 12.17,
-          "ukmo": 26.95,
-          "aifs": 20.94
-        },
-        "result": null
-      },
-      "Taipei, TW": {
-        "date": "2026-10-28",
-        "spill": 27,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 24.3,
-        "corrected_mean": 26.9,
-        "correction_method": "median",
-        "correction_params": {
-          "c": 2.6000000000000014
-        },
-        "remaining_weights": {},
-        "result": null
-      },
-      "Tel Aviv, IL": {
-        "date": "2026-10-28",
-        "spill": 27,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 27.6,
-        "corrected_mean": 26.8,
-        "correction_method": "median",
-        "correction_params": {
-          "c": -0.8000000000000007
-        },
-        "remaining_weights": {
-          "gfs": 18.94,
-          "icon": 19.84,
-          "gem": 21.78,
-          "ukmo": 8.71,
-          "jma": 15.19,
-          "aifs": 15.54
-        },
-        "result": null
-      },
-      "Tokyo, JP": {
-        "date": "2026-10-28",
-        "spill": 19,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 18.6,
-        "corrected_mean": 18.6,
-        "correction_method": "baseline",
-        "correction_params": {},
-        "remaining_weights": {
-          "ecmwf_ifs": 15.17,
-          "gfs": 20.21,
-          "icon": 14.93,
-          "gem": 14.27,
-          "ukmo": 21.09,
-          "aifs": 14.33
-        },
-        "result": null
-      },
-      "Warsaw, PL": {
-        "date": "2026-10-28",
-        "spill": 11,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 11.4,
-        "corrected_mean": 11.4,
-        "correction_method": "baseline",
-        "correction_params": {},
-        "remaining_weights": {
-          "ecmwf_ifs": 10.73,
-          "gfs": 11.72,
-          "icon": 29.48,
-          "gem": 24.35,
-          "ukmo": 23.71
-        },
-        "result": null
-      },
       "Wellington, NZ": {
-        "date": "2026-10-28",
-        "spill": 16,
+        "date": "2026-10-29",
+        "spill": 18,
         "today_source": "bma_mean_fallback",
         "providers_used": [],
-        "weighted_mean": 15.3,
-        "corrected_mean": 16.2628,
+        "weighted_mean": 16.7,
+        "corrected_mean": 17.7509,
         "correction_method": "multiplicative",
         "correction_params": {
           "k": 1.06292997706789
@@ -3250,44 +2657,6 @@
           "icon": 30.62,
           "gem": 19.1,
           "ukmo": 27.69
-        },
-        "result": "LOSS"
-      },
-      "Wuhan, CN": {
-        "date": "2026-10-28",
-        "spill": 21,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 20.0,
-        "corrected_mean": 20.7,
-        "correction_method": "median",
-        "correction_params": {
-          "c": 0.6999999999999993
-        },
-        "remaining_weights": {
-          "gem": 25.27,
-          "ukmo": 34.5,
-          "aifs": 40.23
-        },
-        "result": null
-      },
-      "Zhengzhou, CN": {
-        "date": "2026-10-28",
-        "spill": 21,
-        "today_source": "bma_mean_fallback",
-        "providers_used": [],
-        "weighted_mean": 19.6,
-        "corrected_mean": 20.7,
-        "correction_method": "median",
-        "correction_params": {
-          "c": 1.1000000000000014
-        },
-        "remaining_weights": {
-          "icon": 24.39,
-          "gem": 10.65,
-          "ukmo": 21.33,
-          "jma": 19.25,
-          "aifs": 24.39
         },
         "result": null
       }
@@ -85012,10 +84381,10 @@
     {
       "city": "Austin, US",
       "date": "2026-10-27",
-      "weighted_mean": 27.3,
+      "weighted_mean": 26.8,
       "correction_method": "additive",
-      "correction": 28.2325,
-      "corrected_mean": 28.2325,
+      "correction": 27.7325,
+      "corrected_mean": 27.7325,
       "spill": 28,
       "resolved": 28.06,
       "resolved_bucket": "82-83°F",
@@ -85126,10 +84495,10 @@
     {
       "city": "Chicago, US",
       "date": "2026-10-27",
-      "weighted_mean": 19.3,
+      "weighted_mean": 19.5,
       "correction_method": "median",
-      "correction": 18.835,
-      "corrected_mean": 18.835,
+      "correction": 19.035,
+      "corrected_mean": 19.035,
       "spill": 19,
       "resolved": 20.28,
       "resolved_bucket": "68-69°F",
@@ -85164,10 +84533,10 @@
     {
       "city": "Dallas, US",
       "date": "2026-10-27",
-      "weighted_mean": 27.8,
+      "weighted_mean": 27.6,
       "correction_method": "linear",
-      "correction": 25.3413,
-      "corrected_mean": 25.3413,
+      "correction": 25.1087,
+      "corrected_mean": 25.1087,
       "spill": 25,
       "resolved": 28.06,
       "resolved_bucket": "82-83°F",
@@ -85259,11 +84628,11 @@
     {
       "city": "Houston, US",
       "date": "2026-10-27",
-      "weighted_mean": 23.7,
+      "weighted_mean": 25.4,
       "correction_method": "linear",
-      "correction": 25.1831,
-      "corrected_mean": 25.1831,
-      "spill": 25,
+      "correction": 26.621,
+      "corrected_mean": 26.621,
+      "spill": 27,
       "resolved": 23.61,
       "resolved_bucket": "74-75°F",
       "market_type": "point",
@@ -85392,10 +84761,10 @@
     {
       "city": "Los Angeles, US",
       "date": "2026-10-27",
-      "weighted_mean": 23.7,
+      "weighted_mean": 23.9,
       "correction_method": "linear",
-      "correction": 23.8076,
-      "corrected_mean": 23.8076,
+      "correction": 23.9034,
+      "corrected_mean": 23.9034,
       "spill": 24,
       "resolved": 23.61,
       "resolved_bucket": "74-75°F",
@@ -85639,10 +85008,10 @@
     {
       "city": "San Francisco, US",
       "date": "2026-10-27",
-      "weighted_mean": 18.0,
+      "weighted_mean": 17.8,
       "correction_method": "median",
-      "correction": 18.98,
-      "corrected_mean": 18.98,
+      "correction": 18.78,
+      "corrected_mean": 18.78,
       "spill": 19,
       "resolved": 18.06,
       "resolved_bucket": "64-65°F",
@@ -85677,11 +85046,11 @@
     {
       "city": "Seattle, US",
       "date": "2026-10-27",
-      "weighted_mean": 11.9,
+      "weighted_mean": 12.0,
       "correction_method": "additive",
-      "correction": 12.4567,
-      "corrected_mean": 12.4567,
-      "spill": 12,
+      "correction": 12.5567,
+      "corrected_mean": 12.5567,
+      "spill": 13,
       "resolved": 13.61,
       "resolved_bucket": "56-57°F",
       "market_type": "point",
@@ -85943,15 +85312,53 @@
     {
       "city": "Ankara, TR",
       "date": "2026-10-28",
-      "weighted_mean": 17.4,
+      "weighted_mean": 17.8,
       "correction_method": "additive",
-      "correction": 18.075,
-      "corrected_mean": 18.075,
+      "correction": 18.475,
+      "corrected_mean": 18.475,
       "spill": 18,
+      "resolved": 19.0,
+      "resolved_bucket": "19.0°C",
+      "market_type": "point",
+      "market_unit": "C",
+      "result": "LOSS",
+      "plain_mean": null,
+      "plain_mean_spill": null,
+      "plain_mean_result": null,
+      "today_source": "bma_mean_fallback",
+      "providers_used": []
+    },
+    {
+      "city": "Atlanta, US",
+      "date": "2026-10-28",
+      "weighted_mean": 21.8,
+      "correction_method": "linear",
+      "correction": 28.6691,
+      "corrected_mean": 28.6691,
+      "spill": 29,
       "resolved": null,
       "resolved_bucket": null,
       "market_type": null,
-      "market_unit": "C",
+      "market_unit": "F",
+      "result": null,
+      "plain_mean": null,
+      "plain_mean_spill": null,
+      "plain_mean_result": null,
+      "today_source": "bma_mean_fallback",
+      "providers_used": []
+    },
+    {
+      "city": "Austin, US",
+      "date": "2026-10-28",
+      "weighted_mean": 27.8,
+      "correction_method": "additive",
+      "correction": 28.7325,
+      "corrected_mean": 28.7325,
+      "spill": 29,
+      "resolved": null,
+      "resolved_bucket": null,
+      "market_type": null,
+      "market_unit": "F",
       "result": null,
       "plain_mean": null,
       "plain_mean_spill": null,
@@ -85967,6 +85374,25 @@
       "correction": 16.8693,
       "corrected_mean": 16.8693,
       "spill": 17,
+      "resolved": 16.0,
+      "resolved_bucket": "16.0°C",
+      "market_type": "point",
+      "market_unit": "C",
+      "result": "LOSS",
+      "plain_mean": null,
+      "plain_mean_spill": null,
+      "plain_mean_result": null,
+      "today_source": "bma_mean_fallback",
+      "providers_used": []
+    },
+    {
+      "city": "Buenos Aires, AR",
+      "date": "2026-10-28",
+      "weighted_mean": 22.2,
+      "correction_method": "multiplicative",
+      "correction": 23.4674,
+      "corrected_mean": 23.4674,
+      "spill": 23,
       "resolved": null,
       "resolved_bucket": null,
       "market_type": null,
@@ -85986,11 +85412,11 @@
       "correction": 17.3091,
       "corrected_mean": 17.3091,
       "spill": 17,
-      "resolved": null,
-      "resolved_bucket": null,
-      "market_type": null,
+      "resolved": 17.0,
+      "resolved_bucket": "17.0°C",
+      "market_type": "point",
       "market_unit": "C",
-      "result": null,
+      "result": "WIN",
       "plain_mean": null,
       "plain_mean_spill": null,
       "plain_mean_result": null,
@@ -86024,10 +85450,29 @@
       "correction": 21.04,
       "corrected_mean": 21.04,
       "spill": 21,
+      "resolved": 20.0,
+      "resolved_bucket": "20.0°C",
+      "market_type": "point",
+      "market_unit": "C",
+      "result": "LOSS",
+      "plain_mean": null,
+      "plain_mean_spill": null,
+      "plain_mean_result": null,
+      "today_source": "bma_mean_fallback",
+      "providers_used": []
+    },
+    {
+      "city": "Chicago, US",
+      "date": "2026-10-28",
+      "weighted_mean": 22.7,
+      "correction_method": "median",
+      "correction": 22.235,
+      "corrected_mean": 22.235,
+      "spill": 22,
       "resolved": null,
       "resolved_bucket": null,
       "market_type": null,
-      "market_unit": "C",
+      "market_unit": "F",
       "result": null,
       "plain_mean": null,
       "plain_mean_spill": null,
@@ -86043,10 +85488,48 @@
       "correction": 18.55,
       "corrected_mean": 18.55,
       "spill": 19,
+      "resolved": 16.0,
+      "resolved_bucket": "16°C",
+      "market_type": "point",
+      "market_unit": "C",
+      "result": "LOSS",
+      "plain_mean": null,
+      "plain_mean_spill": null,
+      "plain_mean_result": null,
+      "today_source": "bma_mean_fallback",
+      "providers_used": []
+    },
+    {
+      "city": "Dallas, US",
+      "date": "2026-10-28",
+      "weighted_mean": 27.3,
+      "correction_method": "linear",
+      "correction": 24.7599,
+      "corrected_mean": 24.7599,
+      "spill": 25,
       "resolved": null,
       "resolved_bucket": null,
       "market_type": null,
-      "market_unit": "C",
+      "market_unit": "F",
+      "result": null,
+      "plain_mean": null,
+      "plain_mean_spill": null,
+      "plain_mean_result": null,
+      "today_source": "bma_mean_fallback",
+      "providers_used": []
+    },
+    {
+      "city": "Denver, US",
+      "date": "2026-10-28",
+      "weighted_mean": 18.4,
+      "correction_method": "median",
+      "correction": 19.8,
+      "corrected_mean": 19.8,
+      "spill": 20,
+      "resolved": null,
+      "resolved_bucket": null,
+      "market_type": null,
+      "market_unit": "F",
       "result": null,
       "plain_mean": null,
       "plain_mean_spill": null,
@@ -86062,11 +85545,11 @@
       "correction": 31.41,
       "corrected_mean": 31.41,
       "spill": 31,
-      "resolved": null,
-      "resolved_bucket": null,
-      "market_type": null,
+      "resolved": 32.0,
+      "resolved_bucket": "32.0°C",
+      "market_type": "point",
       "market_unit": "C",
-      "result": null,
+      "result": "LOSS",
       "plain_mean": null,
       "plain_mean_spill": null,
       "plain_mean_result": null,
@@ -86100,10 +85583,29 @@
       "correction": 27.7,
       "corrected_mean": 27.7,
       "spill": 28,
+      "resolved": 27.0,
+      "resolved_bucket": "27°C",
+      "market_type": "point",
+      "market_unit": "C",
+      "result": "LOSS",
+      "plain_mean": null,
+      "plain_mean_spill": null,
+      "plain_mean_result": null,
+      "today_source": "bma_mean_fallback",
+      "providers_used": []
+    },
+    {
+      "city": "Houston, US",
+      "date": "2026-10-28",
+      "weighted_mean": 27.1,
+      "correction_method": "linear",
+      "correction": 28.059,
+      "corrected_mean": 28.059,
+      "spill": 28,
       "resolved": null,
       "resolved_bucket": null,
       "market_type": null,
-      "market_unit": "C",
+      "market_unit": "F",
       "result": null,
       "plain_mean": null,
       "plain_mean_spill": null,
@@ -86114,10 +85616,10 @@
     {
       "city": "Istanbul, TR",
       "date": "2026-10-28",
-      "weighted_mean": 15.0,
+      "weighted_mean": 15.1,
       "correction_method": "median",
-      "correction": 15.5,
-      "corrected_mean": 15.5,
+      "correction": 15.6,
+      "corrected_mean": 15.6,
       "spill": 16,
       "resolved": null,
       "resolved_bucket": null,
@@ -86133,10 +85635,10 @@
     {
       "city": "Jeddah, SA",
       "date": "2026-10-28",
-      "weighted_mean": 36.2,
+      "weighted_mean": 36.3,
       "correction_method": "additive",
-      "correction": 36.4,
-      "corrected_mean": 36.4,
+      "correction": 36.5,
+      "corrected_mean": 36.5,
       "spill": 36,
       "resolved": null,
       "resolved_bucket": null,
@@ -86190,11 +85692,30 @@
     {
       "city": "Kuala Lumpur, MY",
       "date": "2026-10-28",
-      "weighted_mean": 31.4,
+      "weighted_mean": 31.3,
       "correction_method": "linear",
-      "correction": 33.3822,
-      "corrected_mean": 33.3822,
+      "correction": 33.3465,
+      "corrected_mean": 33.3465,
       "spill": 33,
+      "resolved": 33.0,
+      "resolved_bucket": "33.0°C",
+      "market_type": "point",
+      "market_unit": "C",
+      "result": "WIN",
+      "plain_mean": null,
+      "plain_mean_spill": null,
+      "plain_mean_result": null,
+      "today_source": "bma_mean_fallback",
+      "providers_used": []
+    },
+    {
+      "city": "London, UK",
+      "date": "2026-10-28",
+      "weighted_mean": 15.4,
+      "correction_method": "median",
+      "correction": 16.05,
+      "corrected_mean": 16.05,
+      "spill": 16,
       "resolved": null,
       "resolved_bucket": null,
       "market_type": null,
@@ -86207,17 +85728,17 @@
       "providers_used": []
     },
     {
-      "city": "London, UK",
+      "city": "Los Angeles, US",
       "date": "2026-10-28",
-      "weighted_mean": 15.3,
-      "correction_method": "median",
-      "correction": 15.95,
-      "corrected_mean": 15.95,
-      "spill": 16,
+      "weighted_mean": 23.3,
+      "correction_method": "linear",
+      "correction": 23.6161,
+      "corrected_mean": 23.6161,
+      "spill": 24,
       "resolved": null,
       "resolved_bucket": null,
       "market_type": null,
-      "market_unit": "C",
+      "market_unit": "F",
       "result": null,
       "plain_mean": null,
       "plain_mean_spill": null,
@@ -86233,11 +85754,11 @@
       "correction": 30.2523,
       "corrected_mean": 30.2523,
       "spill": 30,
-      "resolved": null,
-      "resolved_bucket": null,
-      "market_type": null,
+      "resolved": 31.0,
+      "resolved_bucket": "31.0°C",
+      "market_type": "point",
       "market_unit": "C",
-      "result": null,
+      "result": "LOSS",
       "plain_mean": null,
       "plain_mean_spill": null,
       "plain_mean_result": null,
@@ -86247,11 +85768,11 @@
     {
       "city": "Madrid, ES",
       "date": "2026-10-28",
-      "weighted_mean": 21.5,
+      "weighted_mean": 21.3,
       "correction_method": "additive",
-      "correction": 22.525,
-      "corrected_mean": 22.525,
-      "spill": 23,
+      "correction": 22.325,
+      "corrected_mean": 22.325,
+      "spill": 22,
       "resolved": null,
       "resolved_bucket": null,
       "market_type": null,
@@ -86271,6 +85792,25 @@
       "correction": 33.4091,
       "corrected_mean": 33.4091,
       "spill": 33,
+      "resolved": 34.0,
+      "resolved_bucket": "34.0°C",
+      "market_type": "point",
+      "market_unit": "C",
+      "result": "LOSS",
+      "plain_mean": null,
+      "plain_mean_spill": null,
+      "plain_mean_result": null,
+      "today_source": "bma_mean_fallback",
+      "providers_used": []
+    },
+    {
+      "city": "Mexico City, MX",
+      "date": "2026-10-28",
+      "weighted_mean": 24.7,
+      "correction_method": "median",
+      "correction": 24.9,
+      "corrected_mean": 24.9,
+      "spill": 25,
       "resolved": null,
       "resolved_bucket": null,
       "market_type": null,
@@ -86283,12 +85823,31 @@
       "providers_used": []
     },
     {
+      "city": "Miami, US",
+      "date": "2026-10-28",
+      "weighted_mean": 28.7,
+      "correction_method": "median",
+      "correction": 29.36,
+      "corrected_mean": 29.36,
+      "spill": 29,
+      "resolved": null,
+      "resolved_bucket": null,
+      "market_type": null,
+      "market_unit": "F",
+      "result": null,
+      "plain_mean": null,
+      "plain_mean_spill": null,
+      "plain_mean_result": null,
+      "today_source": "bma_mean_fallback",
+      "providers_used": []
+    },
+    {
       "city": "Milan, IT",
       "date": "2026-10-28",
-      "weighted_mean": 16.6,
+      "weighted_mean": 16.7,
       "correction_method": "linear",
-      "correction": 19.3075,
-      "corrected_mean": 19.3075,
+      "correction": 19.3936,
+      "corrected_mean": 19.3936,
       "spill": 19,
       "resolved": null,
       "resolved_bucket": null,
@@ -86309,6 +85868,25 @@
       "correction": 10.15,
       "corrected_mean": 10.15,
       "spill": 10,
+      "resolved": 13.0,
+      "resolved_bucket": "13.0°C",
+      "market_type": "point",
+      "market_unit": "C",
+      "result": "LOSS",
+      "plain_mean": null,
+      "plain_mean_spill": null,
+      "plain_mean_result": null,
+      "today_source": "bma_mean_fallback",
+      "providers_used": []
+    },
+    {
+      "city": "Munich, DE",
+      "date": "2026-10-28",
+      "weighted_mean": 11.0,
+      "correction_method": "multiplicative",
+      "correction": 11.8681,
+      "corrected_mean": 11.8681,
+      "spill": 12,
       "resolved": null,
       "resolved_bucket": null,
       "market_type": null,
@@ -86321,13 +85899,32 @@
       "providers_used": []
     },
     {
-      "city": "Munich, DE",
+      "city": "New York, US",
       "date": "2026-10-28",
-      "weighted_mean": 11.4,
-      "correction_method": "multiplicative",
-      "correction": 12.2997,
-      "corrected_mean": 12.2997,
-      "spill": 12,
+      "weighted_mean": 15.7,
+      "correction_method": "baseline",
+      "correction": 15.7,
+      "corrected_mean": 15.7,
+      "spill": 16,
+      "resolved": null,
+      "resolved_bucket": null,
+      "market_type": null,
+      "market_unit": "F",
+      "result": null,
+      "plain_mean": null,
+      "plain_mean_spill": null,
+      "plain_mean_result": null,
+      "today_source": "bma_mean_fallback",
+      "providers_used": []
+    },
+    {
+      "city": "Panama City, PA",
+      "date": "2026-10-28",
+      "weighted_mean": 31.0,
+      "correction_method": "median",
+      "correction": 32.5,
+      "corrected_mean": 32.5,
+      "spill": 32,
       "resolved": null,
       "resolved_bucket": null,
       "market_type": null,
@@ -86342,10 +85939,10 @@
     {
       "city": "Paris, FR",
       "date": "2026-10-28",
-      "weighted_mean": 14.5,
+      "weighted_mean": 14.2,
       "correction_method": "baseline",
-      "correction": 14.5,
-      "corrected_mean": 14.5,
+      "correction": 14.2,
+      "corrected_mean": 14.2,
       "spill": 14,
       "resolved": null,
       "resolved_bucket": null,
@@ -86366,10 +85963,67 @@
       "correction": 18.2182,
       "corrected_mean": 18.2182,
       "spill": 18,
+      "resolved": 19.0,
+      "resolved_bucket": "19.0°C",
+      "market_type": "point",
+      "market_unit": "C",
+      "result": "LOSS",
+      "plain_mean": null,
+      "plain_mean_spill": null,
+      "plain_mean_result": null,
+      "today_source": "bma_mean_fallback",
+      "providers_used": []
+    },
+    {
+      "city": "San Francisco, US",
+      "date": "2026-10-28",
+      "weighted_mean": 19.4,
+      "correction_method": "median",
+      "correction": 20.38,
+      "corrected_mean": 20.38,
+      "spill": 20,
+      "resolved": null,
+      "resolved_bucket": null,
+      "market_type": null,
+      "market_unit": "F",
+      "result": null,
+      "plain_mean": null,
+      "plain_mean_spill": null,
+      "plain_mean_result": null,
+      "today_source": "bma_mean_fallback",
+      "providers_used": []
+    },
+    {
+      "city": "Sao Paulo, BR",
+      "date": "2026-10-28",
+      "weighted_mean": 22.5,
+      "correction_method": "linear",
+      "correction": 23.0633,
+      "corrected_mean": 23.0633,
+      "spill": 23,
       "resolved": null,
       "resolved_bucket": null,
       "market_type": null,
       "market_unit": "C",
+      "result": null,
+      "plain_mean": null,
+      "plain_mean_spill": null,
+      "plain_mean_result": null,
+      "today_source": "bma_mean_fallback",
+      "providers_used": []
+    },
+    {
+      "city": "Seattle, US",
+      "date": "2026-10-28",
+      "weighted_mean": 10.7,
+      "correction_method": "additive",
+      "correction": 11.2567,
+      "corrected_mean": 11.2567,
+      "spill": 11,
+      "resolved": null,
+      "resolved_bucket": null,
+      "market_type": null,
+      "market_unit": "F",
       "result": null,
       "plain_mean": null,
       "plain_mean_spill": null,
@@ -86385,11 +86039,11 @@
       "correction": 8.3416,
       "corrected_mean": 8.3416,
       "spill": 8,
-      "resolved": null,
-      "resolved_bucket": null,
-      "market_type": null,
+      "resolved": 12.0,
+      "resolved_bucket": "12.0°C",
+      "market_type": "point",
       "market_unit": "C",
-      "result": null,
+      "result": "LOSS",
       "plain_mean": null,
       "plain_mean_spill": null,
       "plain_mean_result": null,
@@ -86404,11 +86058,11 @@
       "correction": 14.9662,
       "corrected_mean": 14.9662,
       "spill": 15,
-      "resolved": null,
-      "resolved_bucket": null,
-      "market_type": null,
+      "resolved": 21.0,
+      "resolved_bucket": "21.0°C",
+      "market_type": "point",
       "market_unit": "C",
-      "result": null,
+      "result": "LOSS",
       "plain_mean": null,
       "plain_mean_spill": null,
       "plain_mean_result": null,
@@ -86423,11 +86077,11 @@
       "correction": 29.5,
       "corrected_mean": 29.5,
       "spill": 30,
-      "resolved": null,
-      "resolved_bucket": null,
-      "market_type": null,
+      "resolved": 29.0,
+      "resolved_bucket": "29.0°C",
+      "market_type": "point",
       "market_unit": "C",
-      "result": null,
+      "result": "LOSS",
       "plain_mean": null,
       "plain_mean_spill": null,
       "plain_mean_result": null,
@@ -86437,16 +86091,16 @@
     {
       "city": "Singapore, SG",
       "date": "2026-10-28",
-      "weighted_mean": 30.1,
+      "weighted_mean": 30.0,
       "correction_method": "linear",
-      "correction": 32.6161,
-      "corrected_mean": 32.6161,
+      "correction": 32.6006,
+      "corrected_mean": 32.6006,
       "spill": 33,
-      "resolved": null,
-      "resolved_bucket": null,
-      "market_type": null,
+      "resolved": 30.0,
+      "resolved_bucket": "30.0°C",
+      "market_type": "point",
       "market_unit": "C",
-      "result": null,
+      "result": "LOSS",
       "plain_mean": null,
       "plain_mean_spill": null,
       "plain_mean_result": null,
@@ -86461,11 +86115,11 @@
       "correction": 26.9,
       "corrected_mean": 26.9,
       "spill": 27,
-      "resolved": null,
-      "resolved_bucket": null,
-      "market_type": null,
+      "resolved": 26.0,
+      "resolved_bucket": "26.0°C",
+      "market_type": "point",
       "market_unit": "C",
-      "result": null,
+      "result": "LOSS",
       "plain_mean": null,
       "plain_mean_spill": null,
       "plain_mean_result": null,
@@ -86494,11 +86148,30 @@
     {
       "city": "Tokyo, JP",
       "date": "2026-10-28",
-      "weighted_mean": 18.6,
+      "weighted_mean": 18.7,
       "correction_method": "baseline",
-      "correction": 18.6,
-      "corrected_mean": 18.6,
+      "correction": 18.7,
+      "corrected_mean": 18.7,
       "spill": 19,
+      "resolved": 20.0,
+      "resolved_bucket": "20.0°C",
+      "market_type": "point",
+      "market_unit": "C",
+      "result": "LOSS",
+      "plain_mean": null,
+      "plain_mean_spill": null,
+      "plain_mean_result": null,
+      "today_source": "bma_mean_fallback",
+      "providers_used": []
+    },
+    {
+      "city": "Toronto, CA",
+      "date": "2026-10-28",
+      "weighted_mean": 14.7,
+      "correction_method": "baseline",
+      "correction": 14.7,
+      "corrected_mean": 14.7,
+      "spill": 15,
       "resolved": null,
       "resolved_bucket": null,
       "market_type": null,
@@ -86513,11 +86186,11 @@
     {
       "city": "Warsaw, PL",
       "date": "2026-10-28",
-      "weighted_mean": 11.4,
+      "weighted_mean": 11.6,
       "correction_method": "baseline",
-      "correction": 11.4,
-      "corrected_mean": 11.4,
-      "spill": 11,
+      "correction": 11.6,
+      "corrected_mean": 11.6,
+      "spill": 12,
       "resolved": null,
       "resolved_bucket": null,
       "market_type": null,
@@ -86532,13 +86205,13 @@
     {
       "city": "Wellington, NZ",
       "date": "2026-10-28",
-      "weighted_mean": 15.3,
+      "weighted_mean": 15.4,
       "correction_method": "multiplicative",
-      "correction": 16.2628,
-      "corrected_mean": 16.2628,
+      "correction": 16.3691,
+      "corrected_mean": 16.3691,
       "spill": 16,
       "resolved": 17.0,
-      "resolved_bucket": "17°C",
+      "resolved_bucket": "17.0°C",
       "market_type": "point",
       "market_unit": "C",
       "result": "LOSS",
@@ -86551,7 +86224,26 @@
     {
       "city": "Wuhan, CN",
       "date": "2026-10-28",
-      "weighted_mean": 20.0,
+      "weighted_mean": 20.1,
+      "correction_method": "median",
+      "correction": 20.8,
+      "corrected_mean": 20.8,
+      "spill": 21,
+      "resolved": 20.0,
+      "resolved_bucket": "20.0°C",
+      "market_type": "point",
+      "market_unit": "C",
+      "result": "LOSS",
+      "plain_mean": null,
+      "plain_mean_spill": null,
+      "plain_mean_result": null,
+      "today_source": "bma_mean_fallback",
+      "providers_used": []
+    },
+    {
+      "city": "Zhengzhou, CN",
+      "date": "2026-10-28",
+      "weighted_mean": 19.6,
       "correction_method": "median",
       "correction": 20.7,
       "corrected_mean": 20.7,
@@ -86568,13 +86260,13 @@
       "providers_used": []
     },
     {
-      "city": "Zhengzhou, CN",
-      "date": "2026-10-28",
-      "weighted_mean": 19.6,
-      "correction_method": "median",
-      "correction": 20.7,
-      "corrected_mean": 20.7,
-      "spill": 21,
+      "city": "Wellington, NZ",
+      "date": "2026-10-29",
+      "weighted_mean": 16.7,
+      "correction_method": "multiplicative",
+      "correction": 17.7509,
+      "corrected_mean": 17.7509,
+      "spill": 18,
       "resolved": null,
       "resolved_bucket": null,
       "market_type": null,
