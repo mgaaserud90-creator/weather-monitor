@@ -123,7 +123,7 @@ Dager kjørt: 80
 
 🌡️ PEAK vs RESOLUTION — KUMULATIV
 
-   Samples: 3771  ·  Bias (snitt avvik): -0.434°C  ·  MAE: 0.990°C  ·  RMSE: 1.259°C  ·  Std: 1.182°C
+   Samples: 3773  ·  Bias (snitt avvik): -0.433°C  ·  MAE: 0.990°C  ·  RMSE: 1.259°C  ·  Std: 1.182°C
 
    By                         n   Bias °C     MAE    RMSE     Std  Flagg
    Taipei, TW                75     -1.46    1.57    1.79    1.05  
@@ -146,8 +146,8 @@ Dager kjørt: 80
    Chicago, US               78     -0.69    1.11    1.47    1.30  
    Warsaw, PL                76     -0.68    0.92    1.11    0.88  
    Madrid, ES                78     -0.66    0.90    1.09    0.87  
+   Jeddah, SA                76     +0.66    0.87    1.07    0.84  
    Milan, IT                 78     -0.66    0.89    1.08    0.86  
-   Jeddah, SA                75     +0.66    0.87    1.07    0.85  
    London, UK                78     -0.65    0.94    1.13    0.93  
    San Francisco, US         77     +0.63    1.45    1.96    1.87  
    Denver, US                78     -0.61    1.03    1.28    1.14  
@@ -174,6 +174,6 @@ Dager kjørt: 80
    Toronto, CA               78     -0.09    0.75    1.03    1.04  
    Helsinki, FI              79     -0.07    0.63    0.79    0.79  
    Dallas, US                77     -0.06    0.95    1.23    1.24  
+   Tel Aviv, IL              80     +0.03    0.60    0.78    0.78  
    Chongqing, CN             74     -0.03    0.97    1.20    1.21  
-   Tel Aviv, IL              79     +0.03    0.61    0.78    0.79  
    Karachi, PK               72     -0.01    0.58    0.75    0.76  

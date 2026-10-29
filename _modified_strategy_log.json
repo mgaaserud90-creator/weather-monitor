@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated": "2026-10-29T13:15:59.691366+00:00",
+    "generated": "2026-10-29T13:34:31.315400+00:00",
     "description": "Modifisert strategy: per-city provider removal + inverse-MSE reweighting + per-city correction.",
     "removal_rule": {
       "consistent_misser": "|bias| >= 1.0°C AND sign-agreement >= 70%",
@@ -2638,7 +2638,7 @@
   },
   "today": {
     "date": "2026-10-30",
-    "computed_at": "2026-10-29T13:15:59.692012+00:00",
+    "computed_at": "2026-10-29T13:34:31.315975+00:00",
     "source_priority": "Full daily series: 1) per-provider values from _weighted_mean_predictions.json (Open-Meteo per-model source); 2) BMA mean from every _model_quality_log.json run + city correction (fallback). Every row is resolved against _resolved_markets_log.json and contributes to the cumulative statistics. Each city's chosen path is recorded in rows[].today_source.",
     "rows": {
       "Wellington, NZ": {
@@ -86832,10 +86832,10 @@
     {
       "city": "Moscow, RU",
       "date": "2026-10-29",
-      "weighted_mean": 10.747,
+      "weighted_mean": 10.547,
       "correction_method": "median",
-      "correction": 11.097,
-      "corrected_mean": 11.097,
+      "correction": 10.897,
+      "corrected_mean": 10.897,
       "spill": 11,
       "resolved": null,
       "resolved_bucket": "13°C or higher",
@@ -87079,11 +87079,11 @@
     {
       "city": "Taipei, TW",
       "date": "2026-10-29",
-      "weighted_mean": 29.277,
+      "weighted_mean": 28.477,
       "correction_method": "median",
-      "correction": 31.877,
-      "corrected_mean": 31.877,
-      "spill": 32,
+      "correction": 31.077,
+      "corrected_mean": 31.077,
+      "spill": 31,
       "resolved": 28.0,
       "resolved_bucket": "28.0°C",
       "market_type": "point",
