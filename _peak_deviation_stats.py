@@ -64,9 +64,17 @@ def _round1(value: float) -> float:
     return round(float(value), 1)
 
 
-def load_json(path: Path):
-    with open(path, "r", encoding="utf-8") as fh:
-        return json.load(fh)
+# F1: shared stat-keyed JSON cache (_json_io). `_model_quality_log.json` is
+# ~7 MB and this module reads it several times per run; the cache keys on
+# (path, mtime, size) so a rewrite is still picked up. Parsed object and
+# on-disk schema are unchanged — this is an I/O optimisation only.
+try:
+    from _json_io import load as load_json  # type: ignore[assignment]
+except ModuleNotFoundError:  # pragma: no cover - script copied without the helper
+
+    def load_json(path: Path):  # type: ignore[misc]
+        with open(path, "r", encoding="utf-8") as fh:
+            return json.load(fh)
 
 
 def gap_to_c(gap: float, unit: str) -> float:

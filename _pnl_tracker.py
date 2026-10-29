@@ -62,6 +62,17 @@ EDGE_THRESHOLD = float(os.environ.get("EDGE_THRESHOLD", "0.05"))
 KELLY_FRACTION = 0.25  # quarter-Kelly, conservative
 
 
+# F1: shared stat-keyed JSON cache (_json_io). The ledger rebuild and the
+# quality-log parse below are the two heaviest reads in this script. Parsed
+# object and on-disk schema are unchanged — I/O optimisation only.
+try:
+    from _json_io import load as _json_load
+except ModuleNotFoundError:  # pragma: no cover - script copied without the helper
+
+    def _json_load(path, **kwargs):  # type: ignore[misc]
+        return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -74,7 +85,7 @@ def load_ledger() -> dict:
     """Load the PnL ledger, returning an empty structure when absent/corrupt."""
     if PNL_LOG_FILE.exists():
         try:
-            data = json.loads(PNL_LOG_FILE.read_text(encoding="utf-8"))
+            data = _json_load(PNL_LOG_FILE)
             if isinstance(data, dict) and isinstance(data.get("records"), list):
                 return data
         except (json.JSONDecodeError, OSError):
@@ -287,7 +298,7 @@ def build_ledger_from_quality_log() -> list[dict]:
     if not QUALITY_LOG_FILE.exists():
         return []
     try:
-        log_data = json.loads(QUALITY_LOG_FILE.read_text(encoding="utf-8"))
+        log_data = _json_load(QUALITY_LOG_FILE)
     except (json.JSONDecodeError, OSError):
         return []
 

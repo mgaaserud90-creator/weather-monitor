@@ -63,12 +63,24 @@ BIAS_CAP_C = float(os.environ.get("EDGE_ENHANCER_CAP_C", "1.5"))
 # Data loading (local JSON only)
 # ---------------------------------------------------------------------------
 
+# F1: shared stat-keyed JSON cache (_json_io). The backtest re-reads
+# _model_quality_log.json (~7 MB) and the deviation log repeatedly; the cache
+# keys on (path, mtime, size) so a rewrite is still seen. Parsed object and
+# on-disk schema are unchanged — this is an I/O optimisation only.
+try:
+    from _json_io import load as _json_load
+except ModuleNotFoundError:  # pragma: no cover - script copied without the helper
+
+    def _json_load(path, **kwargs):  # type: ignore[misc]
+        return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
 def load_deviation_samples() -> list[dict]:
     """Return the persistent peak-deviation samples (our peak vs resolution)."""
     if not PEAK_DEVIATION_LOG.exists():
         return []
     try:
-        data = json.loads(PEAK_DEVIATION_LOG.read_text(encoding="utf-8"))
+        data = _json_load(PEAK_DEVIATION_LOG)
         return data.get("samples", []) or []
     except (json.JSONDecodeError, OSError):
         return []
@@ -78,7 +90,7 @@ def _load_quality_runs() -> list[dict]:
     if not MODEL_QUALITY_LOG.exists():
         return []
     try:
-        data = json.loads(MODEL_QUALITY_LOG.read_text(encoding="utf-8"))
+        data = _json_load(MODEL_QUALITY_LOG)
         return data.get("runs", []) or []
     except (json.JSONDecodeError, OSError):
         return []

@@ -48,11 +48,21 @@ CSV_COLUMNS = [
 STRATEGIES = ("sigma", "p5", "mean")
 
 
+# F1: shared stat-keyed JSON cache (_json_io). Same parsed object, same
+# exceptions; only the number of re-parses over the ~7 MB quality log changes.
+try:
+    from _json_io import load as _json_load
+except ModuleNotFoundError:  # pragma: no cover - script copied without the helper
+
+    def _json_load(path, **kwargs):  # type: ignore[misc]
+        return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
 def _load_quality_runs() -> list[dict]:
     if not MODEL_QUALITY_LOG.exists():
         return []
     try:
-        data = json.loads(MODEL_QUALITY_LOG.read_text(encoding="utf-8"))
+        data = _json_load(MODEL_QUALITY_LOG)
         return data.get("runs", []) or []
     except (json.JSONDecodeError, OSError):
         return []
