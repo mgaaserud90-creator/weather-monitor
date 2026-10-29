@@ -29,7 +29,8 @@ concurrency:
 jobs:
   fetch:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Step timers sum to 6 + 2 + 4 = 12 min, inside this cap.
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
@@ -40,21 +41,79 @@ jobs:
         with:
           python-version: '3.11'
 
+      # F3: save_results() refuses to overwrite a healthy snapshot with a
+      # degraded one and exits 1, so this step now goes red instead of quietly
+      # committing a truncated file.
       - name: Fetch Polymarket prices
-        timeout-minutes: 8
+        timeout-minutes: 6
         run: |
           set -x
           python3 _fetch_market_prices.py
-          echo "Exit code: $?"
 
-      - name: Verify output
+      # F4 — assert the snapshot is not degraded. This step used to echo the
+      # byte size and exit 0 even when the file was ABSENT, which is how a
+      # partial-outage snapshot got committed as if it were healthy.
+      #
+      # Measured baseline (2026-10-29): 3 025 markets, 44 of them without a
+      # usable Yes price (98.55 % usable). Thresholds sit well below that, and
+      # far above any partial-outage result:
+      #   * total_markets >= 1500   (baseline 3 025; save_results already refuses
+      #                              anything below 70 % of the previous count)
+      #   * >= 95 % of markets carry a usable Yes price (baseline 98.55 %)
+      - name: Verify output (assert not degraded)
         timeout-minutes: 2
         run: |
-          if [ -f "_market_prices.json" ]; then
-            echo "OK: _market_prices.json ($(wc -c < _market_prices.json) bytes)"
-          else
-            echo "WARNING: _market_prices.json not generated (API may be rate-limited)"
-          fi
+          python3 - <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          MIN_MARKETS = 1500
+          MIN_USABLE_RATIO = 0.95
+
+          path = Path("_market_prices.json")
+          if not path.exists():
+              print("::error::_market_prices.json is missing - the fetch produced nothing.")
+              sys.exit(1)
+
+          data = json.loads(path.read_text(encoding="utf-8"))
+          markets = data.get("markets") or []
+          declared = data.get("total_markets")
+          total = declared if isinstance(declared, int) else len(markets)
+
+          usable = 0
+          for m in markets:
+              for o in m.get("outcomes", []):
+                  if (
+                      str(o.get("label", "")).strip().lower() == "yes"
+                      and o.get("price") is not None
+                  ):
+                      usable += 1
+                      break
+
+          ratio = usable / len(markets) if markets else 0.0
+          print(
+              f"_market_prices.json: total_markets={total} rows={len(markets)} "
+              f"usable_yes={usable} ratio={ratio:.2%}"
+          )
+
+          failed = False
+          if total < MIN_MARKETS:
+              print(
+                  f"::error::Degraded snapshot: total_markets={total} is below the "
+                  f"floor of {MIN_MARKETS}."
+              )
+              failed = True
+          if ratio < MIN_USABLE_RATIO:
+              print(
+                  f"::error::Degraded snapshot: only {ratio:.2%} of markets carry a "
+                  f"usable Yes price (floor {MIN_USABLE_RATIO:.0%})."
+              )
+              failed = True
+          if failed:
+              sys.exit(1)
+          print("OK: snapshot is not degraded")
+          PY
 
       # Single shared commit transport (.github/actions/commit-generated).
       # The old path — rebase-pull with autostash, the auto-commit action, and a
@@ -63,7 +122,7 @@ jobs:
       # reports success.
       - name: Commit market prices (always)
         if: always()
-        timeout-minutes: 10
+        timeout-minutes: 4
         continue-on-error: true
         uses: ./.github/actions/commit-generated
         with:

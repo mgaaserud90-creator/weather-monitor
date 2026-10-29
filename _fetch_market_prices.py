@@ -557,9 +557,52 @@ def deduplicate_markets(markets: list[dict]) -> list[dict]:
     return result
 
 
-def save_results(markets: list[dict], source_info: str) -> None:
-    """Save markets to _market_prices.json (schema-compatible output)."""
+# F3 — degraded-snapshot floor. A partial Gamma/CLOB outage used to overwrite a
+# healthy ~3 000-market file with whatever the run happened to scrape, and the
+# next hourly run happily committed the truncated snapshot. Refuse any write
+# whose market count falls below this fraction of the previous file's count.
+DEGRADED_RATIO = 0.7
+
+
+def _previous_market_count() -> Optional[int]:
+    """Market count in the existing output file, or None when there isn't one."""
+    if not OUTPUT_FILE.exists():
+        return None
+    try:
+        previous = json.loads(OUTPUT_FILE.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError, ValueError):
+        return None
+    if not isinstance(previous, dict):
+        return None
+    count = previous.get("total_markets")
+    if isinstance(count, int):
+        return count
+    markets = previous.get("markets")
+    if isinstance(markets, list):
+        return len(markets)
+    return None
+
+
+def save_results(markets: list[dict], source_info: str) -> int:
+    """Save markets to _market_prices.json (schema-compatible output).
+
+    Returns 0 when the file was written, 1 when the write was refused because
+    the new snapshot is provably degraded (see ``DEGRADED_RATIO``).
+    """
     markets = deduplicate_markets(markets)
+
+    previous_count = _previous_market_count()
+    new_count = len(markets)
+    if previous_count is not None and new_count < previous_count * DEGRADED_RATIO:
+        message = (
+            f"Refusing to overwrite {OUTPUT_FILE.name}: the new snapshot holds "
+            f"{new_count} markets but the existing file holds {previous_count} "
+            f"({new_count / previous_count:.1%} < {DEGRADED_RATIO:.0%} floor). "
+            f"The previous file is left untouched."
+        )
+        print(f"\n::warning::{message}")
+        print(f"[NOT SAVED] {message}")
+        return 1
 
     output = {
         "fetched_at": datetime.now(timezone.utc).isoformat(),
@@ -584,6 +627,9 @@ def save_results(markets: list[dict], source_info: str) -> None:
         encoding="utf-8",
     )
     print(f"\n[SAVED] {len(markets)} markets to: {OUTPUT_FILE}")
+    if previous_count is not None:
+        print(f"[SAVED] previous file held {previous_count} markets")
+    return 0
 
 
 def print_sample(markets: list[dict], n: int = 5) -> None:
@@ -643,8 +689,7 @@ def main() -> int:
 
     if all_markets:
         print_sample(all_markets)
-        save_results(all_markets, combined_source)
-        return 0
+        return save_results(all_markets, combined_source)
 
     print("\n[WARN] ALL API STRATEGIES FAILED to find weather markets.")
     return 1

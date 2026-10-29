@@ -305,6 +305,10 @@ def load_market_prices() -> tuple[list[dict], str]:
     markets = raw.get("markets", [])
 
     opportunities: list[dict] = []
+    # F4 — make the silent drop observable. Markets without a usable Yes price
+    # are (correctly) skipped, but a bare `continue` hid how many were lost on
+    # every run. Counted and reported; the selection thresholds are untouched.
+    skipped_no_yes_price = 0
     for m in markets:
         question = m.get("question", "")
         parsed = _parse_market_question(question)
@@ -324,6 +328,7 @@ def load_market_prices() -> tuple[list[dict], str]:
                 break
 
         if yes_price is None:
+            skipped_no_yes_price += 1
             continue
 
         market_prob = round(float(yes_price) * 100, 1)
@@ -372,6 +377,17 @@ def load_market_prices() -> tuple[list[dict], str]:
             "question": question,
             "is_resolved": is_resolved,
         })
+
+    if skipped_no_yes_price:
+        print(
+            f"[WARN] Skipped {skipped_no_yes_price} of {len(markets)} markets with "
+            f"no usable Yes price",
+            file=sys.stderr,
+        )
+        print(
+            f"::warning::_market_prices.json: skipped {skipped_no_yes_price} of "
+            f"{len(markets)} markets with no usable Yes price"
+        )
 
     return opportunities, fetched_at
 
