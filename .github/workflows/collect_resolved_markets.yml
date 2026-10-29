@@ -55,15 +55,17 @@ jobs:
       - name: Backfill strategy resolutions
         run: python3 _model_quality_tracker.py --mode backfill
 
-      - name: Sync before commit
-        env:
-          GIT_TERMINAL_PROMPT: '0'
-        run: git -c core.askPass=true pull --rebase --autostash origin main
-
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      # E1 — artifact ownership. This workflow generates ONLY the resolved
+      # markets log and CSV. It used to also stage _model_quality_log.json and
+      # _quality_report.md, which it never writes: that was pure overlap with
+      # model_quality_pipeline and full_auto_pipeline, and the source of the
+      # conflicted-index commits. See the ownership map in
+      # .github/actions/commit-generated/action.yml.
+      - name: Commit resolved markets (always)
+        if: always()
+        timeout-minutes: 10
         continue-on-error: true
+        uses: ./.github/actions/commit-generated
         with:
-          # $(date ...) is not shell context inside "with:"; use run_id instead.
-          commit_message: "Auto: resolved markets (run ${{ github.run_id }})"
-          file_pattern: '_resolved_markets_log.json _resolved_markets.csv _model_quality_log.json _quality_report.md'
-          push_options: '--force-with-lease'
+          files: '_resolved_markets_log.json _resolved_markets.csv'
+          message_prefix: 'Auto: resolved markets'

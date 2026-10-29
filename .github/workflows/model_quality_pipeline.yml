@@ -60,15 +60,16 @@ jobs:
           set -x
           python3 _model_quality_tracker.py --mode hourly_active
 
-      - name: Sync before commit
-        env:
-          GIT_TERMINAL_PROMPT: '0'
-        run: git -c core.askPass=true pull --rebase --autostash origin main
-
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      # Single shared commit transport (.github/actions/commit-generated).
+      # The old rebase-pull-with-autostash + auto-commit + forced-push path left
+      # a conflicted index whenever the pipeline or the peak-rebuild job had just
+      # committed the same generated log, and the commit then died while the run
+      # still reported green.
+      - name: Commit model quality log (always)
+        if: always()
+        timeout-minutes: 10
         continue-on-error: true
+        uses: ./.github/actions/commit-generated
         with:
-          # $(date ...) is not shell context inside "with:"; use run_id instead.
-          commit_message: "Auto: hourly active (run ${{ github.run_id }})"
-          file_pattern: '_model_quality_log.json'
-          push_options: '--force-with-lease'
+          files: '_model_quality_log.json'
+          message_prefix: 'Auto: hourly active'

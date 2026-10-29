@@ -60,15 +60,14 @@ jobs:
             exit 1
           fi
 
-      - name: Sync before commit
-        env:
-          GIT_TERMINAL_PROMPT: '0'
-        run: git -c core.askPass=true pull --rebase --autostash origin main
-
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      # Single shared commit transport (.github/actions/commit-generated).
+      # The legacy rebase-pull-with-autostash plus auto-commit plus forced-push
+      # combination is banned in this repository (see the action's header).
+      - name: Commit peak detection page (always)
+        if: always()
+        timeout-minutes: 10
         continue-on-error: true
+        uses: ./.github/actions/commit-generated
         with:
-          # $(date ...) is not shell context inside "with:"; use run_id instead.
-          commit_message: "Auto: live peak selector (run ${{ github.run_id }})"
-          file_pattern: '_peak_detection.html'
-          push_options: '--force-with-lease'
+          files: '_peak_detection.html'
+          message_prefix: 'Auto: live peak selector'
