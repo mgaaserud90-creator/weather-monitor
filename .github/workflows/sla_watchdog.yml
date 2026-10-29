@@ -26,8 +26,20 @@ name: SLA Watchdog
 # can never be swallowed.
 #
 # Both breach paths are provable on demand via workflow_dispatch:
-#   gh workflow run sla_watchdog.yml -f simulate_stale_hours=48   -> red + 1 alert
+#   gh workflow run sla_watchdog.yml -f simulate_stale_hours=48   -> red, NO alert
 #   gh workflow run sla_watchdog.yml                              -> green, silent
+#
+# A simulation deliberately does not page: it proves the detection and the
+# failure path, but `_healthcheck.py --deliver-only` suppresses delivery when
+# the report records a simulation, so a proof run can never open a real
+# `pipeline-alert` issue. (Measured 2026-10-29: before this rule, a
+# simulate_stale_hours=48 dispatch opened issue #1 for an outage that did not
+# exist and a second dispatch deduplicated against it.)
+#
+# Transient failures are not breaches either: every `gh` call is retried with
+# backoff, and a question that still cannot be answered (rate limit, 5xx,
+# network) is recorded as "inconclusive" in _healthcheck_report.json and left
+# green. A watchdog that cries wolf is worse than a quiet one.
 #
 # Exit codes come from _healthcheck.py: 0 healthy, 1 breach, 2 config error.
 

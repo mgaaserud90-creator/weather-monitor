@@ -29,6 +29,19 @@ Two independent classes of failure are asserted, because they fail differently:
 A missing, unparseable or stale `_heartbeat.json` is itself a failure: absence
 must be a signal, never a silent pass.
 
+Transient failures are NOT breaches. Every `gh` question is retried with
+backoff; if it still cannot be answered (rate limit, 5xx, network) the
+measurement is recorded as *inconclusive* in `_healthcheck_report.json` and in
+the log, and the run stays green without alerting. Rationale: this watchdog
+runs every 30 minutes against the GitHub API, and a false `pipeline-alert`
+issue trains the operator to ignore the channel that must never be ignored.
+A real outage is caught by the file-based checks, which cannot be flaky, and
+persists across cycles anyway.
+
+Simulations never page. `--simulate-stale-hours/--simulate-missing` make the
+run red on purpose (that is the proof) but `--deliver-only` suppresses
+delivery, so a proof run cannot open a real `pipeline-alert` issue.
+
 Exit codes: 0 = healthy, 1 = breach, 2 = usage/config error.
 
 Usage
@@ -47,6 +60,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -134,6 +148,91 @@ def _hours(delta: timedelta) -> float:
     return round(delta.total_seconds() / 3600.0, 2)
 
 
+# ---------------------------------------------------------------------------
+# transient-failure handling
+# ---------------------------------------------------------------------------
+# The watchdog runs every 30 minutes and asks the GitHub API two questions per
+# artifact plus one per watched workflow. A rate limit, a 502 or a dropped
+# connection is *not* a pipeline outage, and turning one into a
+# `pipeline-alert` issue is worse than staying quiet: an alert that cries wolf
+# trains the operator to ignore the one channel that must never be ignored.
+#
+# So every API question is asked up to GH_ATTEMPTS times with backoff, and the
+# outcome is classified three ways:
+#   ok          — we got an answer, use it;
+#   unverified  — every attempt failed for a transient reason: log a warning,
+#                 record it as inconclusive, never alert, never go red;
+#   definitive  — gh answered with a non-transient error (e.g. a missing
+#                 permission): a real, repeatable defect, allowed to alert.
+# A genuine pipeline outage is caught by the file-based checks (heartbeat,
+# artifact freshness, WU coverage), which cannot be flaky.
+
+GH_ATTEMPTS = 3
+GH_BACKOFF_SECONDS = (2.0, 5.0)
+
+TRANSIENT_MARKERS = (
+    "rate limit",
+    "rate_limit",
+    "secondary rate",
+    "abuse detection",
+    "502",
+    "503",
+    "504",
+    "timeout",
+    "timed out",
+    "connection reset",
+    "connection refused",
+    "could not resolve host",
+    "temporary failure",
+    "i/o timeout",
+    "unexpected eof",
+)
+
+
+def _is_transient(message: str) -> bool:
+    """True when a `gh` failure looks like infrastructure, not a real answer."""
+    low = (message or "").lower()
+    return any(marker in low for marker in TRANSIENT_MARKERS)
+
+
+def _run_gh(
+    cmd: list[str], timeout: int = 120
+) -> tuple[subprocess.CompletedProcess | None, str]:
+    """Run a `gh` command, retrying transient failures with backoff.
+
+    Returns `(proc, note)`:
+
+      * `proc.returncode == 0` — success;
+      * `proc.returncode != 0` — a *definitive* failure (gh answered with a
+        non-transient error); the caller may treat it as a real defect;
+      * `proc is None` — **unverified**: every attempt failed for a transient
+        reason, or `gh` is not installed. Never a breach, never an alert.
+    """
+    last_note = "gh failed"
+    for attempt in range(1, GH_ATTEMPTS + 1):
+        try:
+            proc = subprocess.run(
+                cmd, capture_output=True, text=True, timeout=timeout
+            )
+        except FileNotFoundError:
+            return None, "gh CLI not found"
+        except subprocess.SubprocessError as exc:
+            last_note = f"gh failed: {type(exc).__name__}"
+        else:
+            if proc.returncode == 0:
+                return proc, "ok"
+            lines = (proc.stderr or proc.stdout or "gh failed").strip().splitlines()
+            last_note = (lines or ["gh failed"])[-1][:300]
+            if not _is_transient(last_note):
+                return proc, last_note
+            # Rollout note: a transient failure is retried, not reported.
+        if attempt < GH_ATTEMPTS:
+            time.sleep(
+                GH_BACKOFF_SECONDS[min(attempt - 1, len(GH_BACKOFF_SECONDS) - 1)]
+            )
+    return None, f"unverifiable after {GH_ATTEMPTS} attempts: {last_note}"
+
+
 class Breach:
     """One failed assertion: stable identity + human message."""
 
@@ -197,7 +296,9 @@ def load_heartbeat(root: Path, now: datetime, breaches: list[Breach]) -> dict | 
     return data
 
 
-def _api_committed_timestamp(name: str, repo: str | None = None) -> datetime | None:
+def _api_committed_timestamp(
+    name: str, repo: str | None = None
+) -> tuple[datetime | None, str]:
     """Last commit touching `name`, via the GitHub API (one cheap call).
 
     Deliberately NOT `git log --name-only` over local history: the repository
@@ -205,28 +306,37 @@ def _api_committed_timestamp(name: str, repo: str | None = None) -> datetime | N
     `fetch-depth: 0` clone inside a */30 min watchdog would itself become an
     outage. `GET /repos/{repo}/commits?path=...&per_page=1` answers the same
     question in one request.
+
+    Returns `(timestamp, status)` with status one of:
+      * `ok`         — a commit date came back;
+      * `empty`      — the API answered and no commit touches the path, which
+                       is a *definitive* answer and therefore a real signal;
+      * `unverified` — the API could not be asked (rate limit / 5xx / offline)
+                       even after retries. Transient by construction.
     """
     repo = repo or os.getenv("GITHUB_REPOSITORY", "")
     if not repo:
-        return None
-    try:
-        proc = subprocess.run(
-            [
-                "gh",
-                "api",
-                f"repos/{repo}/commits?path={name}&per_page=1",
-                "--jq",
-                ".[0].commit.committer.date",
-            ],
-            capture_output=True,
-            text=True,
-            timeout=60,
-        )
-    except (OSError, subprocess.SubprocessError):
-        return None
+        return None, "unverified"
+    proc, note = _run_gh(
+        [
+            "gh",
+            "api",
+            f"repos/{repo}/commits?path={name}&per_page=1",
+            "--jq",
+            ".[0].commit.committer.date",
+        ],
+        timeout=60,
+    )
+    if proc is None:
+        print(f"[healthcheck] {name}: commit date unverified — {note}")
+        return None, "unverified"
     if proc.returncode != 0:
-        return None
-    return _parse_iso(proc.stdout.strip())
+        print(f"[healthcheck] {name}: commit lookup refused — {note}")
+        return None, "unverified"
+    raw = (proc.stdout or "").strip()
+    if not raw or raw == "null":
+        return None, "empty"
+    return _parse_iso(raw), "ok"
 
 
 def _git_committed_timestamp(root: Path, name: str) -> datetime | None:
@@ -248,15 +358,20 @@ def _git_committed_timestamp(root: Path, name: str) -> datetime | None:
 
 def committed_timestamp(
     root: Path, name: str, repo: str | None = None
-) -> tuple[datetime | None, str]:
-    """`(when the artifact last changed in main, which source answered)`."""
-    api_ts = _api_committed_timestamp(name, repo)
+) -> tuple[datetime | None, str, str]:
+    """`(when it last changed in main, which source answered, lookup status)`.
+
+    The third element exists so that "nobody has ever committed this file"
+    (definitive, a real signal) can be told apart from "we could not ask"
+    (transient, must never alert).
+    """
+    api_ts, api_status = _api_committed_timestamp(name, repo)
     if api_ts is not None:
-        return api_ts, "github-api"
+        return api_ts, "github-api", "ok"
     git_ts = _git_committed_timestamp(root, name)
     if git_ts is not None:
-        return git_ts, "git-log"
-    return None, "unavailable"
+        return git_ts, "git-log", "ok"
+    return None, "unavailable", api_status
 
 
 # ---------------------------------------------------------------------------
@@ -271,9 +386,11 @@ def check_artifacts(
     simulate_stale_hours: float = 0.0,
     simulate_missing: set[str] | None = None,
     repo: str | None = None,
+    inconclusive: list[str] | None = None,
 ) -> dict[str, dict]:
     """Staleness for every thresholded artifact. Returns the measured map."""
     simulate_missing = simulate_missing or set()
+    inconclusive = inconclusive if inconclusive is not None else []
     hb_artifacts = {}
     if isinstance(heartbeat, dict) and isinstance(heartbeat.get("artifacts"), dict):
         hb_artifacts = heartbeat["artifacts"]
@@ -289,7 +406,7 @@ def check_artifacts(
             continue
 
         heartbeat_ts = _parse_iso(hb_artifacts.get(name))
-        commit_ts, commit_source = committed_timestamp(root, name, repo)
+        commit_ts, commit_source, lookup = committed_timestamp(root, name, repo)
 
         candidates: list[tuple[datetime, str]] = []
         if heartbeat_ts is not None:
@@ -298,6 +415,18 @@ def check_artifacts(
             candidates.append((commit_ts, commit_source))
 
         if not candidates:
+            if lookup == "unverified":
+                # No heartbeat entry and no local history, and the API could
+                # not be asked. Transient by construction: this must never
+                # produce a `pipeline-alert` issue, because on the next cycle
+                # (30 min later) the question will very likely be answerable.
+                print(
+                    f"::warning::{name} — freshness unverified this cycle "
+                    "(GitHub API unreachable after retries); not treated as a breach"
+                )
+                inconclusive.append(f"{name}: freshness unverified this cycle")
+                measured[name] = {"unverified": True}
+                continue
             breaches.append(
                 Breach(
                     "missing",
@@ -390,12 +519,18 @@ def check_wunderground(
 
 def count_schedule_runs(
     workflow: str, window_hours: float, now: datetime
-) -> tuple[int | None, str]:
+) -> tuple[int | None, str, str]:
     """Count schedule-triggered runs of `workflow` inside the trailing window.
 
-    Returns `(count, note)`; `count is None` means the question could not be
-    answered (gh missing/unauthenticated/offline) — which is reported as a
-    breach by the caller rather than silently passing.
+    Returns `(count, note, status)`:
+
+      * `status == "ok"`               — `count` is a real measurement;
+      * `status == "unverified"`       — every attempt failed transiently
+        (rate limit / 5xx / offline). Inconclusive: warn, never alert;
+      * `status == "definitive-failure"` — gh answered with a real, repeatable
+        error (bad workflow name, missing `actions: read`). That is a defect
+        worth an alert, because the dropped-slot detector is blind until it is
+        fixed.
     """
     cmd = [
         "gh",
@@ -408,18 +543,15 @@ def count_schedule_runs(
         "--json",
         "createdAt,event",
     ]
-    try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-    except FileNotFoundError:
-        return None, "gh CLI not found"
-    except subprocess.SubprocessError as exc:
-        return None, f"gh failed: {type(exc).__name__}"
+    proc, note = _run_gh(cmd, timeout=120)
+    if proc is None:
+        return None, note, "unverified"
     if proc.returncode != 0:
-        return None, (proc.stderr or proc.stdout or "gh failed").strip().splitlines()[-1][:300]
+        return None, f"gh failed: {note}", "definitive-failure"
     try:
         runs = json.loads(proc.stdout or "[]")
     except ValueError:
-        return None, "gh returned non-JSON"
+        return None, "gh returned non-JSON", "definitive-failure"
 
     cutoff = now - timedelta(hours=window_hours)
     count = 0
@@ -429,17 +561,26 @@ def count_schedule_runs(
         created = _parse_iso(run.get("createdAt"))
         if created is not None and created >= cutoff:
             count += 1
-    return count, f"{count} schedule run(s) in the trailing {window_hours:g} h"
+    return count, f"{count} schedule run(s) in the trailing {window_hours:g} h", "ok"
 
 
 def check_dropped_slots(
-    now: datetime, breaches: list[Breach]
+    now: datetime, breaches: list[Breach], inconclusive: list[str] | None = None
 ) -> dict[str, int | None]:
+    inconclusive = inconclusive if inconclusive is not None else []
     measured: dict[str, int | None] = {}
     for workflow, minimum in MIN_SCHEDULE_RUNS.items():
-        count, note = count_schedule_runs(workflow, RUN_WINDOW_HOURS, now)
+        count, note, status = count_schedule_runs(workflow, RUN_WINDOW_HOURS, now)
         measured[workflow] = count
-        if count is None:
+        if status == "unverified":
+            print(
+                f"::warning::{workflow} — schedule delivery unverified this cycle "
+                f"({note}); not treated as a breach"
+            )
+            inconclusive.append(
+                f"{workflow}: schedule delivery unverified this cycle ({note})"
+            )
+        elif count is None:
             breaches.append(
                 Breach(
                     "dropped-slots",
@@ -495,6 +636,30 @@ def _try_sms(message: str) -> bool:
     except Exception as exc:             # noqa: BLE001 - never swallow the alert
         print(f"[alert] SMS error: {type(exc).__name__}: {exc} — falling back.")
         return False
+
+
+def _simulation_json(root: Path) -> str | None:
+    """Describe a simulation recorded in the report, or `None` for a real run.
+
+    Read from the report rather than from argv because `--deliver-only` is a
+    separate process invocation with no access to the dispatch inputs.
+    """
+    path = root / REPORT
+    if not path.exists():
+        return None
+    try:
+        report = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    sim = report.get("simulation") if isinstance(report, dict) else None
+    if not isinstance(sim, dict):
+        return None
+    parts: list[str] = []
+    if sim.get("stale_hours"):
+        parts.append(f"stale_hours={sim['stale_hours']}")
+    if sim.get("missing"):
+        parts.append("missing=" + ",".join(sim["missing"]))
+    return ", ".join(parts) or None
 
 
 def alert_title(message: str) -> str:
@@ -599,11 +764,15 @@ def build_report(
     measured_slots: dict[str, int | None],
     simulate_stale_hours: float,
     simulate_missing: set[str],
+    inconclusive: list[str] | None = None,
 ) -> dict:
     return {
         "checked_utc": _iso(now),
         "healthy": not breaches,
         "breaches": [b.as_dict() for b in breaches],
+        # Measurements that could not be taken this cycle for a *transient*
+        # reason. Deliberately separate from `breaches`: they never alert.
+        "inconclusive": list(inconclusive or []),
         "artifacts": measured_artifacts,
         "wunderground": measured_wu,
         "schedule_runs_24h": measured_slots,
@@ -703,6 +872,20 @@ def main(argv: list[str] | None = None) -> int:
             print(f"[alert] nothing to deliver: {ALERT_FILE} does not exist")
             return 0
         message = path.read_text(encoding="utf-8")
+
+        # A simulated breach exists to prove the alert *path*, not to page
+        # anybody. Delivering it would open a real `pipeline-alert` issue for
+        # an outage that the operator invented — exactly the cry-wolf failure
+        # an alert channel must not have. The run still finishes red, because
+        # that red is the proof; nothing is delivered.
+        simulated = _simulation_json(root)
+        if simulated:
+            print(
+                f"[alert] SIMULATION ({simulated}) — delivery suppressed on "
+                "purpose: no SMS, no GitHub issue. The red run is the proof."
+            )
+            return 0
+
         ok = deliver_alert(message, dry_run=args.dry_run)
         if not ok:
             print("[alert] DELIVERY FAILED — the alert was not swallowed, this "
@@ -715,6 +898,8 @@ def main(argv: list[str] | None = None) -> int:
         part.strip() for part in (args.simulate_missing or "").split(",") if part.strip()
     }
     breaches: list[Breach] = []
+    # Measurements skipped for a transient reason. These are NOT breaches.
+    inconclusive: list[str] = []
 
     heartbeat = load_heartbeat(root, now, breaches)
     measured_artifacts = check_artifacts(
@@ -722,6 +907,7 @@ def main(argv: list[str] | None = None) -> int:
         simulate_stale_hours=args.simulate_stale_hours,
         simulate_missing=simulate_missing,
         repo=args.repo or None,
+        inconclusive=inconclusive,
     )
     measured_wu = check_wunderground(root, now, breaches, simulate_missing)
 
@@ -729,11 +915,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.skip_run_counters:
         print("[healthcheck] dropped-slot detector skipped (--skip-run-counters)")
     else:
-        measured_slots = check_dropped_slots(now, breaches)
+        measured_slots = check_dropped_slots(now, breaches, inconclusive)
 
     report = build_report(
         now, breaches, measured_artifacts, measured_wu, measured_slots,
-        args.simulate_stale_hours, simulate_missing,
+        args.simulate_stale_hours, simulate_missing, inconclusive,
     )
     (root / REPORT).write_text(
         json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
@@ -744,6 +930,14 @@ def main(argv: list[str] | None = None) -> int:
     print(f"[healthcheck] wunderground: {json.dumps(measured_wu, sort_keys=True)}")
     for workflow, count in measured_slots.items():
         print(f"[healthcheck] schedule runs {workflow}: {count}")
+
+    if inconclusive:
+        print(
+            f"[healthcheck] {len(inconclusive)} measurement(s) inconclusive this "
+            "cycle — transient, recorded in the report, deliberately not alerted:"
+        )
+        for item in inconclusive:
+            print(f"[healthcheck]   - {item}")
 
     if not breaches:
         print(f"[healthcheck] HEALTHY — {REPORT} written, no alert sent.")
