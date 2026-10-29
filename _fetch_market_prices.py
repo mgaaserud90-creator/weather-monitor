@@ -37,10 +37,12 @@ USAGE:
 
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional
 from urllib.request import Request, urlopen
@@ -69,6 +71,174 @@ except ImportError:
 # ---------------------------------------------------------------------------
 SCRIPT_DIR = Path(__file__).resolve().parent
 OUTPUT_FILE = SCRIPT_DIR / "_market_prices.json"
+
+# ---------------------------------------------------------------------------
+# P0.4 — append-only price history
+# ---------------------------------------------------------------------------
+# _market_prices.json is a single overwritten snapshot, so every price older
+# than one run was lost; that is why only 58 ledger records have a price at all
+# and why no ROI can be computed on history. This file is appended to on every
+# run, one row per market per snapshot:
+#
+#     city, date, bucket_lo, bucket_hi, unit, snapshot_ts,
+#     yes_price, volume, question_hash
+#
+# Retention (an unbounded append-only file is exactly the failure mode the
+# growth guard exists to prevent):
+#   * snapshot newer than FULL_DAYS   -> every row is kept
+#   * between FULL_DAYS and COMPACT_DAYS -> one row per market per snapshot day
+#   * older than COMPACT_DAYS          -> dropped
+# The file is only rewritten when compaction actually removes rows, so in the
+# steady state it is a pure append.
+PRICE_HISTORY_FILE = SCRIPT_DIR / "_price_history.jsonl"
+PRICE_HISTORY_FULL_DAYS = 7
+PRICE_HISTORY_COMPACT_DAYS = 90
+
+
+def _bucket_from_question(question: str) -> tuple[Optional[float], Optional[float], Optional[str]]:
+    """Native inclusive bucket bounds + unit parsed from a market question."""
+    q = question or ""
+    m = re.search(r'(\d+)\s*[-–]\s*(\d+)\s*°\s*F', q, re.IGNORECASE)
+    if m:
+        return float(m.group(1)), float(m.group(2)), "F"
+    m = re.search(r'(\d+(?:\.\d+)?)\s*°\s*F', q, re.IGNORECASE)
+    if m:
+        value = float(m.group(1))
+        return value - 1.0, value, "F"
+    m = re.search(r'(\d+(?:\.\d+)?)\s*°\s*C\s*(?:or\s+(?:higher|above|below|lower)'
+                  r'|at\s+least|or\s+more|≥|≤)', q, re.IGNORECASE)
+    if m:
+        # Threshold: a one-sided bound. lo = bound, hi = None.
+        return float(m.group(1)), None, "C"
+    m = re.search(r'(\d+(?:\.\d+)?)\s*°\s*C', q, re.IGNORECASE)
+    if m:
+        value = float(m.group(1))
+        return value - 0.5, value + 0.5, "C"
+    return None, None, None
+
+
+def _question_hash(question: str) -> str:
+    """Stable short hash of the question text (the market's natural key)."""
+    return hashlib.sha1((question or "").encode("utf-8")).hexdigest()[:12]
+
+
+def append_price_history(markets: list[dict], snapshot_ts: str) -> int:
+    """Append one row per market for this snapshot. Returns the rows written."""
+    rows: list[dict] = []
+    for m in markets:
+        question = m.get("question", "") or ""
+        yes_price = None
+        no_price = None
+        for outcome in m.get("outcomes", []) or []:
+            label = str(outcome.get("label", "")).strip().lower()
+            if label == "yes":
+                yes_price = outcome.get("price")
+            elif label == "no":
+                no_price = outcome.get("price")
+        lo, hi, unit = _bucket_from_question(question)
+        rows.append({
+            "city": m.get("city", ""),
+            "date": m.get("date", ""),
+            "bucket_lo": lo,
+            "bucket_hi": hi,
+            "unit": unit,
+            "snapshot_ts": snapshot_ts,
+            "yes_price": yes_price,
+            "no_price": no_price,
+            "volume": m.get("volume", 0),
+            "question_hash": _question_hash(question),
+        })
+    if not rows:
+        return 0
+    PRICE_HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with PRICE_HISTORY_FILE.open("a", encoding="utf-8", newline="\n") as fh:
+        for row in rows:
+            fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
+    return len(rows)
+
+
+def _parse_snapshot_ts(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed
+
+
+def compact_price_history(now: datetime | None = None) -> dict:
+    """Apply the retention rule and report what happened.
+
+    Returns a small stats dict; ``rewritten`` is False when nothing was removed,
+    which is the normal case and keeps the file append-only.
+    """
+    stats = {"rows_before": 0, "rows_after": 0, "kept_full": 0,
+             "kept_compacted": 0, "dropped": 0, "rewritten": False}
+    if not PRICE_HISTORY_FILE.exists():
+        return stats
+    now = now or datetime.now(timezone.utc)
+    full_cut = now - timedelta(days=PRICE_HISTORY_FULL_DAYS)
+    drop_cut = now - timedelta(days=PRICE_HISTORY_COMPACT_DAYS)
+
+    raw_rows: list[dict] = []
+    try:
+        with PRICE_HISTORY_FILE.open("r", encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    raw_rows.append(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
+    except OSError:
+        return stats
+    stats["rows_before"] = len(raw_rows)
+
+    kept: list[dict] = []
+    latest_per_day: dict[tuple, dict] = {}
+    for row in raw_rows:
+        ts = _parse_snapshot_ts(row.get("snapshot_ts"))
+        if ts is None:
+            stats["dropped"] += 1
+            continue
+        if ts >= full_cut:
+            kept.append(row)
+            stats["kept_full"] += 1
+            continue
+        if ts < drop_cut:
+            stats["dropped"] += 1
+            continue
+        key = (
+            row.get("city"), row.get("date"), row.get("bucket_lo"),
+            row.get("bucket_hi"), row.get("unit"), ts.date(),
+        )
+        previous = latest_per_day.get(key)
+        if previous is None or str(row.get("snapshot_ts")) > str(previous.get("snapshot_ts")):
+            if previous is not None:
+                stats["dropped"] += 1
+            latest_per_day[key] = row
+        else:
+            stats["dropped"] += 1
+    kept.extend(latest_per_day.values())
+    stats["kept_compacted"] = len(latest_per_day)
+    stats["rows_after"] = len(kept)
+
+    if stats["dropped"] == 0:
+        return stats
+
+    kept.sort(key=lambda r: (str(r.get("snapshot_ts")), str(r.get("city")),
+                             str(r.get("date")), str(r.get("bucket_lo"))))
+    tmp = PRICE_HISTORY_FILE.with_suffix(".jsonl.tmp")
+    with tmp.open("w", encoding="utf-8", newline="\n") as fh:
+        for row in kept:
+            fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
+    os.replace(tmp, PRICE_HISTORY_FILE)
+    stats["rewritten"] = True
+    return stats
 
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -604,8 +774,9 @@ def save_results(markets: list[dict], source_info: str) -> int:
         print(f"[NOT SAVED] {message}")
         return 1
 
+    snapshot_ts = datetime.now(timezone.utc).isoformat()
     output = {
-        "fetched_at": datetime.now(timezone.utc).isoformat(),
+        "fetched_at": snapshot_ts,
         "source": source_info,
         "total_markets": len(markets),
         "markets": [
@@ -629,6 +800,20 @@ def save_results(markets: list[dict], source_info: str) -> int:
     print(f"\n[SAVED] {len(markets)} markets to: {OUTPUT_FILE}")
     if previous_count is not None:
         print(f"[SAVED] previous file held {previous_count} markets")
+
+    # P0.4 — append-only price history. Written only for a snapshot that passed
+    # the degraded check above, so a partial outage can never poison history.
+    appended = append_price_history(markets, snapshot_ts)
+    print(f"[HISTORY] appended {appended} rows to {PRICE_HISTORY_FILE.name}")
+    try:
+        stats = compact_price_history()
+        if stats["rewritten"]:
+            print(
+                f"[HISTORY] compacted {stats['rows_before']} -> "
+                f"{stats['rows_after']} rows (dropped {stats['dropped']})"
+            )
+    except Exception as exc:  # noqa: BLE001 - never fail the fetch on compaction
+        print(f"::warning::price-history compaction failed: {exc}")
     return 0
 
 

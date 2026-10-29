@@ -16,12 +16,20 @@ This guard fails the build before an artifact becomes a liability:
     _pnl_log.json                  40 MB
     _market_prices.json            15 MB
     _wunderground_real.json         5 MB
+    _price_history.jsonl          120 MB
 
 Measured baseline at the time this guard landed (2026-10-29):
     _model_quality_log.json   7.18 MB   (29 % of budget)
     _pnl_log.json             1.60 MB   ( 4 %)
     _market_prices.json       1.24 MB   ( 8 %)
     _wunderground_real.json   0.78 MB   (16 %)
+    _price_history.jsonl      0.00 MB   ( 0 %)  - starts empty (P0.4)
+
+``_price_history.jsonl`` is the one genuinely append-only file in the set, so it
+carries an explicit budget AND its writer applies a retention rule: every row
+for 7 days, one row per market per day up to 90 days, then dropped. An
+unbounded append-only artifact is exactly the failure mode this guard exists to
+catch, so the budget is not optional for it.
 
 Behaviour:
   * missing file  -> note only (a job may legitimately not have produced it)
@@ -49,6 +57,7 @@ BUDGETS: tuple[tuple[str, int], ...] = (
     ("_pnl_log.json", 40),
     ("_market_prices.json", 15),
     ("_wunderground_real.json", 5),
+    ("_price_history.jsonl", 120),
 )
 
 WARN_FRACTION = 0.80

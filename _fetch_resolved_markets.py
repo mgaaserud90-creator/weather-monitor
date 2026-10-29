@@ -211,24 +211,34 @@ def parse_temp_bracket(bracket: str, city: str, question: str = "") -> dict | No
                 "temp_c": round((midpoint - 32) * 5 / 9, 1),  # legacy field for old consumers
                 # Native inclusive bucket bounds, preserved so downstream
                 # consumers can compare against the °C range instead of a
-                # rounded midpoint.
+                # rounded midpoint. P0.1: all four bounds are always written.
                 "lo_f": lo, "hi_f": hi,
-                "lo_c": round((lo - 32) * 5 / 9, 1),
-                "hi_c": round((hi - 32) * 5 / 9, 1),
+                "lo_c": round((lo - 32) * 5 / 9, 3),
+                "hi_c": round((hi - 32) * 5 / 9, 3),
+                "bounds_width_c": round((hi - lo) * 5 / 9, 3),
                 "bucket": label, "temp_display": label,
             }
         m = re.search(r'(\d+(?:\.\d+)?)\s*°\s*F', bracket, re.IGNORECASE)
         if m:
             val = float(m.group(1))
             label = f"{val}°F"
+            # P0.1 convention for a single "N°F" bucket (design doc §9 P0.1,
+            # "lo = hi_to − 1"): the bucket is one °F wide (0.556 °C). Only the
+            # width matters for probability; the closed interval convention is
+            # fixed here so it is applied consistently.
+            lo_f, hi_f = val - 1.0, val
             return {
                 "type": "point", "unit": "F",
                 "temp_f": val, "value": val,
                 "temp_c": round((val - 32) * 5 / 9, 1),
+                "lo_f": lo_f, "hi_f": hi_f,
+                "lo_c": round((lo_f - 32) * 5 / 9, 3),
+                "hi_c": round((hi_f - 32) * 5 / 9, 3),
+                "bounds_width_c": round(5 / 9, 3),
                 "bucket": label, "temp_display": label,
             }
 
-    # °C point markets.
+    # °C point markets — one °C wide (lo = v − 0.5, hi = v + 0.5).
     if "°C" in bracket:
         m = re.search(r'(\d+(?:\.\d+)?)\s*°\s*C', bracket, re.IGNORECASE)
         if m:
@@ -237,6 +247,10 @@ def parse_temp_bracket(bracket: str, city: str, question: str = "") -> dict | No
             return {
                 "type": "point", "unit": "C",
                 "temp_c": val, "value": val,
+                "lo_c": round(val - 0.5, 3), "hi_c": round(val + 0.5, 3),
+                "lo_f": round((val - 0.5) * 9 / 5 + 32, 3),
+                "hi_f": round((val + 0.5) * 9 / 5 + 32, 3),
+                "bounds_width_c": 1.0,
                 "bucket": label, "temp_display": label,
             }
     return None
@@ -461,16 +475,41 @@ def load_existing() -> dict:
     return {"last_updated": "", "markets": {}}
 
 
+BOUND_FIELDS = ("lo_c", "hi_c", "lo_f", "hi_f", "bounds_width_c")
+
+
+def _merge_market_entry(existing_entry: dict | None, new_payload: dict) -> dict:
+    """Merge one market payload into an existing record WITHOUT rewriting it.
+
+    P0.1 is a schema addition, so the rule is append-only: an existing record
+    keeps every field it already has, and the only thing a re-collection may do
+    is *fill in* bucket bounds that were absent. That guarantees
+
+      * no historical resolution value is ever replaced by a later scrape, and
+      * a record written before P0.1 gains its bounds exactly once.
+
+    A key that does not exist yet is stored as-is (every new record carries all
+    four bounds).
+    """
+    if existing_entry is None:
+        return new_payload
+    merged = dict(existing_entry)
+    for field in BOUND_FIELDS:
+        if merged.get(field) is None and new_payload.get(field) is not None:
+            merged[field] = new_payload[field]
+    return merged
+
+
 def save_results(markets_map: dict, target_date: str) -> None:
     """Save to JSON and CSV."""
     existing = load_existing()
     existing_markets = existing.get("markets", {})
 
-    # Merge: new data overwrites existing for same key
+    # Merge: new data fills gaps in existing records, never overwrites them.
     for key, val in markets_map.items():
         city, date = key
         str_key = f"{city}||{date}"
-        existing_markets[str_key] = val
+        existing_markets[str_key] = _merge_market_entry(existing_markets.get(str_key), val)
 
     # latest_date must reflect the newest market actually present in the merged
     # log (not just the last date passed to this single invocation).
@@ -485,19 +524,23 @@ def save_results(markets_map: dict, target_date: str) -> None:
     }
     LOG_FILE.write_text(json.dumps(log, indent=2, ensure_ascii=False), encoding="utf-8")
 
-    # CSV
+    # CSV — P0.1 bounds are appended as trailing columns so every existing
+    # column keeps its position and index for current consumers.
     with open(CSV_FILE, "w", encoding="utf-8", newline="") as f:
         import csv
         w = csv.writer(f)
         w.writerow(["city", "date", "unit", "type", "bucket", "value",
-                    "temp_c", "temp_f", "temp_display", "source"])
+                    "temp_c", "temp_f", "temp_display", "source",
+                    "lo_c", "hi_c", "lo_f", "hi_f"])
         for str_key, data in sorted(existing_markets.items()):
             w.writerow([data.get("city", ""), data.get("date", ""),
                         data.get("unit", ""), data.get("type", ""),
                         data.get("bucket", ""), data.get("value", ""),
                         data.get("temp_c", ""), data.get("temp_f", ""),
                         data.get("temp_display", ""),
-                        data.get("source", "")])
+                        data.get("source", ""),
+                        data.get("lo_c", ""), data.get("hi_c", ""),
+                        data.get("lo_f", ""), data.get("hi_f", "")])
 
     print(f"\nSaved {len(markets_map)} new + {len(existing_markets) - len(markets_map)} existing = {len(existing_markets)} total")
     print(f"JSON: {LOG_FILE}")

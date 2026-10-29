@@ -427,6 +427,127 @@ def load_existing() -> dict[str, Any]:
     return {"last_updated": "", "source": "Wunderground Daily Observations", "cities": {}}
 
 
+# ---------------------------------------------------------------------------
+# P0.5 — WU validity gate
+# ---------------------------------------------------------------------------
+# Measured on 2026-10-29: 28 of the 56 WU dates carry a contaminating error
+# (daily mean −1.6 … −3.4 °C, sd 3.2–3.7 °C, driven by the US °F rows), while
+# the other 28 have mean |bias| ≈ 0.20 °C and sd ≈ 0.47 °C. Consuming the
+# contaminated dates as physical truth silently corrupts any station analysis,
+# so a date is declared valid only when
+#
+#     mean|WU − resolution| < 0.6 °C   AND   sd(WU − resolution) < 0.9 °C
+#
+# and the flag is persisted per (city, date) as ``_wu_valid``. Nothing
+# downstream may treat an invalid date as truth.
+WU_VALID_MAX_ABS_BIAS_C = 0.6
+WU_VALID_MAX_SD_C = 0.9
+RESOLVED_LOG = BASE / "_resolved_markets_log.json"
+
+
+def _resolution_c_by_city_date() -> dict[tuple[str, str], float]:
+    """Point-market resolutions in °C, keyed by (city, date)."""
+    out: dict[tuple[str, str], float] = {}
+    if not RESOLVED_LOG.exists():
+        return out
+    try:
+        data = json.loads(RESOLVED_LOG.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return out
+    for key, entry in (data.get("markets") or {}).items():
+        if "||" not in key:
+            continue
+        if entry.get("type", "point") != "point" or entry.get("value") is None:
+            continue
+        try:
+            value = float(entry["value"])
+        except (TypeError, ValueError):
+            continue
+        if (entry.get("unit") or "C").upper() == "F":
+            value = _to_c(value)
+        city, date_str = key.split("||", 1)
+        out[(city, date_str)] = value
+    return out
+
+
+def _row_value_c(row: dict[str, Any]) -> float | None:
+    """A WU row's reading normalised to °C (°F rows are converted)."""
+    value = row.get("wu_real_max")
+    if value is None:
+        return None
+    try:
+        value = float(value)
+    except (TypeError, ValueError):
+        return None
+    if (row.get("unit") or "C").upper() == "F":
+        return _to_c(value)
+    return value
+
+
+def apply_validity_gate(state: dict[str, Any]) -> dict[str, Any]:
+    """Flag every WU row with ``_wu_valid`` and return the per-date summary.
+
+    The gate operates on the median-free quantities the design measured:
+    ``mean|Δ|`` and ``sd(Δ)`` across all cities that have both a WU reading and
+    a Polymarket point resolution on that date.
+    """
+    resolutions = _resolution_c_by_city_date()
+    deltas_by_date: dict[str, list[float]] = {}
+    for city, cdb in (state.get("cities") or {}).items():
+        for row in cdb.get("rows", []) or []:
+            date_str = row.get("date")
+            value_c = _row_value_c(row)
+            if not date_str or value_c is None:
+                continue
+            resolved = resolutions.get((city, date_str))
+            if resolved is None:
+                continue
+            deltas_by_date.setdefault(date_str, []).append(value_c - resolved)
+
+    per_date: dict[str, dict[str, Any]] = {}
+    for date_str, deltas in deltas_by_date.items():
+        n = len(deltas)
+        if n == 0:
+            continue
+        mean_abs = sum(abs(d) for d in deltas) / n
+        if n >= 2:
+            mean_d = sum(deltas) / n
+            sd = (sum((d - mean_d) ** 2 for d in deltas) / (n - 1)) ** 0.5
+        else:
+            mean_d = deltas[0]
+            sd = 0.0
+        valid = (mean_abs < WU_VALID_MAX_ABS_BIAS_C) and (sd < WU_VALID_MAX_SD_C)
+        per_date[date_str] = {
+            "n": n,
+            "mean_delta_c": round(mean_d, 4),
+            "mean_abs_delta_c": round(mean_abs, 4),
+            "sd_delta_c": round(sd, 4),
+            "valid": bool(valid),
+        }
+
+    flagged_dates = sorted(d for d, v in per_date.items() if not v["valid"])
+
+    # Persist the flag on every row (one row = one city-day = one truth value).
+    for cdb in (state.get("cities") or {}).values():
+        for row in cdb.get("rows", []) or []:
+            date_str = row.get("date")
+            info = per_date.get(date_str)
+            row["_wu_valid"] = bool(info["valid"]) if info else None
+
+    return {
+        "updated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "rule": {
+            "mean_abs_delta_c_lt": WU_VALID_MAX_ABS_BIAS_C,
+            "sd_delta_c_lt": WU_VALID_MAX_SD_C,
+        },
+        "n_dates": len(per_date),
+        "n_valid_dates": sum(1 for v in per_date.values() if v["valid"]),
+        "n_flagged_dates": len(flagged_dates),
+        "flagged_dates": flagged_dates,
+        "per_date": dict(sorted(per_date.items())),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--date", default=None, help="Single target date (YYYY-MM-DD)")
@@ -566,6 +687,17 @@ def main() -> int:
 
             if args.sleep and args.sleep > 0 and idx < len(cities) - 1:
                 time.sleep(args.sleep)  # politeness throttle for bulk backfills
+
+    # P0.5 — flag WU dates that cannot be used as physical truth.
+    validity = apply_validity_gate(state)
+    state["validity"] = validity
+    print(
+        f"\nWU validity gate: {validity['n_valid_dates']} valid / "
+        f"{validity['n_flagged_dates']} flagged of {validity['n_dates']} dates "
+        f"(rule: mean|Δ| < {WU_VALID_MAX_ABS_BIAS_C} °C and sd < {WU_VALID_MAX_SD_C} °C)"
+    )
+    if validity["flagged_dates"]:
+        print(f"  flagged: {' '.join(validity['flagged_dates'])}")
 
     state["last_updated"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     OUT_JSON.write_text(

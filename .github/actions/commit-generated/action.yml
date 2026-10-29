@@ -58,6 +58,11 @@
 #                                  it did not write.
 #
 #   _market_prices.json          fetch_market_prices ONLY
+#   _price_history.jsonl         fetch_market_prices ONLY
+#                                -> append-only price panel (P0.4); same single
+#                                   writer, so no race with any other job. It is
+#                                   budgeted in _check_data_growth.py and
+#                                   self-compacts, so it cannot grow forever.
 #
 #   _peak_verification_log.json  peak_verify_polymarket
 #                                full_auto_pipeline (peak-rebuild job)
