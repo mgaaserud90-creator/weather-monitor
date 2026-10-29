@@ -263,8 +263,13 @@ edge = BMA_prob - market_price   (i prosentpoeng)
 ### BMA Probability-beregning
 
 ```python
-# Fra _compute_market_edge.py:195-222
-def compute_bma_prob(mean_c, std_c, temp, qtype):
+# Fra _compute_market_edge.py — compute_bma_prob()
+def compute_bma_prob(mean_c, std_c, temp, qtype, *, unit="C", lo=None, hi=None):
+    # P3: når markedets egne bøtte-grenser er kjent (°F-markeder), regnes p over
+    # den EKTE native bredden i °F — ikke over et 1 °C-vindu.
+    if unit == "F" and lo is not None and hi is not None:
+        mu_f, sd_f = μ_C*9/5+32, σ_C*9/5
+        return (Φ((hi−mu_f)/sd_f) − Φ((lo−mu_f)/sd_f)) * 100
     if qtype == "exact":
         prob = Φ((temp+0.5−μ)/σ) − Φ((temp−0.5−μ)/σ)
     elif qtype == "higher":
@@ -274,6 +279,30 @@ def compute_bma_prob(mean_c, std_c, temp, qtype):
 
 # Deretter: edge = BMA_prob − market_prob
 ```
+
+> ### ⚠️ P3 bryter sammenlignbarhet med den gamle baseline
+>
+> `compute_bma_prob()` regner nå sannsynligheten på markedets **ekte native
+> bredde**. En `N°C`-bøtte er 1.000 °C, en `N°F`-bøtte er 0.556 °C og en
+> `M-N°F`-bøtte er 1.111 °C — tidligere ble alle behandlet som 1 °C brede, noe
+> som overvurderte p på °F-markeder med ~1.8×.
+>
+> Konsekvensene, som skal stå her og ikke bare i en commit-melding:
+>
+> * **p på °F-markeder faller fra 35.85 % til ca. 18 %** (realisert hit rate er
+>   22.51 % med den historiske avregningen, 26.07 % med P0.1s bøtte-grenser).
+>   °C-markedene er uendret — for dem er 1 °C-vinduet og de lagrede grensene
+>   identiske per konstruksjon.
+> * **Hit rate og LogLoss er derfor ikke lenger direkte sammenlignbare med tall
+>   publisert før denne endringen.** Alle tall før 2026-10-29 er målt med den
+>   gamle konvensjonen.
+> * [`_vmon_analysis/eval_harness.py`](vær monitor/_vmon_analysis/eval_harness.py:1)
+>   pinner den gamle baseline eksplisitt: den rapporterer både
+>   `logloss_historical_conventions` (1 °C-vindu + `round()`-avregning, som er
+>   konvensjonen bak den publiserte 1.7812) og `logloss_current_conventions`
+>   (native bredde + bøtte-grenser). Bruk `--mode baseline` for å se begge.
+> * Edge/`eligible` på °F-markeder er lavere etter P3. Det er meningen:
+>   den gamle «edgen» var delvis en kalibreringsfeil.
 
 ### Resolution Arbitrage — Post-Peak
 
