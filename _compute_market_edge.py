@@ -260,7 +260,16 @@ def _extract_market_date(question: str) -> date | None:
 # Core: Compute Edge
 # ---------------------------------------------------------------------------
 
-def compute_bma_prob(mean_c: float, std_c: float, temp: int, qtype: str) -> float:
+def compute_bma_prob(
+    mean_c: float,
+    std_c: float,
+    temp: int,
+    qtype: str,
+    *,
+    unit: str = "C",
+    lo: float | None = None,
+    hi: float | None = None,
+) -> float:
     """Compute BMA probability for a given temperature bucket.
 
     Args:
@@ -268,12 +277,27 @@ def compute_bma_prob(mean_c: float, std_c: float, temp: int, qtype: str) -> floa
         std_c: BMA standard deviation
         temp: Temperature bucket (integer)
         qtype: "exact", "higher", or "below"
+        unit:  native unit of the bucket ("C" or "F")
+        lo, hi: native inclusive bucket bounds (P0.1/P3). When supplied for a
+                °F bucket, the probability is computed over the TRUE native
+                width instead of a 1 °C window centred on a rounded °C value.
 
     Returns:
         Probability as percentage (0-100).
+
+    P3 note: a °F bucket is 1 °F wide (0.556 °C). Evaluating a 1 °C window in
+    °C overstates p on °F markets by ~1.8x — measured as a 13.3 pp predicted-vs-
+    realised gap on °F markets against 4.9 pp on °C markets. Callers that know
+    the market bounds MUST pass them; the °C path is unchanged.
     """
     if std_c <= 0:
         std_c = 1.0  # fallback
+
+    if (unit or "C").upper() == "F" and lo is not None and hi is not None:
+        mu_f = mean_c * 9.0 / 5.0 + 32.0
+        sd_f = max(1e-3, std_c * 9.0 / 5.0)
+        native_prob = _norm_cdf((float(hi) - mu_f) / sd_f) - _norm_cdf((float(lo) - mu_f) / sd_f)
+        return round(max(1e-6, min(1.0 - 1e-6, native_prob)) * 100, 1)
 
     if qtype == "exact":
         # P(round(actual) == temp) = P(temp-0.5 <= actual < temp+0.5)
@@ -854,10 +878,16 @@ def compute_mean_spill_bets(
         if isinstance(stored_win_prob, (int, float)):
             bma_prob = max(0.0, min(1.0, float(stored_win_prob)))
         else:
+            # P3 — pass the native bounds when the chosen bucket is a °F range so
+            # the probability is computed over 1 °F (0.556 °C), not 1 °C.
+            f_bounds = _f_bucket_bounds(chosen)
             bma_prob = compute_bma_prob(
                 mean_c, std_c,
                 chosen.get("temp", int(round(mean_c))),
                 chosen.get("type", "exact"),
+                unit="F" if f_bounds is not None else "C",
+                lo=f_bounds[0] if f_bounds is not None else None,
+                hi=f_bounds[1] if f_bounds is not None else None,
             ) / 100.0
 
         market_prob = chosen.get("market_prob", 0)  # percentage points (0-100)

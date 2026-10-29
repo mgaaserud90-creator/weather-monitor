@@ -8,7 +8,7 @@ city/date bet (the Mean(round)-vs-Polymarket strategy). The ledger is built
 idempotently from ``_model_quality_log.json``: every re-run upserts by
 ``(date, city)`` so no duplicate entries are ever created.
 
-Per-bet record (mirrors PLAN_EDGE_AUTOPILOT.md P6 schema):
+Per-bet record (P0.2 price-aware settlement):
 
     date           — market date (YYYY-MM-DD)
     city           — full city key (e.g. "Taipei, TW")
@@ -17,20 +17,30 @@ Per-bet record (mirrors PLAN_EDGE_AUTOPILOT.md P6 schema):
     unit           — "C" / "F"
     market_type    — "point" / "threshold"
     mean_spill     — Mean(round) bet temperature (°C integer)
-    bma_prob       — model win probability (0-1, strategies.mean.win_prob)
-    market_price   — implied probability of the bet bucket from _market_prices.json
-                     (None when no matching live market is available)
+    bma_prob       — model win probability (0-1); recomputed on the market's
+                     NATIVE bucket width for °F markets (P3)
+    bma_prob_source— "stored" / "native_f_width" / "fallback_1c"
+    market_price   — price actually paid (YES ask), FROZEN on first write (P0.3)
+    price_ts       — when that price was first observed (frozen with it)
+    price_source   — where the price came from ("yes_price_snapshot" / "none")
     edge           — bma_prob − market_price (None when market_price is None)
     kelly          — quarter-Kelly recommended stake in USD (None when not computable)
     eligible       — True when edge >= EDGE_THRESHOLD and quarter-Kelly > 0
     stake          — flat paper stake in USD (PNL_STAKE_USD, default 100)
-    result         — "WIN" / "LOSS" (from strategies.mean.pm_result)
-    payout         — 1.0 on WIN else 0.0 (per-$1 profit multiple)
-    pnl            — +stake on WIN, −stake on LOSS (even-money paper settlement)
+    result         — "WIN" / "LOSS", derived from the resolution ONLY
+    settle_rule    — "point_c" / "point_f" / "threshold_high" / "threshold_low"
+    tradable       — False when the price is missing or degenerate
+                     (p <= 0.001 or p >= 0.999); such a bet is NOT settled
+    payout         — price-dependent per-$1 multiple: WIN → 1/p − 1, LOSS → −1
+    pnl            — WIN → stake × (1/p − 1); LOSS → −stake
+
+The old even-money arithmetic (`payout = 1.0 if WIN`, `pnl = ±stake`) is gone:
+it made ROI degenerate to `2 × hit_rate − 1` regardless of price, which is why
+the ledger used to print a meaningless −36.25 %.
 
 Aggregate metrics computed from the ledger:
-    total PnL, ROI (pnl / staked), average edge, ECE (10pp reliability bins),
-    and Brier score.
+    total PnL, ROI (pnl / staked, TRADABLE records only), average edge, ECE
+    (10pp reliability bins), and Brier score.
 
 USAGE:
     python _pnl_tracker.py            # rebuild ledger + print summary
@@ -60,6 +70,20 @@ QUALITY_LOG_FILE = SCRIPT_DIR / "_model_quality_log.json"
 DEFAULT_STAKE_USD = float(os.environ.get("PNL_STAKE_USD", "100.0"))
 EDGE_THRESHOLD = float(os.environ.get("EDGE_THRESHOLD", "0.05"))
 KELLY_FRACTION = 0.25  # quarter-Kelly, conservative
+
+# P0.2 — a quote at or beyond these bounds is not a tradeable price. A 0.1 ¢
+# YES is not "nearly a certain win" and a 99.9 ¢ YES is not "free money"; both
+# are the market saying the bucket is decided, and booking them as even-money
+# wins is exactly the defect this module used to have.
+MIN_TRADEABLE_PRICE = 0.001
+MAX_TRADEABLE_PRICE = 0.999
+
+# P0.3 — price fields are frozen on first write. A rebuild may only fill a
+# NULL; it may never overwrite a non-null price, because the price captured on
+# the bet day is the only historical price that will ever exist.
+FREEZE_PRICE_FIELDS: tuple[str, ...] = (
+    "market_price", "price_ts", "price_source", "edge", "kelly", "eligible",
+)
 
 
 # F1: shared stat-keyed JSON cache (_json_io). The ledger rebuild and the
@@ -100,8 +124,65 @@ def save_ledger(data: dict) -> None:
     PNL_LOG_FILE.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
+def is_tradeable_price(price: Any) -> bool:
+    """True when ``price`` is a usable YES price (strictly inside the book)."""
+    if price is None or isinstance(price, bool):
+        return False
+    try:
+        value = float(price)
+    except (TypeError, ValueError):
+        return False
+    return MIN_TRADEABLE_PRICE < value < MAX_TRADEABLE_PRICE
+
+
+def apply_settlement(record: dict) -> dict:
+    """(Re)compute payout / pnl / tradable from the record's own price.
+
+    The single implementation of the settlement rule, used both when a record
+    is first built and when a frozen price is merged back over a rebuild:
+
+        price p tradeable : WIN  -> payout = 1/p - 1, pnl = stake * (1/p - 1)
+                            LOSS -> payout = -1,      pnl = -stake
+        price missing/degenerate : tradable = False, payout = None, pnl = None
+
+    ``result`` is never touched here: it comes from the resolution only.
+    """
+    record["tradable"] = is_tradeable_price(record.get("market_price"))
+    if not record["tradable"]:
+        record["payout"] = None
+        record["pnl"] = None
+        return record
+    price = float(record["market_price"])
+    stake = float(record.get("stake") or 0.0)
+    if record.get("result") == "WIN":
+        record["payout"] = round(1.0 / price - 1.0, 6)
+        record["pnl"] = round(stake * (1.0 / price - 1.0), 6)
+    else:
+        record["payout"] = -1.0
+        record["pnl"] = round(-stake, 6)
+    return record
+
+
+def _merge_frozen_prices(previous: dict, new: dict) -> dict:
+    """Merge a rebuilt record over the stored one, freezing price fields (P0.3).
+
+    A non-null stored value always wins; a rebuild may only fill a null. This is
+    precisely what stops a rebuild from erasing the price captured on bet day.
+    """
+    merged = dict(new)
+    for field in FREEZE_PRICE_FIELDS:
+        if previous.get(field) is not None:
+            merged[field] = previous[field]
+    if merged.get("price_source") is None:
+        merged["price_source"] = "none"
+    return merged
+
+
 def upsert_bet(record: dict, ledger: dict | None = None) -> bool:
     """Insert or update a bet record keyed by (date, city). Never duplicates.
+
+    Updates are price-frozen: the stored price fields are kept and the
+    settlement is then recomputed from the frozen price (P0.3 + P0.2).
 
     Returns True when the record was newly inserted, False when updated.
     """
@@ -111,9 +192,9 @@ def upsert_bet(record: dict, ledger: dict | None = None) -> bool:
     key = (str(record.get("date", "")), str(record.get("city", "")))
     for i, rec in enumerate(records):
         if (str(rec.get("date", "")), str(rec.get("city", ""))) == key:
-            records[i] = record
+            records[i] = apply_settlement(_merge_frozen_prices(rec, record))
             return False
-    records.append(record)
+    records.append(apply_settlement(record))
     return True
 
 
@@ -151,6 +232,39 @@ def _compute_bma_prob(mean_c: float, std_c: float, temp: int, qtype: str = "exac
         hi = 0.5 * (1.0 + math.erf((temp + 0.5 - mean_c) / (std_c * 1.4142135623730951)))
         lo = 0.5 * (1.0 + math.erf((temp - 0.5 - mean_c) / (std_c * 1.4142135623730951)))
         return max(0.0, min(1.0, hi - lo))
+
+
+def _norm_cdf(x: float) -> float:
+    """Standard normal CDF."""
+    return 0.5 * (1.0 + math.erf(x / 1.4142135623730951))
+
+
+def _compute_bma_prob_native_f(
+    mean_c: float, std_c: float, lo_f: float, hi_f: float
+) -> float:
+    """P(bucket) computed over the market's TRUE native °F width (P3).
+
+    A °F bucket is 1 °F wide (0.556 °C), not 1 °C. Computing p on a 1 °C window
+    overstates it on °F markets by roughly 1 °C / 0.556 °C ≈ 1.8×, which is the
+    whole of the observed 13.3 pp °C/°F hit-rate gap.
+    """
+    sd_c = std_c if std_c and std_c > 0 else 1.0
+    mu_f = mean_c * 9.0 / 5.0 + 32.0
+    sd_f = max(1e-3, sd_c * 9.0 / 5.0)
+    prob = _norm_cdf((float(hi_f) - mu_f) / sd_f) - _norm_cdf((float(lo_f) - mu_f) / sd_f)
+    return max(1e-6, min(1.0 - 1e-6, prob))
+
+
+def _settle_rule_for_market(market_info: dict) -> str:
+    """Which settlement rule this market resolves under (stored per record)."""
+    if market_info.get("type") == "threshold":
+        direction = str(market_info.get("bucket") or "").lower()
+        if any(kw in direction for kw in ("or below", "or lower", "≤")):
+            return "threshold_low"
+        return "threshold_high"
+    if (market_info.get("unit") or "C").upper() == "F":
+        return "point_f"
+    return "point_c"
 
 
 def _compute_kelly(bma_prob: float, market_price: float) -> float | None:
@@ -225,7 +339,12 @@ def _build_record(
     market_details: dict,
     price_index: dict,
 ) -> dict | None:
-    """Build one ledger record for a resolved Mean(round) bet, or None."""
+    """Build one ledger record for a resolved Mean(round) bet, or None.
+
+    Settlement is price-aware (P0.2): the price is the one actually paid, the
+    result comes from the resolution only, and `payout` is a price-dependent
+    multiple rather than a 0/1 flag. See :func:`apply_settlement`.
+    """
     mean = (pdata.get("strategies", {}) or {}).get("mean", {}) or {}
     result = mean.get("pm_result")
     if result not in ("WIN", "LOSS"):
@@ -239,14 +358,8 @@ def _build_record(
     except (TypeError, ValueError):
         return None
 
-    bma_prob = mean.get("win_prob")
-    if not isinstance(bma_prob, (int, float)):
-        bma_prob = _compute_bma_prob(
-            float(pdata.get("bma_mean", mean_spill_i)),
-            float(pdata.get("bma_std", 1.0)),
-            mean_spill_i,
-        )
-    bma_prob = max(0.0, min(1.0, float(bma_prob)))
+    bma_mean = float(pdata.get("bma_mean", mean_spill_i) or mean_spill_i)
+    bma_std = float(pdata.get("bma_std", 1.0) or 1.0)
 
     city_base = city.split(",")[0].strip()
     market_info = market_details.get((city, date_str)) or market_details.get((city_base, date_str)) or {}
@@ -255,8 +368,34 @@ def _build_record(
     unit = (market_info.get("unit") or "C").upper()
     market_type = market_info.get("type") or "point"
 
-    market_price, qtype = _match_market_price(city, date_str, mean_spill_i, price_index)
+    stored_prob = mean.get("win_prob")
+    if isinstance(stored_prob, (int, float)):
+        bma_prob = max(0.0, min(1.0, float(stored_prob)))
+        prob_source = "stored"
+    else:
+        bma_prob = _compute_bma_prob(bma_mean, bma_std, mean_spill_i)
+        prob_source = "fallback_1c"
+
+    # P3 — °F buckets are 1 °F wide (0.556 °C). The stored win_prob was computed
+    # on a 1 °C window, which overstates p on °F markets by ~1.8×. Recompute it
+    # on the native width of the °F bucket that contains the bet.
+    if unit == "F":
+        spill_f = mean_spill_i * 9.0 / 5.0 + 32.0
+        lo_f = float(math.floor(spill_f))
+        hi_f = lo_f + 1.0
+        bma_prob = _compute_bma_prob_native_f(bma_mean, bma_std, lo_f, hi_f)
+        prob_source = "native_f_width"
+
+    market_price_raw, qtype = _match_market_price(city, date_str, mean_spill_i, price_index)
     question_type = qtype or str(market_info.get("question_type") or "unknown")
+
+    market_price = None
+    price_source = "none"
+    price_ts = None
+    if market_price_raw is not None:
+        market_price = round(float(market_price_raw), 4)
+        price_source = "yes_price_snapshot"
+        price_ts = _now_iso()
 
     edge = round(bma_prob - market_price, 4) if market_price is not None else None
 
@@ -268,11 +407,7 @@ def _build_record(
         and kelly > 0
     )
 
-    stake = DEFAULT_STAKE_USD
-    payout = 1.0 if result == "WIN" else 0.0
-    pnl = stake if result == "WIN" else -stake
-
-    return {
+    record = {
         "date": date_str,
         "city": city,
         "bucket": bucket,
@@ -281,15 +416,21 @@ def _build_record(
         "market_type": market_type,
         "mean_spill": mean_spill_i,
         "bma_prob": round(bma_prob, 4),
+        "bma_prob_source": prob_source,
         "market_price": market_price,
+        "price_ts": price_ts,
+        "price_source": price_source,
         "edge": edge,
         "kelly": kelly,
         "eligible": eligible,
-        "stake": round(stake, 2),
+        "stake": round(DEFAULT_STAKE_USD, 2),
         "result": result,
-        "payout": payout,
-        "pnl": round(pnl, 2),
+        "settle_rule": _settle_rule_for_market(market_info),
+        "tradable": False,
+        "payout": None,
+        "pnl": None,
     }
+    return apply_settlement(record)
 
 
 def build_ledger_from_quality_log() -> list[dict]:
@@ -323,8 +464,25 @@ def build_ledger_from_quality_log() -> list[dict]:
             else:
                 updated += 1
 
+    # P0.2 — no record may keep the old even-money arithmetic. A handful of
+    # legacy rows are no longer reproduced by the rebuild (their strategy lost
+    # its pm_result), so they would otherwise sit in the file with pnl = ±stake
+    # and no price, quietly poisoning ROI. Normalise them through the one
+    # settlement implementation: no real price => untradeable, pnl None.
+    normalised = 0
+    for rec in ledger.get("records", []):
+        if "tradable" not in rec or rec.get("price_source") is None:
+            rec.setdefault("settle_rule", "unknown")
+            rec.setdefault("price_source", "none")
+            rec.setdefault("price_ts", None)
+            rec.setdefault("tradable", False)
+            rec.setdefault("payout", None)
+            apply_settlement(rec)
+            normalised += 1
+
     save_ledger(ledger)
     print(f"[PnL] ledger upserted: {inserted} inserted, {updated} updated, "
+          f"{normalised} legacy records normalised, "
           f"{len(ledger.get('records', []))} total records")
     return ledger.get("records", [])
 
@@ -334,14 +492,27 @@ def build_ledger_from_quality_log() -> list[dict]:
 # ---------------------------------------------------------------------------
 
 def compute_metrics(records: list[dict]) -> dict:
-    """Compute cumulative PnL / ROI / average edge / ECE / Brier from the ledger."""
+    """Compute cumulative PnL / ROI / average edge / ECE / Brier from the ledger.
+
+    ROI and PnL are computed over TRADEABLE records only. Booking PnL for a bet
+    whose price was never observed is exactly the even-money arithmetic this
+    module used to do; a record without a real price is reported as untradeable
+    and contributes to hit rate and Brier only.
+    """
     n = len(records)
     wins = sum(1 for r in records if r.get("result") == "WIN")
     losses = n - wins
 
-    total_stake = sum(float(r.get("stake") or 0) for r in records)
-    total_pnl = sum(float(r.get("pnl") or 0) for r in records)
+    tradeable = [r for r in records if r.get("pnl") is not None]
+
+    total_stake = sum(float(r.get("stake") or 0) for r in tradeable)
+    total_pnl = sum(float(r.get("pnl") or 0) for r in tradeable)
     roi = round(total_pnl / total_stake, 4) if total_stake else 0.0
+    mean_return = (
+        round(sum(float(r["pnl"]) / float(r["stake"]) for r in tradeable
+                  if float(r.get("stake") or 0) > 0) / len(tradeable), 4)
+        if tradeable else 0.0
+    )
 
     edges = [float(r["edge"]) for r in records if r.get("edge") is not None]
     avg_edge = round(sum(edges) / len(edges), 4) if edges else None
@@ -374,12 +545,14 @@ def compute_metrics(records: list[dict]) -> dict:
 
     return {
         "n_bets": n,
+        "n_tradeable": len(tradeable),
         "wins": wins,
         "losses": losses,
         "win_rate": round(wins / n, 4) if n else 0.0,
         "total_stake": round(total_stake, 2),
         "total_pnl": round(total_pnl, 2),
         "roi": roi,
+        "mean_return": mean_return,
         "avg_edge": avg_edge,
         "ece": ece,
         "brier": brier,
@@ -423,9 +596,12 @@ def main() -> int:
     print("═" * 60)
     print(f"   Bets:      {metrics['n_bets']}  (W:{metrics['wins']} / L:{metrics['losses']})")
     print(f"   Win rate:  {metrics['win_rate'] * 100:.1f}%")
-    print(f"   Staked:    ${metrics['total_stake']:.2f}")
-    print(f"   Total PnL: ${metrics['total_pnl']:+.2f}")
-    print(f"   ROI:       {metrics['roi'] * 100:+.2f}%")
+    print(f"   Tradeable: {metrics['n_tradeable']} of {metrics['n_bets']} "
+          f"(a price was actually observed and is inside 0.001 < p < 0.999)")
+    print(f"   Staked:    ${metrics['total_stake']:.2f}  (tradeable only)")
+    print(f"   Total PnL: ${metrics['total_pnl']:+.2f}  (tradeable only)")
+    print(f"   ROI:       {metrics['roi'] * 100:+.2f}%  (price-aware, tradeable only)")
+    print(f"   Mean ret:  {metrics['mean_return'] * 100:+.2f}%  (per-bet, tradeable only)")
     avg_edge = metrics["avg_edge"]
     print(f"   Avg edge:  {avg_edge * 100:+.2f}pp" if avg_edge is not None else "   Avg edge:  n/a")
     print(f"   ECE:       {metrics['ece'] if metrics['ece'] is not None else 'n/a'}")

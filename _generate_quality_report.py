@@ -3332,8 +3332,12 @@ def _build_city_diagnostics_html_section() -> str:
     summary = diag.get("summary", {})
     rows = ""
     for r in cities[:12]:
-        color = "#f85149" if r["classification"] == "STATION_BIAS" else (
-            "#d2991d" if r["classification"] == "HIGH_VARIANCE" else "#3fb950"
+        # P2.3 classes: |bias|/σ decides offset vs noise; a positive offset is a
+        # sign inversion, not a station offset.
+        color = "#f85149" if r["classification"] == "STATION_OFFSET" else (
+            "#a371f7" if r["classification"] == "SIGN_INVERTED" else (
+                "#d2991d" if r["classification"] == "NOISE" else "#3fb950"
+            )
         )
         rows += (
             f"<tr><td><strong>{r['city']}</strong></td>"
@@ -3348,18 +3352,19 @@ def _build_city_diagnostics_html_section() -> str:
     <div class="section" style="border-color: rgba(248, 81, 73, 0.4);">
       <h2>🔬 MISS-CAUSE DIAGNOSTICS — Hvorfor bommer byene?</h2>
       <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 12px;">
-        STATION_BIAS = konsistent offset (feil stasjon/kilde vs Polymarket) ·
-        HIGH_VARIANCE = støy/spredning (modellfeil, ikke fast offset) · OK = innenfor toleranse.
+        Klassifisering på <code>|bias| / σ</code> (P2.3): STATION_OFFSET = fast offset
+        større enn spredningen (feil stasjon/kilde vs Polymarket) · SIGN_INVERTED =
+        offset i feil retning · NOISE = spredning dominerer · OK = innenfor toleranse.
         Topp 12 verste byer vises; full tabell i <code>_city_error_diagnostics.csv</code>.
       </p>
       <div class="card-grid" style="margin-bottom: 16px;">
         <div class="card">
-          <div class="value" style="color: var(--red);">{summary.get('n_station_bias', 0)}</div>
-          <div class="label">STATION_BIAS</div>
+          <div class="value" style="color: var(--red);">{summary.get('n_station_offset', 0)}</div>
+          <div class="label">STATION_OFFSET</div>
         </div>
         <div class="card">
-          <div class="value" style="color: var(--orange);">{summary.get('n_high_variance', 0)}</div>
-          <div class="label">HIGH_VARIANCE</div>
+          <div class="value" style="color: var(--orange);">{summary.get('n_noise', 0)}</div>
+          <div class="label">NOISE</div>
         </div>
         <div class="card">
           <div class="value" style="color: var(--green);">{summary.get('n_ok', 0)}</div>

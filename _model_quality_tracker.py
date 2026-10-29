@@ -208,6 +208,21 @@ def _get_city_historical_winrate(city_name: str) -> float | None:
     return wins / total
 
 
+def _bucket_win_prob(t: float, mu: float, sigma: float) -> float:
+    """P(the bucket ``int(t)`` wins) = P(t − 0.5 <= temp < t + 0.5), in °C.
+
+    Module-level so the P2 correction can recompute a strategy's win probability
+    on the corrected mean without duplicating the formula that lives inside
+    :func:`_compute_optimal_spill`.
+    """
+    if sigma <= 0:
+        return 0.5 if abs(mu - t) < 0.5 else 0.0
+    sqrt2 = 1.4142135623730951
+    phi_hi = 0.5 * (1 + math.erf(((t + 0.5 - mu) / sigma) / sqrt2))
+    phi_lo = 0.5 * (1 + math.erf(((t - 0.5 - mu) / sigma) / sqrt2))
+    return round(max(0.0, phi_hi - phi_lo), 3)
+
+
 def _compute_optimal_spill(
     mean_c: float, std_c: float, confidence: float, p5_c: float,
     city_name: str = "",
@@ -1142,22 +1157,62 @@ def _preds_to_dict(predictions: list[CityPrediction], locations: list[SavedLocat
     """
     loc_map = {l.name: l for l in locations}
     preds_dict: dict[str, dict] = {}
+
+    # P2 — out-of-sample per-city mean-error correction.
+    # Adopted only because the pre-registered gate passed (adjusted p = 0.0196
+    # on the max-statistic permutation, then ΔLogLoss −0.1988 with a
+    # date-clustered CI upper bound of −0.158 on the single frozen holdout).
+    # The estimate only ever sees city-dates STRICTLY BEFORE today, so a
+    # prediction can never be corrected with information from its own day.
+    # Kill switch: VMON_BIAS_CORRECTION=0.
+    _bc = None
+    _bias_estimates: dict = {}
+    try:
+        import _bias_correction as _bc  # type: ignore[import-not-found]
+        _bias_estimates = _bc.estimate(before_date=date.today().isoformat())
+    except Exception:
+        _bc = None
+        _bias_estimates = {}
+
     for p in predictions:
         loc = loc_map.get(p.city)
         uhi = getattr(loc, "uhi_adjustment", 0.0) if loc else 0.0
 
         # Compute BMA probability for each temperature bucket in the P5-P95 range
         bma_probs: dict[str, float] = {}
-        mean_c = p.bma_mean
+        mean_raw = p.bma_mean
         std_c = max(p.bma_std, 0.01)  # Guard against zero std
+
+        bias_info: dict = {"bias": 0.0, "source": "none", "n": 0}
+        mean_c = mean_raw
+        if _bc is not None and _bias_estimates:
+            try:
+                mean_c, bias_info = _bc.apply_bias(mean_raw, p.city, _bias_estimates)
+            except Exception:
+                mean_c = mean_raw
+        delta = mean_c - mean_raw
+
         lo = max(0, int(p.p5) - 3)
         hi = int(p.p95) + 3
         for temp in range(lo, hi + 1):
             prob = _norm_cdf((temp + 0.5 - mean_c) / std_c) - _norm_cdf((temp - 0.5 - mean_c) / std_c)
             bma_probs[str(temp)] = round(prob * 100, 1)
 
+        # Strategies follow the corrected mean: the same k / p5 offsets, shifted
+        # by the same amount, with the win probability recomputed on the new mean.
+        sigma_spill_c = int(round(p.suggested_spill + delta))
+        p5_spill_c = int(round(p.p5_spill + delta))
+        mean_spill_c = int(round(p.mean_spill + delta))
+        sigma_wp_c = _bucket_win_prob(sigma_spill_c, mean_c, std_c)
+        p5_wp_c = _bucket_win_prob(p5_spill_c, mean_c, std_c)
+        mean_wp_c = _bucket_win_prob(mean_spill_c, mean_c, std_c)
+
         preds_dict[p.city] = {
-            "bma_mean": p.bma_mean,
+            "bma_mean": round(mean_c, 3),
+            "_bma_mean_raw": round(mean_raw, 3),
+            "_bias_applied": round(float(bias_info.get("bias") or 0.0), 4),
+            "_bias_source": str(bias_info.get("source") or "none"),
+            "_bias_n": int(bias_info.get("n") or 0),
             "bma_std": p.bma_std,
             "p5": p.p5,
             "p95": p.p95,
@@ -1166,23 +1221,23 @@ def _preds_to_dict(predictions: list[CityPrediction], locations: list[SavedLocat
             "bma_probs": bma_probs,
             "strategies": {
                 "sigma": {
-                    "spill": p.suggested_spill,
+                    "spill": sigma_spill_c,
                     "k": p.optimal_k,
-                    "win_prob": p.sigma_win_prob,
+                    "win_prob": sigma_wp_c,
                     "result": None,
                     "actual_peak": None,
                 },
                 "p5": {
-                    "spill": p.p5_spill,
+                    "spill": p5_spill_c,
                     "k": None,
-                    "win_prob": p.p5_win_prob,
+                    "win_prob": p5_wp_c,
                     "result": None,
                     "actual_peak": None,
                 },
                 "mean": {
-                    "spill": p.mean_spill,
+                    "spill": mean_spill_c,
                     "k": 0.0,
-                    "win_prob": p.mean_win_prob,
+                    "win_prob": mean_wp_c,
                     "result": None,
                     "actual_peak": None,
                 },
@@ -3275,6 +3330,76 @@ def _extract_date_from_question(question: str) -> str | None:
     return None
 
 
+def _point_bounds(
+    unit: str,
+    value: float,
+    lo_f: float | None = None,
+    hi_f: float | None = None,
+) -> dict[str, float]:
+    """Return the four inclusive bucket bounds for a POINT market (P0.1).
+
+    Widths honoured (design doc §4.2): ``N°C`` = 1.000 °C, ``N°F`` = 0.556 °C
+    (1 °F), ``M-N°F`` = the parsed range (1.111 °C for a 2 °F band). Every point
+    record carries all four keys so no consumer has to reconstruct them from a
+    rounded midpoint.
+
+    The bound pair in the market's own native unit is authoritative; the pair in
+    the other unit is a pure conversion and is only there for cross-unit
+    consumers.
+    """
+    if unit.upper() == "F":
+        hi = float(hi_f) if hi_f is not None else float(value)
+        lo = float(lo_f) if lo_f is not None else hi - 1.0
+        return {
+            "lo_f": round(lo, 3),
+            "hi_f": round(hi, 3),
+            "lo_c": round((lo - 32.0) * 5.0 / 9.0, 3),
+            "hi_c": round((hi - 32.0) * 5.0 / 9.0, 3),
+            "bounds_width_c": round((hi - lo) * 5.0 / 9.0, 3),
+        }
+    lo_c = float(value) - 0.5
+    hi_c = float(value) + 0.5
+    return {
+        "lo_c": round(lo_c, 3),
+        "hi_c": round(hi_c, 3),
+        "lo_f": round(lo_c * 9.0 / 5.0 + 32.0, 3),
+        "hi_f": round(hi_c * 9.0 / 5.0 + 32.0, 3),
+        "bounds_width_c": 1.0,
+    }
+
+
+# Instrumented counters for the settlement branch actually taken (P0.1).
+# The acceptance criterion is that >= 99 % of new resolutions settle off stored
+# bucket bounds rather than the rounding fallback, and that no threshold market
+# ever reaches the point rule — both are read from here, never inferred.
+SETTLE_BRANCH_COUNTERS: dict[str, int] = {
+    "point_f_bounds": 0,
+    "point_c_bounds": 0,
+    "rounding_fallback": 0,
+    "unsettleable_half": 0,
+    "threshold_rejected": 0,
+    "missing_market": 0,
+}
+
+
+def reset_settle_branch_counters() -> None:
+    """Zero the settlement-branch counters (tests / per-run instrumentation)."""
+    for key in SETTLE_BRANCH_COUNTERS:
+        SETTLE_BRANCH_COUNTERS[key] = 0
+
+
+def settle_branch_counters() -> dict[str, int]:
+    """Snapshot of the settlement-branch counters."""
+    return dict(SETTLE_BRANCH_COUNTERS)
+
+
+def bounds_branch_share() -> float | None:
+    """Share of point settlements that used stored bounds (None when no data)."""
+    on_bounds = SETTLE_BRANCH_COUNTERS["point_f_bounds"] + SETTLE_BRANCH_COUNTERS["point_c_bounds"]
+    total = on_bounds + SETTLE_BRANCH_COUNTERS["rounding_fallback"] + SETTLE_BRANCH_COUNTERS["unsettleable_half"]
+    return (on_bounds / total) if total else None
+
+
 def _parse_market_question(question: str) -> dict[str, Any] | None:
     """Classify a resolved Polymarket temperature market from its question text.
 
@@ -3316,20 +3441,26 @@ def _parse_market_question(question: str) -> dict[str, Any] | None:
             return {
                 "type": "point", "unit": "F", "value": midpoint,
                 "bucket": m.group(0).strip(),
+                **_point_bounds("F", midpoint, lo_f=float(lo), hi_f=float(hi)),
             }
         m = re.search(r'(\d+(?:\.\d+)?)\s*°\s*F', q, re.IGNORECASE)
         if m:
+            val = float(m.group(1))
             return {
-                "type": "point", "unit": "F", "value": float(m.group(1)),
+                "type": "point", "unit": "F", "value": val,
                 "bucket": m.group(0).strip(),
+                # P0.1 convention for a single "N°F" bucket: one °F wide.
+                **_point_bounds("F", val, lo_f=val - 1.0, hi_f=val),
             }
 
     # °C point markets.
     m = re.search(r'(\d+(?:\.\d+)?)\s*°\s*C', q, re.IGNORECASE)
     if m:
+        val = float(m.group(1))
         return {
-            "type": "point", "unit": "C", "value": float(m.group(1)),
+            "type": "point", "unit": "C", "value": val,
             "bucket": m.group(0).strip(),
+            **_point_bounds("C", val),
         }
     return None
 
@@ -3759,34 +3890,73 @@ def _log_peak_verification(
     ], verbose=True)
 
 
+def _is_half_step(value: float) -> bool:
+    """True when ``value`` sits exactly on x.5 (a missing-bounds fingerprint)."""
+    return abs(abs(value - math.floor(value)) - 0.5) < 1e-9
+
+
+def _settle_rule_for(market_info: dict[str, Any] | None) -> str:
+    """Name the settlement rule a market uses (stored on every PnL record)."""
+    if not market_info:
+        return "unknown"
+    if market_info.get("type") == "threshold":
+        direction = str(market_info.get("bucket") or "").lower()
+        if any(kw in direction for kw in ("or below", "or lower", "≤")):
+            return "threshold_low"
+        return "threshold_high"
+    if (market_info.get("unit") or "C").upper() == "F":
+        return "point_f"
+    return "point_c"
+
+
 def _spill_vs_polymarket_result(
     spill_c: float | int | None, market_info: dict[str, Any] | None
 ) -> str | None:
-    """Resolve a strategy bucket (stored in °C) against a Polymarket outcome.
+    """Resolve a strategy bucket (stored in °C) against a POINT market outcome.
 
     The ONLY valid definition of WIN is: our bucket equals Polymarket's
     resolved bucket. It is never ``round(our live peak) == spill``.
 
-    - °F bucket market (US): WIN iff lo_f <= spill(°F) <= hi_f (native bounds).
-    - °C bucket market:       WIN iff lo_c <= spill(°C) <= hi_c.
-    - °C point market:        WIN iff round(spill) == round(resolved °C value).
-    - °F point market (rare): the resolved °F value is converted to °C first.
+    - Point market with stored bounds: WIN iff the native reading falls inside
+      ``[lo_native, hi_native]``. The comparison happens in the market's OWN
+      unit, so a °F bucket is compared in °F and is never collapsed onto a
+      rounded °C conversion of its midpoint (design doc §4.2).
+    - Point market without bounds (legacy records only): fall back to
+      ``round(spill) == round(value)``. A resolution sitting exactly on x.5 is
+      a fingerprint of missing bounds, so it is reported unsettleable (None)
+      rather than silently rounded.
+    - Threshold market: always None here. Thresholds are binary bounds settled
+      by :func:`_spill_vs_threshold_result`; 137 exist and the point rule must
+      never touch them.
 
     Returns None when there is no resolvable numeric market outcome or no spill
-    (the bet stays unresolved — never WIN/LOSS on a missing market).
+    (the bet stays unresolved, never WIN/LOSS on a missing market).
     """
     if spill_c is None or not market_info or market_info.get("value") is None:
+        SETTLE_BRANCH_COUNTERS["missing_market"] += 1
         return None
-    lo_c = market_info.get("lo_c")
-    hi_c = market_info.get("hi_c")
+    if market_info.get("type") == "threshold":
+        SETTLE_BRANCH_COUNTERS["threshold_rejected"] += 1
+        return None
+
+    unit = (market_info.get("unit") or "C").upper()
     lo_f = market_info.get("lo_f")
     hi_f = market_info.get("hi_f")
-    if lo_f is not None and hi_f is not None:
-        return "WIN" if lo_f <= float(spill_c) * 9.0 / 5.0 + 32.0 <= hi_f else "LOSS"
+    lo_c = market_info.get("lo_c")
+    hi_c = market_info.get("hi_c")
+    if unit == "F" and lo_f is not None and hi_f is not None:
+        SETTLE_BRANCH_COUNTERS["point_f_bounds"] += 1
+        spill_f = float(spill_c) * 9.0 / 5.0 + 32.0
+        return "WIN" if float(lo_f) <= spill_f <= float(hi_f) else "LOSS"
     if lo_c is not None and hi_c is not None:
+        SETTLE_BRANCH_COUNTERS["point_c_bounds"] += 1
         return "WIN" if float(lo_c) <= float(spill_c) <= float(hi_c) else "LOSS"
-    unit = (market_info.get("unit") or "C").upper()
+
     value = float(market_info["value"])
+    if _is_half_step(value):
+        SETTLE_BRANCH_COUNTERS["unsettleable_half"] += 1
+        return None
+    SETTLE_BRANCH_COUNTERS["rounding_fallback"] += 1
     value_c = value if unit == "C" else (value - 32.0) * 5.0 / 9.0
     return "WIN" if int(round(float(spill_c))) == int(round(value_c)) else "LOSS"
 
