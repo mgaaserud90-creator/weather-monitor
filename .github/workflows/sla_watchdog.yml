@@ -1,0 +1,162 @@
+name: SLA Watchdog
+
+# Independent watchdog for the pipeline that has failed silently three times.
+#
+# It asserts two different things, because the pipeline fails in two different
+# ways:
+#
+#   1. SLA (B2) — an artifact stopped being refreshed, or `_heartbeat.json`
+#      stopped arriving. Thresholds: _model_quality_log.json and
+#      _market_prices.json > 6 h stale, _resolved_markets_log.json > 12 h
+#      stale, _wunderground_real.json missing any of the last 3 *completed*
+#      UTC days. A missing/unparseable/stale heartbeat is itself a failure.
+#
+#   2. Dropped slots (B4) — GitHub delivers this repo's crons 3–7 h late and
+#      silently drops some entirely (measured: not one of the four daily crons
+#      fired in its intended hour; the 2026-10-29T08:30Z slot had still not
+#      fired at 11:12Z). So it asserts *delivered* schedule runs in the
+#      trailing 24 h instead of trusting the cron spec:
+#         full_auto_pipeline     >= 2   (measured 4 in the trailing 24 h)
+#         model_quality_pipeline >= 4   (measured 5-10 in the trailing 24 h)
+#
+# On any breach the job goes red *and* an alert is delivered: SMS when the
+# Twilio secrets are complete, otherwise a GitHub issue labelled
+# `pipeline-alert`, deduplicated by title so a persistent outage does not open
+# one issue every 30 minutes. Delivery failure is itself a failure — an alert
+# can never be swallowed.
+#
+# Both breach paths are provable on demand via workflow_dispatch:
+#   gh workflow run sla_watchdog.yml -f simulate_stale_hours=48   -> red + 1 alert
+#   gh workflow run sla_watchdog.yml                              -> green, silent
+#
+# Exit codes come from _healthcheck.py: 0 healthy, 1 breach, 2 config error.
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    inputs:
+      simulate_stale_hours:
+        description: 'Force measured artifact staleness to N hours (proves the alert path)'
+        required: false
+        default: 0
+        type: number
+      simulate_missing:
+        description: 'Comma-separated artifacts to report as missing (proof aid)'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+# Its own group: the watchdog must never cancel, or be cancelled by, the
+# pipeline it is watching.
+concurrency:
+  group: sla-watchdog
+  cancel-in-progress: false
+
+jobs:
+  watchdog:
+    name: SLA watchdog
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # Shallow clone on purpose: the artifacts' freshness is read from
+      # _heartbeat.json and the GitHub API, never from local history (this
+      # repository has 20 492 commits / ~500 MB of .git).
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Which alert channels exist — names only, never values. `gh secret list`
+      # is deliberately NOT used here: listing repository secrets needs admin
+      # rights that GITHUB_TOKEN does not have, so it would 403. Presence of
+      # the environment variable *is* the check.
+      - name: Inventory alert channels (no values printed)
+        env:
+          TWILIO_SID: ${{ secrets.TWILIO_SID }}
+          TWILIO_TOKEN: ${{ secrets.TWILIO_TOKEN }}
+          TWILIO_FROM: ${{ secrets.TWILIO_FROM }}
+          ALERT_PHONE: ${{ secrets.ALERT_PHONE }}
+        run: |
+          set -u
+          for name in TWILIO_SID TWILIO_TOKEN TWILIO_FROM ALERT_PHONE; do
+            if [ -n "${!name:-}" ]; then
+              echo "${name}: configured"
+            else
+              echo "${name}: MISSING"
+            fi
+          done
+          if [ -n "${TWILIO_SID:-}" ] && [ -n "${TWILIO_TOKEN:-}" ] \
+             && [ -n "${TWILIO_FROM:-}" ] && [ -n "${ALERT_PHONE:-}" ]; then
+            echo "alert channel: SMS (Twilio)"
+          else
+            echo "alert channel: GitHub issue (label 'pipeline-alert')"
+          fi
+
+      # continue-on-error so the alert step below still runs on a breach, then
+      # a dedicated step at the bottom fails the job.
+      - name: Healthcheck
+        id: healthcheck
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          SIM_STALE: ${{ inputs.simulate_stale_hours || 0 }}
+          SIM_MISSING: ${{ inputs.simulate_missing }}
+        run: |
+          set -u
+          echo "simulation: staleness='${SIM_STALE}' missing='${SIM_MISSING}'"
+          python3 _healthcheck.py \
+            --simulate-stale-hours "${SIM_STALE:-0}" \
+            --simulate-missing "${SIM_MISSING:-}"
+
+      - name: Deliver alert
+        if: steps.healthcheck.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          TWILIO_SID: ${{ secrets.TWILIO_SID }}
+          TWILIO_TOKEN: ${{ secrets.TWILIO_TOKEN }}
+          TWILIO_FROM: ${{ secrets.TWILIO_FROM }}
+          ALERT_PHONE: ${{ secrets.ALERT_PHONE }}
+        run: |
+          set -u
+          python3 _healthcheck.py --deliver-only
+
+      - name: Fail the run
+        if: steps.healthcheck.outcome == 'failure'
+        run: |
+          set -u
+          echo "::error::SLA breach detected — see the healthcheck step above."
+          python3 -c "
+          import json
+          r = json.load(open('_healthcheck_report.json', encoding='utf-8'))
+          print(json.dumps(r['breaches'], indent=2))
+          "
+          exit 1
+
+      # A green run must also prove it sent nothing: if a delivery step ever
+      # runs on a healthy check, that is a false-alarm generator and is a bug.
+      - name: Confirm no alert was produced
+        if: steps.healthcheck.outcome == 'success'
+        run: |
+          set -u
+          if [ -f "_healthcheck_alert.txt" ]; then
+            echo "::error::healthy run left an alert file behind — false-alarm bug"
+            cat _healthcheck_alert.txt
+            exit 1
+          fi
+          echo "healthy: no alert produced, nothing delivered."
