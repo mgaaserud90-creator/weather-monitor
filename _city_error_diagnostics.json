@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-29T13:34:37.069663+00:00",
+  "updated": "2026-10-29T15:27:59.969497+00:00",
   "rule": "|bias| / within-city sigma: > 1 => STATION_OFFSET, positive => SIGN_INVERTED, else NOISE",
   "thresholds": {
     "station_bias_mean_c": 0.75,
@@ -303,18 +303,18 @@
     },
     {
       "city": "Milan, IT",
-      "n": 77,
-      "mean_error_c": -0.878,
+      "n": 78,
+      "mean_error_c": -0.863,
       "median_error_c": -1.0,
-      "mae_c": 1.005,
-      "rmse_c": 1.192,
-      "std_error_c": 0.811,
+      "mae_c": 0.996,
+      "rmse_c": 1.184,
+      "std_error_c": 0.816,
       "bias_sign": "negative",
-      "bias_magnitude_c": 0.878,
-      "bias_over_sigma": 1.082,
+      "bias_magnitude_c": 0.863,
+      "bias_over_sigma": 1.057,
       "unit": "C",
       "classification": "STATION_OFFSET",
-      "cause": "consistent under-predicts offset (mean -0.88°C, std 0.81°C → 1.08σ) — likely different station/source vs Polymarket"
+      "cause": "consistent under-predicts offset (mean -0.86°C, std 0.82°C → 1.06σ) — likely different station/source vs Polymarket"
     },
     {
       "city": "Chengdu, CN",
@@ -333,18 +333,18 @@
     },
     {
       "city": "Seoul (Incheon), KR",
-      "n": 73,
-      "mean_error_c": -0.807,
-      "median_error_c": -0.8,
-      "mae_c": 0.96,
-      "rmse_c": 1.2,
-      "std_error_c": 0.895,
+      "n": 74,
+      "mean_error_c": -0.771,
+      "median_error_c": -0.75,
+      "mae_c": 0.972,
+      "rmse_c": 1.211,
+      "std_error_c": 0.939,
       "bias_sign": "negative",
-      "bias_magnitude_c": 0.807,
-      "bias_over_sigma": 0.902,
+      "bias_magnitude_c": 0.771,
+      "bias_over_sigma": 0.821,
       "unit": "C",
       "classification": "NOISE",
-      "cause": "scatter dominates the offset (|mean|/σ = 0.90, std 0.89°C) — model/noise error rather than a fixed station offset"
+      "cause": "scatter dominates the offset (|mean|/σ = 0.82, std 0.94°C) — model/noise error rather than a fixed station offset"
     },
     {
       "city": "Amsterdam, NL",
