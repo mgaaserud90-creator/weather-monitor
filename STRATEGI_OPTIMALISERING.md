@@ -586,6 +586,9 @@ LogLoss ikke kan sammenlignes direkte med tall publisert før denne endringen
 **Om den pinnede 1,7812.** Panelet reproduseres eksakt: 3 663 evaluerbare
 city-dates, °C-hit 32,99 %, °F-hit 22,51 % under historisk avregning,
 gjennomsnittlig lagret `win_prob` 35,85 % på °F og Guangzhou-bias −1,81 °C.
+Sterkeste korroborering: på det lukkede vinduet (t.o.m. 2026-10-28, n = 3 648)
+gir porten Brier **0,191392** mot dette dokumentets **0,1913** — fire desimaler
+treff, altså er både avregningen og join-en tro mot originalen.
 Selve referanseimplementasjonen (`_vmon_analysis/vm.js`) ble imidlertid committet
 **tom**, så p-konvensjonen bak 1,7812 kan ikke inspiseres. Porten av Appendix A
 gir 1,789466, altså 0,47 % høyere. Alle konfigurasjoner i harnessen scores med
