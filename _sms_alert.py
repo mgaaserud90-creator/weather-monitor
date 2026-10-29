@@ -10,9 +10,17 @@ Environment Variables (set in .env or system):
     TWILIO_SID      — Twilio Account SID
     TWILIO_TOKEN    — Twilio Auth Token
     TWILIO_FROM     — Twilio "From" phone number (e.g. "+1234567890")
+    ALERT_PHONE     — Twilio "To" number. There is NO default: if it is unset,
+                      `send_sms()`/`send_alert()` raise SystemExit(2) instead of
+                      texting a hard-coded human. A monitoring system must never
+                      silently deliver production alerts to a private number.
 
 Usage:
-    from _sms_alert import send_sms, can_send_sms_for_city, mark_sms_sent
+    from _sms_alert import send_alert, send_sms, can_send_sms_for_city, mark_sms_sent
+
+    # Synchronous, reusable entry point (used by _healthcheck.py):
+    if not send_alert("VARSMONITOR: pipeline SLA breach ..."):
+        ...  # deliver by another channel; never swallow the alert
 
     if can_send_sms_for_city("Oslo, NO"):
         await send_sms("VARSMONITOR: Oslo peak sannsynlig (82%). ...")
@@ -46,7 +54,16 @@ except ImportError:
 TWILIO_SID = os.getenv("TWILIO_SID", "")
 TWILIO_TOKEN = os.getenv("TWILIO_TOKEN", "")
 TWILIO_FROM = os.getenv("TWILIO_FROM", "")
-ALERT_PHONE = os.getenv("ALERT_PHONE", "+4795419426")
+# No default recipient. The previous fallback (`+4795419426`) meant that any
+# environment with Twilio credentials but no ALERT_PHONE configuration texted a
+# real private person — and, worse, made it impossible to tell "alerting works"
+# from "alerting silently targets a hard-coded number". Unset now fails loudly
+# with SystemExit(2); see send_sms().
+ALERT_PHONE = os.getenv("ALERT_PHONE", "")
+
+# Exit status used when credentials exist but there is nobody configured to
+# alert. Chosen (2) so callers can distinguish it from a delivery error (False).
+EXIT_NO_RECIPIENT = 2
 
 # ---------------------------------------------------------------------------
 # Dedup: track SMS sends per city per day
@@ -102,6 +119,10 @@ async def send_sms(message: str) -> bool | None:
 
     If ``TWILIO_SID`` is not set, prints the message to stdout instead.
 
+    If Twilio IS configured but ``ALERT_PHONE`` is not, raises
+    ``SystemExit(EXIT_NO_RECIPIENT)``: there is no default recipient any more,
+    and guessing one would deliver production alerts to a private person.
+
     Returns True if sent (or dry-run printed), False on error.
     """
     if not TWILIO_SID:
@@ -109,6 +130,15 @@ async def send_sms(message: str) -> bool | None:
         if "--test" in sys.argv:
             print("[SMS] ERROR: Cannot send test SMS without credentials!")
         return
+
+    if not ALERT_PHONE:
+        print(
+            "[SMS] ERROR: ALERT_PHONE is not set. Refusing to send: this module "
+            "has no default recipient. Set ALERT_PHONE (or use a different "
+            "alert channel).",
+            file=sys.stderr,
+        )
+        raise SystemExit(EXIT_NO_RECIPIENT)
 
     if httpx is None:
         print(f"[SMS requires httpx] {message}")
@@ -133,6 +163,24 @@ async def send_sms(message: str) -> bool | None:
     except Exception as exc:
         print(f"[SMS FAILED] {message} — error: {exc}")
         return False
+
+
+def send_alert(message: str) -> bool:
+    """Reusable synchronous alert entry point (used by ``_healthcheck.py``).
+
+    Returns True only when Twilio accepted the message. Returns False when
+    Twilio is not configured at all, so the caller can fall back to another
+    channel rather than losing the alert. Raises ``SystemExit(EXIT_NO_RECIPIENT)``
+    when Twilio is configured but ``ALERT_PHONE`` is missing — that is a
+    configuration error and must be loud.
+
+    Must not be called from inside a running event loop (it drives
+    ``asyncio.run``); every current caller is a plain script or CLI.
+    """
+    if not TWILIO_SID:
+        print("[SMS] TWILIO_SID not set — alert not sent by SMS (caller must fall back).")
+        return False
+    return bool(asyncio.run(send_sms(message)))
 
 
 def check_and_alert(
