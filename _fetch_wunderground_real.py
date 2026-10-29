@@ -36,10 +36,12 @@ Usage
 from __future__ import annotations
 
 import argparse
+import csv
 import html
 import json
 import re
 import sys
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -378,8 +380,10 @@ def fetch_one(
     }
 
 
-def _local_yesterday(tz_name: str, now: datetime | None = None) -> str:
-    """Local calendar date of yesterday in the city's timezone."""
+def _local_day_offset(
+    tz_name: str, days_back: int = 1, now: datetime | None = None
+) -> str:
+    """Local calendar date ``days_back`` days ago in the city's timezone."""
     now = now or datetime.now(timezone.utc)
     try:
         from zoneinfo import ZoneInfo
@@ -388,7 +392,30 @@ def _local_yesterday(tz_name: str, now: datetime | None = None) -> str:
         local = now.replace(tzinfo=ZoneInfo("UTC")).astimezone(z)
     except Exception:
         local = now
-    return (local.date() - timedelta(days=1)).isoformat()
+    return (local.date() - timedelta(days=max(1, days_back))).isoformat()
+
+
+def _local_yesterday(tz_name: str, now: datetime | None = None) -> str:
+    """Local calendar date of yesterday in the city's timezone."""
+    return _local_day_offset(tz_name, 1, now)
+
+
+def _prev_succeeded(prev: dict[str, Any]) -> bool:
+    """True only when a stored row actually carries a real reading.
+
+    The unavailable path in :func:`fetch_one` writes ``status: 0`` with
+    ``wu_real_max: None``. Treating such a row as "already fetched" is what
+    made a failed day permanent, so skip-on-existing is now gated on this.
+    """
+    if not prev:
+        return False
+    if prev.get("wu_real_max") is None:
+        return False
+    try:
+        status = int(prev.get("status") or 0)
+    except (TypeError, ValueError):
+        return False
+    return status == 200
 
 
 def load_existing() -> dict[str, Any]:
@@ -417,6 +444,12 @@ def main() -> int:
         "--refresh", action="store_true", help="Re-fetch dates already present"
     )
     parser.add_argument("--timeout", type=float, default=20.0, help="Per-request timeout")
+    parser.add_argument(
+        "--sleep",
+        type=float,
+        default=0.0,
+        help="Seconds to sleep between cities (politeness throttle for bulk backfills)",
+    )
     args = parser.parse_args()
 
     cities = load_cities()
@@ -430,21 +463,35 @@ def main() -> int:
     cities_db = state.setdefault("cities", {})
 
     # Determine the dates to fetch.
+    #
+    # `--dates` / `--date` give one explicit list shared by every city. Without
+    # them we emit "local yesterday" per city (the historic default) plus, when
+    # `--days N` was passed, the N-1 local days before it. `--days` used to be
+    # declared and never read, so the documented `--days 7` backfill was a
+    # silent no-op; it is honoured now.
+    days = max(1, int(args.days or 1))
+    explicit_dates: list[str] | None = None
     if args.dates:
-        dates = args.dates
+        explicit_dates = sorted({d.strip() for d in args.dates if d and d.strip()})
     elif args.date:
-        dates = [args.date]
+        explicit_dates = [args.date.strip()]
+    if explicit_dates is not None:
+        dates = explicit_dates
     else:
         dates = sorted({_local_yesterday(c.get("tz", "UTC")) for c in cities})
 
     total_ok = 0
     total_null = 0
     total_new = 0
+    total_kept = 0
+    total_skipped = 0
+    per_date_ok: dict[str, int] = {}
+    per_date_attempt: dict[str, int] = {}
 
     with httpx.Client(
         headers=HEADERS, follow_redirects=True, timeout=args.timeout
     ) as client:
-        for loc in cities:
+        for idx, loc in enumerate(cities):
             name = loc["name"]
             station = loc["station"]
             city_db = cities_db.setdefault(
@@ -459,15 +506,55 @@ def main() -> int:
             )
             existing = {(r.get("date")): r for r in city_db.get("rows", [])}
 
-            for date_str in dates:
-                if date_str in existing and not args.refresh:
+            if explicit_dates is not None or days == 1:
+                city_dates = dates
+            else:
+                # Last N local days for this city: local yesterday back to
+                # local yesterday-(N-1). Fixed dates are a single shared list,
+                # but a rolling window is timezone-dependent per city.
+                city_dates = sorted(
+                    {
+                        _local_day_offset(loc.get("tz", "UTC"), i)
+                        for i in range(1, days + 1)
+                    }
+                )
+
+            for date_str in city_dates:
+                prev = existing.get(date_str)
+                # D2: skip only when the previous attempt actually SUCCEEDED.
+                # A date that a past run recorded as null/status 0 (the
+                # unavailable path in fetch_one) is retried, otherwise the hole
+                # in the ground truth becomes permanent.
+                if prev is not None and _prev_succeeded(prev) and not args.refresh:
+                    total_skipped += 1
                     continue
+                if prev is not None:
+                    print(
+                        f"  retry {name:<22} {date_str} "
+                        f"(previous status={prev.get('status')} "
+                        f"wu_real_max={prev.get('wu_real_max')})"
+                    )
                 row = fetch_one(client, loc, date_str)
+                # Additive merge only: never downgrade a good reading to null.
+                if (
+                    prev is not None
+                    and prev.get("wu_real_max") is not None
+                    and row.get("wu_real_max") is None
+                ):
+                    total_kept += 1
+                    print(
+                        f"  keep  {name:<22} {date_str} "
+                        f"(existing max={prev.get('wu_real_max')} retained)"
+                    )
+                    existing[date_str] = prev
+                    continue
+                total_new += 1
+                per_date_attempt[date_str] = per_date_attempt.get(date_str, 0) + 1
                 if row["wu_real_max"] is not None:
                     total_ok += 1
+                    per_date_ok[date_str] = per_date_ok.get(date_str, 0) + 1
                 else:
                     total_null += 1
-                total_new += 1
                 existing[date_str] = row
                 flag = "OK" if row["wu_real_max"] is not None else "-- "
                 print(
@@ -477,27 +564,74 @@ def main() -> int:
 
             city_db["rows"] = sorted(existing.values(), key=lambda r: r["date"])
 
+            if args.sleep and args.sleep > 0 and idx < len(cities) - 1:
+                time.sleep(args.sleep)  # politeness throttle for bulk backfills
+
     state["last_updated"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     OUT_JSON.write_text(
         json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8"
     )
 
     # Flat CSV.
+    #
+    # D4: written with `csv.writer`, not an f-string. Every city key contains
+    # ", " (e.g. "Amsterdam, NL"), so unquoted concatenation emitted nine
+    # fields under an eight-field header and every downstream DictReader/Import-Csv
+    # shifted its columns. Column order and header names are unchanged; only
+    # quoting is added. lineterminator="\n" keeps the historic LF endings.
     with OUT_CSV.open("w", encoding="utf-8", newline="") as fh:
-        fh.write(
-            "city,station,date,status,wu_real_max,unit,wu_time_of_max,wu_n_readings\n"
+        writer = csv.writer(fh, lineterminator="\n")
+        writer.writerow(
+            [
+                "city",
+                "station",
+                "date",
+                "status",
+                "wu_real_max",
+                "unit",
+                "wu_time_of_max",
+                "wu_n_readings",
+            ]
         )
         for city_name, cdb in sorted(cities_db.items()):
             for r in cdb.get("rows", []):
-                fh.write(
-                    f"{city_name},{r.get('station','')},{r['date']},{r.get('status',0)},"
-                    f"{r.get('wu_real_max') if r.get('wu_real_max') is not None else ''},"
-                    f"{r.get('unit') or ''},{r.get('wu_time_of_max') or ''},"
-                    f"{r.get('wu_n_readings',0)}\n"
+                writer.writerow(
+                    [
+                        city_name,
+                        r.get("station", ""),
+                        r["date"],
+                        r.get("status", 0),
+                        r.get("wu_real_max")
+                        if r.get("wu_real_max") is not None
+                        else "",
+                        r.get("unit") or "",
+                        r.get("wu_time_of_max") or "",
+                        r.get("wu_n_readings", 0),
+                    ]
                 )
 
-    print(f"\nFetched {total_new} rows — OK={total_ok} null={total_null}")
+    print(
+        f"\nFetched {total_new} rows — OK={total_ok} null={total_null} "
+        f"kept={total_kept} already_ok={total_skipped}"
+    )
+    if per_date_attempt:
+        print("Per-date success summary:")
+        for date_str in sorted(per_date_attempt):
+            print(
+                f"  {date_str}: {per_date_ok.get(date_str, 0)}"
+                f"/{per_date_attempt[date_str]} cities succeeded"
+            )
     print(f"Wrote {OUT_JSON.name} and {OUT_CSV.name}")
+
+    # D5: a whole-run total failure must be a red step, not a silent exit 0
+    # that still writes an artifact full of nulls.
+    if total_new > 0 and total_ok == 0:
+        print(
+            f"::error::Wunderground fetch produced 0 successes across "
+            f"{total_new} attempted (city, date) pairs over "
+            f"{len(per_date_attempt)} date(s); {total_null} rows were null."
+        )
+        return 1
     return 0
 
 
