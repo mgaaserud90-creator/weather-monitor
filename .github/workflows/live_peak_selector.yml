@@ -21,7 +21,10 @@ concurrency:
 jobs:
   select:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    # Step timers sum to 1 + 3 + 1 + 4 = 9 min, inside this cap. The commit
+    # step used to carry 10 min under a 3 min job, i.e. it could never run to
+    # completion and the run was cancelled mid-push.
+    timeout-minutes: 12
 
     steps:
       - uses: actions/checkout@v4
@@ -33,6 +36,7 @@ jobs:
           python-version: '3.11'
 
       - name: Verify prerequisites
+        timeout-minutes: 1
         run: |
           echo "=== Checking prerequisites ==="
           python3 --version
@@ -44,12 +48,14 @@ jobs:
           fi
 
       - name: Generate peak detection page
+        timeout-minutes: 3
         run: |
           set -x
           python3 _generate_quality_report.py --peak
           echo "Exit code: $?"
 
       - name: Verify output
+        timeout-minutes: 1
         run: |
           if [ -f "_peak_detection.html" ]; then
             AUTO_COUNT=$(grep -c '"AUTO_SELECT_CITIES"' _peak_detection.html || echo 0)
@@ -65,7 +71,7 @@ jobs:
       # combination is banned in this repository (see the action's header).
       - name: Commit peak detection page (always)
         if: always()
-        timeout-minutes: 10
+        timeout-minutes: 4
         continue-on-error: true
         uses: ./.github/actions/commit-generated
         with:

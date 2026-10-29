@@ -35,9 +35,23 @@ name: Full Auto Pipeline (v1)
 #                 recursion guard), so deploy_dashboard.yml could not be relied
 #                 on to run after the auto-commit. A job needs no trigger.
 #
-# Every slow step carries its own `timeout-minutes` and `continue-on-error`, so
-# one slow/failing step is cut without taking the job — and therefore without
-# taking the commit and the deploy — down with it.
+# TIMEOUT BUDGET (A3). `timeout-minutes` is a hang detector, not a duration
+# estimate, and ~29 independent timers cannot all be generous under a bounded
+# job. The rule enforced by `_check_timeout_budget.py` is arithmetic, not taste:
+#
+#     sum(per-step timeout-minutes) <= job timeout-minutes
+#
+# so no hung step can consume the budget a later step — above all the commit —
+# still needs. Before this pass the pipeline's per-step timeouts summed to
+# ~328 min under a 90 min job: every timer was decorative and the job cap was
+# what actually killed the 2026-10-27 run before its commit step. Current
+# arithmetic for `pipeline` under a 60 min job: install 5 + predictions 10
+# (measured 2 m 38 s) + daily_bma 10 (measured 3 m 27 s, do not go below 10) +
+# daily close 5 + early commit 8 + resolved markets 5 + backfill 3 +
+# Wunderground 5 + final commit 8 = 59. Steps that are pure local Python over
+# local JSON (report generators, derived logs) deliberately carry no timer:
+# they are bounded by the job cap AND they all run after the early commit, so a
+# hang there cannot lose the day's core output.
 
 on:
   schedule:
@@ -67,8 +81,10 @@ jobs:
   pipeline:
     name: Data pipeline
     runs-on: ubuntu-latest
-    # Safety net only — the per-step timeouts below are the real guard.
-    timeout-minutes: 90
+    # Hard cap. The per-step timers below must SUM to no more than this
+    # (enforced by _check_timeout_budget.py), so no single step can starve the
+    # commit steps that follow it. One full run measures ~10 min.
+    timeout-minutes: 60
 
     steps:
       - name: Checkout
@@ -82,18 +98,16 @@ jobs:
           python-version: '3.11'
 
       - name: Configure git
-        timeout-minutes: 2
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Install dependencies
-        timeout-minutes: 10
+        timeout-minutes: 5
         continue-on-error: true
         run: pip install httpx structlog tenacity pydantic pydantic-settings python-dotenv orjson redis
 
       - name: Create minimal .env
-        timeout-minutes: 2
         run: |
           cat > .env << 'EOF'
           ENV=production
@@ -112,7 +126,6 @@ jobs:
       - name: Determine region close date
         id: close_date
         shell: bash
-        timeout-minutes: 2
         env:
           FORCE_SCHEDULE: ${{ inputs.force_schedule }}
           EVENT_SCHEDULE: ${{ github.event.schedule }}
@@ -151,16 +164,18 @@ jobs:
 
       # ---- a. fetch predictions + daily close --------------------------------
       - name: Fetch predictions (hourly active)
-        timeout-minutes: 15
+        timeout-minutes: 10
         run: python3 _model_quality_tracker.py --mode hourly_active
 
       # Gated on the dispatched region, not on the wall clock (C2). Under the
       # old "current UTC hour == 12" test this step ran 0.0 s on all five most
       # recent pipeline runs and reported success while echoing a skip message.
+      # daily_bma legitimately takes 3 m 27 s (it is no longer skipped). 10 min
+      # is the floor: do not squeeze it below that.
       - name: Daily BMA refresh (backstop schedule only)
         if: steps.close_date.outputs.region == 'backstop'
         shell: bash
-        timeout-minutes: 15
+        timeout-minutes: 10
         continue-on-error: true
         run: python3 _model_quality_tracker.py --mode daily_bma
 
@@ -171,18 +186,18 @@ jobs:
           echo "Skip daily_bma (region=${{ steps.close_date.outputs.region }}, not the 0 12 * * * backstop run)"
 
       - name: Run daily close (region)
-        timeout-minutes: 15
+        timeout-minutes: 5
         run: python3 _model_quality_tracker.py --mode daily_close --date "${{ steps.close_date.outputs.close_date }}"
 
       # A2 — commit the primary artifacts as soon as they exist.
       # `if: always()` does NOT survive a JOB-level timeout kill, which is
-      # exactly the 2026-10-27 mechanism; the per-step budgets still sum to
-      # 321 min under a 90 min job, so the final commit step can legitimately
-      # never be reached. Committing the day's core output here bounds the loss
-      # to the derived reports instead of the whole day.
+      # exactly the 2026-10-27 mechanism. With the timeout budget now additive
+      # (step sums <= the job cap) the final commit is reachable, but the early
+      # commit still bounds the loss to the derived reports if anything below
+      # misbehaves.
       - name: Commit core artifacts (early)
         if: always()
-        timeout-minutes: 15
+        timeout-minutes: 8
         continue-on-error: true
         uses: ./.github/actions/commit-generated
         with:
@@ -192,7 +207,7 @@ jobs:
 
       # ---- b. resolved markets + backfill ------------------------------------
       - name: Fetch resolved markets (rolling 7 days)
-        timeout-minutes: 12
+        timeout-minutes: 5
         continue-on-error: true
         run: |
           DATES=$(python3 -c "
@@ -204,95 +219,134 @@ jobs:
           python3 _fetch_resolved_markets.py --dates $DATES
 
       - name: Backfill strategy resolutions
-        timeout-minutes: 15
+        timeout-minutes: 3
         continue-on-error: true
         run: python3 _model_quality_tracker.py --mode backfill
 
       # ---- c. Wunderground real resolutions -----------------------------------
+      # D5: the fetcher now exits non-zero when a run produced no successes at
+      # all. `continue-on-error` is kept so the derived reports and both commits
+      # still execute (the pipeline must stay resilient), and the failure is
+      # made LOUD by the summary step below, which names the succeeded vs
+      # failed city-day counts and emits ::warning:: / ::error:: instead of
+      # letting a null-filled artifact look green.
       - name: Fetch Wunderground real resolutions
-        timeout-minutes: 12
+        id: wu
+        timeout-minutes: 5
         continue-on-error: true
         run: python3 _fetch_wunderground_real.py
+
+      - name: Wunderground fetch summary (loud failure)
+        if: always()
+        env:
+          WU_OUTCOME: ${{ steps.wu.outcome }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          path = Path("_wunderground_real.json")
+          if not path.exists():
+              print("::error::_wunderground_real.json is missing - the fetch wrote nothing.")
+              sys.exit(0)
+          data = json.loads(path.read_text(encoding="utf-8"))
+          cities = data.get("cities", {})
+          latest = max(
+              (r.get("date") for c in cities.values() for r in c.get("rows", [])),
+              default=None,
+          )
+          if not latest:
+              print("::error::_wunderground_real.json holds no rows at all.")
+              sys.exit(0)
+          ok = fail = 0
+          for c in cities.values():
+              for r in c.get("rows", []):
+                  if r.get("date") != latest:
+                      continue
+                  if r.get("wu_real_max") is not None and r.get("status") == 200:
+                      ok += 1
+                  else:
+                      fail += 1
+          print(f"Wunderground {latest}: {ok} city-days succeeded, {fail} failed")
+          if fail:
+              print(
+                  f"::warning::Wunderground {latest}: {ok} succeeded / {fail} failed "
+                  f"city-days (failed dates are retried on the next run)"
+              )
+          if ok == 0:
+              print(
+                  f"::error::Wunderground {latest}: total failure - 0 of {fail} "
+                  f"city-days returned a reading."
+              )
+          PY
+          if [ "$WU_OUTCOME" != "success" ]; then
+            echo "::warning::The Wunderground fetch step reported outcome '$WU_OUTCOME' - see the counts above."
+          fi
 
       # ---- d. derived stats / diagnostics / logs ------------------------------
       # "Rebuild peak history" moved to the peak-rebuild job below.
       - name: Populate peak verification
-        timeout-minutes: 10
         continue-on-error: true
         run: python3 _populate_peak_verify.py
 
       - name: Peak deviation stats
-        timeout-minutes: 10
         continue-on-error: true
         run: python3 _peak_deviation_stats.py
 
       - name: City error diagnostics
-        timeout-minutes: 10
         continue-on-error: true
         run: python3 _diagnose_city_errors.py
 
       - name: Generate modified strategy (full backfill + today)
-        timeout-minutes: 20
         run: python3 _modified_strategy.py
 
       - name: Modifisert confidence research
-        timeout-minutes: 12
         continue-on-error: true
         run: python3 _modified_research.py --json > _modified_confidence_report.json
 
       - name: Daily city log
-        timeout-minutes: 10
         continue-on-error: true
         run: python3 _daily_city_log.py
 
       - name: PnL ledger
-        timeout-minutes: 10
         continue-on-error: true
         run: python3 _pnl_tracker.py
 
       - name: Edge enhancer backtest
-        timeout-minutes: 12
         continue-on-error: true
         run: python3 _edge_enhancer.py
 
       # ---- e. reports + verification ------------------------------------------
       - name: Generate full report (tracker)
-        timeout-minutes: 20
         continue-on-error: true
         run: python3 _model_quality_tracker.py --mode full_report
 
       - name: Generate MD report
-        timeout-minutes: 12
         continue-on-error: true
         run: python3 _generate_quality_report.py
 
       - name: Generate HTML dashboard
-        timeout-minutes: 12
         continue-on-error: true
         run: python3 _generate_quality_report.py --html
 
       - name: Generate all-cities HTML
-        timeout-minutes: 12
         continue-on-error: true
         run: python3 _generate_quality_report.py --all-cities
 
       - name: Generate index
-        timeout-minutes: 12
         continue-on-error: true
         run: python3 _generate_quality_report.py --index
 
       - name: Generate peak detection page
-        timeout-minutes: 12
         continue-on-error: true
         run: python3 _generate_quality_report.py --peak
 
       - name: Generate recommended bets (Anbefalt spill)
-        timeout-minutes: 12
         continue-on-error: true
         run: python3 _recommended_bets.py
 
       - name: Verify all data integrity
-        timeout-minutes: 10
         continue-on-error: true
         run: python3 _verify_all_data.py
 
@@ -304,7 +358,6 @@ jobs:
       # watchdog treats a missing or stale one as a failure in its own right.
       - name: Write heartbeat
         if: always()
-        timeout-minutes: 2
         continue-on-error: true
         env:
           REGION: ${{ steps.close_date.outputs.region }}
@@ -320,7 +373,7 @@ jobs:
       - name: Commit derived data (always)
         id: commit
         if: always()
-        timeout-minutes: 15
+        timeout-minutes: 8
         continue-on-error: true
         uses: ./.github/actions/commit-generated
         with:
@@ -349,7 +402,9 @@ jobs:
     needs: pipeline
     if: always()
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Step timers sum to 5 + 8 + 4 + 6 = 23 min, under this cap
+    # (was 50 min of timers under a 30 min job).
+    timeout-minutes: 25
 
     steps:
       - name: Checkout
@@ -363,13 +418,12 @@ jobs:
           python-version: '3.11'
 
       - name: Configure git
-        timeout-minutes: 2
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Install dependencies
-        timeout-minutes: 10
+        timeout-minutes: 5
         continue-on-error: true
         run: pip install httpx structlog tenacity pydantic pydantic-settings python-dotenv orjson redis
 
@@ -379,12 +433,12 @@ jobs:
         run: echo "iso=$(date -u +%Y-%m-%dT%H:%MZ)" >> "$GITHUB_OUTPUT"
 
       - name: Rebuild peak history (incremental)
-        timeout-minutes: 15
+        timeout-minutes: 8
         continue-on-error: true
         run: python3 _rebuild_peak_history.py
 
       - name: Peak deviation stats
-        timeout-minutes: 8
+        timeout-minutes: 4
         continue-on-error: true
         run: python3 _peak_deviation_stats.py
 
@@ -395,7 +449,7 @@ jobs:
       - name: Commit peak history (always)
         id: commit
         if: always()
-        timeout-minutes: 15
+        timeout-minutes: 6
         continue-on-error: true
         uses: ./.github/actions/commit-generated
         with:
@@ -414,7 +468,9 @@ jobs:
     needs: [pipeline, peak-rebuild]
     if: always()
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    # Step timers sum to 5 + 1 + 4 + 4 + 4 + 4 + 4 = 26 min, under this cap
+    # (was ~63-72 min of timers under a 25 min job).
+    timeout-minutes: 30
     permissions:
       contents: read
       pages: write
@@ -438,12 +494,12 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        timeout-minutes: 10
+        timeout-minutes: 5
         continue-on-error: true
         run: pip install httpx structlog tenacity pydantic pydantic-settings python-dotenv orjson redis
 
       - name: Create minimal .env
-        timeout-minutes: 2
+        timeout-minutes: 1
         run: |
           cat > .env << 'EOF'
           ENV=production
@@ -453,27 +509,27 @@ jobs:
           EOF
 
       - name: Generate HTML dashboard
-        timeout-minutes: 12
+        timeout-minutes: 4
         continue-on-error: true
         run: python _generate_quality_report.py --html
 
       - name: Generate all-cities HTML
-        timeout-minutes: 12
+        timeout-minutes: 4
         continue-on-error: true
         run: python _generate_quality_report.py --all-cities
 
       - name: Generate index
-        timeout-minutes: 12
+        timeout-minutes: 4
         continue-on-error: true
         run: python _generate_quality_report.py --index
 
       - name: Generate peak detection page
-        timeout-minutes: 12
+        timeout-minutes: 4
         continue-on-error: true
         run: python _generate_quality_report.py --peak
 
       - name: Generate recommended bets (Anbefalt spill)
-        timeout-minutes: 12
+        timeout-minutes: 4
         continue-on-error: true
         run: python _recommended_bets.py
 

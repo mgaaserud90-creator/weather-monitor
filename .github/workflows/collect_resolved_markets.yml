@@ -19,7 +19,8 @@ concurrency:
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    # Step timers sum to 5 + 1 + 4 = 10 min, inside this cap.
+    timeout-minutes: 12
 
     steps:
       - uses: actions/checkout@v4
@@ -31,6 +32,7 @@ jobs:
           python-version: '3.11'
 
       - name: Collect resolved markets
+        timeout-minutes: 5
         run: |
           # Fetch last 7 days of resolved markets (auto-rolling window)
           DATES=$(python3 -c "
@@ -43,18 +45,35 @@ jobs:
           python3 _fetch_resolved_markets.py --dates $DATES
 
       - name: Cross-reference with our peaks
+        timeout-minutes: 1
         run: |
           if [ -f "_resolved_markets_log.json" ]; then
             COUNT=$(python3 -c "import json; d=json.load(open('_resolved_markets_log.json')); print(len(d.get('markets',{})))")
             echo "Resolved markets collected: $COUNT"
           fi
 
-      - name: Install dependencies (backfill)
-        run: pip install httpx structlog tenacity pydantic pydantic-settings python-dotenv orjson redis
-
-      - name: Backfill strategy resolutions
-        run: python3 _model_quality_tracker.py --mode backfill
-
+      # REMOVED IN PASS 2 (A3/F-item): "Install dependencies (backfill)" +
+      # "Backfill strategy resolutions" (`python3 _model_quality_tracker.py
+      # --mode backfill`). Evidence that they were redundant here:
+      #
+      #   1. `backfill_mode()` (_model_quality_tracker.py:3958) re-resolves every
+      #      historical run and unconditionally calls `_save_log()` (:4000),
+      #      which rewrites `_model_quality_log.json`. So the step DID mutate a
+      #      tracked file.
+      #   2. The artifact ownership map
+      #      (.github/actions/commit-generated/action.yml:35-39) assigns
+      #      `_model_quality_log.json` to full_auto_pipeline and
+      #      model_quality_pipeline only. This workflow stages just
+      #      `_resolved_markets_log.json` / `_resolved_markets.csv` (below), so
+      #      the backfill write could never be committed from here.
+      #   3. Net effect of keeping it: a dirty working tree on every run, which
+      #      forced the commit action's rebase to autostash, plus ~10 min of
+      #      pip install per 30 minutes for a result nobody could push.
+      #   4. full_auto_pipeline still runs `--mode backfill` in its pipeline job
+      #      (and commits the log in both the early and the final commit steps),
+      #      so the re-resolution still happens; it is simply done by the
+      #      workflow that owns the file.
+      #
       # E1 — artifact ownership. This workflow generates ONLY the resolved
       # markets log and CSV. It used to also stage _model_quality_log.json and
       # _quality_report.md, which it never writes: that was pure overlap with
@@ -63,7 +82,7 @@ jobs:
       # .github/actions/commit-generated/action.yml.
       - name: Commit resolved markets (always)
         if: always()
-        timeout-minutes: 10
+        timeout-minutes: 4
         continue-on-error: true
         uses: ./.github/actions/commit-generated
         with:

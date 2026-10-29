@@ -23,9 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     # Was 5 minutes, while every observed run took 5m18s–5m21s and was always
     # cancelled just before the commit step. The batch API in
-    # _model_quality_tracker makes the verification itself take seconds, but the
-    # budget stays generous so checkout/pip/commit/push never get cut.
-    timeout-minutes: 15
+    # _model_quality_tracker makes the verification itself take seconds, so the
+    # budget is bounded rather than open: step timers sum to
+    # 4 + 5 + 1 + 3 + 4 = 17 min, inside this cap.
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v4
@@ -37,18 +38,18 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        timeout-minutes: 8
+        timeout-minutes: 4
         continue-on-error: true
         run: pip install httpx structlog tenacity pydantic pydantic-settings python-dotenv orjson redis
 
       - name: Verify peaks vs Polymarket
-        timeout-minutes: 10
+        timeout-minutes: 5
         run: |
           set -x
           python3 _populate_peak_verify.py
 
       - name: Summary
-        timeout-minutes: 2
+        timeout-minutes: 1
         run: |
           if [ -f "_peak_verification_log.json" ]; then
             echo "=== Verification complete ==="
@@ -58,7 +59,7 @@ jobs:
           fi
 
       - name: Peak deviation stats (cumulative)
-        timeout-minutes: 8
+        timeout-minutes: 3
         continue-on-error: true
         run: python3 _peak_deviation_stats.py
 
@@ -70,7 +71,7 @@ jobs:
       # dies silently.
       - name: Commit verification logs (always)
         if: always()
-        timeout-minutes: 10
+        timeout-minutes: 4
         continue-on-error: true
         uses: ./.github/actions/commit-generated
         with:

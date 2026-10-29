@@ -1,47 +1,105 @@
 name: Smoke Test
-on: workflow_dispatch
+
+# Two jobs:
+#   lint  — fast, real gates over the workflow files and the artifact budgets.
+#           Runs on workflow_dispatch AND on every push to main that touches
+#           .github/** or one of the guard scripts. It is NOT
+#           continue-on-error: a timeout-budget or data-growth violation must
+#           turn this workflow red.
+#   test  — the original import/full-run/SMS smoke test. Manual only: it sends
+#           a real Twilio SMS, so it must not fire on every push.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/**'
+      - '_check_timeout_budget.py'
+      - '_check_data_growth.py'
+
+permissions:
+  contents: read
+
 jobs:
-  test:
+  lint:
+    name: Workflow + data guards
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install lint dependencies
+        timeout-minutes: 3
+        run: pip install pyyaml
+
+      # A3 — every per-step timeout in every workflow must fit inside its job
+      # timeout, and no single step may be given the whole job budget.
+      - name: Timeout budget lint
+        timeout-minutes: 2
+        run: python -u _check_timeout_budget.py
+
+      # F2 — the append-only artifacts must stay inside their growth budgets.
+      - name: Data growth guard
+        timeout-minutes: 2
+        run: python -u _check_data_growth.py
+
+  test:
+    name: Import + full run + SMS
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment: github-pages
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       - name: Install ALL deps from pyproject.toml
+        timeout-minutes: 5
         run: |
           pip install httpx structlog tenacity pydantic pydantic-settings python-dotenv colorama orjson redis
-      
+
       - name: Create .env
+        timeout-minutes: 1
         run: |
           echo "ENV=production" > .env
           echo "WEATHER_BMA_ENABLED=true" >> .env
           echo "WEATHER_SATELLITE_ENABLED=false" >> .env
           echo "WEATHER_ENSEMBLE_CONFIDENCE_FLOOR=0.5" >> .env
-      
+
       - name: Test import 1 — openmeteo_client
+        timeout-minutes: 2
         run: |
           python -u -c "from src.clients.openmeteo_client import OpenMeteoClient; print('OK: openmeteo_client')"
-      
+
       - name: Test import 2 — ensemble
+        timeout-minutes: 2
         run: |
           python -u -c "from src.strategies.weather.ensemble import BMAEnsembleEngine; print('OK: ensemble')"
-      
+
       - name: Test import 3 — weather_monitor_cli
+        timeout-minutes: 2
         run: |
           python -u -c "from weather_monitor_cli import WeatherAnalyzer, LocationManager; print('OK: weather_monitor_cli')"
-      
+
       - name: Test import 4 — _model_quality_tracker
+        timeout-minutes: 2
         run: |
           python -u -c "import _model_quality_tracker; print('OK: tracker')"
-      
+
       - name: Test full run
+        timeout-minutes: 10
         run: |
           python -u _model_quality_tracker.py --mode daily_bma
 
       - name: Verify secrets
+        timeout-minutes: 1
         run: |
           if [ -z "$TWILIO_SID" ]; then echo "TWILIO_SID is EMPTY"; else echo "TWILIO_SID is SET (length: ${#TWILIO_SID})"; fi
           if [ -z "$TWILIO_TOKEN" ]; then echo "TWILIO_TOKEN is EMPTY"; else echo "TWILIO_TOKEN is SET (length: ${#TWILIO_TOKEN})"; fi
@@ -52,6 +110,7 @@ jobs:
           TWILIO_FROM: ${{ secrets.TWILIO_FROM }}
 
       - name: Send Test SMS
+        timeout-minutes: 2
         env:
           TWILIO_SID: ${{ secrets.TWILIO_SID }}
           TWILIO_TOKEN: ${{ secrets.TWILIO_TOKEN }}
