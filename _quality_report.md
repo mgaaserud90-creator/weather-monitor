@@ -7,13 +7,13 @@ Generert: 2026-10-30
 Dager kjørt: 81
 
 📊 PER-STRATEGI RESULTATER (KUMULATIV):
-   🎯 Sigma (μ−kσ): V:645 T:3382  (16.0%)
-   🧪 Modifisert:   V:1546 T:2481  (38.4%)
-   📊 Mean-basert:  V:1284 T:2743  (31.9%)
+   🎯 Sigma (μ−kσ): V:645 T:3383  (16.0%)
+   🧪 Modifisert:   V:1546 T:2482  (38.4%)
+   📊 Mean-basert:  V:1284 T:2744  (31.9%)
 
 🏙️ PER-BY 3-STRATEGI W/L (KUMULATIV, MIN-SAMPLE):
    By                                      Sigma       Modifisert             Mean
-   Amsterdam, NL                20W/61L (24.7%, n=81) 38W/43L (46.9%, n=81) 35W/46L (43.2%, n=81)
+   Amsterdam, NL                19W/62L (23.5%, n=81) 38W/43L (46.9%, n=81) 35W/46L (43.2%, n=81)
    Ankara, TR                   5W/76L (6.2%, n=81) 36W/45L (44.4%, n=81) 14W/67L (17.3%, n=81)
    Atlanta, US                  4W/76L (5.0%, n=80) 10W/70L (12.5%, n=80) 21W/59L (26.2%, n=80)
    Austin, US                   2W/77L (2.5%, n=79) 35W/44L (44.3%, n=79) 25W/54L (31.6%, n=79)
@@ -44,8 +44,8 @@ Dager kjørt: 81
    Miami, US                    8W/72L (10.0%, n=80) 15W/65L (18.8%, n=80) 13W/67L (16.2%, n=80)
    Milan, IT                    10W/71L (12.3%, n=81) 28W/53L (34.6%, n=81) 32W/49L (39.5%, n=81)
    Moscow, RU                   14W/67L (17.3%, n=81) 29W/52L (35.8%, n=81) 25W/56L (30.9%, n=81)
-   Munich, DE                   17W/64L (21.0%, n=81) 31W/50L (38.3%, n=81) 26W/55L (32.1%, n=81)
-   New York, US                 19W/61L (23.8%, n=80) 37W/43L (46.2%, n=80) 30W/50L (37.5%, n=80)
+   Munich, DE                   18W/63L (22.2%, n=81) 31W/50L (38.3%, n=81) 26W/55L (32.1%, n=81)
+   New York, US                 19W/62L (23.5%, n=81) 37W/44L (45.7%, n=81) 30W/51L (37.0%, n=81)
    Panama City, PA              9W/70L (11.4%, n=79) 37W/42L (46.8%, n=79) 18W/61L (22.8%, n=79)
    Paris, FR                    12W/69L (14.8%, n=81) 22W/59L (27.2%, n=81) 28W/53L (34.6%, n=81)
    Qingdao, CN                  3W/77L (3.8%, n=80) 29W/51L (36.2%, n=80) 29W/51L (36.2%, n=80)
@@ -67,7 +67,7 @@ Dager kjørt: 81
 
 📋 AVGJORTE RESULTATER — SISTE DAG (2026-10-30):
    By                              Sigma Modifisert     Mean         Marked
-   Amsterdam, NL                       ✅        ❌        ❌         13.0°C
+   Amsterdam, NL                       ❌        ❌        ❌         13.0°C
    Ankara, TR                          ❌        ✅        ❌         17.0°C
    Atlanta, US                         ⏳        ⏳        ⏳              —
    Austin, US                          ⏳        ⏳        ⏳              —
@@ -98,10 +98,10 @@ Dager kjørt: 81
    Miami, US                           ⏳        ⏳        ⏳              —
    Milan, IT                           ❌        ❌        ✅         18.0°C
    Moscow, RU                          ❌        ❌        ❌ 12°C or higher
-   Munich, DE                          ❌        ❌        ❌         11.0°C
-   New York, US                        ⏳        ⏳        ⏳              —
+   Munich, DE                          ✅        ❌        ❌         11.0°C
+   New York, US                        ❌        ❌        ❌        70-71°F
    Panama City, PA                     ⏳        ⏳        ⏳              —
-   Paris, FR                           ❌        ❌        ✅           16°C
+   Paris, FR                           ❌        ❌        ✅         16.0°C
    Qingdao, CN                         ⏳        ⏳        ⏳              —
    San Francisco, US                   ⏳        ⏳        ⏳              —
    Sao Paulo, BR                       ⏳        ⏳        ⏳              —
@@ -111,7 +111,7 @@ Dager kjørt: 81
    Shenzhen, CN                        ⏳        ⏳        ⏳              —
    Singapore, SG                       ⏳        ⏳        ⏳              —
    Taipei, TW                          ⏳        ⏳        ⏳              —
-   Tel Aviv, IL                        ✅        ❌        ✅           25°C
+   Tel Aviv, IL                        ✅        ❌        ✅         25.0°C
    Tokyo, JP                           ⏳        ⏳        ⏳              —
    Toronto, CA                         ⏳        ⏳        ⏳              —
    Warsaw, PL                          ✅        ❌        ❌            9°C
@@ -123,7 +123,7 @@ Dager kjørt: 81
 
 🌡️ PEAK vs RESOLUTION — KUMULATIV
 
-   Samples: 3832  ·  Bias (snitt avvik): -0.434°C  ·  MAE: 0.988°C  ·  RMSE: 1.257°C  ·  Std: 1.180°C
+   Samples: 3833  ·  Bias (snitt avvik): -0.435°C  ·  MAE: 0.988°C  ·  RMSE: 1.257°C  ·  Std: 1.180°C
 
    By                         n   Bias °C     MAE    RMSE     Std  Flagg
    Taipei, TW                76     -1.44    1.55    1.78    1.05  
@@ -137,11 +137,11 @@ Dager kjørt: 81
    Wellington, NZ            78     -0.88    0.93    1.16    0.77  
    Paris, FR                 80     -0.85    0.98    1.15    0.78  
    Mexico City, MX           72     -0.84    1.23    1.45    1.19  
-   Houston, US               79     -0.75    0.95    1.23    0.99  
+   Houston, US               79     -0.76    0.96    1.24    0.99  
+   Austin, US                79     -0.75    1.09    1.35    1.13  
    Amsterdam, NL             81     -0.74    0.83    1.04    0.74  
-   Austin, US                79     -0.74    1.08    1.34    1.12  
+   Miami, US                 80     -0.72    1.03    1.25    1.02  
    Lucknow, IN               73     -0.72    0.89    1.05    0.77  
-   Miami, US                 80     -0.72    1.02    1.24    1.02  
    Seoul (Incheon), KR       77     -0.71    0.92    1.10    0.85  
    Chicago, US               79     -0.68    1.10    1.46    1.30  
    Milan, IT                 80     -0.67    0.89    1.08    0.86  
@@ -158,10 +158,10 @@ Dager kjørt: 81
    Shenzhen, CN              76     +0.37    1.08    1.29    1.24  
    Singapore, SG             75     -0.36    0.80    1.07    1.02  
    Hong Kong, HK             74     -0.36    0.86    1.13    1.08  
-   Los Angeles, US           76     -0.34    0.86    1.17    1.13  
+   Los Angeles, US           76     -0.34    0.86    1.17    1.12  
    Jinan, CN                  6     +0.32    0.35    0.47    0.39  
    Atlanta, US               80     -0.31    0.89    1.14    1.11  
-   New York, US              80     -0.28    0.73    0.92    0.88  
+   New York, US              81     -0.30    0.73    0.92    0.87  
    Tokyo, JP                 77     -0.26    0.94    1.13    1.11  
    Ankara, TR                79     -0.25    0.75    1.04    1.02  
    Wuhan, CN                 75     -0.24    1.33    1.55    1.54  
@@ -173,7 +173,7 @@ Dager kjørt: 81
    Toronto, CA               79     -0.10    0.76    1.03    1.04  
    Shanghai, CN              76     -0.09    0.71    0.88    0.88  
    Helsinki, FI              81     -0.08    0.63    0.78    0.78  
-   Dallas, US                78     -0.07    0.94    1.23    1.23  
+   Dallas, US                78     -0.06    0.94    1.23    1.23  
    Chongqing, CN             75     -0.03    0.96    1.19    1.20  
    Tel Aviv, IL              81     +0.02    0.60    0.77    0.78  
    Karachi, PK               73     -0.02    0.59    0.76    0.76  

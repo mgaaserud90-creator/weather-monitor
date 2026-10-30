@@ -3,7 +3,7 @@ city,n,mean_error_c,median_error_c,mae_c,rmse_c,std_error_c,bias_sign,bias_magni
 "Taipei, TW",73,-1.728,-1.7,1.78,1.984,0.982,negative,1.728,1.759,C,STATION_OFFSET,"consistent under-predicts offset (mean -1.73°C, std 0.98°C → 1.76σ) — likely different station/source vs Polymarket"
 "Kuala Lumpur, MY",73,-1.233,-1.2,1.317,1.547,0.94,negative,1.233,1.312,C,STATION_OFFSET,"consistent under-predicts offset (mean -1.23°C, std 0.94°C → 1.31σ) — likely different station/source vs Polymarket"
 "Los Angeles, US",75,1.196,1.167,1.443,1.806,1.362,positive,1.196,0.878,F,SIGN_INVERTED,"offset in the WRONG direction (mean +1.20°C, std 1.36°C → 0.88σ) — the point is warmer than the market resolves; not a station offset but a sign error"
-"Munich, DE",78,-1.149,-1.3,1.4,1.63,1.163,negative,1.149,0.988,C,NOISE,"scatter dominates the offset (|mean|/σ = 0.99, std 1.16°C) — model/noise error rather than a fixed station offset"
+"Munich, DE",78,-1.15,-1.3,1.398,1.629,1.161,negative,1.15,0.991,C,NOISE,"scatter dominates the offset (|mean|/σ = 0.99, std 1.16°C) — model/noise error rather than a fixed station offset"
 "Shanghai, CN",73,-1.059,-1.2,1.166,1.338,0.823,negative,1.059,1.287,C,STATION_OFFSET,"consistent under-predicts offset (mean -1.06°C, std 0.82°C → 1.29σ) — likely different station/source vs Polymarket"
 "Singapore, SG",73,-1.05,-1.1,1.14,1.317,0.8,negative,1.05,1.311,C,STATION_OFFSET,"consistent under-predicts offset (mean -1.05°C, std 0.80°C → 1.31σ) — likely different station/source vs Polymarket"
 "Miami, US",79,-1.015,-0.956,1.053,1.221,0.683,negative,1.015,1.486,F,STATION_OFFSET,"consistent under-predicts offset (mean -1.01°C, std 0.68°C → 1.49σ) — likely different station/source vs Polymarket"
@@ -16,12 +16,12 @@ city,n,mean_error_c,median_error_c,mae_c,rmse_c,std_error_c,bias_sign,bias_magni
 "Ankara, TR",78,-0.931,-1.1,1.099,1.232,0.813,negative,0.931,1.145,C,STATION_OFFSET,"consistent under-predicts offset (mean -0.93°C, std 0.81°C → 1.14σ) — likely different station/source vs Polymarket"
 "Busan, KR",74,-0.927,-1.0,1.008,1.21,0.784,negative,0.927,1.182,C,STATION_OFFSET,"consistent under-predicts offset (mean -0.93°C, std 0.78°C → 1.18σ) — likely different station/source vs Polymarket"
 "Denver, US",78,-0.907,-1.089,1.184,1.396,1.068,negative,0.907,0.849,F,NOISE,"scatter dominates the offset (|mean|/σ = 0.85, std 1.07°C) — model/noise error rather than a fixed station offset"
-"Paris, FR",78,-0.897,-1.0,1.015,1.189,0.785,negative,0.897,1.143,C,STATION_OFFSET,"consistent under-predicts offset (mean -0.90°C, std 0.79°C → 1.14σ) — likely different station/source vs Polymarket"
+"Paris, FR",79,-0.895,-1.0,1.011,1.184,0.781,negative,0.895,1.147,C,STATION_OFFSET,"consistent under-predicts offset (mean -0.89°C, std 0.78°C → 1.15σ) — likely different station/source vs Polymarket"
 "Manila, PH",73,-0.889,-0.9,1.147,1.358,1.034,negative,0.889,0.859,C,NOISE,"scatter dominates the offset (|mean|/σ = 0.86, std 1.03°C) — model/noise error rather than a fixed station offset"
-"Milan, IT",79,-0.862,-1.0,0.993,1.18,0.811,negative,0.862,1.062,C,STATION_OFFSET,"consistent under-predicts offset (mean -0.86°C, std 0.81°C → 1.06σ) — likely different station/source vs Polymarket"
+"Milan, IT",79,-0.864,-1.0,0.995,1.182,0.811,negative,0.864,1.065,C,STATION_OFFSET,"consistent under-predicts offset (mean -0.86°C, std 0.81°C → 1.07σ) — likely different station/source vs Polymarket"
 "Chengdu, CN",71,-0.843,-0.7,1.306,1.625,1.399,negative,0.843,0.603,C,NOISE,"scatter dominates the offset (|mean|/σ = 0.60, std 1.40°C) — model/noise error rather than a fixed station offset"
 "Seoul (Incheon), KR",75,-0.776,-0.7,0.955,1.192,0.911,negative,0.776,0.852,C,NOISE,"scatter dominates the offset (|mean|/σ = 0.85, std 0.91°C) — model/noise error rather than a fixed station offset"
-"Amsterdam, NL",80,-0.726,-0.7,0.835,1.024,0.726,negative,0.726,1.0,C,OK,within tolerance — no systematic miss cause detected
+"Amsterdam, NL",80,-0.725,-0.7,0.836,1.024,0.728,negative,0.725,0.996,C,OK,within tolerance — no systematic miss cause detected
 "Chongqing, CN",69,-0.705,-0.7,1.037,1.216,0.998,negative,0.705,0.706,C,OK,within tolerance — no systematic miss cause detected
 "Istanbul, TR",77,-0.702,-0.5,0.783,1.056,0.794,negative,0.702,0.885,C,OK,within tolerance — no systematic miss cause detected
 "Zhengzhou, CN",28,-0.696,-1.05,1.239,1.44,1.284,negative,0.696,0.543,C,NOISE,"scatter dominates the offset (|mean|/σ = 0.54, std 1.28°C) — model/noise error rather than a fixed station offset"
@@ -31,7 +31,7 @@ city,n,mean_error_c,median_error_c,mae_c,rmse_c,std_error_c,bias_sign,bias_magni
 "Buenos Aires, AR",78,-0.634,-0.6,0.975,1.186,1.008,negative,0.634,0.629,C,NOISE,"scatter dominates the offset (|mean|/σ = 0.63, std 1.01°C) — model/noise error rather than a fixed station offset"
 "Atlanta, US",79,-0.598,-0.622,0.743,0.909,0.688,negative,0.598,0.869,F,OK,within tolerance — no systematic miss cause detected
 "Toronto, CA",78,-0.565,-0.5,0.708,0.912,0.72,negative,0.565,0.784,C,OK,within tolerance — no systematic miss cause detected
-"Karachi, PK",64,-0.544,-0.5,0.829,1.028,0.879,negative,0.544,0.619,C,OK,within tolerance — no systematic miss cause detected
+"Karachi, PK",64,-0.543,-0.5,0.827,1.027,0.879,negative,0.543,0.618,C,OK,within tolerance — no systematic miss cause detected
 "San Francisco, US",77,-0.472,-0.778,1.12,1.303,1.222,negative,0.472,0.386,F,NOISE,"scatter dominates the offset (|mean|/σ = 0.39, std 1.22°C) — model/noise error rather than a fixed station offset"
 "Helsinki, FI",80,-0.465,-0.5,0.687,0.816,0.675,negative,0.465,0.69,C,OK,within tolerance — no systematic miss cause detected
 "Chicago, US",78,-0.46,-0.572,0.787,0.949,0.836,negative,0.46,0.551,F,OK,within tolerance — no systematic miss cause detected
@@ -39,14 +39,14 @@ city,n,mean_error_c,median_error_c,mae_c,rmse_c,std_error_c,bias_sign,bias_magni
 "Qingdao, CN",73,-0.41,-0.4,0.772,0.989,0.906,negative,0.41,0.453,C,OK,within tolerance — no systematic miss cause detected
 "Wuhan, CN",70,-0.363,-0.5,1.066,1.307,1.265,negative,0.363,0.287,C,NOISE,"scatter dominates the offset (|mean|/σ = 0.29, std 1.26°C) — model/noise error rather than a fixed station offset"
 "Sao Paulo, BR",77,-0.324,-0.2,1.031,1.269,1.235,negative,0.324,0.263,C,NOISE,"scatter dominates the offset (|mean|/σ = 0.26, std 1.24°C) — model/noise error rather than a fixed station offset"
-"Lucknow, IN",65,-0.314,-0.3,0.534,0.672,0.598,negative,0.314,0.526,C,OK,within tolerance — no systematic miss cause detected
-"Tel Aviv, IL",79,0.31,0.5,0.695,0.846,0.792,positive,0.31,0.391,C,OK,within tolerance — no systematic miss cause detected
-"Jeddah, SA",76,0.303,0.5,0.736,0.872,0.823,positive,0.303,0.369,C,OK,within tolerance — no systematic miss cause detected
+"Jeddah, SA",76,0.306,0.5,0.733,0.871,0.821,positive,0.306,0.373,C,OK,within tolerance — no systematic miss cause detected
+"Lucknow, IN",65,-0.304,-0.3,0.545,0.687,0.621,negative,0.304,0.489,C,OK,within tolerance — no systematic miss cause detected
+"Tel Aviv, IL",80,0.302,0.45,0.69,0.841,0.79,positive,0.302,0.383,C,OK,within tolerance — no systematic miss cause detected
 "Cape Town, ZA",75,-0.286,-0.3,0.786,0.947,0.908,negative,0.286,0.315,C,OK,within tolerance — no systematic miss cause detected
 "Warsaw, PL",76,-0.26,-0.25,0.64,0.787,0.748,negative,0.26,0.347,C,OK,within tolerance — no systematic miss cause detected
 "Houston, US",78,-0.245,-0.3,0.681,0.849,0.819,negative,0.245,0.3,F,OK,within tolerance — no systematic miss cause detected
 "Dallas, US",77,-0.242,-0.133,0.631,0.834,0.803,negative,0.242,0.301,F,OK,within tolerance — no systematic miss cause detected
-"New York, US",79,-0.162,-0.144,0.586,0.731,0.718,negative,0.162,0.225,F,OK,within tolerance — no systematic miss cause detected
+"New York, US",80,-0.157,-0.144,0.581,0.727,0.714,negative,0.157,0.22,F,OK,within tolerance — no systematic miss cause detected
 "Tokyo, JP",75,0.03,0.1,0.801,1.029,1.036,positive,0.03,0.029,C,NOISE,"scatter dominates the offset (|mean|/σ = 0.03, std 1.04°C) — model/noise error rather than a fixed station offset"
 "Mexico City, MX",71,-0.015,-0.1,0.621,0.794,0.8,negative,0.015,0.019,C,OK,within tolerance — no systematic miss cause detected
 "Shenzhen, CN",73,-0.001,0.1,0.747,0.934,0.94,negative,0.001,0.001,C,OK,within tolerance — no systematic miss cause detected
