@@ -7,13 +7,13 @@ Generert: 2026-11-01
 Dager kjørt: 83
 
 📊 PER-STRATEGI RESULTATER (KUMULATIV):
-   🎯 Sigma (μ−kσ): V:671 T:3452  (16.3%)
-   🧪 Modifisert:   V:1567 T:2556  (38.0%)
-   📊 Mean-basert:  V:1320 T:2803  (32.0%)
+   🎯 Sigma (μ−kσ): V:673 T:3453  (16.3%)
+   🧪 Modifisert:   V:1567 T:2559  (38.0%)
+   📊 Mean-basert:  V:1319 T:2807  (32.0%)
 
 🏙️ PER-BY 3-STRATEGI W/L (KUMULATIV, MIN-SAMPLE):
    By                                      Sigma       Modifisert             Mean
-   Amsterdam, NL                19W/63L (23.2%, n=82) 38W/44L (46.3%, n=82) 35W/47L (42.7%, n=82)
+   Amsterdam, NL                20W/63L (24.1%, n=83) 38W/45L (45.8%, n=83) 35W/48L (42.2%, n=83)
    Ankara, TR                   7W/76L (8.4%, n=83) 36W/47L (43.4%, n=83) 14W/69L (16.9%, n=83)
    Atlanta, US                  4W/78L (4.9%, n=82) 10W/72L (12.2%, n=82) 22W/60L (26.8%, n=82)
    Austin, US                   2W/79L (2.5%, n=81) 35W/46L (43.2%, n=81) 25W/56L (30.9%, n=81)
@@ -41,8 +41,8 @@ Dager kjørt: 83
    Madrid, ES                   4W/79L (4.8%, n=83) 42W/41L (50.6%, n=83) 24W/59L (28.9%, n=83)
    Manila, PH                   10W/72L (12.2%, n=82) 30W/52L (36.6%, n=82) 25W/57L (30.5%, n=82)
    Mexico City, MX              30W/51L (37.0%, n=81) 42W/39L (51.9%, n=81) 27W/54L (33.3%, n=81)
-   Miami, US                    9W/73L (11.0%, n=82) 15W/67L (18.3%, n=82) 13W/69L (15.9%, n=82)
-   Milan, IT                    10W/73L (12.0%, n=83) 28W/55L (33.7%, n=83) 33W/50L (39.8%, n=83)
+   Miami, US                    9W/74L (10.8%, n=83) 15W/68L (18.1%, n=83) 13W/70L (15.7%, n=83)
+   Milan, IT                    11W/72L (13.3%, n=83) 28W/55L (33.7%, n=83) 32W/51L (38.6%, n=83)
    Moscow, RU                   14W/69L (16.9%, n=83) 30W/53L (36.1%, n=83) 26W/57L (31.3%, n=83)
    Munich, DE                   18W/65L (21.7%, n=83) 31W/52L (37.3%, n=83) 26W/57L (31.3%, n=83)
    New York, US                 19W/63L (23.2%, n=82) 37W/45L (45.1%, n=82) 30W/52L (36.6%, n=82)
@@ -50,7 +50,7 @@ Dager kjørt: 83
    Paris, FR                    14W/69L (16.9%, n=83) 24W/59L (28.9%, n=83) 28W/55L (33.7%, n=83)
    Qingdao, CN                  4W/78L (4.9%, n=82) 29W/53L (35.4%, n=82) 29W/53L (35.4%, n=82)
    San Francisco, US            2W/79L (2.5%, n=81) 16W/65L (19.8%, n=81) 12W/69L (14.8%, n=81)
-   Sao Paulo, BR                16W/66L (19.5%, n=82) 23W/59L (28.0%, n=82) 21W/61L (25.6%, n=82)
+   Sao Paulo, BR                16W/67L (19.3%, n=83) 23W/60L (27.7%, n=83) 21W/62L (25.3%, n=83)
    Seattle, US                  3W/79L (3.7%, n=82) 24W/58L (29.3%, n=82) 17W/65L (20.7%, n=82)
    Seoul (Incheon), KR          15W/67L (18.3%, n=82) 32W/50L (39.0%, n=82) 30W/52L (36.6%, n=82)
    Shanghai, CN                 9W/73L (11.0%, n=82) 18W/64L (22.0%, n=82) 12W/70L (14.6%, n=82)
@@ -67,7 +67,7 @@ Dager kjørt: 83
 
 📋 AVGJORTE RESULTATER — SISTE DAG (2026-11-01):
    By                              Sigma Modifisert     Mean         Marked
-   Amsterdam, NL                       ⏳        ⏳        ⏳              —
+   Amsterdam, NL                       ✅        ❌        ❌           12°C
    Ankara, TR                          ✅        ❌        ❌         17.0°C
    Atlanta, US                         ⏳        ⏳        ⏳              —
    Austin, US                          ⏳        ⏳        ⏳              —
@@ -95,8 +95,8 @@ Dager kjørt: 83
    Madrid, ES                          ❌        ❌        ✅         21.0°C
    Manila, PH                          ⏳        ⏳        ⏳              —
    Mexico City, MX                     ⏳        ⏳        ⏳              —
-   Miami, US                           ⏳        ⏳        ⏳              —
-   Milan, IT                           ❌        ❌        ✅         14.0°C
+   Miami, US                           ❌        ❌        ❌        80-81°F
+   Milan, IT                           ✅        ❌        ❌         14.0°C
    Moscow, RU                          ❌        ❌        ❌         10.0°C
    Munich, DE                          ❌        ❌        ❌          8.0°C
    New York, US                        ⏳        ⏳        ⏳              —
@@ -104,7 +104,7 @@ Dager kjørt: 83
    Paris, FR                           ✅        ✅        ❌         13.0°C
    Qingdao, CN                         ⏳        ⏳        ⏳              —
    San Francisco, US                   ⏳        ⏳        ⏳              —
-   Sao Paulo, BR                       ⏳        ⏳        ⏳              —
+   Sao Paulo, BR                       ❌        ❌        ❌           29°C
    Seattle, US                         ⏳        ⏳        ⏳              —
    Seoul (Incheon), KR                 ⏳        ⏳        ⏳              —
    Shanghai, CN                        ⏳        ⏳        ⏳              —
