@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-07T17:47:03.041121+00:00",
+  "updated": "2026-11-07T20:27:15.544999+00:00",
   "rule": "|bias| / within-city sigma: > 1 => STATION_OFFSET, positive => SIGN_INVERTED, else NOISE",
   "thresholds": {
     "station_bias_mean_c": 0.75,
@@ -77,21 +77,6 @@
       "cause": "offset in the WRONG direction (mean +0.99°C, std 1.46°C → 0.68σ) — the point is warmer than the market resolves; not a station offset but a sign error"
     },
     {
-      "city": "Munich, DE",
-      "n": 85,
-      "mean_error_c": -0.945,
-      "median_error_c": -1.2,
-      "mae_c": 1.399,
-      "rmse_c": 1.622,
-      "std_error_c": 1.326,
-      "bias_sign": "negative",
-      "bias_magnitude_c": 0.945,
-      "bias_over_sigma": 0.712,
-      "unit": "C",
-      "classification": "NOISE",
-      "cause": "scatter dominates the offset (|mean|/σ = 0.71, std 1.33°C) — model/noise error rather than a fixed station offset"
-    },
-    {
       "city": "Singapore, SG",
       "n": 81,
       "mean_error_c": -0.933,
@@ -150,6 +135,21 @@
       "unit": "C",
       "classification": "STATION_OFFSET",
       "cause": "consistent under-predicts offset (mean -0.92°C, std 0.79°C → 1.17σ) — likely different station/source vs Polymarket"
+    },
+    {
+      "city": "Munich, DE",
+      "n": 86,
+      "mean_error_c": -0.909,
+      "median_error_c": -1.15,
+      "mae_c": 1.407,
+      "rmse_c": 1.629,
+      "std_error_c": 1.36,
+      "bias_sign": "negative",
+      "bias_magnitude_c": 0.909,
+      "bias_over_sigma": 0.668,
+      "unit": "C",
+      "classification": "NOISE",
+      "cause": "scatter dominates the offset (|mean|/σ = 0.67, std 1.36°C) — model/noise error rather than a fixed station offset"
     },
     {
       "city": "Miami, US",
@@ -273,18 +273,18 @@
     },
     {
       "city": "Paris, FR",
-      "n": 86,
-      "mean_error_c": -0.8,
+      "n": 87,
+      "mean_error_c": -0.788,
       "median_error_c": -0.9,
-      "mae_c": 0.997,
-      "rmse_c": 1.171,
-      "std_error_c": 0.861,
+      "mae_c": 0.988,
+      "rmse_c": 1.164,
+      "std_error_c": 0.862,
       "bias_sign": "negative",
-      "bias_magnitude_c": 0.8,
-      "bias_over_sigma": 0.929,
+      "bias_magnitude_c": 0.788,
+      "bias_over_sigma": 0.914,
       "unit": "C",
       "classification": "NOISE",
-      "cause": "scatter dominates the offset (|mean|/σ = 0.93, std 0.86°C) — model/noise error rather than a fixed station offset"
+      "cause": "scatter dominates the offset (|mean|/σ = 0.91, std 0.86°C) — model/noise error rather than a fixed station offset"
     },
     {
       "city": "Milan, IT",
@@ -574,14 +574,14 @@
     {
       "city": "Sao Paulo, BR",
       "n": 86,
-      "mean_error_c": -0.365,
+      "mean_error_c": -0.366,
       "median_error_c": -0.35,
-      "mae_c": 1.04,
-      "rmse_c": 1.267,
+      "mae_c": 1.042,
+      "rmse_c": 1.268,
       "std_error_c": 1.221,
       "bias_sign": "negative",
-      "bias_magnitude_c": 0.365,
-      "bias_over_sigma": 0.299,
+      "bias_magnitude_c": 0.366,
+      "bias_over_sigma": 0.3,
       "unit": "C",
       "classification": "NOISE",
       "cause": "scatter dominates the offset (|mean|/σ = 0.30, std 1.22°C) — model/noise error rather than a fixed station offset"
@@ -708,15 +708,15 @@
     },
     {
       "city": "Tel Aviv, IL",
-      "n": 87,
-      "mean_error_c": 0.194,
-      "median_error_c": 0.3,
-      "mae_c": 0.722,
-      "rmse_c": 0.898,
-      "std_error_c": 0.882,
+      "n": 88,
+      "mean_error_c": 0.188,
+      "median_error_c": 0.25,
+      "mae_c": 0.719,
+      "rmse_c": 0.894,
+      "std_error_c": 0.879,
       "bias_sign": "positive",
-      "bias_magnitude_c": 0.194,
-      "bias_over_sigma": 0.22,
+      "bias_magnitude_c": 0.188,
+      "bias_over_sigma": 0.213,
       "unit": "C",
       "classification": "OK",
       "cause": "within tolerance — no systematic miss cause detected"
