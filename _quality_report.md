@@ -7,29 +7,29 @@ Generert: 2026-11-10
 Dager kjørt: 90
 
 📊 PER-STRATEGI RESULTATER (KUMULATIV):
-   🎯 Sigma (μ−kσ): V:762 T:3698  (17.1%)
-   🧪 Modifisert:   V:1596 T:2864  (35.8%)
-   📊 Mean-basert:  V:1412 T:3048  (31.7%)
+   🎯 Sigma (μ−kσ): V:765 T:3707  (17.1%)
+   🧪 Modifisert:   V:1598 T:2874  (35.7%)
+   📊 Mean-basert:  V:1413 T:3059  (31.6%)
 
 🏙️ PER-BY 3-STRATEGI W/L (KUMULATIV, MIN-SAMPLE):
    By                                      Sigma       Modifisert             Mean
    Amsterdam, NL                24W/66L (26.7%, n=90) 40W/50L (44.4%, n=90) 36W/54L (40.0%, n=90)
-   Ankara, TR                   11W/77L (12.5%, n=88) 37W/51L (42.0%, n=88) 16W/72L (18.2%, n=88)
-   Atlanta, US                  5W/84L (5.6%, n=89) 10W/79L (11.2%, n=89) 23W/66L (25.8%, n=89)
-   Austin, US                   2W/86L (2.3%, n=88) 36W/52L (40.9%, n=88) 27W/61L (30.7%, n=88)
+   Ankara, TR                   11W/79L (12.2%, n=90) 37W/53L (41.1%, n=90) 16W/74L (17.8%, n=90)
+   Atlanta, US                  5W/85L (5.6%, n=90) 10W/80L (11.1%, n=90) 23W/67L (25.6%, n=90)
+   Austin, US                   2W/87L (2.2%, n=89) 36W/53L (40.4%, n=89) 27W/62L (30.3%, n=89)
    Beijing, CN                  22W/67L (24.7%, n=89) 33W/56L (37.1%, n=89) 20W/69L (22.5%, n=89)
-   Buenos Aires, AR             14W/75L (15.7%, n=89) 34W/55L (38.2%, n=89) 37W/52L (41.6%, n=89)
+   Buenos Aires, AR             14W/76L (15.6%, n=90) 34W/56L (37.8%, n=90) 37W/53L (41.1%, n=90)
    Busan, KR                    23W/66L (25.8%, n=89) 36W/53L (40.4%, n=89) 31W/58L (34.8%, n=89)
    Cape Town, ZA                3W/87L (3.3%, n=90) 29W/61L (32.2%, n=90) 32W/58L (35.6%, n=90)
    Chengdu, CN                  29W/60L (32.6%, n=89) 20W/69L (22.5%, n=89) 13W/76L (14.6%, n=89)
    Chicago, US                  8W/80L (9.1%, n=88) 15W/73L (17.0%, n=88) 36W/52L (40.9%, n=88)
    Chongqing, CN                15W/74L (16.9%, n=89) 23W/66L (25.8%, n=89) 20W/69L (22.5%, n=89)
-   Dallas, US                   13W/75L (14.8%, n=88) 13W/75L (14.8%, n=88) 24W/64L (27.3%, n=88)
+   Dallas, US                   13W/76L (14.6%, n=89) 13W/76L (14.6%, n=89) 24W/65L (27.0%, n=89)
    Denver, US                   7W/81L (8.0%, n=88) 19W/69L (21.6%, n=88) 18W/70L (20.5%, n=88)
    Guangzhou, CN                13W/76L (14.6%, n=89) 32W/57L (36.0%, n=89) 24W/65L (27.0%, n=89)
    Helsinki, FI                 14W/76L (15.6%, n=90) 51W/39L (56.7%, n=90) 42W/48L (46.7%, n=90)
    Hong Kong, HK                15W/74L (16.9%, n=89) 28W/61L (31.5%, n=89) 32W/57L (36.0%, n=89)
-   Houston, US                  17W/71L (19.3%, n=88) 27W/61L (30.7%, n=88) 31W/57L (35.2%, n=88)
+   Houston, US                  17W/72L (19.1%, n=89) 28W/61L (31.5%, n=89) 31W/58L (34.8%, n=89)
    Istanbul, TR                 12W/78L (13.3%, n=90) 39W/51L (43.3%, n=90) 26W/64L (28.9%, n=90)
    Jeddah, SA                   1W/89L (1.1%, n=90) 33W/57L (36.7%, n=90) 36W/54L (40.0%, n=90)
    Jinan, CN                    43W/4L (91.5%, n=47) 45W/2L (95.7%, n=47) 43W/4L (91.5%, n=47)
@@ -40,13 +40,13 @@ Dager kjørt: 90
    Lucknow, IN                  17W/72L (19.1%, n=89) 53W/36L (59.6%, n=89) 49W/40L (55.1%, n=89)
    Madrid, ES                   7W/83L (7.8%, n=90) 41W/49L (45.6%, n=90) 27W/63L (30.0%, n=90)
    Manila, PH                   15W/74L (16.9%, n=89) 32W/57L (36.0%, n=89) 29W/60L (32.6%, n=89)
-   Mexico City, MX              33W/55L (37.5%, n=88) 43W/45L (48.9%, n=88) 27W/61L (30.7%, n=88)
-   Miami, US                    13W/76L (14.6%, n=89) 17W/72L (19.1%, n=89) 14W/75L (15.7%, n=89)
+   Mexico City, MX              34W/55L (38.2%, n=89) 44W/45L (49.4%, n=89) 28W/61L (31.5%, n=89)
+   Miami, US                    14W/76L (15.6%, n=90) 17W/73L (18.9%, n=90) 14W/76L (15.6%, n=90)
    Milan, IT                    16W/74L (17.8%, n=90) 27W/63L (30.0%, n=90) 31W/59L (34.4%, n=90)
    Moscow, RU                   17W/73L (18.9%, n=90) 32W/58L (35.6%, n=90) 25W/65L (27.8%, n=90)
    Munich, DE                   19W/71L (21.1%, n=90) 30W/60L (33.3%, n=90) 26W/64L (28.9%, n=90)
-   New York, US                 17W/72L (19.1%, n=89) 41W/48L (46.1%, n=89) 35W/54L (39.3%, n=89)
-   Panama City, PA              14W/74L (15.9%, n=88) 38W/50L (43.2%, n=88) 21W/67L (23.9%, n=88)
+   New York, US                 17W/73L (18.9%, n=90) 41W/49L (45.6%, n=90) 35W/55L (38.9%, n=90)
+   Panama City, PA              15W/74L (16.9%, n=89) 38W/51L (42.7%, n=89) 21W/68L (23.6%, n=89)
    Paris, FR                    16W/73L (18.0%, n=89) 24W/65L (27.0%, n=89) 26W/63L (29.2%, n=89)
    Qingdao, CN                  6W/83L (6.7%, n=89) 29W/60L (32.6%, n=89) 30W/59L (33.7%, n=89)
    San Francisco, US            2W/86L (2.3%, n=88) 16W/72L (18.2%, n=88) 12W/76L (13.6%, n=88)
@@ -59,7 +59,7 @@ Dager kjørt: 90
    Taipei, TW                   8W/81L (9.0%, n=89) 22W/67L (24.7%, n=89) 27W/62L (30.3%, n=89)
    Tel Aviv, IL                 41W/49L (45.6%, n=90) 36W/54L (40.0%, n=90) 33W/57L (36.7%, n=90)
    Tokyo, JP                    30W/59L (33.7%, n=89) 34W/55L (38.2%, n=89) 32W/57L (36.0%, n=89)
-   Toronto, CA                  5W/84L (5.6%, n=89) 41W/48L (46.1%, n=89) 38W/51L (42.7%, n=89)
+   Toronto, CA                  5W/85L (5.6%, n=90) 41W/49L (45.6%, n=90) 38W/52L (42.2%, n=90)
    Warsaw, PL                   22W/68L (24.4%, n=90) 38W/52L (42.2%, n=90) 41W/49L (45.6%, n=90)
    Wellington, NZ               28W/61L (31.5%, n=89) 44W/45L (49.4%, n=89) 36W/53L (40.4%, n=89)
    Wuhan, CN                    23W/66L (25.8%, n=89) 26W/63L (29.2%, n=89) 21W/68L (23.6%, n=89)
@@ -68,22 +68,22 @@ Dager kjørt: 90
 📋 AVGJORTE RESULTATER — SISTE DAG (2026-11-10):
    By                              Sigma Modifisert     Mean         Marked
    Amsterdam, NL                       ❌        ✅        ✅          9.0°C
-   Ankara, TR                          ⏳        ⏳        ⏳              —
-   Atlanta, US                         ⏳        ⏳        ⏳              —
-   Austin, US                          ⏳        ⏳        ⏳              —
+   Ankara, TR                          ❌        ❌        ❌          2.0°C
+   Atlanta, US                         ❌        ❌        ❌        74-75°F
+   Austin, US                          ❌        ❌        ❌        68-69°F
    Beijing, CN                         ⏳        ⏳        ⏳              —
-   Buenos Aires, AR                    ⏳        ⏳        ⏳              —
+   Buenos Aires, AR                    ❌        ❌        ❌           25°C
    Busan, KR                           ⏳        ⏳        ⏳              —
    Cape Town, ZA                       ❌        ❌        ❌         26.0°C
    Chengdu, CN                         ⏳        ⏳        ⏳              —
    Chicago, US                         ⏳        ⏳        ⏳              —
    Chongqing, CN                       ⏳        ⏳        ⏳              —
-   Dallas, US                          ⏳        ⏳        ⏳              —
+   Dallas, US                          ❌        ❌        ❌        78-79°F
    Denver, US                          ⏳        ⏳        ⏳              —
    Guangzhou, CN                       ⏳        ⏳        ⏳              —
    Helsinki, FI                        ✅        ❌        ✅            6°C
    Hong Kong, HK                       ⏳        ⏳        ⏳              —
-   Houston, US                         ⏳        ⏳        ⏳              —
+   Houston, US                         ❌        ✅        ❌        76-77°F
    Istanbul, TR                        ✅        ❌        ❌         13.0°C
    Jeddah, SA                          ❌        ✅        ✅         31.0°C
    Jinan, CN                           ⏳        ⏳        ⏳              —
@@ -94,13 +94,13 @@ Dager kjørt: 90
    Lucknow, IN                         ⏳        ⏳        ⏳              —
    Madrid, ES                          ❌        ❌        ✅         19.0°C
    Manila, PH                          ⏳        ⏳        ⏳              —
-   Mexico City, MX                     ⏳        ⏳        ⏳              —
-   Miami, US                           ⏳        ⏳        ⏳              —
+   Mexico City, MX                     ✅        ✅        ✅           24°C
+   Miami, US                           ✅        ❌        ❌        84-85°F
    Milan, IT                           ✅        ❌        ❌         13.0°C
-   Moscow, RU                          ❌        ❌        ❌            4°C
+   Moscow, RU                          ❌        ❌        ❌          4.0°C
    Munich, DE                          ❌        ❌        ❌          8.0°C
-   New York, US                        ⏳        ⏳        ⏳              —
-   Panama City, PA                     ⏳        ⏳        ⏳              —
+   New York, US                        ❌        ❌        ❌        62-63°F
+   Panama City, PA                     ✅        ❌        ❌           33°C
    Paris, FR                           ⏳        ⏳        ⏳              —
    Qingdao, CN                         ⏳        ⏳        ⏳              —
    San Francisco, US                   ⏳        ⏳        ⏳              —
@@ -113,7 +113,7 @@ Dager kjørt: 90
    Taipei, TW                          ⏳        ⏳        ⏳              —
    Tel Aviv, IL                        ❌        ❌        ✅         23.0°C
    Tokyo, JP                           ⏳        ⏳        ⏳              —
-   Toronto, CA                         ⏳        ⏳        ⏳              —
+   Toronto, CA                         ❌        ❌        ❌           16°C
    Warsaw, PL                          ❌        ❌        ❌          3.0°C
    Wellington, NZ                      ⏳        ⏳        ⏳              —
    Wuhan, CN                           ⏳        ⏳        ⏳              —
@@ -123,7 +123,7 @@ Dager kjørt: 90
 
 🌡️ PEAK vs RESOLUTION — KUMULATIV
 
-   Samples: 4365  ·  Bias (snitt avvik): -0.435°C  ·  MAE: 0.991°C  ·  RMSE: 1.260°C  ·  Std: 1.182°C
+   Samples: 4366  ·  Bias (snitt avvik): -0.435°C  ·  MAE: 0.991°C  ·  RMSE: 1.260°C  ·  Std: 1.183°C
 
    By                         n   Bias °C     MAE    RMSE     Std  Flagg
    Taipei, TW                87     -1.46    1.56    1.79    1.05  
@@ -165,7 +165,7 @@ Dager kjørt: 90
    New York, US              91     -0.30    0.71    0.89    0.84  
    Kuala Lumpur, MY          87     -0.25    0.89    1.16    1.13  
    Sao Paulo, BR             89     -0.25    1.18    1.48    1.47  
-   Ankara, TR                89     -0.24    0.73    1.01    0.99  
+   Ankara, TR                90     -0.22    0.74    1.02    1.00  
    Dallas, US                89     -0.21    0.98    1.28    1.27  
    Shanghai, CN              87     -0.18    0.76    0.94    0.93  
    Qingdao, CN               86     +0.17    0.73    0.95    0.94  
