@@ -194,13 +194,40 @@ const ALL_CITIES = [
   {name: "Jinan, CN", lat: 36.8572, lon: 117.2158, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16}
 ];
 const ACTUAL_PEAK_DATA = {
-  "Warsaw, PL": {actual_peak: 6.9, peak_detected_at: "2026-11-12T22:25:31.227999+00:00", recommendation: "⏳ AVVENT — peak=6.9°C, spill=8°C (gap=1.1°C)", spill: 8},
-  "Amsterdam, NL": {actual_peak: 9.5, peak_detected_at: "2026-11-12T22:25:31.940694+00:00", recommendation: "⏳ AVVENT — peak=9.5°C, spill=11°C (gap=1.5°C)", spill: 11},
-  "Munich, DE": {actual_peak: 11.3, peak_detected_at: "2026-11-12T22:25:32.643262+00:00", recommendation: "⏳ AVVENT — peak=11.3°C, spill=13°C (gap=1.7°C)", spill: 13}
+  "Helsinki, FI": {actual_peak: 5.6, peak_detected_at: "", recommendation: "None", spill: 6},
+  "Toronto, CA": {actual_peak: 7.2, peak_detected_at: "", recommendation: "None", spill: 7},
+  "Milan, IT": {actual_peak: 11.2, peak_detected_at: "", recommendation: "None", spill: 12},
+  "Warsaw, PL": {actual_peak: 6.9, peak_detected_at: "2026-11-12T21:16:30.642666+00:00", recommendation: "⏳ AVVENT — peak=6.9°C, spill=8°C (gap=1.1°C)", spill: 8},
+  "London, UK": {actual_peak: 7.9, peak_detected_at: "", recommendation: "None", spill: 9},
+  "Chicago, US": {actual_peak: 7.3, peak_detected_at: "", recommendation: "None", spill: 7},
+  "Paris, FR": {actual_peak: 10.8, peak_detected_at: "", recommendation: "None", spill: 12},
+  "Tel Aviv, IL": {actual_peak: 24.1, peak_detected_at: "", recommendation: "None", spill: 24},
+  "New York, US": {actual_peak: 14.9, peak_detected_at: "", recommendation: "None", spill: 15},
+  "Buenos Aires, AR": {actual_peak: 30.3, peak_detected_at: "", recommendation: "None", spill: 32},
+  "Moscow, RU": {actual_peak: 1.7, peak_detected_at: "", recommendation: "None", spill: 2},
+  "Denver, US": {actual_peak: 18.0, peak_detected_at: "", recommendation: "None", spill: 19},
+  "Amsterdam, NL": {actual_peak: 9.5, peak_detected_at: "", recommendation: "None", spill: 11},
+  "Munich, DE": {actual_peak: 11.3, peak_detected_at: "", recommendation: "None", spill: 13},
+  "Cape Town, ZA": {actual_peak: 22.4, peak_detected_at: "", recommendation: "None", spill: 21},
+  "Mexico City, MX": {actual_peak: 19.0, peak_detected_at: "", recommendation: "None", spill: 21},
+  "Istanbul, TR": {actual_peak: 21.3, peak_detected_at: "", recommendation: "None", spill: 20},
+  "Madrid, ES": {actual_peak: 16.5, peak_detected_at: "", recommendation: "None", spill: 17},
+  "Jeddah, SA": {actual_peak: 33.4, peak_detected_at: "", recommendation: "None", spill: 30},
+  "Dallas, US": {actual_peak: 23.8, peak_detected_at: "", recommendation: "None", spill: 23},
+  "Austin, US": {actual_peak: 23.3, peak_detected_at: "", recommendation: "None", spill: 24},
+  "Atlanta, US": {actual_peak: 17.5, peak_detected_at: "", recommendation: "None", spill: 18},
+  "Ankara, TR": {actual_peak: 14.9, peak_detected_at: "", recommendation: "None", spill: 14},
+  "Sao Paulo, BR": {actual_peak: 26.1, peak_detected_at: "", recommendation: "None", spill: 24},
+  "Panama City, PA": {actual_peak: 31.9, peak_detected_at: "", recommendation: "None", spill: 33},
+  "Miami, US": {actual_peak: 29.1, peak_detected_at: "", recommendation: "None", spill: 30},
+  "San Francisco, US": {actual_peak: 21.8, peak_detected_at: "", recommendation: "None", spill: 18},
+  "Seattle, US": {actual_peak: 15.9, peak_detected_at: "", recommendation: "None", spill: 15},
+  "Houston, US": {actual_peak: 23.8, peak_detected_at: "", recommendation: "None", spill: 24},
+  "Los Angeles, US": {actual_peak: 24.9, peak_detected_at: "", recommendation: "None", spill: 23}
 };
 const MARKET_PRICES = {};
-const AUTO_SELECT_CITIES = ["New York, US", "Los Angeles, US", "Dallas, US", "Houston, US", "Atlanta, US", "Chicago, US", "Toronto, CA", "Austin, US", "Miami, US", "Denver, US", "San Francisco, US", "Mexico City, MX", "Seattle, US", "Panama City, PA"];
-const AUTO_SELECT_GENERATED = "2026-11-12 22:28:44 UTC";
+const AUTO_SELECT_CITIES = ["Wellington, NZ", "Los Angeles, US", "San Francisco, US", "Seattle, US"];
+const AUTO_SELECT_GENERATED = "2026-11-13 02:11:03 UTC";
 
 // ---- State ----
 const activeCities = new Set();  // city names currently monitored
