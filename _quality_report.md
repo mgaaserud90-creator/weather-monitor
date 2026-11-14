@@ -7,9 +7,9 @@ Generert: 2026-11-14
 Dager kjørt: 90
 
 📊 PER-STRATEGI RESULTATER (KUMULATIV):
-   🎯 Sigma (μ−kσ): V:794 T:3660  (17.8%)
-   🧪 Modifisert:   V:1525 T:2929  (34.2%)
-   📊 Mean-basert:  V:1399 T:3055  (31.4%)
+   🎯 Sigma (μ−kσ): V:793 T:3664  (17.8%)
+   🧪 Modifisert:   V:1525 T:2932  (34.2%)
+   📊 Mean-basert:  V:1399 T:3058  (31.4%)
 
 🏙️ PER-BY 3-STRATEGI W/L (KUMULATIV, MIN-SAMPLE):
    By                                      Sigma       Modifisert             Mean
@@ -18,7 +18,7 @@ Dager kjørt: 90
    Atlanta, US                  6W/83L (6.7%, n=89) 6W/83L (6.7%, n=89) 23W/66L (25.8%, n=89)
    Austin, US                   2W/86L (2.3%, n=88) 33W/55L (37.5%, n=88) 28W/60L (31.8%, n=88)
    Beijing, CN                  23W/66L (25.8%, n=89) 32W/57L (36.0%, n=89) 20W/69L (22.5%, n=89)
-   Buenos Aires, AR             15W/74L (16.9%, n=89) 33W/56L (37.1%, n=89) 34W/55L (38.2%, n=89)
+   Buenos Aires, AR             15W/75L (16.7%, n=90) 33W/57L (36.7%, n=90) 34W/56L (37.8%, n=90)
    Busan, KR                    24W/65L (27.0%, n=89) 36W/53L (40.4%, n=89) 30W/59L (33.7%, n=89)
    Cape Town, ZA                3W/87L (3.3%, n=90) 30W/60L (33.3%, n=90) 32W/58L (35.6%, n=90)
    Chengdu, CN                  27W/62L (30.3%, n=89) 21W/68L (23.6%, n=89) 14W/75L (15.7%, n=89)
@@ -35,10 +35,10 @@ Dager kjørt: 90
    Jinan, CN                    39W/4L (90.7%, n=43) 41W/2L (95.3%, n=43) 39W/4L (90.7%, n=43)
    Karachi, PK                  3W/87L (3.3%, n=90) 26W/64L (28.9%, n=90) 31W/59L (34.4%, n=90)
    Kuala Lumpur, MY             1W/88L (1.1%, n=89) 35W/54L (39.3%, n=89) 15W/74L (16.9%, n=89)
-   London, UK                   20W/70L (22.2%, n=90) 46W/44L (51.1%, n=90) 37W/53L (41.1%, n=90)
+   London, UK                   19W/71L (21.1%, n=90) 45W/45L (50.0%, n=90) 37W/53L (41.1%, n=90)
    Los Angeles, US              15W/73L (17.0%, n=88) 21W/67L (23.9%, n=88) 14W/74L (15.9%, n=88)
    Lucknow, IN                  20W/70L (22.2%, n=90) 51W/39L (56.7%, n=90) 47W/43L (52.2%, n=90)
-   Madrid, ES                   8W/81L (9.0%, n=89) 41W/48L (46.1%, n=89) 28W/61L (31.5%, n=89)
+   Madrid, ES                   8W/82L (8.9%, n=90) 41W/49L (45.6%, n=90) 28W/62L (31.1%, n=90)
    Manila, PH                   18W/71L (20.2%, n=89) 32W/57L (36.0%, n=89) 31W/58L (34.8%, n=89)
    Mexico City, MX              35W/53L (39.8%, n=88) 42W/46L (47.7%, n=88) 25W/63L (28.4%, n=88)
    Miami, US                    16W/73L (18.0%, n=89) 17W/72L (19.1%, n=89) 14W/75L (15.7%, n=89)
@@ -47,10 +47,10 @@ Dager kjørt: 90
    Munich, DE                   19W/71L (21.1%, n=90) 26W/64L (28.9%, n=90) 26W/64L (28.9%, n=90)
    New York, US                 18W/71L (20.2%, n=89) 39W/50L (43.8%, n=89) 33W/56L (37.1%, n=89)
    Panama City, PA              17W/71L (19.3%, n=88) 34W/54L (38.6%, n=88) 21W/67L (23.9%, n=88)
-   Paris, FR                    18W/72L (20.0%, n=90) 26W/64L (28.9%, n=90) 27W/63L (30.0%, n=90)
+   Paris, FR                    18W/72L (20.0%, n=90) 26W/64L (28.9%, n=90) 26W/64L (28.9%, n=90)
    Qingdao, CN                  6W/83L (6.7%, n=89) 29W/60L (32.6%, n=89) 29W/60L (32.6%, n=89)
    San Francisco, US            2W/86L (2.3%, n=88) 16W/72L (18.2%, n=88) 12W/76L (13.6%, n=88)
-   Sao Paulo, BR                16W/73L (18.0%, n=89) 24W/65L (27.0%, n=89) 23W/66L (25.8%, n=89)
+   Sao Paulo, BR                16W/74L (17.8%, n=90) 25W/65L (27.8%, n=90) 24W/66L (26.7%, n=90)
    Seattle, US                  3W/86L (3.4%, n=89) 26W/63L (29.2%, n=89) 21W/68L (23.6%, n=89)
    Seoul (Incheon), KR          17W/72L (19.1%, n=89) 29W/60L (32.6%, n=89) 28W/61L (31.5%, n=89)
    Shanghai, CN                 14W/75L (15.7%, n=89) 16W/73L (18.0%, n=89) 18W/71L (20.2%, n=89)
@@ -72,7 +72,7 @@ Dager kjørt: 90
    Atlanta, US                         ⏳        ⏳        ⏳              —
    Austin, US                          ⏳        ⏳        ⏳              —
    Beijing, CN                         ⏳        ⏳        ⏳              —
-   Buenos Aires, AR                    ⏳        ⏳        ⏳              —
+   Buenos Aires, AR                    ❌        ❌        ❌         29.0°C
    Busan, KR                           ⏳        ⏳        ⏳              —
    Cape Town, ZA                       ❌        ✅        ❌         28.0°C
    Chengdu, CN                         ⏳        ⏳        ⏳              —
@@ -89,10 +89,10 @@ Dager kjørt: 90
    Jinan, CN                           ⏳        ⏳        ⏳              —
    Karachi, PK                         ❌        ❌        ❌         31.0°C
    Kuala Lumpur, MY                    ⏳        ⏳        ⏳              —
-   London, UK                          ✅        ✅        ❌         10.0°C
+   London, UK                          ❌        ❌        ❌         10.0°C
    Los Angeles, US                     ⏳        ⏳        ⏳              —
    Lucknow, IN                         ✅        ❌        ❌         29.0°C
-   Madrid, ES                          ⏳        ⏳        ⏳              —
+   Madrid, ES                          ❌        ❌        ❌         14.0°C
    Manila, PH                          ⏳        ⏳        ⏳              —
    Mexico City, MX                     ⏳        ⏳        ⏳              —
    Miami, US                           ⏳        ⏳        ⏳              —
@@ -101,10 +101,10 @@ Dager kjørt: 90
    Munich, DE                          ❌        ❌        ❌          6.0°C
    New York, US                        ⏳        ⏳        ⏳              —
    Panama City, PA                     ⏳        ⏳        ⏳              —
-   Paris, FR                           ❌        ❌        ✅         11.0°C
+   Paris, FR                           ❌        ❌        ❌         11.0°C
    Qingdao, CN                         ⏳        ⏳        ⏳              —
    San Francisco, US                   ⏳        ⏳        ⏳              —
-   Sao Paulo, BR                       ⏳        ⏳        ⏳              —
+   Sao Paulo, BR                       ❌        ✅        ✅         28.0°C
    Seattle, US                         ⏳        ⏳        ⏳              —
    Seoul (Incheon), KR                 ⏳        ⏳        ⏳              —
    Shanghai, CN                        ⏳        ⏳        ⏳              —
