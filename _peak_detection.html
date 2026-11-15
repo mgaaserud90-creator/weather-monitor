@@ -193,43 +193,10 @@ const ALL_CITIES = [
   {name: "Panama City, PA", lat: 8.9733, lon: -79.5556, tz: "America/Panama", peakStart: 14, peakEnd: 17},
   {name: "Jinan, CN", lat: 36.8572, lon: 117.2158, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16}
 ];
-const ACTUAL_PEAK_DATA = {
-  "Warsaw, PL": {actual_peak: 6.3, peak_detected_at: "", recommendation: "None", spill: 21},
-  "New York, US": {actual_peak: 7.3, peak_detected_at: "", recommendation: "None", spill: 7},
-  "Seattle, US": {actual_peak: 14.5, peak_detected_at: "", recommendation: "None", spill: 13},
-  "Helsinki, FI": {actual_peak: 2.3, peak_detected_at: "", recommendation: "None", spill: 2},
-  "Chicago, US": {actual_peak: 7.4, peak_detected_at: "", recommendation: "None", spill: 7},
-  "San Francisco, US": {actual_peak: 18.3, peak_detected_at: "", recommendation: "None", spill: 16},
-  "Toronto, CA": {actual_peak: 5.6, peak_detected_at: "", recommendation: "None", spill: 5},
-  "Atlanta, US": {actual_peak: 11.1, peak_detected_at: "", recommendation: "None", spill: 12},
-  "Los Angeles, US": {actual_peak: 20.5, peak_detected_at: "", recommendation: "None", spill: 20},
-  "Houston, US": {actual_peak: 18.7, peak_detected_at: "", recommendation: "None", spill: 19},
-  "Amsterdam, NL": {actual_peak: 7.3, peak_detected_at: "", recommendation: "None", spill: 22},
-  "Moscow, RU": {actual_peak: 4.3, peak_detected_at: "", recommendation: "None", spill: 5},
-  "Milan, IT": {actual_peak: 10.5, peak_detected_at: "", recommendation: "None", spill: 22},
-  "Munich, DE": {actual_peak: 5.6, peak_detected_at: "", recommendation: "None", spill: 23},
-  "Tel Aviv, IL": {actual_peak: 27.2, peak_detected_at: "", recommendation: "None", spill: 28},
-  "Paris, FR": {actual_peak: 9.4, peak_detected_at: "", recommendation: "None", spill: 22},
-  "London, UK": {actual_peak: 9.1, peak_detected_at: "", recommendation: "None", spill: 22},
-  "Dallas, US": {actual_peak: 16.1, peak_detected_at: "", recommendation: "None", spill: 16},
-  "Karachi, PK": {actual_peak: 30.6, peak_detected_at: "", recommendation: "None", spill: 30},
-  "Ankara, TR": {actual_peak: 16.7, peak_detected_at: "", recommendation: "None", spill: 16},
-  "Madrid, ES": {actual_peak: 14.2, peak_detected_at: "", recommendation: "None", spill: 21},
-  "Istanbul, TR": {actual_peak: 21.5, peak_detected_at: "", recommendation: "None", spill: 20},
-  "Mexico City, MX": {actual_peak: 20.7, peak_detected_at: "", recommendation: "None", spill: 23},
-  "Miami, US": {actual_peak: 20.9, peak_detected_at: "", recommendation: "None", spill: 23},
-  "Denver, US": {actual_peak: 12.9, peak_detected_at: "", recommendation: "None", spill: 11},
-  "Buenos Aires, AR": {actual_peak: 27.0, peak_detected_at: "", recommendation: "None", spill: 27},
-  "Lucknow, IN": {actual_peak: 29.1, peak_detected_at: "", recommendation: "None", spill: 29},
-  "Sao Paulo, BR": {actual_peak: 27.4, peak_detected_at: "", recommendation: "None", spill: 27},
-  "Austin, US": {actual_peak: 19.3, peak_detected_at: "", recommendation: "None", spill: 19},
-  "Jeddah, SA": {actual_peak: 34.9, peak_detected_at: "", recommendation: "None", spill: 31},
-  "Panama City, PA": {actual_peak: 32.3, peak_detected_at: "", recommendation: "None", spill: 32},
-  "Cape Town, ZA": {actual_peak: 28.3, peak_detected_at: "", recommendation: "None", spill: 23}
-};
+const ACTUAL_PEAK_DATA = {};
 const MARKET_PRICES = {};
-const AUTO_SELECT_CITIES = ["New York, US", "Los Angeles, US", "Dallas, US", "Houston, US", "Atlanta, US", "Chicago, US", "Toronto, CA", "Austin, US", "Miami, US", "Denver, US", "San Francisco, US", "Mexico City, MX", "Seattle, US", "Panama City, PA"];
-const AUTO_SELECT_GENERATED = "2026-11-14 23:59:37 UTC";
+const AUTO_SELECT_CITIES = ["Taipei, TW", "Hong Kong, HK", "Shanghai, CN", "Seoul (Incheon), KR", "Kuala Lumpur, MY", "Wellington, NZ", "Shenzhen, CN", "Singapore, SG", "Guangzhou, CN", "Tokyo, JP", "Chongqing, CN", "Chengdu, CN", "Wuhan, CN", "Qingdao, CN", "Busan, KR", "Manila, PH", "Beijing, CN", "Zhengzhou, CN", "Jinan, CN"];
+const AUTO_SELECT_GENERATED = "2026-11-15 05:47:09 UTC";
 
 // ---- State ----
 const activeCities = new Set();  // city names currently monitored
