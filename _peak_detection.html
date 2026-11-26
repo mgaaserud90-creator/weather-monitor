@@ -193,20 +193,10 @@ const ALL_CITIES = [
   {name: "Panama City, PA", lat: 8.9733, lon: -79.5556, tz: "America/Panama", peakStart: 14, peakEnd: 17},
   {name: "Jinan, CN", lat: 36.8572, lon: 117.2158, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16}
 ];
-const ACTUAL_PEAK_DATA = {
-  "New York, US": {actual_peak: 6.3, peak_detected_at: "2026-11-26T00:35:26.578036+00:00", recommendation: "⏳ AVVENT — temp nærmer seg spill (gap=0.7°C)", spill: 7},
-  "Denver, US": {actual_peak: 8.4, peak_detected_at: "2026-11-26T00:35:27.304466+00:00", recommendation: "⏳ AVVENT — temp nærmer seg spill (gap=-0.4°C)", spill: 8},
-  "Toronto, CA": {actual_peak: 1.8, peak_detected_at: "2026-11-26T00:35:28.016409+00:00", recommendation: "⏳ AVVENT — peak=1.8°C, spill=3°C (gap=1.2°C)", spill: 3},
-  "San Francisco, US": {actual_peak: 17.4, peak_detected_at: "2026-11-26T00:35:28.702301+00:00", recommendation: "⏳ AVVENT — temp nærmer seg spill (gap=-2.4°C)", spill: 15},
-  "Chicago, US": {actual_peak: 5.7, peak_detected_at: "2026-11-26T00:35:29.413461+00:00", recommendation: "⏳ AVVENT — temp nærmer seg spill (gap=-0.7°C)", spill: 5},
-  "Mexico City, MX": {actual_peak: 19.8, peak_detected_at: "2026-11-26T00:35:30.125826+00:00", recommendation: "⏳ AVVENT — peak=19.8°C, spill=21°C (gap=1.2°C)", spill: 21},
-  "Austin, US": {actual_peak: 13.4, peak_detected_at: "2026-11-26T00:35:30.847348+00:00", recommendation: "⏳ AVVENT — temp nærmer seg spill (gap=0.6°C)", spill: 14},
-  "Los Angeles, US": {actual_peak: 21.4, peak_detected_at: "2026-11-26T00:35:31.522475+00:00", recommendation: "⏳ AVVENT — temp nærmer seg spill (gap=0.6°C)", spill: 22},
-  "Seattle, US": {actual_peak: 14.7, peak_detected_at: "2026-11-26T00:35:32.219456+00:00", recommendation: "⏳ AVVENT — temp nærmer seg spill (gap=-0.7°C)", spill: 14}
-};
+const ACTUAL_PEAK_DATA = {};
 const MARKET_PRICES = {};
-const AUTO_SELECT_CITIES = ["Wellington, NZ", "Los Angeles, US", "Dallas, US", "Houston, US", "Chicago, US", "Austin, US", "Denver, US", "San Francisco, US", "Mexico City, MX", "Seattle, US"];
-const AUTO_SELECT_GENERATED = "2026-11-26 00:38:16 UTC";
+const AUTO_SELECT_CITIES = ["Seoul (Incheon), KR", "Wellington, NZ", "Tokyo, JP", "Busan, KR"];
+const AUTO_SELECT_GENERATED = "2026-11-26 04:23:25 UTC";
 
 // ---- State ----
 const activeCities = new Set();  // city names currently monitored
