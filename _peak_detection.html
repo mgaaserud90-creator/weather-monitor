@@ -193,22 +193,10 @@ const ALL_CITIES = [
   {name: "Panama City, PA", lat: 8.9733, lon: -79.5556, tz: "America/Panama", peakStart: 14, peakEnd: 17},
   {name: "Jinan, CN", lat: 36.8572, lon: 117.2158, tz: "Asia/Shanghai", peakStart: 14, peakEnd: 16}
 ];
-const ACTUAL_PEAK_DATA = {
-  "Toronto, CA": {actual_peak: 3.6, peak_detected_at: "2026-11-28T00:10:36.748881+00:00", recommendation: "⏳ AVVENT — temp nærmer seg spill (gap=0.4°C)", spill: 4},
-  "Chicago, US": {actual_peak: 7.8, peak_detected_at: "2026-11-28T00:10:37.506003+00:00", recommendation: "⏳ AVVENT — temp nærmer seg spill (gap=0.2°C)", spill: 8},
-  "Seattle, US": {actual_peak: 8.7, peak_detected_at: "2026-11-28T00:10:38.255265+00:00", recommendation: "⏳ AVVENT — peak=8.7°C, spill=10°C (gap=1.3°C)", spill: 10},
-  "San Francisco, US": {actual_peak: 17.9, peak_detected_at: "2026-11-28T00:10:39.001267+00:00", recommendation: "⏳ AVVENT — temp nærmer seg spill (gap=-2.9°C)", spill: 15},
-  "Houston, US": {actual_peak: 16.7, peak_detected_at: "2026-11-28T00:10:39.751364+00:00", recommendation: "⏳ AVVENT — temp nærmer seg spill (gap=0.3°C)", spill: 17},
-  "Atlanta, US": {actual_peak: 11.4, peak_detected_at: "2026-11-28T00:10:40.509416+00:00", recommendation: "⏳ AVVENT — temp nærmer seg spill (gap=-2.4°C)", spill: 9},
-  "Denver, US": {actual_peak: 15.8, peak_detected_at: "2026-11-28T00:10:41.252191+00:00", recommendation: "⏳ AVVENT — temp nærmer seg spill (gap=-0.8°C)", spill: 15},
-  "Austin, US": {actual_peak: 18.7, peak_detected_at: "2026-11-28T00:10:42.025701+00:00", recommendation: "⏳ AVVENT — peak=18.7°C, spill=20°C (gap=1.3°C)", spill: 20},
-  "Dallas, US": {actual_peak: 18.6, peak_detected_at: "2026-11-28T00:10:42.829657+00:00", recommendation: "⏳ AVVENT — temp nærmer seg spill (gap=-0.6°C)", spill: 18},
-  "Los Angeles, US": {actual_peak: 27.4, peak_detected_at: "2026-11-28T00:10:43.583183+00:00", recommendation: "⏳ AVVENT — temp nærmer seg spill (gap=-0.4°C)", spill: 27},
-  "Mexico City, MX": {actual_peak: 11.3, peak_detected_at: "2026-11-28T00:10:44.332331+00:00", recommendation: "⏳ AVVENT — peak=11.3°C, spill=15°C (gap=3.7°C)", spill: 15}
-};
+const ACTUAL_PEAK_DATA = {};
 const MARKET_PRICES = {};
-const AUTO_SELECT_CITIES = ["Wellington, NZ", "Los Angeles, US", "Dallas, US", "Houston, US", "Chicago, US", "Austin, US", "Denver, US", "San Francisco, US", "Mexico City, MX", "Seattle, US"];
-const AUTO_SELECT_GENERATED = "2026-11-28 00:12:51 UTC";
+const AUTO_SELECT_CITIES = ["Seoul (Incheon), KR", "Wellington, NZ", "Tokyo, JP", "Busan, KR"];
+const AUTO_SELECT_GENERATED = "2026-11-28 04:20:57 UTC";
 
 // ---- State ----
 const activeCities = new Set();  // city names currently monitored
